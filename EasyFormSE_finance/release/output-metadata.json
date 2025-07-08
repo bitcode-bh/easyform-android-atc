@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.easyform.azurepower",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 96,
+      "versionName": "D_19.6.27.7_F7",
+      "outputFile": "EasyFormSE_finance-release.apk"
+    }
+  ],
+  "elementType": "File"
+}

@@ -1,0 +1,12 @@
+/*selection_survey.html css*/
+
+#btn_Create_Task {
+    bottom: 10px;
+    left: 50%;
+    -webkit-transform: translate(-35%, -35%);
+    transform: translate(-35%, -35%);
+    -ms-transform: translate(-35%, -35%);
+    border: 6px solid white;
+    z-index: 9999 !important;
+}
+

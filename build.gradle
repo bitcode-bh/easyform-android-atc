@@ -1,0 +1,42 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath 'com.google.gms:google-services:4.3.13'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+        classpath "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1"
+        //used to encrypt string in java class
+        //add @Obfuscate annotation on class name
+        classpath 'io.michaelrocks:paranoid-gradle-plugin:0.3.5'
+        classpath 'com.google.ar.sceneform:plugin:1.17.1'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.1'
+    }
+    allprojects {
+        repositories {
+            jcenter()
+            mavenCentral()
+            google()
+            maven { url "https://www.jitpack.io" }
+            maven {
+                url "https://github.com/jitsi/jitsi-maven-repository/raw/master/releases"
+            }
+        }
+
+        project.ext {
+            minSdk = 24
+            targetSdk = 29
+            compileSdk = 33
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+

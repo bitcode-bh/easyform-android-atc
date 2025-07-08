@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="select_table">Select Table:</string>
+    <string name="custom_query">Custom Query</string>
+    <string name="messages_text">Error messages Will be Displayed Here</string>
+    <string name="query">Query</string>
+    <string name="submit_query">Submit Query</string>
+    <string name="no_of_records">No. Of Records: </string>
+    <string name="crud_operations">CRUD Operations</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="table_is_empty">   Table   Is   Empty   </string>
+</resources>

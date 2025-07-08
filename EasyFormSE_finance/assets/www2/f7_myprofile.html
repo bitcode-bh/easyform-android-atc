@@ -1,0 +1,88 @@
+<!-- My Profile Start -->
+<div class="popup popup-profile" style="display: none">
+    <div class="view navbar-fixed">
+        <div class="pages">
+            <div class="page">
+                <div class="navbar">
+                    <div class="navbar-inner">
+                        <div class="center">My Profile</div>
+                        <div class="right"><a href="#" class="link close-popup">OK</a></div>
+                    </div>
+                </div>
+                <div class="page-content">
+                    <div class="list-block" style="display:none;">
+                        <div style="text-align: left; margin: 10px"></div>
+                    </div>
+                    <div class="list-block media-list">
+                        <ul>
+                            <li>
+                                <a href="#" class="item-link item-content">
+                                    <div class="item-media">
+                                        <img id="img_my_profile" style="max-width: 70px">
+                                    </div>
+                                    <div class="item-inner" style="margin-left: 16px; padding-top: 10px">
+                                        <div class="item-title-row" style="padding-right: 0; background-image: none">
+                                            <div class="item-title" id="lblusername_my" style="font-size: 20px"></div>
+                                            <div class="item-after">
+                                                <i id="pro_img_gprs" class="fa fa-circle" style="color: lightgreen"></i>
+                                            </div>
+                                        </div>
+                                        <div class="item-subtitle">
+                                            <i id="pro_img_gps" class="fa fa-map-marker" style="margin-right: 5px; font-size: 18px;"></i>
+                                            <label id="lbl_pro_latlong"></label>
+                                        </div>
+                                        <!--<div class="item-text" id="pro_address" style="max-height: none; -webkit-line-clamp: inherit"></div>-->
+                                        <div class="item-text" id="pro_address" style="display: block; max-height: none; -webkit-line-clamp: inherit"></div>
+                                        <div class="item-text" id="pro_imei"></div>
+                                        <br />
+
+                                        <button type="button" value="Update Profile" class="btn bg-f7" id="btn_update_profile" title="Update Profile" onclick="update_profile()" style="color: white; width: 110px; height: 30px; border: none; border-radius: 5px; display: none;">Update Profile</button>
+
+
+                                        <!--  <div class="item-text" style="min-height:150px; max-height: none">
+                                            <table style="width: 100%">
+                                                <tr>
+                                                    <td colspan="2" style="font-weight: bold; height: 30px">Site Ratio:</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="width: 120px">
+                                                        <canvas id="canvas" width="100" height="100" />
+                                                    </td>
+                                                    <td>
+                                                        <i class="fa fa-circle" style="margin-right: 5px; color: #4caf50"></i>Completed
+                                                                <label id="pro_task_comp"></label>
+                                                        <br />
+                                                        <i class="fa fa-circle" style="margin-right: 5px; color: #f44336"></i>Pending
+                                                                <label id="pro_task_pen"></label>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>-->
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="profile-user-details" style="border-top: solid 1px #ccc;">
+                            <h3 id="title_user_profile" style="text-align:center;font-size: 16px;font-weight:bold;margin-top:10px;display:none;">User Profile Detail</h3>
+                            <table id="profile_user_detail" border="1" style="width: 98%;margin:10px 5px;white-space: initial;word-break: break-word;font-size:12px;"></table>
+
+                            <!--<div class="item-inner">
+                                <center>
+                                    <a class="button button-fill button-raised" style="width:60%" onclick="">Generate TT</a>
+                                </center>
+                            </div>-->
+                        </div>
+
+                        <!--<div id="chartContainer" style="height: 450px; width: 100%" onclick='setTimeout(function (){$(".canvasjs-chart-tooltip").hide();},3000);'></div>-->
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!--<iframe src="" id="iframe_update_profile" style="display:none;width:100%; height:100%;border:none;"></iframe>-->                <!--//commented coz cordova plugin call issue in update user profile photo in iframe [FT-29052025]-->
+        </div>
+    </div>
+</div>
+<!-- My Profile End-->

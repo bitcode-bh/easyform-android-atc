@@ -1,0 +1,1732 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#2196f3">
+
+    <!-- F7 start -->
+    <link href="Framework7-1.4.2/dist/css/Css_f7.css" rel="stylesheet" />
+    <link href="font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="EFSE_Js/common-functions.js"></script>
+    <!-- F7 end -->
+
+    <link href="css/styles_low.css" rel="stylesheet" type="text/css" />
+
+    <script src="Plugin_Js/jquery-3.5.1.min.js" type="text/javascript"></script>
+    <script src="cordova.js"></script>
+    <script src="js/globlvariable.js"></script>
+    <script src="js/jstorage.min.js"></script>
+    <script src="js/Storagefile.js"></script>
+    <script src="js/webservicecall_REST.js" type="text/javascript"></script>
+    <script src="js/changeurl.js" type="text/javascript"></script>
+    <script src="EFSE_Js/check_and_redirect.js"></script>
+    <script src="EFSE_Js/controls-ele.js"></script>
+    <script src="EFSE_Js/selection_survey.js" type="text/javascript"></script>
+    <script src="EFSE_Js/SubmitFlow_PM.js" type="text/javascript"></script>
+    <script src="EFSE_Js/viewsitelist_pm.js" type="text/javascript"></script>
+    <script src="EFSE_Js/viewsitelist_pm_CommentUI.js"></script>
+    <script src="EFSE_Js/viewsitelist_pm_on.js" type="text/javascript"></script>
+    <script src="EFSE_Js/online_checksheet.js" type="text/javascript"></script>
+
+    <!--to skip single subflow checksheet-->
+    <script src="EFSE_Js/selection.js" type="text/javascript"></script>
+
+    <script src="EFSE_Js/viewsitelist_pm_grouplist.js" type="text/javascript"></script>
+    <script src="EFSE_Js/change_option_priority.js" type="text/javascript"></script>
+
+    <script src="EFSE_Js/ReadCheckSheet.js"></script>
+    <script src="EFSE_Js/SubmitSurveyData.js"></script>
+    <script src="EFSE_Js/get_search_control.js"></script>
+    <script src="EFSE_Js/Upload_Option_Get_List.js" type="text/javascript"></script>
+    <script src="EFSE_Js/viewsitelist_sub_task.js" type="text/javascript"></script>
+    <script src="EFSE_Js/viewsitelist_sub_task_hybrid.js" type="text/javascript"></script>
+    <script src="EFSE_Js/support_page.js" type="text/javascript"></script>
+    <script src="EFSE_Js/get_calculator.js" type="text/javascript"></script>
+    <script src="EFSE_Js/viewcustomerlist_on.js" type="text/javascript"></script>
+    <script src="EFSE_Js/support_page_customer.js" type="text/javascript"></script>
+    <script src="EFSE_Js/get_subtask.js" type="text/javascript"></script>
+
+    <!--for adv filter new UI-->
+    <script src="EFSE_Js/viewsitelist_adv_filter.js" type="text/javascript"></script>
+
+    <script src="EFSE_Js_Task/create_offline_task.js" type="text/javascript"></script>
+    <script src="EFSE_Js_Server/server_viewsitelist.js" type="text/javascript"></script>
+
+    <!--select picker-->
+    <link href="Plugin_Js/bootstrap-select.css" rel="stylesheet" type="text/css" />
+    <script src="Plugin_Js/bootstrap-select.js" type="text/javascript"></script>
+
+    <link href="Plugin_Js/datetimepicker_flat/DateTimePicker.css" rel="stylesheet" type="text/css" />
+    <script src="Plugin_Js/datetimepicker_flat/DateTimePicker.js" type="text/javascript"></script>
+
+    <!--Full view calendar (view monthwise task in calendar-->
+    <script src="Plugin_Js/index.global.js"></script>
+
+    <style type="text/css">
+        /* F7 Style start */
+        .list-block .item-after {
+            display: table !important;
+        }
+
+        .list-block .item-icon {
+            width: 27px;
+            white-space: normal;
+            margin-top: -15px;
+            padding: 5px;
+        }
+
+        .list-block .item-no-pad {
+            padding-right: 0 !important;
+            background-image: none !important;
+        }
+
+        .calender-floating-button {
+            left: 16px;
+            /*position: absolute;
+            bottom: 16px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            z-index: 1500;
+            box-shadow: 0 10px 20px rgba(0,0,0,.19),0 6px 6px rgba(0,0,0,.23);
+            background-color: #2e2eb8;
+            color: #fff;
+            overflow: hidden;
+            -webkit-transition-duration: .1s;
+            transition-duration: .1s;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            -webkit-justify-content: center;
+            justify-content: center;*/
+        }
+
+            .calender-floating-button i {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                -webkit-transform: translate3d(-50%,-50%,0) rotate(0) scale(1);
+                transform: translate3d(-50%,-50%,0) rotate(0) scale(1);
+                -webkit-transition-duration: .1s;
+                transition-duration: .1s
+            }
+
+        .task_cardview {
+            border: solid 1px gray;
+            border-radius: 7px;
+            box-shadow: 1px 1px 5px #7f7f7f !important;
+            margin: 6px 4px;
+        }
+
+        .task-icon i {
+            display: inline !important;
+            padding: 5px !important;
+        }
+
+        .cls_disp_blk {
+            display: block;
+        }
+
+        .cls_col_lbl {
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .rowwise-align tr, .rowwise-align td {
+            line-height: initial;
+        }
+
+        .font-white {
+            color: #fff !important;
+        }
+
+        .font-black {
+            color: #000 !important;
+        }
+
+
+        /*Advance filter css*/
+
+        .div-cntrl-icon {
+            display: inline-block;
+            float: right;
+        }
+
+            .div-cntrl-icon .fltr-cntrl-icon {
+                font-size: 14px;
+                color: gray !important;
+            }
+
+        .fltr-cndtn-inner {
+            padding: 5px 10px;
+        }
+
+        .popup-advance-search-online select {
+            width: 250px;
+            height: 30px;
+            margin: 5px 0px;
+            border: 1px solid #ccc !important;
+            background: white;
+        }
+
+
+        /* F7 Style end */
+
+        #btn_Clear_Filter {
+            left: 16px;
+            background-color: red;
+            width: 110px;
+            border-radius: 24px !important;
+            height: 32px;
+        }
+
+        .numberCircle {
+            display: none;
+        }
+
+        #calendar {
+            max-width: 100%;
+            margin: 0px;
+        }
+
+        /*full view calendar (task listing)*/
+
+        .fc-scrollgrid-section table a {
+            color: black;
+        }
+
+        .fc .fc-toolbar-title {
+            font-size: 1.2em;
+        }
+
+        .fc .fc-toolbar.fc-header-toolbar {
+            margin: 0.5em;
+        }
+
+        .fc .fc-popover {
+            box-shadow: 0 2px 6px rgb(0 0 0 / 15%) !important;
+        }
+
+        table.fc-scrollgrid thead {
+            font-weight: bold;
+        }
+
+        .popup-task-calendar .center {
+            font-size: 15px;
+        }
+
+        #ddl_cal {
+            width: 65%;
+        }
+    </style>
+    <script type="text/javascript">
+        var username = JSON.parse(storage.getItem('username'));
+        var imeino = JSON.parse(storage.getItem('imeino'));
+        var uniqcode = JSON.parse(storage.getItem('uniqcode'));
+        var global_url = JSON.parse(storage.getItem('global_url'));
+        var global_wcf_url = JSON.parse(storage.getItem('global_wcf_url'));
+        var common_global_wcf_url = JSON.parse(storage.getItem('common_global_wcf_url'));
+        var company_id = JSON.parse(storage.getItem('company_id'));
+
+        ///////////// comment UI
+        var n = global_wcf_url.indexOf("/EF_Service");
+        var newwcfURL = global_wcf_url.substring(0, n + 1);
+        var mob_global_wcf_url = newwcfURL + 'EasyForm_Mob_rest.svc/v1/';
+        var view_full_task_id = 0;
+        //var PageDetailsArray = [{ "list_counter_string": "Total Contract value", "list_counter_key": "Existing Contract value", "main_udf_id": "10617", "main_flow_id": "2700", "main_flow_name": "Opportunity", "sort_by_fields": ["Account", "Account Type", "Organization Name", "Name", "username", "Status", "Activity Status"], "RowQuery": [{ "flow_status_listing": "UJ_Sales_Flow_Stauts_Master_With_Order_No", "main_task_listing": "UJ_Sales_User_main_task_listing", "main_task_history": "UJ_Sales_with_taskhistory", "main_task_single_status": "UJ_Sales_single_status" }], "querydata": [{ "text": "flow_status_listing", "data": [{ "key": "@flowid", "value": "" }] }, { "text": "main_task_listing", "data": [{ "key": "@flow_id", "value": "" }, { "key": "@sub_flow_id", "value": "" }, { "key": "@user_id", "value": "<#user_id#>" }] }, { "text": "main_task_history", "data": [{ "key": "@task_id", "value": "" }] }, { "text": "main_task_single_status", "data": [{ "key": "@flow_id", "value": "" }, { "key": "@sub_flow_id", "value": "" }, { "key": "@status", "value": "" }, { "key": "@orderby", "value": "" }, { "key": "@user_id", "value": "<#user_id#>" }] }] }];
+        var PageDetailsArray = [];
+        var activity_Array = [];
+        /////////////
+
+        var page_load_over = 0;
+
+        //My Global Variables
+        var user_lat = 0;
+        var user_long = 0;
+        var user_accuracy = 0;
+        var default_distance = 0;
+        var label_timer;
+
+        //Fixed My Global Varibles Start
+        var curr_btnSearch_Counter;
+        var curr_all_data_20 = [];
+        var Type20_AutoFill_DDL_Array = [];
+        var Type20_AutoBind_Onchange_Array = [];
+        var curr_sub_get_value = 0;
+        var curr_clps_new_id = 0;
+        var newdiv = "";
+        var form_flag = 0;
+        var btnJsonObj = [];
+        var jsonObj_old = [];
+        var curr_btn_mode = "";
+        var enable_back = 0;
+        var curr_survey_data = [];
+        var step_Array = [];
+        var color_btn;
+        var font_color_button;
+        var ap_json;
+        var Validation_True;
+        //Fixed My Global Varibles End
+
+        var enable_popup = 0;                        //to handle native back when popup is open
+
+        // Global variables for site listing
+        var query_type = 1;
+        //1=regular, 2=search, 3=dropdown
+        var default_range = 20;
+        // set default range;
+        var limit_range = 20;
+        // range to be used in listing
+        var increment_range = 20;
+        // number to be added in limit_range
+
+        var up_Timer1;
+        var up_Click = 0;
+        var toggle_search = 0;
+        var toggle_create_task = 0;
+
+        // sub task
+        var curr_btn_mode = "";
+        var curr_survey_data = [];
+
+        // mobile view (F7 View/old View)
+        var F7_view = JSON.parse(storage.getItem('F7_view'));
+        var F7_device = JSON.parse(storage.getItem('F7_device'));
+        var itemObj = new MKCheckItem();
+
+        //viewsitelist_pm_grouplist.html variable
+        var server_dt_Counter = 0;
+        var ddl_system_search_timer;
+
+        var task_calendar;
+
+        document.addEventListener('deviceready', function showValues() {
+
+            //setTimeout(function () {
+            //    //myApp.popup('.popup-commentUI');
+            //    get_sub_tasks('896122');
+            //}, 2000)
+
+            storage.setItem('crash_status', JSON.stringify('0'));
+            storage.setItem('sub_udf_id', JSON.stringify(""));
+
+            // pageload code of viewsitelist_pm_grouplist.html
+            var checksheet_dependency = [];
+            storage.setItem('checksheet_dependency', JSON.stringify(checksheet_dependency));
+            storage.setItem('progress_step', JSON.stringify(''));
+
+            var data_json = JSON.parse(storage.getItem('list_json'));
+            var list_data = JSON.parse(data_json);
+            var geofance_flag = list_data[0].geofence[0].value;
+            var show_task_limit = list_data[0].show_task_limit;
+            if (show_task_limit == '' || show_task_limit == null || show_task_limit == undefined) {
+                //
+            } else {
+                default_range = parseInt(show_task_limit);
+                limit_range = parseInt(show_task_limit);
+                increment_range = parseInt(show_task_limit);
+            }
+
+            pageload_main();
+            function pageload_main() {
+                if (typeof (myApp) != "undefined") {
+                    create_tabs_by_status();
+                }
+                else {
+                    setTimeout(function () { pageload_main(); }, 500);
+                }
+            }
+
+            storage.setItem('survey_type', JSON.stringify(1));
+
+            document.addEventListener("backbutton", function (e) {
+                //var seconds = getPageLoadTime();
+                //if (seconds > 3) {
+                if (page_load_over == 1) {
+                    beforeload = (new Date()).getTime();
+
+                    //var popups = $('.popup-commentUI:visible');
+                    //if (popups.length > 0) {
+                    //    loading_hide();
+                    //    myApp.closeModal('.popup-commentUI');
+                    //    $('.popup-commentUI').hide();
+                    //}
+                    if (enable_popup == 1) { }
+                    else {
+                        var length = $("#site_list .li_disabled").length;
+                        if (length > 0) {
+                            hide_bulk_approval_panel();
+                        }
+                        else {
+                            back_button('selection_survey');
+                        }
+                    }
+                }
+            }, true);
+
+        }, true);
+
+        $(document).ready(function () {
+
+            $('#btn_Create_Task').hide();
+
+
+            //var short_username = username.substr(0, 10);
+            //$('#navbar_usernm').html(short_username);         //set username in navbar
+
+            var menu_smallImage = document.getElementById("menu_img_profile");
+            var pro_pic_path = get_profile_pic_path_android_ios();
+            if (pro_pic_path == '' || pro_pic_path == null || pro_pic_path == undefined) { }
+            else {
+                menu_smallImage.src = pro_pic_path;
+            }
+
+            if (F7_device == "ios") {
+                $(".panel-nav-ios").show();
+                $(".panel-nav").hide();
+            }
+            else {
+                $(".panel-nav-ios").hide();
+                $(".panel-nav").show();
+            }
+
+            var doc = new MkDocInits();
+            doc._bindBoxInput(document);
+            doc._bindBoxCP(document);
+            doc._bindChildNoAct('#site_list');
+            doc._initF7(doc);
+            doc._checkSession(doc);
+            doc._bindTextAreaInput();
+
+
+            $("#txtsearch").on('input', function () {
+                $(".no_record").remove();
+                var search_str = $(this).val();
+                var li_array = document.getElementById("site_list").getElementsByTagName("li");
+                for (i = 0; i < li_array.length; i++) {
+                    var id = li_array[i].id;
+                    if (id == '' || id == null || id == undefined) {
+                        //
+                    } else {
+                        var data_array = document.getElementById(id).getElementsByClassName("cls_search");
+                        for (j = 0; j < data_array.length; j++) {
+                            var data_value = data_array[j].textContent;
+                            search_str = search_str.toLowerCase();
+                            data_value = data_value.toLowerCase();
+                            if (data_value.indexOf(search_str) > -1) {
+                                $('#site_list > li').eq(i).css('display', 'block');
+                                break;
+                            } else {
+                                $('#site_list > li').eq(i).css('display', 'none');
+                            }
+                        }
+                    }
+                }
+                var li_length = $("#site_list > li:not(:hidden)").length;
+                var f_li_text = $('#site_list > li:first').text();
+                if (li_length == 1 && f_li_text == 'No Record Found !') {
+                    li_length = 0;
+                }
+                var selected_survey_type = JSON.parse(storage.getItem('survey_type'));
+                if (selected_survey_type == 1) {
+                    $("#survey_td_1").html("Total : " + li_length + "");
+                } else if (selected_survey_type == 2) {
+                    $("#survey_td_2").html("Total : " + li_length + "");
+                } else {
+                    $("#survey_td_3").html("Total : " + li_length + "");
+                }
+                if (li_length == 0) {
+                    $("#btn_Submit").hide();
+                    if (f_li_text != 'No Record Found !') {
+                        var list_item = '<li class="no_record"><a href="#" class="item-link item-content"><div class="item-inner item-no-pad"><div class="item-title">No Record Found !</div></div></a></li>';
+                        $("#site_list").append(list_item);
+                    }
+                }
+                else {
+                    var flow_Array = JSON.parse(storage.getItem('flow_Array'));
+                    var loc_flow_update = JSON.parse(storage.getItem('loc_flow_update'));
+                    if (flow_Array.length > 1 && loc_flow_update == "false") {
+                        $("#btn_Submit").show();
+                    }
+                }
+            });
+
+            // get search on search button click in device keyboad
+            $("#F7_div_Search").submit(function () {
+
+                var search_keyword = $("#txtsearch").val();
+                if (search_keyword == "") {
+                    alert("Please enter search keyword !");
+                }
+                else {
+                    $("#site_list").empty();
+                    search_site_list_common();
+                }
+
+            });
+
+            //searchable dropdown system search on submit press in advanced search
+            $("#F7_type20_ddl_Search").submit(function () {
+                get_data_by_dropdown_search_PRE(new_id_G, TableName_G, JoinTableName_G, Checksheet_id_G);
+            });
+
+            //searchable dropdown system search auto call advanced search
+            $("#F7_type20_ddl_Search input[type='search']").on('input', function () {
+                var search_val = $(this).val();
+                //var no_record_len = $("#ddl_list").find('.searchbar-not-found :visible').length;
+                //if (search_val.length > 1 && no_record_len == 1) {
+                //if (search_val.length > 1) {
+                clearTimeout(ddl_system_search_timer);
+                ddl_system_search_timer = setTimeout(function () {
+                    get_data_by_dropdown_search_PRE(new_id_G, TableName_G, JoinTableName_G, Checksheet_id_G);
+                }, 2000);
+                //}
+            });
+
+
+            $("#cust_txtsearch").on('input', function () {
+                $(".no_record").remove();
+                var search_str = $(this).val();
+                var li_array = document.getElementById("popup_cust_list").getElementsByTagName("li");
+                for (i = 0; i < li_array.length; i++) {
+                    var id = li_array[i].id;
+                    if (id == '' || id == null || id == undefined) { }
+                    else {
+                        var data_array = document.getElementById(id).getElementsByClassName("cls_search");
+                        for (j = 0; j < data_array.length; j++) {
+                            var data_value = data_array[j].textContent;
+                            search_str = search_str.toLowerCase();
+                            data_value = data_value.toLowerCase();
+                            if (data_value.indexOf(search_str) > -1) {
+                                $('#popup_cust_list > li').eq(i).css('display', 'block');
+                                break;
+                            } else {
+                                $('#popup_cust_list > li').eq(i).css('display', 'none');
+                            }
+                        }
+                    }
+                }
+                var li_length = $("#popup_cust_list > li:not(:hidden)").length;
+                var f_li_text = $('#popup_cust_list > li:first').text();
+                if (li_length == 1 && f_li_text == 'No Record Found !') {
+                    li_length = 0;
+                }
+                //$("#lbl_siteCount").html("Total : " + li_length + "");
+                if (li_length == 0) {
+                    if (f_li_text != 'No Record Found !') {
+                        var list_item = '<li class="no_record"><a href="#" class="item-link item-content"><div class="item-inner item-no-pad"><div class="item-title">No Record Found !</div></div></a></li>';
+                        $("#popup_cust_list").append(list_item);
+                    }
+                }
+            });
+
+            // get search on search button click in device keyboad
+            $("#cust_F7_div_Search").submit(function () {
+                get_customer_list_from_task_create();
+            });
+
+            //var ptrContent = $('.pull-to-refresh-content');
+            //ptrContent.on('refresh', function (e) {
+            //    refresh_site_list_common();
+            //    myApp.pullToRefreshDone();
+            //});
+
+            //$('.op-show-btns').on('click', function () {
+            //    var clickedLink = this;
+            //    myApp.popover('.popover-show-btns', clickedLink);
+            //});
+
+            table_tr_append();
+        });
+
+        function table_tr_append() {
+            var data_json = JSON.parse(storage.getItem('list_json'));
+
+            var list_data = JSON.parse(data_json);
+            var task_value = list_data[0].task;
+            //var search_value = list_data[0].search;
+
+            var survey_mode = list_data[0].survey_mode;
+            var filter = list_data[0].filter;
+            if (filter == "" || filter == null || filter == undefined) {
+                filter = "true";
+            }
+            if (survey_mode == "offline" && filter == "true") {
+                $('#filter_search_task').show();
+            }
+            else {
+                $('#filter_search_task').hide();
+            }
+
+            //if (search_value == "true") {
+            //    $('#btn_Search').show();
+            //}
+            if (task_value == "true") {
+                //$('#btn_Create_Task').show();
+
+                if (F7_device == 'ios') {
+                    //$('.floating-button').css('bottom', '59px');
+                }
+            }
+
+            var view_calendar_task = list_data[0].view_calendar_task;
+            if (view_calendar_task == "" || view_calendar_task == null || view_calendar_task == undefined) {
+                view_calendar_task = "false";
+            }
+
+            if (view_calendar_task == "true") {
+                $('#btn_Calender_Task').show();
+            }
+            else {
+                $('#btn_Calender_Task').hide();
+            }
+
+            var completed_value = list_data[0].complete;
+            if (completed_value == "" || completed_value == null || completed_value == undefined) {
+                completed_value = "true";
+            }
+
+            var td_append2 = '';
+            if (completed_value == "true") {
+                td_append2 += '<td id="survey_td_1" onclick="select_survey_type_tab(1)" class="theme_viewsitepm_li theme_selection_Servey_tbl_btn theme_Selection_btn" style="width:33%; padding:5px 0px; padding-top:2px; font-size: 10pt; font-weight: bold;display:none;"> Pending </td><td id="survey_td_2" onclick="select_survey_type_tab(2)" class="theme_viewsitepm_li theme_selection_Servey_tbl_btn" style="width:33%; padding:5px 0px; font-size: 10pt; font-weight: bold; "> Completed </td><td id="survey_td_3" onclick="select_survey_type_tab(3)" class="theme_viewsitepm_li theme_selection_Servey_tbl_btn" style="width:33%; padding:5px 0px; font-size: 10pt; font-weight: bold"> Upload </td>';
+            } else {
+                $('#f7_survey_td_2').hide();
+            }
+
+            $("#row_inner2").append(td_append2);
+        }
+
+        /**/</script>
+    <style type="text/css">
+        .button {
+            color: Blue;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* NOKIA  task list collapsible change*/
+        /*.nokia_task_list
+        {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 7px;
+        }
+
+            .nokia_task_list tr td:first-child
+            {
+                text-align: right;
+            }
+
+            .nokia_task_list tr td:nth-child(2)
+            {
+                padding: 0 5px;
+                background-color: lightgrey;
+            }
+
+        #site_list
+        {
+            margin-top: 5px!important;
+            margin: 1px;
+        }
+
+            #site_list .item-inner:after
+            {
+                background-color: white;
+                left: -6%;
+                width: 106%;
+            }
+
+            #site_list .content-block
+            {
+                padding: 0;
+            }
+
+                #site_list .content-block .item-link
+                {
+                    padding-left: 0;
+                }
+
+            #site_list > .accordion-item > .item-link
+            {
+                color: white;
+                background-color: #124191;
+            }*/
+    </style>
+</head>
+<body>
+
+    <!--  F7 Start -->
+    <div class="F7-view" style="width: 100%; height: 100%">
+        <div class="statusbar-overlay"></div>
+        <div class="panel-overlay"></div>
+        <div class="panel-nav"></div>
+
+        <!--ios menu click issue [14102020]-->
+        <div class="panel-nav-ios">
+            <!-- Navbar Start -->
+            <div id="nav_main" class="panel panel-left panel-cover" style="display: block;">
+                <div id="nav_sub1" class="view navbar-fixed" data-page="panel-left">
+                    <div class="pages">
+                        <div id="nav_sub2" data-page="panel-left" class="page">
+                            <div class="navbar">
+                                <div class="navbar-inner">
+                                    <div class="center">Settings</div>
+                                </div>
+                            </div>
+                            <div class="page-content">
+                                <div class="content-block profile_photo" style="margin: 0px; background: url(images/bg2.jpg);background-size: 100% 100%;position:relative;">
+                                    <ul>
+                                        <li style="text-align: center">
+                                            <img id="img_profile_ios" src="images/profile_pic.png" onclick="get_full_view_profile_pic()" onerror="set_detault_profile_pic()" style="width: 120px; height: 120px; border-radius: 100px; margin: 0; margin-bottom: 5px;border: 2px solid #fff;">
+                                        </li>
+                                        <li id="change_photo" class="accordion-item" style="width:28px; display:inline-block; position:absolute;top:100px;right:50px;">
+                                            <a href="#" class="item-link item-content">
+                                                <div class="item-inner" style="margin-left: 0">
+                                                    <div class="item-title"><i id="edit_pro_pic" class="fa fa-pencil" style="font-size: 30px;color: #fff;"></i></div>
+                                                </div>
+                                            </a>
+                                            <div class="accordion-item-content" style="margin-left:0; background: #e5e2e2;opacity:0.9; position:absolute;right:-25px;z-index:999;">
+                                                <div class="list-block">
+                                                    <ul>
+                                                        <li onclick='change_profile_pic("browse")'>
+                                                            <div class="item-content">
+                                                                <div class="item-inner" style="margin-left: 0">
+                                                                    <div class="item-title">BROWSE</div>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li style="text-align: center; font-size: 13pt; font-weight: bold">
+                                            <label id="lblusername" style="margin-bottom: 0; padding-bottom: 0;color: #fff;"></label>
+                                            <i id="menu_img_gprs" class="fa fa-circle" style="color: lightgreen; margin-left: 10px"></i>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="list-block">
+                                    <ul>
+                                        <li>
+                                            <a onclick="get_my_profile_details_F7()" class="item-link close-panel open-popup">
+                                                <div class="item-content">
+                                                    <div class="item-media"><i class="fa fa-user"></i></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">My Profile</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li id="change_pass" onclick="localStorage.setItem('change_pwd_flag', 'profile');changeurl('change_password.html');">
+                                            <a class="item-link close-panel item-cp">
+                                                <div class="item-content">
+                                                    <div class="item-media"><i class="fa fa-unlock-alt"></i></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">Change Password</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li onclick="logout_on_click_online()">
+                                            <a class="item-link close-panel">
+                                                <div class="item-content">
+                                                    <div class="item-media"><i class="fa fa-power-off"></i></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">LogOut</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    </ul>
+
+                                    <ul id="view_database">
+                                        <li class="swipeout">
+                                            <div class="item-content swipeout-content">
+                                            </div>
+                                            <div class="swipeout-actions-left">
+                                                <a href="#" onclick="resolve_crash_status_issue()" class="swipeout-close" style="background: grey;">Resolve Crash</a>
+                                            </div>
+                                            <div class="swipeout-actions-right">
+                                                <a href="#" onclick="view_database()" class="swipeout-close" style="left: 0; background: grey; margin-left: 2px;">Database</a>
+                                            </div>
+
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <table style="width:85%; margin:5px 15px">
+                                    <tr>
+                                        <td><b>ID:</b> 65</td>
+                                        <td style="text-align:right"><p id="app_version_ios" style="margin:0"></p></td>
+                                    </tr>
+                                </table>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Navbar End -->
+        </div>
+        <!--ios menu click issue [14102020]-->
+
+        <div class="panel-pro"></div>
+        <div class="panel-faq"></div>
+        <div class="views">
+            <div class="view view-main" data-page="tabs-swipeable">
+                <div class="pages navbar-fixed">
+                    <div data-page="tabs" class="page toolbar-fixed page-on-center">
+                        <div class="navbar" id="nav_select_all" style="transition: none !important; display: none">
+                            <div class="navbar-inner">
+                                <div class="left">
+                                    <label class="label-checkbox item-content" style="width: 56px; height: 56px; text-align: center;">
+                                        <input type="checkbox" id="chk_select_all" onchange="select_all_tasks();">
+                                        <div class="item-media" style="text-align: center;">
+                                            <i class="icon icon-form-checkbox" style="display: inline-block; border-color: white"></i>
+                                        </div>
+                                        <div class="item-inner">
+                                            <div class="item-title" style="font-size: 10pt">All</div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="center" style="margin: 0">
+                                    <label id="lbl_select_cnt">0</label>
+                                </div>
+                                <div class="right" id="div_bulk_btn" style="font-size: 12pt; overflow: auto; overflow-y: hidden">
+                                    <!--<a href="#" class="link" onclick="send_bulk_approval_online(101)">Approve</a>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="navbar" id="nav_main" style="transition: none !important">
+                            <div class="navbar-inner">
+                                <div class="left">
+                                    <a onclick='back_button("selection_survey")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="icon icon-back"></i></a>
+                                    <img id="comp_logo" />
+                                </div>
+                                <div class="center head-title">
+                                    <label id="lbl_theme_header"></label>
+                                </div>
+                                <div class="center head-search" style="display: none; width: 96%; margin: 0">
+                                    <form id="F7_div_Search" data-search-list=".search-here" data-search-in=".item-title" class="searchbar searchbar-init searchbar-active">
+                                        <div class="searchbar-input">
+                                            <input id="txtsearch" type="search" placeholder="Search" />
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="center head-title" style="margin-left: -30px; margin-right: 10px">
+                                    <label id="lbl_filter_name" style="font-size: 12px;"></label>
+                                </div>
+
+                                <div class="div-delete-filter" style="display:none"><a class="btn p-1" onclick="delete_selected_filter()" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Delete selected filter"><i class="fa fa-trash align-middle mr-0" style="font-size: 16px;color: white;"></i></a></div>
+
+                                <div class="right head-menu">
+                                    <a href="#" id="filter_search_task" class="link" onclick="filter_search_task()" style="display:none;"><i class="fa fa-filter" style="font-size: 16px; margin-right: 5px; color: white;"></i></a>
+
+                                    <!--removed normal search bcz of advanced search [20042022]-->
+                                    <!--<a id="btn_Search" onclick="show_search_bar()" class="link icon-only" style="display: none"><i class="fa fa-search" style="color: white"></i></a>-->
+                                    <!--<a id="btn_advanced_search" onclick="advance_column_search();return false;" class="link icon-only"><i class="fa fa fa-search-plus" style="color: white"></i></a>-->
+                                    <a href="#" id="btn_advanced_search" class="link icon-only open-popup" data-popup=".popup-advance-search-online" onclick="advance_column_search('btn_click');return false;"><i class="fa fa fa-search-plus" style="color: white"></i></a>
+
+                                    <a id="refresh_btn" onclick="refresh_site_list_common()" class="link icon-only"><i class="fa fa-refresh" style="color: white"></i></a>
+                                    <!--<a onclick="show_chat_window()" class="link icon-only"><i class="fa fa-comments" style="color: white"></i></a>-->
+                                    <!--<a class="open-panel link icon-only"><i class="icon icon-bars"></i></a>-->
+                                    <a href="#" class="open-panel link icon-only"><img id="menu_img_profile" src="images/profile_pic.png" /></a>
+                                </div>
+                            </div>
+                            <!--<div style="position: absolute; top: 40px; right: 6px; font-size: 11px;">
+                                <span id="navbar_usernm" style="margin-right: 12px;"></span>
+                            </div>-->
+                        </div>
+
+                        <a id="btn_Create_Task" class="floating-button" onclick="create_new_task()" style="display: none"><i class="fa fa-plus fa-2x" style="color: white;margin-right: 0;"></i></a>
+                        <a id="btn_Calender_Task" class="floating-button calender-floating-button" onclick="view_calendar_task()" style="display: none;"><i class="fa fa-calendar" style="color: white; font-size: 22px"></i></a>
+                        <a id="btn_Clear_Filter" class="floating-button" onclick="reset_input_search_data()" style="display: none;"><i class="fa fa-remove" style="color: white; margin-right: 5px"></i>Clear Filter</a>
+
+                        <div class="toolbar tabbar toolbar-bottom" style="transition: none !important">
+                            <!--<div class="toolbar-inner" id="div_tab_bar" style="overflow:auto"><a href="#tab1" id="f7_survey_td_1" class="active tab-link" onclick="select_survey_type_tab(1)" style="text-decoration: none">PENDING</a><a href="#tab2" id="f7_survey_td_2" class="tab-link" onclick="select_survey_type_tab(2)" style="text-decoration: none">COMPLETED</a><a href="#tab3" id="f7_survey_td_3" class="tab-link" onclick="select_survey_type_tab(3)" style="text-decoration: none">UPLOAD</a><span class="tab-link-highlight" style="width: 33.3333%; transform: translate3d(0%, 0px, 0px);"></span></div>-->
+                            <div class="toolbar-inner" id="div_tab_bar" style="overflow: auto"></div>
+                            <div id="op_filter" onclick="get_checksheet_details_filter();" style="display: none; width: 10%; height: 100%; position: absolute; right: 0; text-align: center">
+                                <!--<i class="fa fa-filter" style="color: white"></i>-->
+                                <a href="#" class="tab-link" style="text-decoration: none; display: inline-table; padding: 0 10px; text-align: center; padding-top: 14px"><i class="fa fa-filter" style="color: white"></i></a>
+                                <span class="tab-link-highlight" style="width: 100%; transform: translate3d(0%, 0px, 0px);"></span>
+                            </div>
+                        </div>
+                        <div class="tabs-static-wrap">
+                            <div class="tabs">
+                                <div id="tab1" class="page-content tab active">
+                                    <!--<div class="pull-to-refresh-layer">
+                                        <div class="pull-to-refresh-arrow"></div>
+                                    </div>-->
+                                    <div class="list-block">
+                                        <ul class="lst_pen" id="site_list" style="margin-top: 2px; margin-bottom: 56px">
+                                            <!-- <li>
+                                                <a style="width:97%"><details class="cls_remove">
+                                                <summary>Some media are missing - Tap to view</summary><ul class="media_ui">
+                                                <li class="media_li">
+                                                    <span class="mk_rounded_number theme_login_info_div_content">1</span>
+                                                    abc</li>
+                                                <li class="media_li">
+                                                    <span class="mk_rounded_number theme_login_info_div_content">2</span>
+                                                    abc2</li>
+                                                <li class="media_li">
+                                                    <span class="mk_rounded_number theme_login_info_div_content">3</span>
+                                                    abc3</li>
+
+                                                </ul></details></a>
+                                                <a href="#" class="item-link item-content">
+                                                    <div class="item-inner item-no-pad">
+                                                        <div class="item-title">
+                                                            <label style="font-weight:bold" >Site Id : </label><label>S001</label><br />
+                                                            <label style="font-weight:bold" >Site Id : </label><label>S001</label><br />
+                                                            Ivan Petrovsdf sdf sdf sdf sd fsd fs df sdfs df<br />
+                                                            hellooooo<br />
+                                                            hellooooo<br />
+                                                            hellooooo<br />
+                                                            hellooooo
+                                                        </div>
+                                                        <div class="item-after">
+                                                            <div class="item-icon">
+                                                                <img class="cls_fence" src="images/circle_red.png"
+                                                                    style="width: 27px; height: 27px" /><img class="cls_fence" src="images/circle_red.png" style="float: right; width: 27px; height: 27px; margin-top: 30px" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </li>-->
+                                            <!--<li class="accordion-item" onclick="toggle_accordian_in_tabs(this)">
+                                                <a href="#" class="item-link item-content">
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">WO 123456</div>
+                                                    </div>
+                                                </a>
+                                                <div class="accordion-item-content">
+                                                    <div class="content-block">
+                                                        <a href="#" class="item-link item-content">
+                                                            <div class="item-inner item-no-pad" style="padding-bottom:0; padding-right: 15px!important; padding-top: 0">
+                                                                <div class="item-title" style="width: 100%">
+                                                                    <table class="nokia_task_list">
+                                                                        <tr>
+                                                                            <td>TSS Type</td>
+                                                                            <td>Radio Site</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Latitude</td>
+                                                                            <td>41.926881</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Longitude</td>
+                                                                            <td>25.557607</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Work Description</td>
+                                                                            <td>This is sample task</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Country</td>
+                                                                            <td>Finland</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Region</td>
+                                                                            <td>Central Ostrobothnia</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Zone</td>
+                                                                            <td>Zone 1</td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            <center style="margin-bottom:-5px"><p class="buttons-row" style="margin-top: -46px; width: 92%; margin-bottom: 0"><a class="button button-fill button-raised cls_fence" style="margin-left: 0; background: grey!important" disabled>ACCEPT</a><a class="button button-fill button-raised cls_fence" style="background: grey!important" disabled>REJECT</a></p></center>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="accordion-item" onclick="toggle_accordian_in_tabs(this)">
+                                                <a href="#" class="item-link item-content">
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">WO 6612AB2</div>
+                                                    </div>
+                                                </a>
+                                                <div class="accordion-item-content">
+                                                    <div class="content-block">
+                                                        <p style="text-align: justify">Demo 1</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="accordion-item" onclick="toggle_accordian_in_tabs(this)">
+                                                <a href="#" class="item-link item-content">
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">WO 1244GHJ</div>
+                                                    </div>
+                                                </a>
+                                                <div class="accordion-item-content">
+                                                    <div class="content-block">
+                                                        <p style="text-align: justify">Demo 2</p>
+                                                    </div>
+                                                </div>
+                                            </li>-->
+                                        </ul>
+
+                                        <!--task listing pre-loader-->
+                                        <div id="tasklist_loader" style="width: 100%; padding-top: 8px; display: none;">
+                                            <div class="block block-strong align-items-stretch text-align-center">
+                                                <div class="row text-align-center">
+                                                    <div style="width: 100%; text-align: center;">
+                                                        <div class="preloader"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <center><a id="btn_Submit" class="button button-fill button-raised" onclick="check_subtask_and_submit_sub_flow()" style="display: none; width: fit-content; margin-bottom: 56px">SUBMIT</a></center>
+                                        <!-- <a href="#" class="button button-raised op-show-btns" style="display: none; width: 105px; min-width: 36px; margin: 5px; text-transform: none; color: gray"><i class="fa fa-ellipsis-h"></i><span id="survey_td_1" style="margin-left: 10px">Total: 0</span></a>-->
+                                        <div class="op-show-btns" style="display: none; margin-top: 7px; margin-bottom: 10px"><span id="survey_td_1" style="margin-left: 15px; color: gray; font-size: 14px;display:none;">Total: 0</span></div>
+                                    </div>
+                                </div>
+                                <div id="tab2" class="page-content tab">
+                                    <div class="list-block">
+                                        <ul class="lst_com" id="site_list"></ul>
+                                        <a href="#" class="button button-raised op-show-btns" style="display: none; width: 36px; min-width: 36px; margin: 5px"><i class="fa fa-ellipsis-h"></i></a>
+                                    </div>
+                                </div>
+                                <div id="tab3" class="page-content tab">
+                                    <div class="list-block">
+                                        <ul class="lst_upl" id="site_list"></ul>
+                                    </div>
+                                </div>
+                                <!-- <div class="toolbar toolbar-bottom" style="position: absolute">
+                                    <div class="toolbar-inner" id="container_btn_div">
+                                        <div class="left"><a href="#" class="link" onclick="see_all_site_list_common()">SHOW ALL</a></div>
+                                        <div class="center"><a href="#" class="link" onclick="check_subtask_and_submit_sub_flow()">SUBMIT</a></div>
+                                        <div class="right"><a href="#" class="link" onclick="see_more_site_list_common()">SHOW MORE</a></div>
+                                    </div>
+                                </div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOKIA chat Start -->
+        <div class="popover popover-chat popover-on-bottom" style="display: none; z-index: 13001; margin-top: 50px">
+            <div class="popover-inner">
+                <div class="list-block">
+                    <ul>
+                        <li onclick="show_chat_window()"><a class="list-button item-link"><i class="fa fa-comment" style="padding-right: 12px"></i>Chat</a></li>
+                        <li><a class="list-button item-link"><i class="fa fa-phone" style="padding-right: 12px; font-size: 18px"></i>Call</a></li>
+                        <li><a class="list-button item-link"><i class="fa fa-video-camera" style="padding-right: 12px"></i>VideoCall</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- NOKIA chat End -->
+        <!-- Show More Buttons Start -->
+        <div class="popover popover-show-btns popover-on-bottom" style="display: none">
+            <div class="popover-inner">
+                <div class="list-block">
+                    <ul>
+                        <li class="actions-popover-label">Choose Option</li>
+                        <li id="btn_SeeAll" style="display: none"><a class="list-button item-link close-popover" onclick="see_all_site_list_common()">SHOW ALL</a></li>
+                        <li id="btn_Submit" style="display: none"><a class="list-button item-link close-popover" onclick="check_subtask_and_submit_sub_flow()">SUBMIT</a></li>
+                        <li id="btn_SeeMore" style="display: none"><a class="list-button item-link close-popover" onclick="see_more_site_list_common()">SHOW MORE</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- Show More Buttons End -->
+        <!--  Task listing main filter-->
+        <div class="popup popup-task-main-filter" style="display: none; z-index: 13003;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a onclick='myApp.closeModal(".popup-task-main-filter");' class="back link icon-only"><i class="icon icon-back"></i></a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block media-list">
+                                <ul id="lst_filter"></ul>
+                            </div>
+                        </div>
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-task-main-filter">
+                                <div class="left"><a href="#" class="link" onclick="clear_selected_filter_option_offline_task()">CLEAR</a></div>
+                                <div class="right" id="apply_filter"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  Task Listing main Filter End-->
+        <!-- Task listing sub Filter Start -->
+        <div class="popup popup-task-filter" style="display: none; z-index: 13600">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a onclick='myApp.closeModal(".popup-task-filter");' class="back link icon-only"><i class="icon icon-back"></i></a></div>
+                                <div class="right" id="sub_filter_item" style="margin-right: 16px; font-size: 15px"></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" id="div_filter_popup"></div>
+                        </div>
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-filter">
+                                <div class="left">
+                                    <label id="lbl_selected_chk" style="margin-left: 16px">0</label>
+                                    Selected
+                                </div>
+                                <div class="right" id="div_filter_bottom"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Task listing sub Filter End-->
+        <!-- filter popup start (for online flow) -->
+        <div class="popup popup-filter" style="display: none; z-index: 11002">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="center">FILTER DATA</div>
+                                <div class="right"><a href="#" class="link" onclick='myApp.closeModal(".popup-filter");storage.setItem("checksheet_type_filter", JSON.stringify("1"));'>CLOSE</a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block">
+                                <!--<div id="filter_data" style="width: 100%; height: 100%"></div>-->
+                                <div id="container_div" style="margin: 10px"></div>
+                                <div style="text-align: center"><a class="button button-fill button-raised form-btn" onclick="get_survey_json();">Submit</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- filter popup end -->
+        <!--********type20 new UI popup added (12072019)********-->
+        <!-- Type20 Start -->
+        <div class="popup popup-type20" style="display: none; z-index: 14001">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a onclick="popup_items_hide_type20();" class="back link icon-only"><i class="icon icon-back"></i></a></div>
+                                <div class="right"><a href="#" id="filter_search" class="link" onclick="filter_search()"><i class="fa fa-filter" style="font-size: 16px; margin-right: 5px; color: white"></i>Filters</a></div>
+                                <input type="hidden" id="hdn_filter_popover" />
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div id="F7-popup_inner_div_type20" style="padding: 10px 0px">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  Type20 End-->
+        <!--  Type20 Filter Popover Start-->
+        <div class="popup popup-type20-main-filter" style="display: none; z-index: 15001;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a onclick='myApp.closeModal(".popup-type20-main-filter");' class="back link icon-only"><i class="icon icon-back"></i></a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block media-list">
+                                <ul id="lst_filter"></ul>
+                            </div>
+                        </div>
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-filter">
+                                <div class="left"><a href="#" class="link" onclick="clear_selected_filter_option_task()">CLEAR</a></div>
+                                <div class="right" id="apply_filter"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  Type20 Filter Popover End-->
+        <!-- Type20 Filter popup Start -->
+        <div class="popup popup-type20-filter" style="display: none; z-index: 15600">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a onclick='myApp.closeModal(".popup-type20-filter");' class="back link icon-only"><i class="icon icon-back"></i></a></div>
+                                <div class="right" id="sub_filter_item" style="margin-right: 16px; font-size: 15px"></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" id="div_filter_popup"></div>
+                        </div>
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-filter">
+                                <div class="left">
+                                    <label id="lbl_selected_chk" style="margin-left: 16px">0</label>
+                                    Selected
+                                </div>
+                                <div class="right" id="div_filter_bottom"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  Type20 Filter popup End-->
+        <!-- Type20 Customer Add Start -->
+        <div class="popup popup-type20-add" style="display: none; z-index: 14001">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="center">Add Item</div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block">
+                                <div id="popup_container_type20_add" style="text-align: left; margin: 10px; padding-bottom: 13%">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-add">
+                                <!--<div class="left"><a href="#" class="link" id="btn_">ADD</a></div>
+                                <div class="right"><a href="#" class="link close-popup" onclick="hide_popup_type20_add()">CANCEL</a></div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  Type20 Add End-->
+        <!--*****************-->
+        <!--  Type20 dropdown popup-->
+        <div class="popup popup-type20-dropdown" style="display: none; z-index: 13003;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div data-page="home" class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a onclick='close_type20_dropdown_popup()' class="back link icon-only"><i class="icon icon-back"></i></a></div>
+                                <!--commented coz added create btn when no data found on search [FT -- 01022024]-->
+                                <!--<div class="" style="padding-left:100px;"><a id="ddl_cust_creation" class="back link icon-only" style="display: none;"><i class="fa fa-plus" style="color: #fff; font-size: 22px;"></i></a></div>-->
+                                <div class="right"><a id="dd_listview_icon" class="back link icon-only" onclick="open_popup_for_listview_type20()"><i class="fa fa-th-list" style="color: #fff; font-size: 22px;margin-left:20px;"></i></a></div>
+                                <!--<div class="right"><a href="#" class="link" onclick='myApp.closeModal(".popup-type20-dropdown");'>CLOSE</a></div>-->
+                            </div>
+                        </div>
+
+
+                        <form id="F7_type20_ddl_Search" data-search-list=".list-block-search" data-search-in=".item-title" class="searchbar searchbar-init">
+                            <div class="searchbar-input">
+                                <input type="search" placeholder="Search"><a href="#" class="searchbar-clear"></a>
+                            </div>
+                            <a href="#" class="searchbar-cancel">Cancel</a>
+                        </form>
+
+                        <!-- Search Bar overlay -->
+                        <div class="searchbar-overlay"></div>
+
+                        <div class="page-content" id="ddl_list">
+                            <div class="content-block searchbar-not-found">
+                                <div class="content-block-inner">Fetching Data...</div>
+                            </div>
+
+                            <div class="list-block list-block-search searchbar-found">
+                                <ul id="type20_ddl_list"></ul>
+                            </div>
+                        </div>
+                        <!--                        <div class="toolbar toolbar-bottom " style="background-color: white; border-top: solid 0.5px #c8c7cc; height: 40px;">
+                            <div class="toolbar-inner footer-type20-dropdown">
+                                <div class="left"></div>
+                                <div class="center">
+                                    <img id="img1" style="cursor: pointer; width: 30px; height: 20px;" class="show_more" onclick="" src="images/show_more.gif">
+                                </div>
+                                <div class="right"></div>
+                            </div>
+                        </div>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  Type20 dropdown popup End-->
+        <!-- Type20 ddl info popup-->
+        <div class="popup popup-ddl_info" style="display: none; z-index: 14002;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="center">Info</div>
+                                <div class="right"><a href="#" class="link" onclick='myApp.closeModal(".popup-ddl_info");'><i class="fa fa-close" style="color: #fff; font-size: 22px;"></i></a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block">
+                                <div id="container_info_div" style="text-align: left; margin: 10px; padding-bottom: 13%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup Site Info -->
+        <div class="popup popup-cust_info" style="display: none; z-index: 11002">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="center">DETAILS</div>
+                                <div class="right"><a href="#" class="link" onclick='myApp.closeModal(".popup-cust_info")'>CLOSE</a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block">
+                                <div id="myDynamicTable" style="text-align: left; margin: 10px; padding-bottom: 13%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Popup CommentUI -->
+        <div class="popup popup-commentUI" style="display: none; z-index: 11002">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a href="#" class="link">Activity</a></div>
+                                <!--<div class="center" style="margin-left: 60px;"><a href="#" class="link" onclick="open_popup_new_mail('compose')"><i class="fa fa-edit" style="color: #fff;font-size:26px;"></i></a></div>-->
+                                <div class="center" style="margin-left: 40px;"><a href="#" class="link" onclick="open_popup_for_chatuser_list()"><i class="fa fa-users" style="color: #fff;font-size:26px;"></i></a></div>
+                                <div class="right"><a href="#" class="link" onclick='myApp.closeModal(".popup-commentUI")'>CLOSE</a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" style="padding-bottom:66px">
+                                <div class="timeline" id="ul_task_history">
+                                    <!--<div class="timeline-item">
+                                        <div class="timeline-item-date">4 Feb <small>3:17 PM</small></div>
+                                        <div class="timeline-item-divider"></div>
+                                        <div class="timeline-item-content">
+                                            <div class="timeline-item-inner">
+                                                <div class="timeline-item-time"><b>urban.ckau</b> added this task to Introduction</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-item-date">4 Feb <small>3:17 PM</small></div>
+                                        <div class="timeline-item-divider"></div>
+                                        <div class="timeline-item-content">
+                                            <div class="timeline-item-inner">
+                                                <div class="timeline-item-time"><b>urban.app12</b> commented on this task:</div>
+                                                <div class="timeline-item-text">This is demo text This is demo text This is demo text This is demo text</div>
+                                            </div>
+                                        </div>
+                                    </div>-->
+                                </div>
+                            </div>
+
+                            <a class="floating-button-mail button button-fill" onclick="open_popup_new_mail('compose')"><i class="fa fa-envelope" style="color: white;font-size: 20px;"></i></a>
+
+                            <div class="toolbar messagebar" style="overflow:auto; display:inline-table; border-top:1px solid #ccc; position:fixed; bottom:0">
+                                <div class="toolbar-inner" style="position:initial; overflow:auto">
+                                    <div class="messagebar-area" style="width:100%">
+                                        <textarea id="Commentdata" class="resizable" placeholder="Write a comment...."></textarea>
+                                    </div>
+                                    <a class="list-button item-link button button-fill" style="min-width:40px; border-radius:5px; margin:10px" onclick="send_comment();">
+                                        <i class="fa fa-send" style="color:white"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--mail reply/forward popup-->
+        <div class="popup popup-mail-reply" style="display: none; z-index: 11005">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a href="#" class="link" onclick="myApp.closeModal('.popup-mail-reply')"><i class="icon icon-back"></i></a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" style="padding-bottom:66px">
+                                <div class="timeline" id="mail_body">
+                                </div>
+                            </div>
+
+                            <div class="toolbar messagebar" style="overflow:auto; display:inline-table; position:fixed; bottom:0">
+                                <div class="toolbar-inner" style="position:initial; overflow:auto">
+                                    <div class="left"><a href="#" class="link" onclick="open_popup_new_mail('reply')">Reply<i class="fa fa-mail-reply" style="color: #000;margin-left: 5px;"></i></a></div>
+                                    <!--<div class="right"><a href="#" class="link" onclick="">Forward<i class="fa fa-mail-forward" style="color: #000;margin-left: 5px;"></i></a></div>-->
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!--create mail popup-->
+        <div class="popup popup-new-mail" style="display: none; z-index: 11008">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a href="#" class="link" onclick="myApp.closeModal('.popup-new-mail')"><i class="icon icon-back"></i></a></div>
+                                <div class="center"><a href="#" class="link" id="mail_type_text"></a></div>
+                                <div class="right">
+                                    <!--<a href="#" class="link" onclick=""><i class="fa fa-paperclip fa-icon" style="transform: rotate(45deg);"></i></a>-->
+                                    <a href="#" class="link" onclick="send_new_mail()"><i class="fa fa-send fa-icon" style="transform: rotate(60deg);"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" style="padding-bottom:0px">
+                                <div class="timeline" id="mail_container_div">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Chat User List popup-->
+        <div class="popup popup-chat-user" style="display: none; z-index: 11008">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left">
+                                    <a href="#" class="link" onclick="myApp.closeModal('.popup-chat-user')"><i class="icon icon-back"></i></a>
+                                </div>
+                                <div class="center" style="margin-left: 40px;"><a href="#" class="link">Users List</a></div>
+                                <div class="right">
+                                    <!--<a href="#" id="btn_company_users" class="link popover-open" onclick="get_users_data_using_companyid()"><i class="fa fa-user-plus" style="color: white;font-size: 26px;"></i></a>-->
+                                    <a href="#" id="btn_company_users" class="link popover-open" onclick="get_checksheet_list()"><i class="fa fa-user-plus" style="color: white;font-size: 26px;"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" style="padding-bottom:0px">
+                                <div class="timeline" id="container_user_list">
+                                    <div class="list-block">
+                                        <ul id="list_chatuser"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-add popup-chat-user-bottom">
+                                <!--<div class="left"><a href="#" class="link" onclick="get_users_for_video_call('audio')"><i class="fa fa-phone" style="color: white;font-size: 26px;"></i></a></div>
+                                <div class="right"><a href="#" class="link" onclick="get_users_for_video_call('video')"><i class="fa fa-video-camera" style="color: white;font-size: 26px;"></i></a></div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!--Chat All User List popup-->
+        <div class="popup popup-users-company" style="display: none; z-index: 11009;overflow:auto;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a href="#" class="link">Add User</a></div>
+                                <div class="right">
+                                    <select id="ddl_Checklist" class="margin" onchange="get_users_by_checksheet_id();" style="width: 100%; display: inline-block; padding: 3px; margin: 0 10px; border: solid 1px #ddd; border-radius: 5px; font-size:12px;">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" style="padding-bottom: 55px;padding-top: 10px;width:100%;">
+                                <table id="tbl_userList_company" style="width:100%;font-size: 13px;"></table>
+                            </div>
+                        </div>
+
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-add">
+                                <div class="left"></div>
+                                <div class="right"><a href="#" class="link" onclick="add_selected_company_users_to_task()">OK</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- customer listing popup on new task (+) btn click  -->
+        <div class="popup popup-customer-listing" style="display: none; z-index: 11001;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a onclick='back_from_cust_popup()' class="back link icon-only"><i class="icon icon-back"></i></a></div>
+                                <div class="center head-title">Site Selection</div>
+                                <div class="center head-search" style="display: none; width: 96%; margin: 0">
+                                    <form id="cust_F7_div_Search" data-search-list=".search-here" data-search-in=".item-title" class="searchbar searchbar-init searchbar-active">
+                                        <div class="searchbar-input">
+                                            <input id="cust_txtsearch" type="search" placeholder="Search" />
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="right head-menu">
+                                    <a id="cust_btn_Search" onclick="show_search_bar()" class="link icon-only" style="padding-right: 5px"><i class="fa fa-search" style="color: white;font-size:20px;"></i></a>
+                                    <a id="cust_refresh_btn" onclick="get_customer_list_from_task_create()" class="link icon-only"><i class="fa fa-refresh" style="color: white;font-size:20px;"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="page-content" id="popup_cust_tab">
+                            <div class="list-block">
+                                <ul id="popup_cust_list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- customer listing popup on new task (+) btn click  -->
+        <!-- advance search popup start -->
+        <!--<div class="popup popup-advance-search-online" style="display: none; z-index: 11009;overflow:auto;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a href="#" class="link">Search</a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" style="padding: 6px 6px 55px;overflow:auto;">
+                                <table id="tbl_advance_colSearch" class="table" style="width:100%;"></table>
+                            </div>
+                        </div>
+
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-add">
+                                <div class="left"><a href="#" class="link" onclick="myApp.closeModal('.popup-advance-search-online')">Cancel</a></div>
+                                <div class="center"><a href="#" class="link" onclick="reset_input_search_data()">Reset</a></div>
+                                <div class="right"><a href="#" class="link" onclick="get_list_of_pm_sites_by_search_online()">Search</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+        <!-- advance search popup end -->
+        <!-- New advance search popup UI -->
+        <div class="popup popup-advance-search-online" style="box-shadow: 0px 7px 15px 5px grey !important;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar" style="background: #fff;">
+                            <div class="navbar-inner">
+                                <div class="left">
+                                    <div class="form-div" style="display: inline">
+                                        <select id="ddl_saved_filter_list" class="margin" onchange="display_selected_filter_data_onchange(this)" style="width: 100%; display: inline-block; padding: 3px; margin: 0 10px; border: solid 1px #ddd; border-radius: 5px; font-size:12px;">
+                                            <option value="0">Saved Filter</option>
+                                        </select>
+
+                                    </div>
+                                    <div class="filtered-items-outer" style="display:none;">
+                                        <div class="div-filtered-item"><span class="badge badge-dark" data="" style="margin-right:5px;">abc</span></div>
+                                    </div>
+                                </div>
+                                <!--<div class="right"><a href="#" class="link" onclick="get_list_of_pm_sites_by_search_online()">Search</a></div>-->
+                                <div class="right"><a href="#" class="link close-popup" onclick="myApp.closeModal('.popup-advance-search-online')" style="color: #000;">Close</a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div style="padding: 1% 2%; width: 100%; border-top: 1px solid #ccc; box-shadow: 0px 0px 3px black !important">
+                                <table style="width: 100%">
+                                    <tr>
+                                        <td>Order By:</td>
+                                        <td>
+                                            <select id="ddl_OrderBy" class="form-control">
+                                                <option>Select Order By</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Order Type:</td>
+                                        <td>
+                                            <select id="ddl_OrderType" class="form-control">
+                                                <option value="asc">Ascending</option>
+                                                <option value="desc">Descending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="list-block" style="overflow: auto; height: 75%; margin-top: 5px;">
+                                <ul id="tbl_advance_colSearch"></ul>
+                            </div>
+                        </div>
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-add">
+                                <!--<div class="left"><a href="#" class="link close-popup" onclick="myApp.closeModal('.popup-advance-search-online')">Cancel</a></div>-->
+                                <div class="left"><a href="#" class="link" onclick="reset_input_search_data()">Clear Filter</a></div>
+                                <div class="right"><a href="#" class="link" onclick="get_list_of_pm_sites_by_search_online_filter()">Search</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- New advance search popup UI -->
+        <!--Text editor popup for save filter name-->
+        <div class="popup popup-adv-filterName" style="display: none;overflow:auto;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a href="#" class="link">Filter Name</a></div>
+                                <div class="right"><a href="#" class="link" onclick="myApp.closeModal('.popup-adv-filterName')">Close</a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" style="padding: 10px 10px 65px; overflow: auto;">
+                                <ul style="margin-top: 20px;">
+                                    <li>
+                                        <div class="cntrl_main_div div-saved-filter-ddl">
+                                            <label class="lbl_type5" style="display:block; width:92%; word-break: break-word; font-size: 15px; font-family: calibri">Enter Filter Name</label>
+                                            <div class="item-input item-input-field form-div">
+                                                <input type="text" id="txt_adv_filter" class="form-ele" placeholder="Type Filter Name" onkeydown="ResizeBox(event)" style="white-space: pre; word-break: break-word">
+                                                <i class="fa fa-pencil-square-o form-ico"></i>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-add">
+                                <!--<div class="left"><a href="#" class="link" onclick="open_popup_for_saved_filter_name()">Save as New</a></div>-->
+                                <div class="left"><a href="#" class="link" onclick="myApp.closeModal('.popup-adv-filterName')">Cancel</a></div>
+                                <div class="right"><a href="#" class="link" onclick="save_advanced_filtered_data('insert')">Save</a></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!--Text editor popup for save filter name-->
+        <!-- view tasks in calendar -->
+        <div class="popup popup-task-calendar" style="display: none; z-index: 11002">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="center">
+                                    Column: <select id="ddl_cal" class="form-control"></select>
+                                </div>
+                                <div class="right"><a href="#" class="link" onclick='myApp.closeModal(".popup-task-calendar")'>CLOSE</a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div id='calendar'></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Bulk Approval additional checksheet form popup-->
+        <div class="popup popup-bulk-approval-chksht" style="display: none;overflow:auto;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left" style="font-size: 18px;"><a href="#" class="link">Bulk Approval Form</a></div>
+                                <div class="center"><label id="lbl_task_count"></label></div>
+                                <div class="right"><a href="#" class="link" onclick="myApp.closeModal('.popup-bulk-approval-chksht')"><i class="fa fa-close" style="color: #fff; font-size: 22px;"></i></a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" style="padding: 10px 10px 65px; overflow: auto;">
+                                <div id="container_div_bulk_approval"></div>
+                            </div>
+                        </div>
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner" id="container_btn_div_bulk_aprvl">
+                                <!--<div class="left"><a href="#" class="link" onclick="myApp.closeModal('.popup-bulk-approval-chksht')">Cancel</a></div>
+                                <div class="right"><a href="#" id="btn_approval_submit" class="link" onclick="submit_bulk_approval_checksheet();">Submit</a></div>-->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!--Bulk Approval additional checksheet form popup-->
+        <!--to skip single group checksheet with sub task-->
+        <ul id="checksheet_list" style="display: none;"></ul>
+
+        <script src="Framework7-1.4.2/dist/js/framework7.min.js"></script>
+    </div>
+    <!--  F7 End-->
+
+    <script>
+        pre_init_F7();
+    </script>
+</body>
+</html>

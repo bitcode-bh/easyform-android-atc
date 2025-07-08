@@ -1,0 +1,19 @@
+<resources>
+    <string name="gyroscope_missing">Gyroscope Missing</string>
+    <string name="gyroscope_missing_message">Your device has no hardware gyroscope sensor, which would be necessary for this features is not work properly. Please run it on a newer device that has a gyroscope.</string>
+    <string name="ok_close">OK / Close</string>
+    <string name="ok">OK</string>
+    <string name="enter_height">Enter Height</string>
+
+    <string name="calculated_height_data">Calculated Height Data</string>
+    <string name="calculated_height">"Calculated Height is : %.2f / m"</string>
+    <string name="reset">Reset</string>
+    <string name="set_height">Set Your Height(m)</string>
+    <string name="set">set</string>
+    <string name="cancel">Cancel</string>
+    <string name="manually_height_error">Manually height can not be empty!</string>
+    <string name="height_manually">Enter Height Manually</string>
+    <string name="user_height_error_1">Height can be max Five number length!</string>
+    <string name="user_height_error_2">Height can not be empty!</string>
+
+</resources>

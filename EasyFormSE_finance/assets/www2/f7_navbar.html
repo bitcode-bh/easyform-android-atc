@@ -1,0 +1,184 @@
+<!-- Navbar Start -->
+<div id="nav_main" class="panel panel-left panel-cover" style="display: block;">
+    <div id="nav_sub1" class="view navbar-fixed" data-page="panel-left">
+        <div class="pages">
+            <div id="nav_sub2" data-page="panel-left" class="page">
+                <div class="navbar">
+                    <div class="navbar-inner">
+                        <div class="center">Settings</div>
+                    </div>
+                </div>
+                <div class="page-content">
+                    <div class="content-block profile_photo" style="margin: 0px; background: url(images/bg2.jpg);background-size: 100% 100%;position:relative;">
+                        <ul>
+                            <li style="text-align: center">
+                                <img id="img_profile" src="images/profile_pic.png" onclick="get_full_view_profile_pic()" onerror="set_detault_profile_pic()" style="width: 120px; height: 120px; border-radius: 100px; margin: 0; margin-bottom: 5px;border: 2px solid #fff;">
+                                <!--<i id="edit_pro_pic" class="fa fa-pencil" style="font-size: 30px; display:inline-block; color: #fff;"></i>-->
+                            </li>
+                            <li id="change_photo" onclick='change_profile_pic("browse")' style="width:28px; display:inline-block; position:absolute;top:100px;right:50px;">
+                                <a href="#" class="item-link item-content">
+                                    <div class="item-inner" style="margin-left: 0">
+                                        <div class="item-title"><i id="edit_pro_pic" class="fa fa-pencil" style="font-size: 30px;color: #fff;"></i></div>
+                                    </div>
+                                </a>
+                                <div class="accordion-item-content" style="margin-left:0; background: #e5e2e2;opacity:0.9; position:absolute;right:-25px;z-index:999;">
+                                    <div class="list-block">
+                                        <ul>
+                                            <li onclick='change_profile_pic("browse")'>
+                                                <div class="item-content">
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">BROWSE</div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <!--<li onclick='change_profile_pic("camera")'>
+                                                <div class="item-content">
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">CAPTURE</div>
+                                                    </div>
+                                                </div>
+                                            </li>-->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </li>
+                            <li style="text-align: center; font-size: 13pt; font-weight: bold">
+                                <label id="lblusername" style="margin-bottom: 0; padding-bottom: 0;color: #fff;"></label>
+                                <i id="menu_img_gprs" class="fa fa-circle" style="color: lightgreen; margin-left: 10px"></i>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="list-block">
+                        <ul>
+                            <li>
+                                <a onclick="get_my_profile_details_F7()" class="item-link close-panel open-popup">
+                                    <div class="item-content">
+                                        <div class="item-media"><i class="fa fa-user"></i></div>
+                                        <div class="item-inner" style="margin-left: 0">
+                                            <div class="item-title">My Profile</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <!--<li id="change_photo" class="accordion-item" style="display:none;">
+                                <a href="#" class="item-link item-content">
+                                    <div class="item-media"><i class="fa fa-adjust"></i></div>
+                                    <div class="item-inner" style="margin-left: 0">
+                                        <div class="item-title">Change Photo</div>
+                                    </div>
+                                </a>
+                                <div class="accordion-item-content">
+                                    <div class="list-block">
+                                        <ul>
+                                            <li onclick='change_profile_pic("browse")'>
+                                                <div class="item-content">
+                                                    <div class="item-media"></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">BROWSE</div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li onclick='change_profile_pic("camera")'>
+                                                <div class="item-content">
+                                                    <div class="item-media"></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">CAPTURE</div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </li>-->
+                            <li id="change_pass" onclick="localStorage.setItem('change_pwd_flag', 'profile');changeurl('change_password.html');">
+                                <a class="item-link close-panel item-cp">
+                                    <div class="item-content">
+                                        <div class="item-media"><i class="fa fa-unlock-alt"></i></div>
+                                        <div class="item-inner" style="margin-left: 0">
+                                            <div class="item-title">Change Password</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <!--<li id="skip_download">
+                                <div class="item-content">
+                                    <div class="item-media"><i class="fa fa-mail-forward"></i></div>
+                                    <div class="item-inner" style="margin-left: 0">
+                                        <div class="item-title">Skip Download</div>
+                                        <label class="label-switch">
+                                            <input type="checkbox" id="chk_skip_down" onchange="toggle_skip_download_flag(this)">
+                                            <div class="checkbox"></div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </li>-->
+                            <!--<li id="about" class="accordion-item">
+                                <a href="#" class="item-link item-content">
+                                    <div class="item-media"><i class="fa fa-bookmark"></i></div>
+                                    <div class="item-inner" style="margin-left: 0">
+                                        <div class="item-title">About Easy Form</div>
+                                    </div>
+                                </a>
+                                <div class="accordion-item-content">
+                                    <div class="content-block">
+                                        <p style="text-align: justify">EasyForm is useful for any organization executing large projects. Application can be customize to meet specific project requirements. Application removes paper work and speed up approval process. Application is online process for having visibility of real time status of work and users. Location module help in ensuring site visit and brings transparency in way of working.</p>
+                                        <p style="text-align: justify">Last updated 29 May 2020(19.6.9.2) 11:39</p>
+                                        <p id="app_version" style="text-align: right"></p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li id="faq" class="accordion-item">
+                                <a data-popup=".popup-faq" class="item-link close-panel open-popup">
+                                    <div class="item-content">
+                                        <div class="item-media"><i class="fa fa-question-circle"></i></div>
+                                        <div class="item-inner" style="margin-left: 0">
+                                            <div class="item-title">FAQ</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>-->
+                            <li onclick="logout_on_click_online()">
+                                <a class="item-link close-panel">
+                                    <div class="item-content">
+                                        <div class="item-media"><i class="fa fa-power-off"></i></div>
+                                        <div class="item-inner" style="margin-left: 0">
+                                            <div class="item-title">LogOut</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <ul id="view_database">
+                            <li class="swipeout">
+                                <div class="item-content swipeout-content">
+                                    <!--<div class="item-inner">
+                                        <div class="item-title"></div>
+                                    </div>-->
+                                </div>
+                                <div class="swipeout-actions-left">
+                                    <a href="#" onclick="resolve_crash_status_issue()" class="swipeout-close" style="background: grey;">Resolve Crash</a>
+                                </div>
+                                <div class="swipeout-actions-right">
+                                    <a href="#" onclick="view_database()" class="swipeout-close" style="left: 0; background: grey; margin-left: 2px;">Database</a>
+                                </div>
+
+                            </li>
+                        </ul>
+
+
+                    </div>
+
+                    <table style="width:85%; margin:5px 15px">
+                        <tr>
+                            <td><b>ID:</b> 71</td>
+                            <td style="text-align:right"><p id="app_version" style="margin:0"></p></td>
+                        </tr>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Navbar End -->

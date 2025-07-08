@@ -1,0 +1,49 @@
+/*
+ * *
+ *  * Created by Ali YÜCE on 3/2/20 11:18 PM
+ *  * https://github.com/mayuce/
+ *  * Copyright (c) 2020 . All rights reserved.
+ *  * Last modified 3/2/20 11:11 PM
+ *
+ */
+
+apply plugin: 'com.android.library'
+group='com.github.mayuce'
+android {
+    compileSdkVersion 30
+
+
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 29
+
+
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+//    compileOptions {
+//        sourceCompatibility = '1.8'
+//        targetCompatibility = '1.8'
+//    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    testImplementation 'junit:junit:4.12'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
+    implementation project(':openCVLibrary')
+
+
+//    implementation 'com.quickbirdstudios:opencv:4.3.0'
+}

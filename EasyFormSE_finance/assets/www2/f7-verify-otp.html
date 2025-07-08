@@ -1,0 +1,42 @@
+﻿<!--Sign in OTP Verify-->
+<div class="popup popup-otp-verify">
+    <div class="view view-init">
+        <div class="page">
+            <div class="page-content" style="text-align:center">
+                <div class="block">
+                    <p>
+                        <span class="fa-stack" style="font-size: 130px;">
+                            <i class="fa fa-mobile fa-stack-2x"></i>
+                            <i class="fa fa-envelope-o fa-stack-1x fa-3x cls_task_ico fa-pulse" style="margin-top: -10px;"></i>
+                        </span>
+
+                        <div>
+                            <h2 id="spn_OTPMessage" style="color: black; font-weight:bold; margin-top: 40px">You will receive OTP on your registered contact detail</h2>
+                        </div>
+
+                        <div class="otp-verify">
+                            <input class="otp" type="number" onkeyup='tabChange(1, this, event)' maxlength=1>
+                            <input class="otp" type="number" onkeyup='tabChange(2, this, event)' maxlength=1>
+                            <input class="otp" type="number" onkeyup='tabChange(3, this, event)' maxlength=1>
+                            <input class="otp" type="number" onkeyup='tabChange(4, this, event)' maxlength=1>
+                            <input class="otp" type="number" onkeyup='tabChange(5, this, event)' maxlength=1>
+                            <input class="otp" type="number" onkeyup='tabChange(6, this, event)' maxlength=1>
+                        </div>
+                    </p>
+
+                    <div class="content-block">
+                        <div class="row">
+                            <button class="col-50 button button-fill" type="button" onclick="verify_otp();">Verify</button>
+                            <button class="col-50 button button-fill close-popup" type="button">Back</button>
+                        </div>
+                    </div>
+                    <div class="content-block">
+                        <div class="row" style="text-align: center; display: block">
+                            <div><div id="hourglass" class="fa"></div> OTP will expire in <span id="time" style="font-weight:bold">05:00</span> minutes!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

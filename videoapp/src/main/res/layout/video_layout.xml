@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <RelativeLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <FrameLayout
+            android:id="@+id/videoview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:id="@+id/cam_timer"
+            android:textSize="25sp"
+            android:text=""
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#d21242"
+            />
+
+        <TextView
+            android:id="@+id/cam_timer2"
+            android:textSize="25sp"
+            android:text=""
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:layout_alignBottom="@+id/cam_timer"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/cam_timer"
+            android:layout_toRightOf="@+id/cam_timer"
+            android:layout_alignBaseline="@+id/cam_timer"
+            android:textColor="#d21242"
+            />
+
+        <Button
+            android:id="@+id/mybutton"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/background_button"
+            android:text="REC"
+            android:textColor="@android:color/white"
+            android:textSize="15dp" />
+
+
+        <Button
+            android:textColor="@android:color/white"
+            android:id="@+id/mypause"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:text="PAUSE"
+            android:textSize="10dp"
+            android:background="@drawable/background_button"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@+id/cam_timer"
+            android:layout_marginLeft="17dp"
+            android:layout_marginStart="17dp" />
+
+
+    </RelativeLayout>
+</LinearLayout>

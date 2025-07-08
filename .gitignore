@@ -1,0 +1,46 @@
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Krishna ignor list 03012024
+EasyFormSE_finance/build.gradle
+EasyFormSE_finance/assets/www2/Framework7-1.4.2/dist/css/Css_f7.css
+EasyFormSE_finance/res/
+EasyFormSE_finance/src/com/sky/atc/easyformse/BackupFragment.java
+
+# Java class files
+*.class
+
+# generated files
+bin/
+gen/
+out/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Eclipse project files
+.classpath
+.project
+
+# Android Studio
+.gradle
+/*/local.properties
+/*/out
+/*/*/build
+/*/build
+/build/
+/*/*/production
+*.iml
+*.iws
+*.ipr
+*~
+*.swp
+
+# Mac
+.DS_Store
+/.idea/
+/mobilertc

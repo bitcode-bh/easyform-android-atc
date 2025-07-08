@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.sky.atc.easyformse">
+    <queries> <package android:name="com.whatsapp" /> </queries>
+    <uses-sdk tools:ignore="GradleOverrides" />
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:resizeable="true"
+        android:smallScreens="true" />
+
+    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"  tools:node="remove" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!--    <uses-permission android:name="android.permission.WRITE_CALENDAR" />-->
+    <!--    <uses-permission android:name="android.permission.READ_CALENDAR" />-->
+
+    <!--    <uses-permission android:name="android.permission.READ_CONTACTS" />-->
+    <!--    <uses-permission android:name="android.permission.CALL_PHONE"/>-->
+
+
+<!--    <uses-permission-->
+<!--        android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"-->
+<!--        tools:ignore="ProtectedPermissions" />-->
+
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
+
+    <!--<uses-feature
+        android:glEsVersion="0x00020000"
+        tools:replace=""
+        android:required="true" />-->
+
+    <application
+        android:name=".sqlitewraper"
+        android:allowBackup="false"
+        android:icon="@drawable/atc_logo"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:requestLegacyExternalStorage="true"
+        android:theme="@style/AppTheme"
+        tools:node="merge"
+        android:usesCleartextTraffic="true"
+        tools:replace="android:allowBackup,android:icon,android:theme">
+        <activity
+            android:name=".NewCameraActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MaterialComponents.NoActionBar" />
+        <activity
+            android:name=".FaceDetactionActivity"
+            android:hardwareAccelerated="false"
+            android:exported="false" />
+
+        <provider
+            android:name=".LocalFileContentProvider"
+            android:authorities="${applicationId}" />
+        <activity
+            android:name=".photo.PhotoPreviewActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="Photo preview"
+            android:parentActivityName=".ph_s"
+            android:exported="false"
+            android:theme="@style/AppTheme.Fullscreen" />
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="security.easyform.in"
+                    android:pathPrefix="/LoginPage.aspx"
+                    android:scheme="https" />
+            </intent-filter>
+        </activity>
+
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
+        <activity
+            android:name=".TabActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="EasyForm Database"
+            android:exported="false"
+            android:logo="@drawable/atc_logo"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity> <!-- print document -->
+        <activity
+            android:name=".printnew"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MakePhotoActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".easy_draw_new"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.NoActionBar" />
+        <activity
+            android:name=".force_st"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".CaptureSignature"
+            android:label="Signature Confirmation"
+            android:screenOrientation="portrait" />
+
+        <receiver android:name=".servicenew" />
+        <receiver
+            android:name=".activity_recognize"
+            android:enabled="false"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.location.ACTIVITY_RECOGNITION" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".ShutdownReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+                <action android:name="android.intent.action.QUICKBOOT_POWEROFF" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".newfused_recevier"
+            android:enabled="false"
+            android:exported="false">
+        </receiver>
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.REBOOT" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".upload_large_file"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".AndroidDatabaseManager"
+            android:configChanges="keyboard|keyboardHidden|orientation"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ph_s"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|uiMode|keyboard|keyboardHidden|orientation"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="true" />
+        <activity
+            android:name=".select_view"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ph_s1"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".webview_redirect"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".cameraactivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".new_mainactivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".AppDownloadActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".navigation"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SupportPageMapsActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".GeofencTrackingMapActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".OpenNextNotificationPage"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <receiver android:name=".LocationReceiver_network" />
+        <receiver android:name=".touch_current" /> <!-- Comware location poller SDK -->
+        <receiver android:name="commonsware.cwac.LocationPoller" />
+
+        <service android:name="commonsware.cwac.LocationPollerService" android:exported="true"/>
+
+        <receiver android:name=".UpdateReceiver" >
+            <intent-filter>
+                <action
+                    android:name="android.net.conn.CONNECTIVITY_CHANGE"
+                    tools:ignore="BatteryLife" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".gprs" >
+            <intent-filter>
+                <action
+                    android:name="android.net.conn.CONNECTIVITY_CHANGE"
+                    tools:ignore="BatteryLife" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".gpsreciever"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.location.PROVIDERS_CHANGED" />
+
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+        </receiver> <!-- <receiver -->
+        <!-- android:name=".DemoDeviceAdminReceiver" -->
+        <!-- android:permission="android.permission.BIND_DEVICE_ADMIN" > -->
+        <!-- <intent-filter> -->
+        <!-- &lt;!&ndash; This action is required &ndash;&gt; -->
+        <!-- <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" /> -->
+        <!-- </intent-filter> -->
+        <!-- <meta-data -->
+        <!-- android:name="android.app.device_admin" -->
+        <!-- android:resource="@xml/device_admin_sample" /> -->
+        <!-- &lt;!&ndash; This is required this receiver to become device admin component. &ndash;&gt; -->
+        <!-- </receiver> -->
+        <receiver
+            android:name=".onreboot"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.USER_PRESENT" />
+
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyDWVq1PjfSaVh8_Y5NQxkKDIRHSmFzm1TU" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <service android:name=".Event" />
+        <service android:name=".status_server" />
+        <service android:name="commonsware.cwac.fused_location_provider" />
+        <service android:name=".foreverservice" />
+        <service android:name=".f_upload_new_structure" />
+        <service android:name=".upload_clone" />
+        <service android:name=".gcm_server" />
+        <service android:name=".touch_server" />
+        <service android:name=".location_server" />
+
+        <activity
+            android:name=".pdf_act"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".OpenWhatsappActivity"
+            android:screenOrientation="portrait" />
+
+        <activity android:name=".CustomerPageMapsActivity" />
+        <activity
+            android:name=".TripMapUi"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".BiometricLogin"
+            android:exported="true"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+        <service android:name=".loc_change" />
+        <service android:name=".newfused_accel" />
+        <service android:name=".newfused_gps" />
+        <service android:name=".newfused" />
+        <service android:name=".resume_wake" />
+        <service android:name=".MyFirebaseMessagingService" android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name=".MyFirebaseInstanceIDService" android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name=".TripService" />
+        <service android:name=".GpsReceiverService" />
+        <service android:name=".geofencenew.GeofenceTrasitionService" />
+        <service android:name=".geofencenew.GeofenceTrasitionServicenew"  android:exported="true" />
+        <service android:name=".geofencenew.GeofenceDownlodService" android:exported="true" />
+
+        <receiver android:name=".phoneon" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver> <!-- for new trip -->
+        <receiver
+            android:name=".restartservice"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="restartservice" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".jobshedulers.TestJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver
+            android:name=".jobshedulers.SetAlarmTrip"
+            android:enabled="true" />
+        <receiver
+            android:name=".jobshedulers.SetAlarmWhileIdle"
+            android:enabled="true" />
+        <receiver android:name=".attendance.NotificationClickReceiver" />
+        <receiver android:name=".attendance.NotificationReceiver" />
+        <receiver android:name=".attendance.AutoCheckOutReceiver" />
+
+        <service
+            android:name=".jobshedulers.MyJobService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
+            </intent-filter>
+        </service>
+        <service android:name=".download.DownloadListService" />
+        <service android:name=".download.DowoloadQuestionLogService" />
+        <service android:name=".Activity_recognition" />
+        <service android:name=".mapview.CurrentLocation" />
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="2904e69cf9c93bd50829f42841531f45e0cd2eb2" />
+
+        <activity
+            android:name=".calender.DayActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".calender.MonthActivtiy"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".location.MapLatlongActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".scanner.barcodeactivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".mapview.UserMapViewActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar" >
+
+            <intent-filter>
+                <action android:name="MyData" />
+            </intent-filter>
+
+        </activity>
+        <activity
+            android:name=".trip.TripBackgroundMapActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:noHistory="true"
+            android:resizeableActivity="true"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="true"
+            android:taskAffinity=".trip.TripBackgroundMapActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="true"/>
+
+        <activity
+            android:name=".VideoActivity"
+            android:exported="true"/>
+
+        <service
+            android:name=".trip.FloatingBubbleService"
+            android:enabled="true"
+            android:exported="true" />
+
+<!--        <service-->
+<!--            android:name=".trip.TripMapFloatingBubbleService"-->
+<!--            android:enabled="true"-->
+<!--            android:exported="false" />-->
+
+        <activity android:name=".photo.BurstPhotoActivity" />
+
+        <activity
+            android:name=".CreateAttendanceDynamictask"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".RedirectPageView"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+
+        <receiver
+            android:name=".jobshedulers.DeleteBroadcast"
+            android:enabled="true" />
+
+        <meta-data
+            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:value="barcode,face,ocr,ica" />
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="required" />
+
+        <receiver android:name=".zoom.screenshare.NotificationUtils$ActionReceiver" />
+        <receiver
+            android:name=".PowerSaveModeReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.os.action.POWER_SAVE_MODE_CHANGED"/>
+            </intent-filter>
+        </receiver>
+        <service
+            android:name=".download.ImageDownloadService"
+            android:foregroundServiceType="dataSync" />
+
+        <receiver android:name=".attendance.newattendanceutils.broadcasts.AttendanceNotificationShow" />
+        <receiver android:name=".attendance.newattendanceutils.broadcasts.AttendanceNotificationAction" />
+        <activity android:name=".NotificationActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+<!--        <service-->
+<!--            android:name=".NotificationListener"-->
+<!--            android:label="Notification Listener"-->
+<!--            android:enabled="true"-->
+<!--            android:exported="false"-->
+<!--            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.service.notification.NotificationListenerService" />-->
+<!--            </intent-filter>-->
+<!--        </service>-->
+
+
+    </application>
+
+</manifest>

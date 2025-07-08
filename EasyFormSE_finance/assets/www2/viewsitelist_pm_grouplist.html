@@ -1,0 +1,482 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#2196f3">
+
+    <!-- F7 start -->
+    <link href="Framework7-1.4.2/dist/css/Css_f7.css" rel="stylesheet" />
+    <link href="font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="EFSE_Js/common-functions.js"></script>
+    <!-- F7 end -->
+
+    <link href="css/styles_low.css" rel="stylesheet" type="text/css" />
+
+    <script src="Plugin_Js/jquery-3.5.1.min.js" type="text/javascript"></script>
+    <script src="cordova.js"></script>
+    <script src="js/globlvariable.js"></script>
+    <script src="js/jstorage.min.js"></script>
+    <script src="js/Storagefile.js"></script>
+    <script src="js/changeurl.js" type="text/javascript"></script>
+    <script src="EFSE_Js/controls-ele.js"></script>
+    <script src="EFSE_Js/viewsitelist_pm_grouplist.js" type="text/javascript"></script>
+    <script src="EFSE_Js/viewsitelist_sub_task.js" type="text/javascript"></script>
+    <script src="EFSE_Js/viewsitelist_sub_task_hybrid.js" type="text/javascript"></script>
+    <script src="EFSE_Js/selection.js" type="text/javascript"></script>
+    <script src="EFSE_Js/viewsitelist_pm_on.js" type="text/javascript"></script>
+
+    <script src="js/webservicecall_REST.js" type="text/javascript"></script>
+    <style type="text/css">
+        #checksheet_list {
+            list-style-type: none;
+            text-align: center;
+        }
+
+            #checksheet_list li {
+                width: 100%;
+            }
+
+
+            #checksheet_list .item-media .fa {
+                font-size: 20px;
+            }
+
+            #checksheet_list li input[type=button] {
+                width: 70%;
+                margin: 5px;
+                padding: 5px 10px;
+                color: white;
+                font-size: 12pt;
+                border: 2px solid white;
+                border-radius: 15px;
+                box-shadow: 3px 3px 3px black;
+                white-space: pre-wrap;
+            }
+
+
+        /* F7 Style start */
+        .list-block .item-inner :not(#tbl_chk_details > .item-inner) {
+            padding-right: 0 !important;
+            background-image: none !important;
+        }
+
+        .list-block li {
+            margin-bottom: 2px;
+        }
+
+        .button {
+            border-radius: 0;
+        }
+
+        .item-title {
+            color: #212121;
+        }
+
+        .punchinout:after, .trip-start-stop:after {
+            height: 0px !important;
+        }
+
+        #div_site_details {
+            border-bottom: 1px solid #ccc;
+        }
+
+            #div_site_details .item-inner, .label-checkbox {
+                background-color: white !important;
+            }
+
+
+        /* F7 Style end */
+    </style>
+    <script type="text/javascript">
+        var username = JSON.parse(storage.getItem('username'));
+        var imeino = JSON.parse(storage.getItem('imeino'));
+        var uniqcode = JSON.parse(storage.getItem('uniqcode'));
+        var wayflow = JSON.parse(storage.getItem('wayflow'));
+        var global_url = JSON.parse(storage.getItem('global_url'));
+        var global_wcf_url = JSON.parse(storage.getItem('global_wcf_url'));
+        var common_global_wcf_url = JSON.parse(storage.getItem('common_global_wcf_url'));
+        var page_load_over = 0;
+        var curr_survey_data = [];
+
+        //My Global Varibles
+        var server_dt_Counter = 0;
+
+        var form_flag;
+
+        // set blank checksheet dependency for class(show/hide elements in all the steps)
+        var checksheet_dependency = [];
+        storage.setItem('checksheet_dependency', JSON.stringify(checksheet_dependency));
+        storage.setItem('progress_step', JSON.stringify(''));
+
+        ///////////
+
+        // mobile view (F7 View/old View)
+        var F7_view = JSON.parse(storage.getItem('F7_view'));
+        var F7_device = JSON.parse(storage.getItem('F7_device'));
+        var itemObj = new MKCheckItem();
+
+        $(document).ready(function () {
+
+            var menu_smallImage = document.getElementById("menu_img_profile");
+            var pro_pic_path = get_profile_pic_path_android_ios();
+            if (pro_pic_path == '' || pro_pic_path == null || pro_pic_path == undefined) { }
+            else {
+                menu_smallImage.src = pro_pic_path;
+            }
+
+            if (F7_device == "ios") {
+                $(".panel-nav-ios").show();
+                $(".panel-nav").hide();
+            }
+            else {
+                $(".panel-nav-ios").hide();
+                $(".panel-nav").show();
+            }
+
+            var doc = new MkDocInits();
+            doc._initF7(doc);
+            doc._checkSession(doc);
+        });
+
+        document.addEventListener('deviceready', function showValues() {
+            var data_json = JSON.parse(storage.getItem('list_json'));
+            var list_data = JSON.parse(data_json);
+
+            ///////
+            var colwise_align = list_data[0].colwise_align;
+            if (colwise_align == 'true') {
+                $("#div_site_name").hide();
+                var TaskListHTML = localStorage.getItem('TaskListHTML');
+                document.getElementById('div_site_details').innerHTML = TaskListHTML;
+
+                var site_lat = JSON.parse(storage.getItem('site_lat'));
+                var site_long = JSON.parse(storage.getItem('site_long'));
+                var str = '';
+                var param2 = "get_user_latlong_for_map('" + site_lat + "', '" + site_long + "')";
+                str += '<div class="col-50" style="padding-top:7px"><img onclick="' + param2 + '" src="images/NOKIA/Site_Info.png" style="width:40px; height:40px" /></div>';
+
+                var param_weather = "view_weather_for_site('" + site_lat + "', '" + site_long + "')";
+                str += '<div class="col-50" style="padding-top:7px"><img onclick="' + param_weather + '" src="images/weather1.png" style="width:40px; height:40px" /></div>';
+
+                document.getElementById('div_site_icons').innerHTML = str;
+            }
+            else {
+                var site_detail = list_data[0].site_detail;
+                if (site_detail == 'true') {
+                    var sitename = JSON.parse(storage.getItem('sitename'));
+                    if (sitename == null || sitename == undefined || sitename == "" || sitename == "0") {
+                        sitename = "";
+                    }
+                    sitename = sitename.substr(0, 15);
+                    $('#lbl_site_name').text(sitename);
+                }
+            }
+            //////
+
+
+
+            var punching = list_data[0].punching;
+            if (punching == 'true') {
+                $('.punchinout').parent().show();
+                $('.punch-items').show();
+            }
+            var manual_trip = list_data[0].manual_trip;
+            if (manual_trip == 'true') {
+                $('.trip-start-stop').parent().show();
+            }
+            if (punching == "true" && manual_trip == "true") {
+                $('.punchinout').parent().parent().css("width", "50%");
+                $('.trip-start-stop').parent().parent().css("width", "50%");
+            }
+
+            var t_tid = JSON.parse(storage.getItem('tid'));
+            var trip_tid = localStorage.getItem('trip_tid');
+            if (t_tid == trip_tid) {
+                var trip_status = localStorage.getItem('trip_status');
+                if (trip_status == '0') {
+                    $(".trip-start-stop input[type=checkbox]").prop('checked', true);
+                }
+            }
+
+            pageload_main();
+            function pageload_main() {
+                if (typeof (myApp) != "undefined") {
+                    check_child_flow_for_parent();
+                }
+                else {
+                    setTimeout(function () { pageload_main(); }, 500);
+                }
+            }
+
+            document.addEventListener("backbutton", function (e) {
+                //var seconds = getPageLoadTime();
+                //if (seconds > 3) {
+                if (page_load_over == 1) {
+                    back_button('viewsitelist_pm_grouplist');
+                }
+            }, true);
+        }, true);
+
+
+        /**/</script>
+</head>
+<body>
+    <!--  F7 Start -->
+    <div class="F7-view" style="width: 100%; height: 100%">
+        <div class="statusbar-overlay"></div>
+        <div class="panel-overlay"></div>
+        <div class="panel-nav"></div>
+
+        <!--ios menu click issue [14102020]-->
+        <div class="panel-nav-ios">
+            <!-- Navbar Start -->
+            <div id="nav_main" class="panel panel-left panel-cover" style="display: block;">
+                <div id="nav_sub1" class="view navbar-fixed" data-page="panel-left">
+                    <div class="pages">
+                        <div id="nav_sub2" data-page="panel-left" class="page">
+                            <div class="navbar">
+                                <div class="navbar-inner">
+                                    <div class="center">Settings</div>
+                                </div>
+                            </div>
+                            <div class="page-content">
+                                <div class="content-block profile_photo" style="margin: 0px; background: url(images/bg2.jpg);background-size: 100% 100%;position:relative;">
+                                    <ul>
+                                        <li style="text-align: center">
+                                            <img id="img_profile_ios" src="images/profile_pic.png" onclick="get_full_view_profile_pic()" onerror="set_detault_profile_pic()" style="width: 120px; height: 120px; border-radius: 100px; margin: 0; margin-bottom: 5px;border: 2px solid #fff;">
+                                        </li>
+                                        <li id="change_photo" class="accordion-item" style="width:28px; display:inline-block; position:absolute;top:100px;right:50px;">
+                                            <a href="#" class="item-link item-content">
+                                                <div class="item-inner" style="margin-left: 0">
+                                                    <div class="item-title"><i id="edit_pro_pic" class="fa fa-pencil" style="font-size: 30px;color: #fff;"></i></div>
+                                                </div>
+                                            </a>
+                                            <div class="accordion-item-content" style="margin-left:0; background: #e5e2e2;opacity:0.9; position:absolute;right:-25px;z-index:999;">
+                                                <div class="list-block">
+                                                    <ul>
+                                                        <li onclick='change_profile_pic("browse")'>
+                                                            <div class="item-content">
+                                                                <div class="item-inner" style="margin-left: 0">
+                                                                    <div class="item-title">BROWSE</div>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li style="text-align: center; font-size: 13pt; font-weight: bold">
+                                            <label id="lblusername" style="margin-bottom: 0; padding-bottom: 0;color: #fff;"></label>
+                                            <i id="menu_img_gprs" class="fa fa-circle" style="color: lightgreen; margin-left: 10px"></i>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="list-block">
+                                    <ul>
+                                        <li>
+                                            <a onclick="get_my_profile_details_F7()" class="item-link close-panel open-popup">
+                                                <div class="item-content">
+                                                    <div class="item-media"><i class="fa fa-user"></i></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">My Profile</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li id="change_pass" onclick="localStorage.setItem('change_pwd_flag', 'profile');changeurl('change_password.html');">
+                                            <a class="item-link close-panel item-cp">
+                                                <div class="item-content">
+                                                    <div class="item-media"><i class="fa fa-unlock-alt"></i></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">Change Password</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li onclick="logout_on_click_online()">
+                                            <a class="item-link close-panel">
+                                                <div class="item-content">
+                                                    <div class="item-media"><i class="fa fa-power-off"></i></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">LogOut</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    </ul>
+
+                                    <ul id="view_database">
+                                        <li class="swipeout">
+                                            <div class="item-content swipeout-content">
+                                            </div>
+                                            <div class="swipeout-actions-left">
+                                                <a href="#" onclick="resolve_crash_status_issue()" class="swipeout-close" style="background: grey;">Resolve Crash</a>
+                                            </div>
+                                            <div class="swipeout-actions-right">
+                                                <a href="#" onclick="view_database()" class="swipeout-close" style="left: 0; background: grey; margin-left: 2px;">Database</a>
+                                            </div>
+
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <table style="width:85%; margin:5px 15px">
+                                    <tr>
+                                        <td><b>ID:</b> 65</td>
+                                        <td style="text-align:right"><p id="app_version_ios" style="margin:0"></p></td>
+                                    </tr>
+                                </table>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Navbar End -->
+        </div>
+        <!--ios menu click issue [14102020]-->
+
+        <div class="panel-pro"></div>
+        <div class="panel-faq"></div>
+        <div class="views">
+            <div class="view view-main" data-page="list-view">
+                <div class="pages navbar-fixed navbar-through toolbar-through">
+                    <div data-page="list-view" class="page page-on-center">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left">
+                                    <a onclick='back_button("viewsitelist_pm_grouplist")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="icon icon-back"></i></a>
+                                </div>
+                                <div class="center">
+                                    <label id="lbl_theme_header"></label>
+                                </div>
+                                <div class="right">
+                                    <!--<a href="#" class="open-panel link icon-only"><i class="icon icon-bars"></i></a>-->
+                                    <a href="#" class="open-panel link icon-only"><img id="menu_img_profile" src="images/profile_pic.png" /></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block">
+                                <div class="row" id="div_site_name" style="display: none">
+                                    <div class="col-50" style="width: 40%; text-align: center">
+                                        <label id="lbl_site_name" style="font-weight: bold; margin-top: 13px; display: block"></label>
+                                    </div>
+                                </div>
+                                <div class="row col-100" id="div_site_details" style="display: none"></div>
+                                <div class="row col-100" id="div_site_icons" style="display: none; text-align: center"></div>
+                                <div class="row">
+                                    <div class="col-50" style="width: 100%; font-size: 11pt">
+                                        <div class="item-content" style="border-left: 1px solid #e1e1e1; border-bottom: 1px solid #e1e1e1; display: none">
+                                            <div class="item-inner trip-start-stop">
+                                                <div class="item-title">Trip Start/End</div>
+                                                <label class="label-switch">
+                                                    <input type="checkbox" onchange="get_trip_location()">
+                                                    <div class="checkbox"></div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-50" style="width: 100%; font-size: 11pt">
+                                        <div class="item-content" style="border-left: 1px solid #e1e1e1; border-bottom: 1px solid #e1e1e1; display: none">
+                                            <div class="item-inner punchinout">
+                                                <div class="item-title">Punch In/Out</div>
+                                                <label class="label-switch">
+                                                    <input type="checkbox" onchange="get_punching_location(1)">
+                                                    <div class="checkbox"></div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-100" style="padding-bottom: 2px; font-size: 11pt">
+                                        <label class="toal_working_time_lbl punch-items" style="display: none">
+                                            ACTIVE TIME:<span class="count_lbl">
+                                                <label id="lbl_count">00:00:00</label>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <ul id="checksheet_list" style="margin-top: 2px"></ul>
+                                <div id="buttons_list" style="padding: 16px; padding-top: 3px; padding-bottom: 50px">
+                                    <a class="button button-fill button-raised cls_fence cls-punchinout cls-more" onclick="toggle_dynamic_checklist()" style="display: none; margin: 10px 0px; background-color: grey; border-right: 0px !important">MORE</a>
+                                </div>
+                            </div>
+                            <!--<a id="tbl_chk_details" class="button button-fill button-raised open-popover" data-popover=".popover-chk-btn-info" style="display: none; width: 40%; margin: 10px; float: right">Buttons Info</a>-->
+                        </div>
+                        <a id="tbl_chk_details" href="#" data-picker=".popover-chk-btn-info" class="floating-button open-popover" style="display: none; bottom: 56px">
+                            <i class="icon fa fa-info" style="font-size: 25px; color: white; margin:0"></i>
+                        </a>
+                        <div class="toolbar toolbar-bottom punch-items" style="display: none">
+                            <div class="toolbar-inner">
+                                <div class="left"><a id="btn_punch_pause" class="link" onclick="get_punching_location(2)" disabled>PAUSE</a></div>
+                                <div class="right"><a id="btn_punch_continue" class="link" onclick="get_punching_location(3)" disabled>CONTINUE</a></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons Info Start -->
+        <div class="popover popover-chk-btn-info popover-on-bottom" style="display: none; width: 75%">
+            <div class="popover-inner">
+                <div class="list-block" style="padding: 0px 10px">
+                    <table border="2" style="margin: 10px 0px; width: 100%; text-align: center; border: 1px solid #aaa">
+                        <tr>
+                            <td style="height: 17px; font-size: 11pt; font-weight: bold">Status </td>
+                            <td style="height: 17px; font-size: 11pt; font-weight: bold">Accessible</td>
+                            <td style="height: 17px; width: 25px; font-size: 11pt; font-weight: bold"></td>
+                        </tr>
+                        <tr>
+                            <td>Completed </td>
+                            <td>Yes </td>
+                            <td style="width: 25px; background-color: #4caf50; border-color: white"></td>
+                        </tr>
+                        <tr>
+                            <td>Pending </td>
+                            <td>Yes </td>
+                            <td style="width: 25px; background-color: #2196f3; border-color: white"></td>
+                        </tr>
+                        <tr>
+                            <td>Wait for TAT </td>
+                            <td>No </td>
+                            <td style="width: 25px; background-color: #9e9e9e; border-color: white"></td>
+                        </tr>
+                        <tr>
+                            <td>Blocked </td>
+                            <td>No </td>
+                            <td style="width: 25px; background-color: #f44336"></td>
+                        </tr>
+                        <!--<tr>
+                            <td>Inside GEO Fence </td>
+                            <td>Yes </td>
+                            <td>
+                                <img src="images/circle_green.png" style="vertical-align: middle; width: 15px; height: 15px"></td>
+                        </tr>
+                        <tr>
+                            <td>Outside GEO Fence </td>
+                            <td>No </td>
+                            <td>
+                                <img src="images/circle_red.png" style="vertical-align: middle; width: 15px; height: 15px"></td>
+                        </tr>-->
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Buttons Info End -->
+
+        <script src="Framework7-1.4.2/dist/js/framework7.min.js"></script>
+    </div>
+    <!--  F7 End-->
+
+    <script>
+        pre_init_F7();
+    </script>
+</body>
+</html>

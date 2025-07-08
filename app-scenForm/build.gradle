@@ -1,0 +1,36 @@
+plugins {
+    id 'com.android.library'
+    id 'com.google.ar.sceneform.plugin'
+}
+
+android {
+    compileSdkVersion  project.ext.compileSdk
+    defaultConfig {
+        minSdkVersion project.ext.minSdk
+        targetSdkVersion project.ext.targetSdk
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation "com.google.ar.sceneform.ux:sceneform-ux:1.17.1"
+    implementation "com.android.support:appcompat-v7:28.0.0"
+    implementation 'com.skyfishjy.ripplebackground:library:1.0.1'
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
+}
+
+
+sceneform.asset('sampledata/models/andy.obj',
+        'default',
+        'sampledata/models/andy.sfa',
+        'src/main/res/raw/andy')
+

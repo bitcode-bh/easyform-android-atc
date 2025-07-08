@@ -1,0 +1,14 @@
+WithHelmet
+Mask
+without helmet
+NO-Mask
+NO-Safety Vest
+Person
+Safety Cone
+Safety Vest
+machinery
+vehicle
+
+
+
+

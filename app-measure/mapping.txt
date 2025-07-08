@@ -1,0 +1,312 @@
+# compiler: R8
+# compiler_version: 3.2.74
+# common_typos_disable
+# {"id":"com.android.tools.r8.mapping","version":"2.0"}
+# pg_map_id: 490c9ce
+# pg_map_hash: SHA-256 490c9cef793f9cdb1feca441eda7117db82a121f5dbde1fcf3fc1de04c48c638
+com.google.ar.core.examples.java.helloar.CameraPermissionHelper -> com.google.ar.core.examples.java.helloar.CameraPermissionHelper:
+    1:1:void <init>():29:29 -> <init>
+    1:1:boolean hasCameraPermission(android.app.Activity):37:37 -> hasCameraPermission
+    1:4:void launchPermissionSettings(android.app.Activity):60:63 -> launchPermissionSettings
+    1:1:void requestCameraPermission(android.app.Activity):45:45 -> requestCameraPermission
+    1:1:boolean shouldShowRequestPermissionRationale(android.app.Activity):53:53 -> shouldShowRequestPermissionRationale
+com.google.ar.core.examples.java.helloar.DisplayRotationHelper -> com.google.ar.core.examples.java.helloar.DisplayRotationHelper:
+    1:3:void <init>(android.content.Context):43:45 -> <init>
+    1:1:int getRotation():93:93 -> getRotation
+    1:1:void onDisplayChanged(int):104:104 -> onDisplayChanged
+    1:1:void onPause():55:55 -> onPause
+    1:1:void onResume():50:50 -> onResume
+    1:3:void onSurfaceChanged(int,int):68:70 -> onSurfaceChanged
+    1:4:void updateSessionIfNeeded(com.google.ar.core.Session):82:85 -> updateSessionIfNeeded
+com.google.ar.core.examples.java.helloar.rendering.BackgroundRenderer -> com.google.ar.core.examples.java.helloar.rendering.BackgroundRenderer:
+    1:6:void <clinit>():178:183 -> <clinit>
+    1:1:void <init>():54:54 -> <init>
+    2:2:void <init>():52:52 -> <init>
+    1:51:void createOnGlThread(android.content.Context):70:120 -> createOnGlThread
+    52:52:void createOnGlThread(android.content.Context):82:82 -> createOnGlThread
+    1:41:void draw(com.google.ar.core.Frame):135:175 -> draw
+    1:1:int getTextureId():58:58 -> getTextureId
+com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer -> com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer:
+    1:1:void <clinit>():64:64 -> <clinit>
+    1:1:void <init>():109:109 -> <init>
+    2:44:void <init>():65:107 -> <init>
+    1:63:void createOnGlThread(android.content.Context,java.lang.String,java.lang.String):123:185 -> createOnGlThread
+    64:67:void createOnGlThread(android.content.Context,java.lang.String,java.lang.String):184:187 -> createOnGlThread
+    68:71:void createOnGlThread(android.content.Context,java.lang.String,java.lang.String):186:189 -> createOnGlThread
+    72:112:void createOnGlThread(android.content.Context,java.lang.String,java.lang.String):188:228 -> createOnGlThread
+    1:58:void draw(float[],float[],float):287:344 -> draw
+    59:84:void draw(float[],float[],float):340:365 -> draw
+    1:1:float[] getModelMatrix():384:384 -> getModelMatrix
+    1:1:float[] getModelViewMatrix():380:380 -> getModelViewMatrix
+    1:1:float[] getModelViewProjectionMatrix():376:376 -> getModelViewProjectionMatrix
+    1:4:void normalizeVec3(float[]):369:372 -> normalizeVec3
+    1:1:void setBlendMode(com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer$BlendMode):237:237 -> setBlendMode
+    1:4:void setMaterialProperties(float,float,float,float):267:270 -> setMaterialProperties
+    1:6:void updateModelMatrix(float[],float):248:253 -> updateModelMatrix
+com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer$1 -> com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer$a:
+    int[] $SwitchMap$com$google$ar$core$examples$java$helloar$rendering$ObjectRenderer$BlendMode -> a
+    1:1:void <clinit>():337:337 -> <clinit>
+com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer$BlendMode -> com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer$BlendMode:
+    1:5:void <clinit>():54:58 -> <clinit>
+    6:6:void <clinit>():50:50 -> <clinit>
+    1:1:void <init>(java.lang.String,int):50:50 -> <init>
+    1:1:com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer$BlendMode valueOf(java.lang.String):50:50 -> valueOf
+    1:1:com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer$BlendMode[] values():50:50 -> values
+com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer -> com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer:
+    1:352:void <clinit>():72:423 -> <clinit>
+    1:1:void <init>():113:113 -> <init>
+    2:31:void <init>():82:111 -> <init>
+    1:4:void colorRgbaToFloat(float[],int):417:420 -> colorRgbaToFloat
+    1:42:void createOnGlThread(android.content.Context,java.lang.String):124:165 -> createOnGlThread
+    1:21:void draw(float[],float[]):259:279 -> draw
+    22:24:void draw(float[],float[]):278:280 -> draw
+    1:75:void drawPlanes(java.util.Collection,com.google.ar.core.Pose,float[]):304:378 -> drawPlanes
+    76:112:void drawPlanes(java.util.Collection,com.google.ar.core.Pose,float[]):377:413 -> drawPlanes
+    1:80:void updatePlaneParameters(float[],float,float,java.nio.FloatBuffer):173:252 -> updatePlaneParameters
+com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer$1 -> com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer$a:
+    com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer this$0 -> a
+    1:1:void <init>(com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer):329:329 -> <init>
+    1:1:int compare(com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer$SortablePlane,com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer$SortablePlane):332:332 -> a
+    1:1:int compare(java.lang.Object,java.lang.Object):329:329 -> compare
+com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer$SortablePlane -> com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer$b:
+    com.google.ar.core.Plane plane -> b
+    float distance -> a
+    1:3:void <init>(float,com.google.ar.core.Plane):287:289 -> <init>
+com.google.ar.core.examples.java.helloar.rendering.PointCloudRenderer -> com.google.ar.core.examples.java.helloar.rendering.PointCloudRenderer:
+    1:1:void <clinit>():32:32 -> <clinit>
+    1:1:void <init>():54:54 -> <init>
+    2:6:void <init>():48:52 -> <init>
+    1:33:void createOnGlThread(android.content.Context):63:95 -> createOnGlThread
+    1:18:void draw(float[],float[]):137:154 -> draw
+    1:20:void update(com.google.ar.core.PointCloud):103:122 -> update
+    21:25:void update(com.google.ar.core.PointCloud):121:125 -> update
+com.google.ar.core.examples.java.helloar.rendering.ShaderUtil -> com.google.ar.core.examples.java.helloar.rendering.ShaderUtil:
+    1:1:void <init>():29:29 -> <init>
+    1:6:void checkGLError(java.lang.String,java.lang.String):71:76 -> checkGLError
+    1:18:int loadGLShader(java.lang.String,android.content.Context,int,int):38:55 -> loadGLShader
+    1:12:java.lang.String readRawTextFile(android.content.Context,int):87:98 -> readRawTextFile
+com.hl3hl3.arcoremeasure.ArMeasureActivity -> com.hl3hl3.arcoremeasure.ArMeasureActivity:
+    java.util.concurrent.ArrayBlockingQueue queuedSingleTaps -> p
+    com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer planeRenderer -> h
+    com.google.ar.core.Pose point1 -> G
+    android.opengl.GLSurfaceView surfaceView -> a
+    com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer cube -> j
+    boolean isSaveClick -> w
+    android.widget.TextView tv_result -> z
+    java.util.concurrent.ArrayBlockingQueue queuedScrollDy -> v
+    com.google.ar.core.examples.java.helloar.DisplayRotationHelper displayRotationHelper -> f
+    java.util.ArrayList showingTapPointX -> s
+    boolean installRequested -> b
+    android.widget.ImageView[] ivCubeIconList -> n
+    float[] anchorMatrix -> m
+    com.google.ar.core.examples.java.helloar.rendering.BackgroundRenderer backgroundRenderer -> g
+    com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer glSerfaceRenderer -> B
+    java.util.concurrent.ArrayBlockingQueue queuedLongPress -> q
+    com.google.ar.core.Pose pos -> F
+    com.google.ar.core.Session session -> c
+    android.view.GestureDetector gestureDetector -> d
+    com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer cubeSelected -> k
+    com.google.ar.core.examples.java.helloar.rendering.PointCloudRenderer pointCloud -> i
+    java.util.concurrent.ArrayBlockingQueue queuedScrollDx -> u
+    java.lang.String mtype -> y
+    android.view.GestureDetector$SimpleOnGestureListener gestureDetectorListener -> C
+    float distance -> x
+    com.google.android.material.floatingactionbutton.FloatingActionButton fab -> A
+    com.hl3hl3.arcoremeasure.renderer.RectanglePolygonRenderer rectRenderer -> l
+    int[] cubeIconIdArray -> o
+    com.google.android.material.snackbar.Snackbar messageSnackbar -> e
+    java.util.ArrayList showingTapPointY -> t
+    java.util.ArrayList anchors -> r
+    java.lang.String TAG -> E
+    boolean isVerticalMode -> D
+    1:25:void <clinit>():71:95 -> <clinit>
+    1:357:void <init>():69:425 -> <init>
+    1:1:java.util.ArrayList access$800(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> A
+    1:1:android.view.GestureDetector access$900(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> B
+    void log(java.lang.Exception) -> a
+    void log(java.lang.String,java.lang.String) -> a
+    void logStatus(java.lang.String) -> a
+    1:1:java.util.concurrent.ArrayBlockingQueue access$000(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> a
+    2:2:com.google.android.material.snackbar.Snackbar access$1002(com.hl3hl3.arcoremeasure.ArMeasureActivity,com.google.android.material.snackbar.Snackbar):69:69 -> a
+    3:3:com.hl3hl3.arcoremeasure.renderer.RectanglePolygonRenderer access$1302(com.hl3hl3.arcoremeasure.ArMeasureActivity,com.hl3hl3.arcoremeasure.renderer.RectanglePolygonRenderer):69:69 -> a
+    4:4:void access$1600(com.hl3hl3.arcoremeasure.ArMeasureActivity,java.lang.String,java.lang.String):69:69 -> a
+    5:5:com.google.ar.core.Pose access$2400():69:69 -> a
+    6:6:com.google.ar.core.Pose access$2402(com.google.ar.core.Pose):69:69 -> a
+    7:7:com.google.ar.core.Pose access$2500(com.hl3hl3.arcoremeasure.ArMeasureActivity,com.google.ar.core.Frame):69:69 -> a
+    8:8:float access$2702(com.hl3hl3.arcoremeasure.ArMeasureActivity,float):69:69 -> a
+    9:9:void access$400(com.hl3hl3.arcoremeasure.ArMeasureActivity,java.lang.String):69:69 -> a
+    10:10:void access$700(com.hl3hl3.arcoremeasure.ArMeasureActivity,java.lang.Exception):69:69 -> a
+    11:11:void showSnackbarMessage(java.lang.String,boolean):396:396 -> a
+    12:35:void showSnackbarMessage(java.lang.String,boolean):395:418 -> a
+    36:52:com.google.ar.core.Pose onUpdateFrame(com.google.ar.core.Frame):939:955 -> a
+    53:69:boolean checkIsSupportedDeviceOrFinish(android.app.Activity):1011:1027 -> a
+    1:1:java.util.concurrent.ArrayBlockingQueue access$100(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> b
+    2:23:void showNotSupportedDialog(java.lang.String):961:982 -> b
+    24:28:void cancleCallback():1002:1006 -> b
+    1:1:com.google.android.material.snackbar.Snackbar access$1000(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> c
+    2:2:void hideLoadingMessage():382:382 -> c
+    1:5:void clearButtonClick(android.view.View):430:434 -> clearButtonClick
+    1:1:com.google.ar.core.examples.java.helloar.rendering.BackgroundRenderer access$1100(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> d
+    2:11:void setBtnSubmitClick():988:997 -> d
+    1:1:com.google.ar.core.Session access$1200(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> e
+    2:23:void setupRenderer():227:248 -> e
+    1:1:com.hl3hl3.arcoremeasure.renderer.RectanglePolygonRenderer access$1300(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> f
+    2:2:void showLoadingMessage():369:369 -> f
+    1:1:com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer access$1400(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> g
+    1:1:com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer access$1500(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> h
+    1:1:com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer access$1700(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> i
+    1:1:com.google.ar.core.examples.java.helloar.rendering.PointCloudRenderer access$1800(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> j
+    1:1:com.google.ar.core.examples.java.helloar.DisplayRotationHelper access$1900(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> k
+    1:1:java.util.concurrent.ArrayBlockingQueue access$200(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> l
+    1:1:java.util.ArrayList access$2000(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> m
+    1:1:java.util.ArrayList access$2100(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> n
+    1:1:void access$2200(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> o
+    1:2:void onBackPressed():448:449 -> onBackPressed
+    1:37:void onCreate(android.os.Bundle):185:221 -> onCreate
+    1:9:void onPause():327:335 -> onPause
+    1:1:void onRemoveButtonClick(android.view.View):438:438 -> onRemoveButtonClick
+    1:8:void onRequestPermissionsResult(int,java.lang.String[],int[]):341:348 -> onRequestPermissionsResult
+    1:22:void onResume():253:274 -> onResume
+    23:52:void onResume():261:290 -> onResume
+    53:55:void onResume():284:286 -> onResume
+    56:56:void onResume():281:281 -> onResume
+    57:102:void onResume():277:322 -> onResume
+    1:1:void onSubmitButtonClicked(android.view.View):443:443 -> onSubmitButtonClicked
+    1:12:void onWindowFocusChanged(boolean):353:364 -> onWindowFocusChanged
+    1:1:boolean access$2300(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> p
+    1:1:java.lang.String access$2600(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> q
+    1:1:float access$2700(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> r
+    1:1:boolean access$2800(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> s
+    1:1:float[] access$2900(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> t
+    1:1:java.util.concurrent.ArrayBlockingQueue access$300(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> u
+    1:1:com.google.android.material.floatingactionbutton.FloatingActionButton access$3000(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> v
+    1:1:android.widget.TextView access$3100(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> w
+    1:1:android.widget.ImageView[] access$3200(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> x
+    1:1:void access$3300(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> y
+    1:1:com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer access$500(com.hl3hl3.arcoremeasure.ArMeasureActivity):69:69 -> z
+com.hl3hl3.arcoremeasure.ArMeasureActivity$1 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$b:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity):155:155 -> <init>
+    1:1:void onLongPress(android.view.MotionEvent):166:166 -> onLongPress
+    1:2:boolean onScroll(android.view.MotionEvent,android.view.MotionEvent,float,float):177:178 -> onScroll
+    1:1:boolean onSingleTapUp(android.view.MotionEvent):159:159 -> onSingleTapUp
+com.hl3hl3.arcoremeasure.ArMeasureActivity$10 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$a:
+    int[] $SwitchMap$com$google$ar$core$ArCoreApk$InstallStatus -> a
+    1:1:void <clinit>():259:259 -> <clinit>
+com.hl3hl3.arcoremeasure.ArMeasureActivity$2 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$c:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity):200:200 -> <init>
+    1:6:void onClick(android.view.View):204:209 -> onClick
+com.hl3hl3.arcoremeasure.ArMeasureActivity$3 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$d:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity):234:234 -> <init>
+    1:2:boolean onTouch(android.view.View,android.view.MotionEvent):237:238 -> onTouch
+com.hl3hl3.arcoremeasure.ArMeasureActivity$4 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$e:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity):369:369 -> <init>
+    1:3:void run():372:372 -> run
+    6:7:void run():375:376 -> run
+com.hl3hl3.arcoremeasure.ArMeasureActivity$5 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$f:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity):382:382 -> <init>
+    1:4:void run():385:388 -> run
+com.hl3hl3.arcoremeasure.ArMeasureActivity$6 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$g:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity):403:403 -> <init>
+    1:1:void onClick(android.view.View):406:406 -> onClick
+com.hl3hl3.arcoremeasure.ArMeasureActivity$7 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$h:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity):410:410 -> <init>
+    1:2:void onDismissed(com.google.android.material.snackbar.Snackbar,int):413:414 -> a
+    1:1:void onDismissed(java.lang.Object,int):410:410 -> onDismissed
+com.hl3hl3.arcoremeasure.ArMeasureActivity$8 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$i:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity):974:974 -> <init>
+    1:3:void onTextInputConfirmed(java.lang.String):977:979 -> onTextInputConfirmed
+com.hl3hl3.arcoremeasure.ArMeasureActivity$9 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$j:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity):968:968 -> <init>
+    1:1:boolean check(java.lang.String):971:971 -> check
+com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer -> com.hl3hl3.arcoremeasure.ArMeasureActivity$k:
+    android.content.Context context -> a
+    float[] mPoseTranslation -> m
+    float[] mPoseRotation -> n
+    float[] projmtx -> k
+    float[] viewmtx -> l
+    float[] tempTranslation -> i
+    float[] tempRotation -> j
+    float cubeHitAreaRadius -> f
+    float[] centerVertexOfCube -> g
+    float[] vertexResult -> h
+    int viewWidth -> d
+    com.hl3hl3.arcoremeasure.ArMeasureActivity this$0 -> o
+    int viewHeight -> e
+    int DEFAULT_VALUE -> b
+    int nowTouchingPointIndex -> c
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity,android.content.Context):469:469 -> <init>
+    2:360:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity,android.content.Context):455:813 -> <init>
+    361:361:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity,android.content.Context):470:470 -> <init>
+    1:1:void access$600(com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer):452:452 -> a
+    2:2:int getNowTouchingPointIndex():568:568 -> a
+    3:12:float setDistanceType(float):742:751 -> a
+    13:41:void handleMoveEvent(int):758:786 -> a
+    42:61:void handleMoveEvent(int):785:804 -> a
+    62:67:void handleMoveEvent(int):803:808 -> a
+    68:71:com.google.ar.core.Pose getPose(com.google.ar.core.Anchor):816:819 -> a
+    72:73:void setPoseDataToTempArray(com.google.ar.core.Pose):823:824 -> a
+    74:84:void drawLine(com.google.ar.core.Pose,com.google.ar.core.Pose,float[],float[]):829:839 -> a
+    85:97:void drawLine(com.google.ar.core.Pose,com.google.ar.core.Pose,float[],float[]):830:842 -> a
+    98:100:void drawObj(com.google.ar.core.Pose,com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer,float[],float[],float):846:848 -> a
+    101:117:void checkIfHit(com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer,int):852:868 -> a
+    118:124:boolean isMVPMatrixHitMotionEvent(float[],android.view.MotionEvent):876:882 -> a
+    125:128:double getDistance(com.google.ar.core.Pose,com.google.ar.core.Pose):890:893 -> a
+    129:129:void showResult(java.lang.String):897:897 -> a
+    1:2:void setNowTouchingPointIndex(int):572:573 -> b
+    3:3:void showCubeStatus():915:915 -> b
+    1:1:void showMoreAction():906:906 -> c
+    1:62:void onDrawFrame(javax.microedition.khronos.opengles.GL10):580:641 -> onDrawFrame
+    63:154:void onDrawFrame(javax.microedition.khronos.opengles.GL10):640:731 -> onDrawFrame
+    1:7:void onSurfaceChanged(javax.microedition.khronos.opengles.GL10,int,int):508:514 -> onSurfaceChanged
+    8:8:void onSurfaceChanged(javax.microedition.khronos.opengles.GL10,int,int):505:505 -> onSurfaceChanged
+    1:25:void onSurfaceCreated(javax.microedition.khronos.opengles.GL10,javax.microedition.khronos.egl.EGLConfig):475:499 -> onSurfaceCreated
+com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer$1 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$k$a:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer this$1 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer):858:858 -> <init>
+    1:1:void run():861:861 -> run
+com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer$2 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$k$b:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer this$1 -> b
+    java.lang.String val$result -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer,java.lang.String):897:897 -> <init>
+    1:1:void run():900:900 -> run
+com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer$3 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$k$c:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer this$1 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer):906:906 -> <init>
+com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer$4 -> com.hl3hl3.arcoremeasure.ArMeasureActivity$k$d:
+    com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer this$1 -> a
+    1:1:void <init>(com.hl3hl3.arcoremeasure.ArMeasureActivity$GLSurfaceRenderer):915:915 -> <init>
+    1:7:void run():918:924 -> run
+com.hl3hl3.arcoremeasure.renderer.RectanglePolygonRenderer -> a.a:
+    float[] mModelMatrix -> m
+    java.nio.FloatBuffer vertexBuffer -> a
+    java.lang.String vertexShaderCode -> f
+    float[] mModelViewMatrix -> n
+    int vertexStride -> l
+    java.lang.String fragmentShaderCode -> h
+    int mColorHandle -> j
+    int vertexCount -> k
+    int mPositionHandle -> i
+    int mMVPMatrixHandle -> g
+    java.nio.ShortBuffer drawListBuffer -> b
+    float[] color -> d
+    int mProgram -> e
+    java.lang.String TAG -> p
+    short[] drawOrder -> c
+    float[] coords -> q
+    float[] mModelViewProjectionMatrix -> o
+    1:1:void <clinit>():24:24 -> <clinit>
+    1:1:void <init>():133:133 -> <init>
+    2:134:void <init>():35:167 -> <init>
+    135:160:void <init>() -> <init>
+    1:35:void setVerts(float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float):56:90 -> a
+    36:38:int loadShader(int,java.lang.String):127:129 -> a
+    39:76:void draw(float[],float[]):170:207 -> a

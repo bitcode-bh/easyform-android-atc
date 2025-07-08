@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@android:color/black"
+    android:paddingStart="2dp"
+    android:paddingTop="1dp"
+    android:paddingEnd="2dp"
+    android:paddingBottom="2dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/mtvCell"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:padding="4dp"
+        android:text="@string/table_is_empty"
+        android:textSize="25sp" />
+</TableRow>

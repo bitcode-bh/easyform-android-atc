@@ -1,0 +1,1140 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#2196f3">
+
+    <!-- F7 start -->
+    <link href="Framework7-1.4.2/dist/css/Css_f7.css" rel="stylesheet" />
+    <link href="font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="EFSE_Js/common-functions.js"></script>
+    <!-- F7 end -->
+
+    <link href="css/styles_low.css" rel="stylesheet" type="text/css" />
+
+    <script src="Plugin_Js/jquery-3.5.1.min.js" type="text/javascript"></script>
+    <script src="cordova.js"></script>
+    <script src="js/globlvariable.js"></script>
+    <script src="js/jstorage.min.js"></script>
+    <script src="js/Storagefile.js"></script>
+    <script src="js/webservicecall_REST.js" type="text/javascript"></script>
+    <script src="js/changeurl.js" type="text/javascript"></script>
+    <script src="EFSE_Js/controls-ele.js"></script>
+    <script src="EFSE_Js/selection.js" type="text/javascript"></script>
+
+    <link href="css/selection_dashboard.css" rel="stylesheet" />
+    <script src="EFSE_Js/selection_dashboard.js"></script>
+    <script src="plugins/cdn_apexcharts.js"></script>
+
+    <script src="plugins/PivotTable/jquery.ui.resizable_custom.js"></script>
+    <script src="plugins/PivotTable/jquery.ui.touch-punch.min.js"></script>
+
+    <script src="plugins/PivotTable/basic-latest.js"></script>
+    <link href="plugins/PivotTable/pivot.min.css" rel="stylesheet" />
+    <script src="plugins/PivotTable/pivot.min.js"></script>
+    <script src="plugins/PivotTable/plotly_renderers.js"></script>
+
+    <link href="Plugin_Js/datetimepicker_flat/DateTimePicker.css" rel="stylesheet" type="text/css" />
+    <script src="Plugin_Js/datetimepicker_flat/DateTimePicker.js" type="text/javascript"></script>
+
+    <script src="EFSE_Js/viewsitelist_adv_filter.js"></script>
+    <script src="EFSE_Js/get_search_control.js"></script>
+
+    <script type="text/javascript">
+        var username = JSON.parse(storage.getItem('username'));
+        var imeino = JSON.parse(storage.getItem('imeino'));
+        var uniqcode = JSON.parse(storage.getItem('uniqcode'));
+        var global_url = JSON.parse(storage.getItem('global_url'));
+        var global_wcf_url = JSON.parse(storage.getItem('global_wcf_url'));
+        var common_global_wcf_url = JSON.parse(storage.getItem('common_global_wcf_url'));
+        var page_load_over = 0;
+
+        //localStorage.setItem('username', 'priyanka.galani');
+        //localStorage.setItem('imeino', '718a37a0-c490-4fc2-9efa-6e22b0aa715c');
+        //localStorage.setItem('uniqcode', 'MBYuk7SIeU');
+        //localStorage.setItem('global_wcf_url', 'https://login.easyform.in/coreapi/api/');
+        //localStorage.setItem('company_feature_id', '27397');
+        //localStorage.setItem('user_id', '57859');
+        //var global_wcf_url = 'https://login.easyform.in/coreapi/api/';
+
+        var default_range = 20;
+        var limit_range = 20;
+        var increment_range = 20;
+        var form_flag;
+        var ischart_enabled = 'true';
+
+        // mobile view (F7 View/old View)
+        var F7_view = JSON.parse(storage.getItem('F7_view'));
+        var F7_device = JSON.parse(storage.getItem('F7_device'));
+        //var F7_view = 'true';
+        //var F7_device = 'android';
+
+
+        document.addEventListener('deviceready', function showValues() {
+
+            var data_json = JSON.parse(storage.getItem('list_json'));
+            if (data_json == '' || data_json == null || data_json == undefined) {
+                storage.setItem('flow_Array', JSON.stringify(''));
+                localStorage.setItem('is_subflow', 'false');
+            }
+            else {
+                var list_data = JSON.parse(data_json);
+                var customer_redirection = list_data[0].customer_redirection;
+                if (customer_redirection == 'module') { }
+                else {
+                    storage.setItem('flow_Array', JSON.stringify(''));
+                    localStorage.setItem('is_subflow', 'false');
+
+                    //mutfiflow as subflow 01122020
+                    localStorage.setItem('type20_columndata', JSON.stringify(''));
+                    storage.setItem('type20_columndata', JSON.stringify(''));
+                    storage.setItem('parent_type20_columndata', JSON.stringify(''));
+                }
+            }
+
+            localStorage.setItem('searchCol_obj', "");
+
+            //storage.setItem('flow_Array', JSON.stringify(''));
+            //localStorage.setItem('is_subflow', 'false');
+
+            pageload_main();
+
+            document.addEventListener("backbutton", function (e) {
+                //var seconds = getPageLoadTime();
+                //if (seconds > 3) {
+                if (page_load_over == 1) {
+                    back_button('selection');
+                }
+            }, true);
+
+        }, true);
+
+
+        $(document).ready(function () {
+
+            var menu_smallImage = document.getElementById("menu_img_profile");
+            var pro_pic_path = get_profile_pic_path_android_ios();
+            if (pro_pic_path == '' || pro_pic_path == null || pro_pic_path == undefined) { }
+            else {
+                menu_smallImage.src = pro_pic_path;
+            }
+
+            if (F7_device == "ios") {
+                $(".panel-nav-ios").show();
+                $(".panel-nav").hide();
+            }
+            else {
+                $(".panel-nav-ios").hide();
+                $(".panel-nav").show();
+            }
+
+            var doc = new MkDocInits();
+            doc._initF7(doc);
+            doc._checkSession(doc);
+
+            $("#div_notification_container").scroll(function () {
+                var offsetHeight = document.getElementById("div_notification_container").offsetHeight;
+                var scrollTop = document.getElementById("div_notification_container").scrollTop;
+                var scrollHeight = document.getElementById("div_notification_container").scrollHeight;
+                if (parseInt(scrollTop) === (parseInt(scrollHeight) - parseInt(offsetHeight)) || parseInt(scrollTop) === (parseInt(scrollHeight) - parseInt(offsetHeight) - 1)) {
+                    limit_range = limit_range + increment_range;
+                    get_user_notifications();
+                }
+            });
+
+        });
+
+        function pageload_main() {
+            if (typeof (myApp) != "undefined") {
+                if (ischart_enabled == 'true') {
+                    get_dashboard();
+                }
+
+                // Give background color of module list 16122024 PG
+                var t_color_name = JSON.parse(storage.getItem('viewsite_btn_color'));
+                $("head").append("<style>#module_list li::before { content:''; position:absolute; left:-5px; top:5px; width:5px; height:40px; border-right: 5px solid " + t_color_name + "; border-top-right-radius:5px; border-bottom-right-radius:5px; }</style>");
+
+                check_table_availabililty();
+
+                check_for_glob_notification();
+            }
+            else {
+                setTimeout(function () { pageload_main(); }, 500);
+            }
+        }
+
+        function exit_app() {
+            vibrate_device();
+            var user_choice = confirm("Are you sure, you want to exit?");
+            if (user_choice == true) {
+                localStorage.setItem('view_biometric', 'false');
+
+                var q_jsonobj = [];
+                q_jsonobj.push({
+                    data: "",
+                    p: "23"
+                });
+                cordova.exec(onsuccess_exit_app, onfail_exit_app, 'SqlitePlugin', 'exitapp', q_jsonobj);
+            }
+        }
+
+        function onsuccess_exit_app() { }
+
+        function onfail_exit_app(e) { }
+
+        /**/</script>
+    <style type="text/css">
+        .button {
+            color: Blue;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* F7 Style start */
+        .list-block #module_list .item-inner {
+            padding-right: 10px !important;
+            background-image: none !important;
+        }
+
+        /*.list-block #module_list a {
+            color: gray;
+            background-color: lightgray;
+        }*/
+        /* F7 Style end */
+
+        .card_td {
+            height: 100%;
+            white-space: initial;
+            line-height: 20px;
+            display: block;
+            vertical-align: middle;
+            border-radius: 7px;
+            box-shadow: 1px 1px 5px #7f7f7f !important;
+            position: relative;
+            background: #fff;
+            text-align: left !important;
+            margin: 4px 4px;
+            padding: 10px;
+        }
+
+        .cardview_bkcolor {
+            background: #f2f2f2 !important;
+        }
+
+        .popup-notifications .list-block .item-subtitle {
+            white-space: normal;
+        }
+
+        .notification-badge {
+            position: absolute;
+            margin-left: -12px;
+            top: 5px;
+            background-color: red;
+            border-radius: 30px;
+            font-size: 14px;
+            width: 10px;
+            height: 10px;
+            text-align: center;
+            padding-top: 2px !important;
+            padding: inherit;
+        }
+
+      /*  #glob_notification {*/
+        #glob_noti_container {
+           /* display: none;*/
+            position: absolute;
+            bottom: 12px;
+            left: 0;
+            z-index: 1;
+            width: 99%;
+            background-color: #00000091;
+            color: white;
+        }
+
+        [id^=glob_notification_] {
+            width: 99%;
+            background-color: #00000091;
+            color: white;
+            margin-bottom: 5px;
+            height: 30px;
+        }
+
+        #glob_noti_container button {
+            position: absolute;
+            float: right;
+            right: 4px;
+            padding: 4px 9px;
+            height: 29px;
+            font-size: 13px;
+        }
+
+        [id^=marquee_noti_] {
+            margin-top: 6px;
+        }
+
+        .views .navbar .left {
+            width: 10%;
+            text-align: center;
+            margin: 0px 5px;
+        }
+
+        .views .navbar .center {
+            width: 80%;
+            text-align: center;
+            margin: 0px 5px;
+        }
+
+        .views .navbar .right {
+            width: 10%;
+            text-align: center;
+            margin: 0px 5px;
+        }
+    </style>
+</head>
+<body>
+    <!--  F7 Start -->
+    <div class="F7-view" style="width: 100%; height: 100%">
+        <div class="statusbar-overlay"></div>
+        <div class="panel-overlay"></div>
+        <div class="panel-nav"></div>
+
+        <!--ios menu click issue [14102020]-->
+        <div class="panel-nav-ios">
+            <!-- Navbar Start -->
+            <div id="nav_main" class="panel panel-left panel-cover" style="display: block;">
+                <div id="nav_sub1" class="view navbar-fixed" data-page="panel-left">
+                    <div class="pages">
+                        <div id="nav_sub2" data-page="panel-left" class="page">
+                            <div class="navbar">
+                                <div class="navbar-inner">
+                                    <div class="center">Settings</div>
+                                </div>
+                            </div>
+                            <div class="page-content">
+                                <div class="content-block profile_photo" style="margin: 0px; background: url(images/bg2.jpg);background-size: 100% 100%;position:relative;">
+                                    <ul>
+                                        <li style="text-align: center">
+                                            <img id="img_profile_ios" src="images/profile_pic.png" onclick="get_full_view_profile_pic()" onerror="set_detault_profile_pic()" style="width: 120px; height: 120px; border-radius: 100px; margin: 0; margin-bottom: 5px;border: 2px solid #fff;">
+                                        </li>
+                                        <li id="change_photo" class="accordion-item" style="width:28px; display:inline-block; position:absolute;top:100px;right:50px;">
+                                            <a href="#" class="item-link item-content">
+                                                <div class="item-inner" style="margin-left: 0">
+                                                    <div class="item-title"><i id="edit_pro_pic" class="fa fa-pencil" style="font-size: 30px;color: #fff;"></i></div>
+                                                </div>
+                                            </a>
+                                            <div class="accordion-item-content" style="margin-left:0; background: #e5e2e2;opacity:0.9; position:absolute;right:-25px;z-index:999;">
+                                                <div class="list-block">
+                                                    <ul>
+                                                        <li onclick='change_profile_pic("browse")'>
+                                                            <div class="item-content">
+                                                                <div class="item-inner" style="margin-left: 0">
+                                                                    <div class="item-title">BROWSE</div>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li style="text-align: center; font-size: 13pt; font-weight: bold">
+                                            <label id="lblusername" style="margin-bottom: 0; padding-bottom: 0;color: #fff;"></label>
+                                            <i id="menu_img_gprs" class="fa fa-circle" style="color: lightgreen; margin-left: 10px"></i>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="list-block">
+                                    <ul>
+                                        <li>
+                                            <a onclick="get_my_profile_details_F7()" class="item-link close-panel open-popup">
+                                                <div class="item-content">
+                                                    <div class="item-media"><i class="fa fa-user"></i></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">My Profile</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li id="change_pass" onclick="localStorage.setItem('change_pwd_flag', 'profile');changeurl('change_password.html');">
+                                            <a class="item-link close-panel item-cp">
+                                                <div class="item-content">
+                                                    <div class="item-media"><i class="fa fa-unlock-alt"></i></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">Change Password</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li onclick="logout_on_click_online()">
+                                            <a class="item-link close-panel">
+                                                <div class="item-content">
+                                                    <div class="item-media"><i class="fa fa-power-off"></i></div>
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">LogOut</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    </ul>
+
+                                    <ul id="view_database">
+                                        <li class="swipeout">
+                                            <div class="item-content swipeout-content">
+                                            </div>
+                                            <div class="swipeout-actions-left">
+                                                <a href="#" onclick="resolve_crash_status_issue()" class="swipeout-close" style="background: grey;">Resolve Crash</a>
+                                            </div>
+                                            <div class="swipeout-actions-right">
+                                                <a href="#" onclick="view_database()" class="swipeout-close" style="left: 0; background: grey; margin-left: 2px;">Database</a>
+                                            </div>
+
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <table style="width:85%; margin:5px 15px">
+                                    <tr>
+                                        <td><b>ID:</b> 65</td>
+                                        <td style="text-align:right"><p id="app_version_ios" style="margin:0"></p></td>
+                                    </tr>
+                                </table>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Navbar End -->
+        </div>
+        <!--ios menu click issue [14102020]-->
+
+        <div class="panel-pro"></div>
+        <div class="panel-faq"></div>
+        <div class="views">
+            <div class="view view-main" data-page="list-view">
+                <div class="pages navbar-fixed navbar-through toolbar-through">
+                    <div data-page="list-view" class="page page-on-center">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left">
+                                    <a onclick='back_button("selection")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="icon icon-back"></i></a>
+                                </div>
+                                <div class="center">
+                                    <label id="lbl_theme_header"></label>
+
+                                    <div id="div_dashboard_config">
+                                        <i class="fa fa-pencil-square cls_pagename_opt" aria-hidden="true" onclick="edit_selected_dashboard_page()" title="Edit Dashboard Name"></i>
+                                        <i class="fa fa-times-circle cls_pagename_opt" aria-hidden="true" onclick="delete_selected_dashboard_page()" title="Delete Dashboard"></i>
+                                        <i class="fa fa-plus cls_pagename_opt cls_add_new_dashboard" aria-hidden="true" onclick="add_new_dashboard()" title="Add New Dashboard"></i>
+                                    </div>
+
+                                    <select id="ddl_dashboard_list" class="item-input item-input-field"></select>
+
+                                    <div id="toggle_chart_tbl">
+                                        <button type="button" class="btn view_type_active" title="Chart View" id="chart_view" view_type="chart_view"><i class="fa fa-bar-chart" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn" title="Table View" id="tbl_view" view_type="table_view"><i class="fa fa-table" aria-hidden="true"></i></button>
+                                    </div>
+
+                                </div>
+
+                                <div class="right">
+                                    <!--<a id="refresh_btn" onclick="check_table_availabililty()" class="link icon-only"><i class="fa fa-refresh" style="color: white"></i></a>
+                                    <a href="#" onclick="get_user_notifications();" class="link icon-only"><i class="fa fa-bell-o" style="color: white"><span class="badge notification-badge color-red" style="opacity:0"></span></i></a>-->
+                                    <!--<a href="#" class="open-panel link icon-only"><i class="icon icon-bars"></i></a>-->
+                                    <a href="#" class="open-panel link icon-only"><img id="menu_img_profile" src="images/profile_pic.png" style="padding:0px;" /></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="div_page_content" class="page-content" style="width: 100%; height: 92%; line-height: 1;">
+
+                            <!-- New dashboard container 06082024 PG -->
+                            <div id="div_new_dashboard" class="list-block">
+                                <div class="swiper-custom" id="dashboard_page_Content">
+                                    <div class="swiper-container">
+                                        <div class="swiper-pagination"></div>
+                                        <div class="swiper-wrapper">
+                                        </div>
+                                    </div>
+                                    <div class="swiper-button-prev"></div>
+                                    <div class="swiper-button-next"></div>
+                                </div>
+
+                                <!--<div id="dashboard_container">
+                                    <ul class="toolbar tabbar" id="dashboard_page_tab">
+                                    </ul>
+
+                                    <div class="tab-content" id="dashboard_page_Content">
+                                    </div>
+                                </div>-->
+                                <!--<button type="button" id="btn_add_chart" class="btn btn-success mk_vibrate" title="Add new chart"><i class="fa fa-plus" aria-hidden="true"></i></button>-->
+
+                            </div>
+
+
+                            <div id="div_old_dashboard" class="list-block" style="width: 100%;overflow:auto;">
+
+                                <div id="glob_noti_container"></div>
+
+                                    <!--<div id="glob_notification">
+                                        <marquee id="marquee_noti" direction="left" behavior="scroll" loop="" onmouseover="this.stop();" onmouseout="this.start();"></marquee>
+                                        <a href="#" class="button button-fill" onclick="got_it_notification()">Got it!</a>
+                                    </div>-->
+
+                                    <div id="noti_Attendance1" class="row" style="text-align:center; display:none; margin-top:5px">
+                                        <div class="chip" style="background-color: white; border: 1px solid #ccc">
+                                            <div class="chip-media" style="background-color: red;">
+                                                <i class="fa fa fa-info" style="margin: 0"></i>
+                                            </div>
+                                            <div class="chip-label">Profile picture is not set. It is used to fill attendance!</div>
+                                        </div>
+                                    </div>
+                                    <div id="noti_Attendance2" class="row" style="text-align:center; display:none; margin-top:5px">
+                                        <div class="chip" style="background-color: white; border: 1px solid #ccc">
+                                            <div class="chip-media" style="background-color: red;">
+                                                <i class="fa fa fa-info" style="margin: 0"></i>
+                                            </div>
+                                            <div class="chip-label" onclick="noti_Attendance_Click()">Your attendance is pending!</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row" id="div_level" style="border-bottom: 1px solid #e1e1e1; display: none">
+                                        <div class="col-100">
+                                            <a id="lbl_last_flow" class="button" style="font-weight: bold; color: black; text-transform: none"></a>
+                                        </div>
+                                    </div>
+
+                                    <!--list view-->
+                                    <ul id="module_list">
+                                        <!--<li><a href="#" class="item-link item-content"><div class="item-media"><i class="fa fa-object-ungroup"></i></div>
+            <div class="item-inner"><div class="item-title">PV</div>
+                <div class="item-after"><span class="badge mkbadge button button-fill">25</span></div>
+            </div>
+            </a></li>-->
+                                    </ul>
+
+                                    <!--card view-->
+                                    <!--<div id="module_bg_div" style="margin-bottom: -6px; margin-top: -5px; position: relative; display: none;">
+            <img src="images/bg2.jpg" style="width: 100%; height: 90px;">
+            <div style="position: absolute; bottom: 10px; left: 12px; color: #fff; font-size: 20px;">
+                <span style="display: block; font-size: 26px;">Hello,</span>
+                <span id="card_username" style="text-transform: capitalize;"></span>
+            </div>
+        </div>-->
+                                    <table class="block" id="card_module_list" style="width: 100%;margin-top: 5px;"></table>
+                                </div>
+
+                                <!--<div id="menu_Attendance" class="list-block" style="display:none">
+        <div class="row">
+            <div class="col-50" style="width: 100%; font-size: 11pt">
+
+            </div>
+        </div>
+    </div>-->
+
+                                <div id="menu_MISC" class="list-block" style="margin: 13px 0; display: none">
+                                    <ul>
+                                        <li id="menu_Chart" style="display: none">
+                                            <a class="item-link item-content" onclick='localStorage.setItem("report_name", "Chart"); changeurl("feature_chart.html");'>
+                                                <div class="item-media"><i class="fa fa-dashboard" style="font-size: 20px"></i></div>
+                                                <!-- <div class="item-media"><img src="images/DEMO/Gujarat.png"style="width:42px; height:42px; margin-left:-10px; margin-right:10px" /></div>-->
+                                                <div class="item-inner">
+                                                    <div class="item-title">Dashboard</div>
+                                                    <!--<div class="item-title">Gujarat</div>-->
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li id="menu_Scoreboard" style="display: none">
+                                            <a class="item-link item-content" onclick='localStorage.setItem("report_name", "Scoreboard"); changeurl("feature_chart.html");'>
+                                                <div class="item-media"><i class="fa fa-star-half-o" style="font-size: 20px"></i></div>
+                                                <div class="item-inner">
+                                                    <div class="item-title">Scoreboard</div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li id="menu_KYFF" style="display: none">
+                                            <a class="item-link item-content" onclick='localStorage.setItem("report_name", "KYFF"); changeurl("feature_filter.html");'>
+                                                <div class="item-media"><i class="fa fa-sitemap" style="font-size: 20px"></i></div>
+                                                <div class="item-inner">
+                                                    <div class="item-title">Know Your Field Force</div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li id="menu_tech_rep" style="display: none">
+                                            <a class="item-link item-content" onclick='localStorage.setItem("report_name", "tech_rep"); changeurl("feature_filter.html");'>
+                                                <div class="item-media"><i class="fa fa-group" style="font-size: 20px"></i></div>
+                                                <div class="item-inner">
+                                                    <div class="item-title">Technician Report</div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li id="menu_live_alarm" style="display: none">
+                                            <a class="item-link item-content" onclick='localStorage.setItem("report_name", "live_alarm"); changeurl("feature_filter.html");'>
+                                                <div class="item-media" style="padding-left: 4px"><i class="fa fa-dot-circle-o" style="font-size: 20px"></i></div>
+                                                <div class="item-inner">
+                                                    <div class="item-title">Live Alarm Report</div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li id="menu_Attendance" style="display: none">
+                                            <div class="item-content" style="border-left: 1px solid #e1e1e1; border-bottom: 1px solid #e1e1e1">
+                                                <div class="item-inner trip-start-stop">
+                                                    <div class="item-title">Check In/Out</div>
+                                                    <label class="label-switch">
+                                                        <input type="checkbox" onchange="">
+                                                        <div class="checkbox"></div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <br />
+                                <br />
+
+                                <div id="menu_Bottom_Image" class="list-block" style="position: absolute; bottom: 0; left: 0; right: 0; margin: 13px 5px; text-align: center; display: none">
+                                    <img src="images/form_bg.jpg" />
+                                </div>
+                            </div>
+
+                        <div id="div_vertical_dashboard" class="page-content">
+                            <div id="dashboard_container">
+                            </div>
+                            <input type="hidden" id="hdn_dashboard_mail_config" value="">
+                            <a id="btn_add_chart" class="floating-button mk_vibrate" title="Add new chart"><i class="fa fa-plus fa-2x"></i></a>
+                            <a id="btn_dashboard_copy" class="floating-button mk_vibrate" title="Copy existing dashbaord"><i class="fa fa-clone fa-2x"></i></a>
+                        </div>
+
+                        <div id="div_new_tabbar" class="toolbar tabbar tabbar-labels">
+                            <div class="toolbar-inner">
+                                <a href="#" class="tab-link active" onclick="home_tab_click()">
+                                    <i class="icon fa fa-home"></i>
+                                    <span class="tabbar-label">Home</span>
+                                </a>
+                                <a href="#" class="tab-link" onclick="check_table_availabililty();check_for_glob_notification();">
+                                    <i class="icon fa fa-refresh"></i>
+                                    <span class="tabbar-label">Refresh</span>
+                                </a>
+                                <a href="#" class="tab-link" onclick="get_user_notifications();">
+                                    <i class="icon fa fa-bell-o"></i>
+                                    <span class="tabbar-label">Notification</span>
+                                </a>
+                                <a href="#" class="tab-link" onclick="get_vertical_dashboard('report');">
+                                    <i class="icon fa fa-tachometer"></i>
+                                    <span class="tabbar-label">Report</span>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit card popup 09082024 PG -->
+        <div class="popup popup-chart-config" style="display: none;">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="center">Card Configuration</div>
+                                <div class="right"><a href="#" class="link" onclick='myApp.closeModal(".popup-chart-config");'><i class="fa fa-close" style="color: #fff; font-size: 22px;"></i></a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block">
+                                <div id="div_charttype" class="content-block">
+                                    <div class="row no-gutter">
+                                        <div class="col-33 chart_type chart_active" title="Counter card">
+                                            <div class="card-body">
+                                                <div class="demo-thumb-chart-bar" id="counterchart">
+                                                    <div class="counter_chart">
+                                                        <span class="dot"></span>
+                                                        <div class="row no-gutter">
+                                                            <!--<div class="col-33"><i class="fa fa-sitemap"></i></div>-->
+                                                            <div class="col-33"><h3 class="mt-2 txt_menu_name">Card Name</h3></div>
+                                                            <div class="col-33"><h3 class="huge tab_count">10</h3></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer" align="center">
+                                                <span>COUNTER</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-33 chart_type" title="Bar chart">
+                                            <div class="card-body">
+                                                <div class="demo-thumb-chart-bar" id="barchart"></div>
+                                            </div>
+                                            <div class="card-footer" align="center">
+                                                <span>BAR</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-33 chart_type" title="Pie chart">
+                                            <div class="card-body">
+                                                <div class="demo-thumb-chart-bar" id="piechart"></div>
+                                            </div>
+                                            <div class="card-footer" align="center">
+                                                <span>PIE</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row no-gutter">
+                                        <div class="col-33 chart_type" title="Donut chart">
+                                            <div class="card-body">
+                                                <div class="demo-thumb-chart-bar" id="donutchart"></div>
+                                            </div>
+                                            <div class="card-footer" align="center">
+                                                <span>DONUT</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-33 chart_type" title="Column chart">
+                                            <div class="card-body">
+                                                <div class="demo-thumb-chart-bar" id="columnchart"></div>
+                                            </div>
+                                            <div class="card-footer" align="center">
+                                                <span>COLUMN</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-33 chart_type" title="Stackbar chart">
+                                            <div class="card-body">
+                                                <div class="demo-thumb-chart-bar" id="stackbar"></div>
+                                            </div>
+                                            <div class="card-footer" align="center">
+                                                <span>STACKBAR</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row no-gutter">
+                                        <div class="col-33 chart_type" title="Stackcolumn chart">
+                                            <div class="card-body">
+                                                <div class="demo-thumb-chart-bar" id="stackcolumn"></div>
+                                            </div>
+                                            <div class="card-footer" align="center">
+                                                <span>STACKCOLUMN</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-33 chart_type" title="Line chart">
+                                            <div class="card-body">
+                                                <div class="demo-thumb-chart-bar" id="line"></div>
+                                            </div>
+                                            <div class="card-footer" align="center">
+                                                <span>LINE</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-33 chart_type" title="Pivot Table">
+                                            <div class="card-body">
+                                                <div class="demo-thumb-chart-bar" id="pivot">
+                                                    <img src="images/Charts/pivot_img.png" />
+                                                </div>
+                                            </div>
+                                            <div class="card-footer" align="center">
+                                                <span>PIVOT</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <table id="tbl_chart_config">
+                                        <tr>
+                                            <td>Source :</td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <select id="ddl_udf_name" class="chart_config_elem" title="source">
+                                                        <option>select</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>Card Title :</td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <input type="text" id="txt_source_name" class="chart_config_elem" title="Card Title" />
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr style="display:none;">
+                                            <td>Position :</td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <input type="number" id="txt_card_position" class="chart_config_elem" title="Card Position" />
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="cls_aggr_fun">
+                                            <td>Aggregation :</td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <select id="ddl_aggregate_data" class="chart_config_elem" title="Aggregation Function">
+                                                        <option value="count">Count</option>
+                                                    </select>
+                                                    <select id="ddl_aggregate_column" class="chart_config_elem" title="Aggregation columns (Numeric only)">
+                                                        <option value="Select Column">Select Column </option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="cls_percentage_count">
+                                            <td>Previous Card :</td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <select id="ddl_previous_count" class="chart_config_elem" title="Aggregation Function">
+                                                        <option value="select card">Select Card</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="cls_percentage_count">
+                                            <td>Current Card :</td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <select id="ddl_current_count" class="chart_config_elem" title="Aggregation Function">
+                                                        <option value="select card">Select Card</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="cls_groupby1">
+                                            <td title="Columns with radio,checkbox,drop-down,calendar & searchable control">X-axis :</td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <select id="ddl_groupby1" class="chart_config_elem">
+                                                        <option value="Select Column Name">Select Column Name</option>
+                                                    </select>
+                                                    <select id="ddl_group_date_type1" class="chart_config_elem" title="Date Options">
+                                                        <option value="day">Day</option>
+                                                        <option value="week">Week</option>
+                                                        <option value="month" selected="selected">Month</option>
+                                                        <option value="quarter">Quarter</option>
+                                                        <option value="year">Year</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="cls_groupby2">
+                                            <td title="Columns with radio,checkbox,drop-down,calendar & searchable control">Y-axis :</td>
+                                            <td title="Columns with radio,checkbox,drop-down,calendar & searchable control">
+                                                <div class="item-input item-input-field">
+                                                    <select id="ddl_groupby2" class="chart_config_elem">
+                                                        <option value="Select Column Name">Select Column Name</option>
+                                                    </select>
+                                                    <select id="ddl_group_date_type2" class="chart_config_elem" title="Date Options">
+                                                        <option value="day">Day</option>
+                                                        <option value="week">Week</option>
+                                                        <option value="month" selected="selected">Month</option>
+                                                        <option value="quarter">Quarter</option>
+                                                        <option value="year">Year</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="cls_trends">
+                                            <td>Trend : </td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <input type="checkbox" id="chk_trends_view" class="chart_config_elem" />
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="cls_trends_opt">
+                                            <td>Date Columns : </td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <select id="ddl_trends" class="chart_config_elem">
+                                                        <option value="Select Column Name">Select Column Name</option>
+                                                    </select>
+
+                                                    <select id="ddl_trend_group" class="chart_config_elem" title="Duration Options">
+                                                        <option value="today">Today</option>
+                                                        <option value="this_week">This Week</option>
+                                                        <option value="this_month" selected="selected">This Month</option>
+                                                        <option value="this_quarter">This Quarter</option>
+                                                        <option value="this_year">This Year</option>
+                                                        <option value="last_7_days">Last 7 days</option>
+                                                        <option value="last_30_days">Last 30 days</option>
+                                                        <option value="last_90_days">Last 90 days</option>
+                                                        <option value="last_365_days">Last 365 days</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="item-input item-input-field cls_linechart_opt">
+                                                    <select id="ddl_linechart_opt" class="chart_config_elem" title="Duration Options">
+                                                        <option value="this_week">this week</option>
+                                                        <option value="this_month" selected="selected">this month</option>
+                                                        <option value="this_quarter">this quarter</option>
+                                                        <option value="this_year">this year</option>
+                                                        <option value="last_week">last week</option>
+                                                        <option value="last_month">last month</option>
+                                                        <option value="last_quarter">last quarter</option>
+                                                        <option value="last_year">last year</option>
+                                                        <option value="last_7_days">last 7 days</option>
+                                                        <option value="last_30_days">last 30 days</option>
+                                                        <option value="last_90_days">last 90 days</option>
+                                                        <option value="last_365_days">last 365 days</option>
+                                                        <option value="is_before_today">is before today </option>
+                                                        <option value="is_after_today">is after today</option>
+                                                        <option value="is_between">is between</option>
+                                                    </select>
+
+                                                    <select id="ddl_milestone_opt" class="chart_config_elem" title="Timeframe Options">
+                                                        <option value="day">Daily</option>
+                                                        <option value="week" selected="selected">Weekly</option>
+                                                        <option value="month">Monthly</option>
+                                                        <option value="quarter">Quarterly</option>
+                                                        <option value="year">Yearly</option>
+                                                    </select>
+                                                </div>
+                                                <div class="item-input item-input-field cls_line_datepicker">
+                                                    <input id="start_date" type="text" placeholder="Select Date" class="chart_config_elem" title="Select start date" />
+                                                    <input id="end_date" type="text" placeholder="Select Date" class="chart_config_elem" title="Select end date" />
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="cls_pvttbl">
+                                            <td>Aggr : </td>
+                                            <td>
+                                                <button type="button" id="btn_add_pvt_aggrcol" class="btn bg-f7" name="Add" value="Add" title="Add Aggregation Column">Add</button>
+
+                                                <div id="mdl_add_pvttbl_col">
+                                                    <table>
+                                                        <tr>
+                                                            <td>Pivot Data:</td>
+                                                            <td>
+                                                                <div class="item-input item-input-field">
+                                                                    <select id="ddl_pvttbl_aggrcol" class="chart_config_elem" title="Aggregation Function">
+                                                                        <option value="Select Aggregation">Select Aggregation</option>
+                                                                        <option value="count">Count</option>
+                                                                        <option value="sum">Sum</option>
+                                                                        <option value="min">Min</option>
+                                                                        <option value="max">Max</option>
+                                                                        <option value="avg">Avg</option>
+                                                                    </select>
+
+                                                                    <select id="ddl_pvttbl_col" class="chart_config_elem" title="Aggregation Columns(Numeric only)">
+                                                                        <option value="Select Column">Select Column</option>
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>Custom Header:</td>
+                                                            <td>
+                                                                <div class="item-input item-input-field">
+                                                                    <input type="text" id="txt_edit_hrader" class="chart_config_elem" title="Custom header (Non mandatory). Used to display custom header text for pivot tables." />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>Add prefix: </td>
+                                                            <td>
+                                                                <div class="item-input item-input-field">
+                                                                    <input type="text" id="txt_aggre_prefix" class="chart_config_elem" title="Prefix (Non mandatory). Used to display prefix text for pivot tables." />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>Percentage:</td>
+                                                            <td>
+                                                                <div class="item-input item-input-field">
+                                                                    <select id="ddl_percentage" class="chart_config_elem" title="Percentage - True: It will display weightage of cell value(below in red text).">
+                                                                        <option value="false">False</option>
+                                                                        <option value="true">True</option>
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td colspan="5">
+                                                                <button type="button" id="btn_pivot_add_col" class="btn bg-f7">Add</button>
+                                                                <button type="button" id="btn_pivot_cancel_col" class="btn bg-f7">Close</button>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+
+                                            </td>
+                                        </tr>
+
+                                        <tr class="cls_pvttbl">
+                                            <td>Pivot Data :</td>
+                                            <td>
+                                                <div class="item-input item-input-field">
+                                                    <div id="container_pvttbl_row" class="chart_config_elem"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>Default Filter:</td>
+                                            <td>
+                                                <button type="button" value="Default Filter" class="btn bg-f7" id="btn_advanced_search" title="Apply filter for this card">Default Filter</button>
+                                                <div class="item-input item-input-field">
+                                                    <div class="filtered-items-outer chart_config_elem">
+                                                        <div class="div-filtered-item"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td colspan="2">
+                                                <button type="button" value="Apply" class="btn bg-f7" id="btn_create_chart" title="Apply changes for this card">Apply</button>
+                                            </td>
+                                        </tr>
+
+                                    </table>
+
+                                    <div id="preview_card_container" title="Preview Card">
+                                        <div id="preview_card_alert">
+                                            <span id="card_title"></span>
+                                            <span id="card_alert"></span>
+                                        </div>
+                                        <div id="preview_card"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--  Advance filter popup 10012025 PG -->
+        <div class="popup popup-advance-search-online">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"> </div>
+                                <div class="right"><a href="#" class="link"><i class="fa fa-close" style="color: #fff; font-size: 22px;margin-right:0px;" onclick="myApp.closeModal('.popup-advance-search-online')"></i></a></div>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <div class="list-block" style="overflow: auto; height: 92%">
+                                <ul id="tbl_advance_colSearch"></ul>
+                            </div>
+                        </div>
+                        <div class="toolbar toolbar-bottom">
+                            <div class="toolbar-inner footer-type20-add">
+                                <div class="left"><a href="#" class="link" id="btn_clear_fltr">Clear Filter</a></div>
+                                <div class="right"><a href="#" class="link" id="btn_apply_fltr">Search</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--  Type20 dropdown popup-->
+        <div class="popup popup-type20-dropdown" style="display: none; z-index: 110003; ">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div data-page="home" class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left"><a onclick='close_type20_dropdown_popup()' class="back link icon-only"><i class="icon icon-back"></i></a></div>
+                                <!--commented coz added create btn when no data found on search [FT -- 01022024]-->
+                                <!--<div class="" style="padding-left:100px;"><a id="ddl_cust_creation" class="back link icon-only" style="display: none;"><i class="fa fa-plus" style="color: #fff; font-size: 22px;"></i></a></div>-->
+                                <div class="right"><a id="dd_listview_icon" class="back link icon-only" onclick="open_popup_for_listview_type20()"><i class="fa fa-th-list" style="color: #fff; font-size: 22px;margin-left:20px;"></i></a></div>
+                            </div>
+                        </div>
+
+
+                        <form id="F7_type20_ddl_Search" data-search-list=".list-block-search" data-search-in=".item-title" class="searchbar searchbar-init">
+                            <div class="searchbar-input">
+                                <input type="search" placeholder="Search"><a href="#" class="searchbar-clear"></a>
+                            </div>
+                            <a href="#" class="searchbar-cancel">Cancel</a>
+                        </form>
+
+                        <!-- Search Bar overlay -->
+                        <div class="searchbar-overlay"></div>
+
+                        <div class="page-content" id="ddl_list">
+                            <div class="content-block searchbar-not-found">
+                                <div class="content-block-inner">Fetching Data...</div>
+                            </div>
+
+                            <div class="list-block list-block-search searchbar-found">
+                                <ul id="type20_ddl_list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  Type20 dropdown popup End-->
+        <!-- Notification popup -->
+        <div class="popup popup-notifications" style="display: none; z-index: 11002">
+            <div class="view navbar-fixed">
+                <div class="pages">
+                    <div class="page">
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <div class="left" style="margin-left: 16px">Notifications</div>
+                                <div class="right"><a href="#" class="link" onclick='myApp.closeModal(".popup-notifications")'>Close</a></div>
+                            </div>
+                        </div>
+                        <div class="page-content" id="div_notification_container">
+                            <!--<div class="list-block media-list">
+                                <ul>
+                                    <li>
+                                        <a href="#" class="item-link item-content">
+                                            <div class="item-inner">
+                                                <div class="item-subtitle">Vehicle Id: 1234 should be completed by the EOD.</div>
+                                                <div class="item-text">11/12/2020 12:12 PM</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="item-link item-content">
+                                            <div class="item-inner">
+                                                <div class="item-subtitle">Please contact to circle admin. He need to talk with you.</div>
+                                                <div class="item-text">11/12/2020 11:55 PM</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="Framework7-1.4.2/dist/js/framework7.min.js"></script>
+
+        <!--android -->
+        <!--<script class="link-F7-and" src="Framework7-1.4.2/kitchen-sink-material/js/kitchen-sink.js"></script>-->
+        <!--ios -->
+        <!--<script class="link-F7-ios" src="Framework7-1.4.2/kitchen-sink-ios/js/kitchen-sink.js"></script>-->
+        <!--  F7 End-->
+
+        <script>
+            pre_init_F7();
+        </script>
+    </div>
+</body>
+</html>

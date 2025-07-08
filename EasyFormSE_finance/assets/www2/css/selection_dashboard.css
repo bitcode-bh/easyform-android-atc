@@ -1,0 +1,1325 @@
+
+.navbar a.icon-only {
+    padding: 0px 5px !important;
+}
+
+    .navbar a.icon-only i {
+        margin-right: 0px !important;
+    }
+
+#module_list li {
+    margin: 8px;
+    border-radius: 5px;
+    /*border-left: 10px solid;*/
+    font-size: 14px;
+}
+
+/* #module_list li:first-child {
+        margin-top: 0px;
+    }*/
+
+#module_list .item-content {
+    padding-left: 15px !important;
+    align-items: start;
+    min-height: 50px;
+}
+
+#module_list .item-title {
+    color: black;
+    display: inline;
+}
+
+#module_list li::before {
+    content: "";
+    position: absolute;
+    left: -5px;
+    top: 5px;
+    width: 5px;
+    height: 40px;
+    border-right: 5px solid #00b04f;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.list-block #module_list:before {
+    height: 0;
+}
+
+#module_list span[id^='circle_'] {
+    background-color: initial !important;
+}
+
+.list-block #module_list .item-inner {
+    padding: 0px;
+    min-height: 20px;
+    padding-left: 10px;
+    /*margin-top: 20px;*/
+    /*position: absolute;*/
+}
+
+    .list-block #module_list .item-inner .item-title-row {
+        height: 30px;
+    }
+
+.list-block #module_list .item-text {
+    top: 24px;
+    left: 55px;
+    position: absolute !important;
+    max-width: 72%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.list-block #module_list .item-media {
+    /*margin-top: 5px;
+    margin-right: 10px;*/
+    padding: 0px;
+    min-width: 30px !important;
+    width: 30px;
+    margin: auto;
+}
+
+    .list-block #module_list .item-media i {
+        font-size: 28px;
+    }
+
+    .list-block #module_list .item-media img {
+        width: 30px;
+        height: 30px;
+        margin-top: 2px;
+        margin-right: 8px;
+    }
+
+
+.list-block #module_list .item-inner .item-title {
+    color: #0D1829;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.list-block #module_list .item-inner:after {
+    height: 0px;
+}
+
+.list-block #module_list .item-after {
+    margin-top: -18px;
+    margin-right: 7px;
+    position: absolute;
+    right: 0px;
+}
+
+    .list-block #module_list .item-after .fa-spinner {
+        font-size: 20px;
+        margin-top: 4px;
+        margin-left: 5px;
+    }
+
+.list-block #module_list .item-media .item-title {
+    font-weight: bold;
+}
+
+#div_new_tabbar {
+    bottom: 0px;
+    top: auto;
+    height: 48px;
+}
+
+    #div_new_tabbar .tab-link {
+        padding-top: 0px;
+        padding-bottom: 5px;
+    }
+
+        #div_new_tabbar .tab-link .tabbar-label {
+            margin-top: 0px;
+            font-size: 12px;
+        }
+
+        #div_new_tabbar .tab-link i {
+            width: 25px;
+            height: 25px;
+            font-size: 20px;
+            margin-right: 0px;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+            #div_new_tabbar .tab-link i.fa-refresh {
+                font-size: 18px;
+            }
+
+    #div_new_tabbar .tab-link-highlight {
+        display: none;
+    }
+
+/* -------------------------- Old dashboard css end -------------*/
+
+/*---------------  Slider css ---------------*/
+.swiper-custom {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.swiper-container {
+    height: 100%;
+    width: 100%;
+}
+
+.swiper-slide {
+    background: #fff;
+    height: 100%;
+    width: 100% !important;
+}
+
+.swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+    background: none;
+    border: 1px solid #aaa;
+    opacity: 1;
+    cursor: pointer;
+}
+
+.swiper-container-horizontal > .swiper-pagination-bullets {
+    bottom: 0px;
+}
+
+.swiper-pagination-bullet-active {
+    background: #007aff;
+    border-color: #007aff;
+}
+
+.swiper-button-next, .swiper-button-prev {
+    height: 20px;
+    display: none;
+}
+
+.swiper-slide img {
+    width: 100%;
+    height: 100%;
+}
+
+/*-------------- slider css end ---------------- */
+
+/*#dashboard_page_Content .apexcharts-canvas {                          //commented for dashboard card scroll [FT-02062025]
+    height: 100% !important;
+}*/
+
+.apexcharts-svg {
+    height: 100% !important;
+}
+
+.apexcharts-tooltip {
+    white-space: inherit !important;
+}
+
+foreignObject {
+    height: 100% !important;
+}
+
+.apexcharts-toolbar {
+    display: none !important;
+}
+
+.apexcharts-legend-series {
+    display: inline-block !important;
+    position: relative !important;
+    margin: 0px 5px 0px 0px !important;
+}
+
+.apexcharts-text {
+    cursor: pointer;
+}
+
+.apx-legend-position-bottom {
+    padding-bottom: 5px !important;
+}
+
+#barchart .apexcharts-svg,
+#columnchart .apexcharts-svg,
+#stackbar .apexcharts-svg,
+#stackcolumn .apexcharts-svg,
+#line .apexcharts-svg {
+    margin-top: -28px;
+    margin-left: -8px;
+}
+
+/*#dashboard_page_Content .apexcharts-canvas {                                              //commented for dashboard card scroll [FT-02062025]
+    height: 100% !important;
+    width: 100% !important;
+}*/
+
+.apx-legend-position-left {
+    position: fixed !important;
+}
+
+.popup-chart-config .chart_type foreignObject {
+    display: none;
+}
+
+.popup-chart-config .chart_type text[id^=Svgjs] {
+    display: none;
+}
+
+.popup-chart-config .chart_type .apexcharts-theme-dark {
+    display: none;
+}
+
+/* -----------------------  Apexchart css end --------------*/
+#div_page_content {
+    overflow: hidden;
+}
+
+#div_vertical_dashboard {
+    width: 100%;
+    height: 93%;
+    line-height: 1;
+    display: none;
+}
+
+#div_new_dashboard {
+    position: initial;
+    width: 100%;
+    height: 40%;
+    display: none;
+    overflow: hidden;
+    display: none;
+}
+
+#toggle_chart_tbl {
+    float: left;
+    margin-left: 2px;
+    display: none;
+}
+
+    #toggle_chart_tbl button {
+        padding: 5px 5px 1px 5px;
+        outline-color: white;
+        border: none;
+        background-color: transparent;
+    }
+
+    #toggle_chart_tbl i {
+        cursor: pointer;
+        margin-right: 0px;
+        font-size: 18px;
+        color: white;
+    }
+
+.view_type_active {
+    /*box-shadow: 0px 0px 5px black !important;*/
+    border-radius: 5px !important;
+}
+
+#ddl_dashboard_list {
+    width: 50%;
+    height: 25px;
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 15px;
+    padding: 4px;
+    vertical-align: middle;
+    padding-top: 0px;
+    display: none;
+}
+
+#div_dashboard_config {
+    width: 25%;
+    display: none;
+    float: right;
+    /*margin-left: -20px;*/
+}
+
+    #div_dashboard_config i {
+        margin-right: 2px;
+    }
+
+#dashboard_container {
+    width: 100%;
+    height: 99%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+#dashboard_page_tab {
+    position: absolute;
+    bottom: -5px;
+    top: auto;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 6%;
+    display: flex;
+}
+
+    #dashboard_page_tab .nav-item {
+        margin: 3px;
+    }
+
+        #dashboard_page_tab .nav-item .active {
+            box-shadow: 0px 0px 5px black !important;
+            font-weight: bold !important;
+        }
+
+    #dashboard_page_tab .tab-link {
+        display: inline-block;
+        padding: 7px;
+    }
+
+    #dashboard_page_tab .cls_pagename_opt {
+        margin-right: 0px;
+        margin-left: 5px;
+        display: none;
+    }
+
+/*#dashboard_page_Content {
+    width: 100%;
+    height: 97%;
+    overflow: auto;
+}*/
+
+.single_tab {
+    position: relative;
+    border-radius: 5px;
+    box-shadow: 1px 1px 5px gray !important;
+    z-index: 1;
+    overflow: hidden;
+    /*margin-left: 1px;
+    margin-top: 1px;*/
+    margin: 5px;
+    width: 97%;
+    height: 88%;
+    left: 0px;
+}
+
+    .single_tab i.fa-5x {
+        height: 45px;
+        width: 45px;
+        font-size: 45px;
+        margin-left: 15px;
+        color: white;
+    }
+
+    .single_tab .txt_menu_name {
+        font-size: 14px;
+        /*text-transform: uppercase;*/
+        color: white;
+    }
+
+    .single_tab .dot {
+        height: 100%;
+        width: 180px;
+        background-color: white;
+        border-radius: 50%;
+        position: absolute;
+        right: -75px;
+    }
+
+    .single_tab .tab_count {
+        z-index: 1;
+        position: relative;
+        font-size: 25px;
+        margin-bottom: 0px;
+        font-weight: bold;
+        text-align: center;
+        word-wrap: initial;
+    }
+
+    .single_tab .trend_count {
+        z-index: 1;
+        position: relative;
+        font-size: 15px;
+        margin-bottom: 0px;
+        text-align: center;
+        word-wrap: initial;
+        font-size: 13px;
+        margin-top: 5px;
+        margin-left: 10px;
+    }
+
+        .single_tab .trend_count i {
+            margin-right: 0px;
+            font-size: 13px;
+            font-weight: 100;
+            transform: scale(0.7, 0.8);
+        }
+
+.chart_grid {
+    position: absolute;
+    font-size: 12px;
+    /*font-weight: bold;*/
+    /*text-transform: uppercase;*/
+    color: #000;
+    background-color: #fff !important;
+    border-radius: 5px;
+    display: flex;
+    box-shadow: 1px 1px 5px gray !important;
+    min-height: 205px !important;
+    /* margin-left: 1px;
+    margin-top: 1px;*/
+    margin: 5px;
+    /*max-height: 100%;*/
+    width: 97%;
+    height: 88%;
+    left: 0px;
+}
+
+
+.chart_toolbar {
+    position: absolute;
+    margin-top: 8px;
+    color: black;
+    border: none;
+    background: transparent;
+    z-index: 2;
+    margin-left: 10px;
+    right: 23px;
+    display: none;
+    font-size: 16px !important;
+    cursor: pointer;
+}
+
+    .chart_toolbar::after {
+        border: none;
+        background: transparent;
+        z-index: 2;
+    }
+
+.delete_chart {
+    position: absolute;
+    margin-top: 7px;
+    color: black;
+    border: none;
+    background: transparent;
+    z-index: 2;
+    margin-left: 10px;
+    right: 0px;
+    display: none;
+    font-size: 17px !important;
+    cursor: pointer;
+}
+
+.cls_chart_view {
+    position: absolute;
+    margin-top: 5px;
+    color: black;
+    border: none;
+    background: transparent;
+    z-index: 2;
+    right: 75px;
+    display: none !important;
+    font-size: 17px !important;
+    cursor: pointer;
+    padding: 3px;
+    margin-right: 7px !important;
+}
+
+.cls_tbl_view {
+    position: absolute;
+    margin-top: 5px;
+    color: black;
+    border: none;
+    background: transparent;
+    z-index: 2;
+    right: 47px;
+    display: none !important;
+    font-size: 17px !important;
+    cursor: pointer;
+    padding: 3px;
+    margin-right: 7px !important;
+}
+
+.cls_filter_chart {
+    position: absolute;
+    margin-top: 5px;
+    color: black;
+    border: none;
+    background: transparent;
+    z-index: 2;
+    right: 105px;
+    display: none !important;
+    font-size: 17px !important;
+    cursor: pointer;
+    padding: 3px;
+    margin-right: 7px !important;
+}
+
+.cls_card_filter_items {
+    left: 12px;
+    top: 21px;
+    max-width: 100%;
+    word-wrap: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    right: 110px;
+    position: absolute;
+    font-size: 10px !important;
+    border-radius: 5px;
+    cursor: default;
+    z-index: 2;
+}
+
+.cls_card_aggregate_fun {
+    left: 14px;
+    top: 35px;
+    max-width: 100%;
+    word-wrap: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    right: 110px;
+    position: absolute;
+    font-size: 12px !important;
+    border-radius: 5px;
+    cursor: default;
+    z-index: 2;
+    color: gray;
+}
+
+.tbl_container {
+    width: 100%;
+    margin-top: 0px;
+    overflow: auto;
+    height: 99%;
+    display: none;
+    background-color: white;
+    z-index: 0;
+    position: relative;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none;
+}
+
+    .tbl_container table tr:last-child {
+        font-weight: bold;
+    }
+
+    .tbl_container .span_total_record {
+        position: sticky;
+        z-index: 100;
+        top: 7px;
+        left: 5px;
+        font-weight: 600;
+    }
+
+    .tbl_container table {
+        position: absolute;
+        top: 0px;
+        color: #212529;
+    }
+
+    .tbl_container .span_total_record {
+        position: sticky;
+        z-index: 100;
+        top: 7px;
+        left: 5px;
+        font-weight: 500;
+    }
+
+.mk_table {
+    border: 1px solid #ccc;
+    font-size: 13px;
+    font-family: calibri;
+    border-collapse: collapse;
+    border-spacing: 0px;
+    width: 100%;
+}
+
+    .mk_table tr td {
+        padding: 5px !important;
+        border: 1px solid #ccc;
+    }
+
+    .mk_table tr th {
+        padding: 5px !important;
+        border: 1px solid #ccc;
+    }
+
+.cls_no_data_found {
+    display: none;
+    width: 12rem;
+    height: 1rem;
+    vertical-align: text-bottom;
+    margin: auto;
+}
+
+    .cls_no_data_found span:first-child {
+        position: absolute;
+        font-family: Helvetica, Arial, sans-serif;
+        opacity: 1;
+        font-weight: 900;
+    }
+
+    .cls_no_data_found span:last-child {
+        width: 100%;
+        height: 100%;
+        font-weight: 500;
+        color: gray;
+        font-size: 15px;
+    }
+
+#btn_dashboard_copy {
+    display: flex;
+    width: 35px;
+    border-radius: 25px;
+    height: 35px;
+}
+
+#btn_add_chart {
+    display: flex;
+    width: 35px;
+    border-radius: 25px;
+    height: 35px;
+    bottom: 55px;
+}
+
+    #btn_add_chart i,
+    #btn_dashboard_copy i {
+        font-size: 20px;
+        margin-right: 0px;
+        vertical-align: middle;
+        color: white;
+    }
+
+.cls_ghost_image {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+
+    .cls_ghost_image img {
+        width: 80%;
+        height: 80%;
+        opacity: 0.2;
+        vertical-align: text-bottom;
+        margin-top: 15px;
+    }
+
+/* PivotTable CSS */
+.pvtUi {
+    width: 99%;
+    /*height: auto;*/
+    height: 91%;
+}
+
+.pvtAxisContainer, .pvtVals {
+    min-width: 0px !important;
+    min-height: 0px !important;
+}
+
+.pvtAggregator {
+    width: 70%;
+}
+
+.pvtTable {
+    position: relative !important;
+    width: 100%;
+    height: 100%;
+}
+
+#btn_add_row {
+    width: auto;
+    padding: 3px;
+    height: auto;
+    display: inline-block;
+}
+
+#btn_add_col {
+    width: auto;
+    min-width: 9%;
+    height: 10%;
+    padding: 3px;
+    display: inline;
+}
+
+.cls_add_pvttbl_row_col {
+    display: none;
+    top: 13%;
+    position: absolute;
+    left: 20%;
+    padding: 5px;
+    background-color: white;
+    border: 1px solid gray;
+    border-radius: 5px;
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 60%;
+}
+
+    .cls_add_pvttbl_row_col ul {
+        padding: 5px;
+        margin-bottom: 0px;
+        list-style: none;
+    }
+
+.pvtRendererArea {
+    padding: 5px 0px 0px 5px !important;
+}
+
+.pvtRowOrder {
+    display: none !important;
+}
+
+.pvtColOrder {
+    display: none !important;
+}
+
+#btn_add_pvt_aggrcol {
+    width: 50px;
+    height: 30px;
+    border-radius: 5px;
+    border: none;
+    margin-bottom: 5px;
+}
+
+#container_pvttbl_row {
+    width: 96% !important;
+    overflow: auto;
+    padding: 2px;
+    height: 50px !important;
+}
+
+    #container_pvttbl_row span {
+        margin-right: 0.25rem;
+    }
+
+        #container_pvttbl_row span i {
+            margin-right: 0px;
+            margin-left: .25rem;
+        }
+
+#btn_pivot_col_add,
+#btn_pivot_col_cancel {
+    width: 48%;
+    display: inline-block;
+    padding: 0px;
+    margin-left: 2px;
+}
+
+.pvtHorizList li {
+    padding: 5px 2px !important;
+}
+
+/*.pvtAggregator,*/
+.pvtAttrDropdown {
+    display: none !important;
+}
+
+#btn_add_aggrcol {
+    height: 35px;
+    display: inline-block;
+    vertical-align: top;
+    padding: 4px;
+}
+
+.cls_pvt_aggr_col {
+    display: none !important;
+    margin-left: 5px !important;
+    margin-bottom: 2px !important;
+    width: auto !important;
+}
+
+#mdl_add_pvttbl_col {
+    display: none;
+    position: absolute;
+    top: 72%;
+    left: 0;
+    border: 1px solid gray;
+    border-radius: 5px;
+    background-color: lightgray;
+    z-index: 2;
+    box-shadow: 2px 2px 2px black !important;
+    padding: 3px;
+    bottom: 0px;
+    width: 95%;
+    margin: 5px;
+    height: 175px;
+}
+
+    #mdl_add_pvttbl_col table td {
+        padding: 0px;
+    }
+
+    #mdl_add_pvttbl_col .chart_config_elem {
+        background-color: white !important;
+    }
+
+#ddl_pvttbl_aggrcol {
+    display: inline-block;
+}
+
+#btn_pivot_add_col,
+#btn_pivot_cancel_col {
+    display: inline-block;
+    width: 45%;
+    height: 30px;
+    border: none;
+    border-radius: 5px;
+    margin-left: 11px;
+}
+
+.pvtRowTotalLabel, .rowTotal, .pvtGrandTotal {
+    display: none !important;
+}
+
+#txt_aggre_prefix,
+#txt_edit_hrader {
+    width: 100px;
+}
+
+#ddl_percentage {
+    width: 100% !important;
+}
+
+.pvtVal {
+    cursor: pointer;
+}
+
+.cls_pivot_span {
+    font-family: Helvetica, Arial, sans-serif;
+    position: absolute;
+    top: 5px;
+    font-size: 14px;
+    font-weight: 900;
+    color: #373d3f;
+    width: 97%;
+    background-color: white;
+    white-space: nowrap;
+    word-wrap: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 10px;
+}
+
+.modebar-container {
+    display: none;
+}
+
+.pvtFilterBox {
+    width: auto !important;
+    border-radius: 5px;
+}
+
+    .pvtFilterBox h4 {
+        margin: 5px !important;
+        font-size: 13px;
+    }
+
+    .pvtFilterBox button {
+        margin-right: 5px;
+        border-radius: 5px;
+        background-color: #2e2eb8;
+        color: white;
+        border: none;
+        height: 25px;
+        padding: 0px 5px;
+    }
+
+        .pvtFilterBox button:last-child {
+            background-color: #ff0000c4;
+            margin-right: 0px !important;
+        }
+
+    .pvtFilterBox p {
+        margin: 5px !important;
+    }
+
+.pvtCheckContainer {
+    font-size: 11px !important;
+    padding: 5px 0px !important;
+}
+
+    .pvtCheckContainer .pvtFilter {
+        width: 12px !important;
+        height: 12px !important;
+    }
+
+.pvtFilterBox label {
+    margin-bottom: 0px;
+}
+
+
+/* PivotTable CSS end */
+.popup-chart-config {
+    background-color: white;
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
+    padding-left: 0px !important;
+    display: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+    .popup-chart-config .list-block {
+        height: 100%;
+        width: 100%;
+    }
+
+#div_charttype {
+    width: 97%;
+    height: 98%;
+    overflow: auto;
+    margin: 5px;
+    padding: 0px;
+}
+
+    #div_charttype .row {
+        width: 100%;
+        height: 100px;
+    }
+
+.chart_type {
+    /* box-shadow: 0px 0px 3px lightgray;*/
+    height: 100%;
+    border: 1px solid #e7e7e7;
+    cursor: pointer;
+}
+
+    .chart_type .card-body {
+        padding: 0px !important;
+        height: 80% !important;
+    }
+
+        .chart_type .card-body .demo-thumb-chart-bar {
+            height: 100%;
+        }
+
+    .chart_type .card-footer {
+        padding: 3px;
+        background-color: #d3d3d347;
+        height: 20%;
+        min-height: 20%;
+        text-align: center;
+        display: block;
+        font-size: 10px;
+    }
+
+        .chart_type .card-footer span {
+            font-weight: 500;
+        }
+
+#counterchart {
+    height: 80%;
+    padding: 9px;
+}
+
+.counter_chart {
+    position: relative !important;
+    box-shadow: 1px 1px 5px gray;
+    border-radius: 5px;
+    z-index: 1;
+    overflow: hidden;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(90deg, rgb(239, 94, 41, 0.65), rgb(239, 94, 41));
+}
+
+    .counter_chart .row {
+        height: 100% !important;
+    }
+
+    .counter_chart .col-33 {
+        height: 100%;
+        text-align: center;
+    }
+
+        .counter_chart .col-33 i {
+            margin-right: 0px;
+            margin-top: 20px;
+        }
+
+        .counter_chart .col-33 .txt_menu_name {
+            font-size: 13px;
+            color: white;
+            margin-top: 11px !important;
+            padding-left: 10px;
+        }
+
+        .counter_chart .col-33 .tab_count {
+            z-index: 1;
+            position: relative;
+            font-size: 13px;
+            margin-bottom: 0px;
+            font-weight: bold;
+            text-align: center;
+            word-wrap: initial;
+            margin-top: 22px;
+            margin-left: 5px;
+        }
+
+    .counter_chart .dot {
+        height: 100%;
+        width: 78%;
+        background-color: white;
+        border-radius: 50%;
+        position: absolute;
+        right: -47px;
+    }
+
+#pivot {
+    text-align: center;
+}
+
+    #pivot img {
+        width: 80%;
+        height: 80%;
+        padding: 10px;
+    }
+
+#div_chart_config {
+    width: 100%;
+    height: 40%;
+    overflow: auto;
+    font-size: 14px;
+}
+
+.cls_groupby1, .cls_groupby2, .cls_trends, .cls_trends_opt, .cls_pvttbl {
+    display: none;
+}
+
+#div_charttype table {
+    width: 100%;
+    font-size: 14px;
+}
+
+    #div_charttype table tr {
+        width: 100%;
+        height: 30px;
+        padding: 5px 0px;
+    }
+
+    #div_charttype table td:first-child {
+        width: 28%;
+    }
+
+    #div_charttype table .item-input {
+        min-height: 30px;
+    }
+
+    #div_charttype table .cls_pvttbl:nth-child(2) .item-input {
+        min-height: 50px;
+    }
+
+    #div_charttype table .item-input.not-empty-state::after {
+        background: none;
+    }
+
+    #div_charttype table .item-input-field:after {
+        height: 0px;
+    }
+
+#tbl_chart_config {
+    margin-top: 5px;
+}
+
+    #tbl_chart_config .filtered-items-outer {
+        height: 50px !important;
+        width: 96% !important;
+    }
+
+#ddl_aggregate_column {
+    width: 64% !important;
+    display: none;
+}
+
+#div_charttype .chart_config_elem {
+    height: 30px;
+    font-size: 14px;
+    background-color: #d3d3d34d;
+    border-radius: 5px;
+    width: 100%;
+    padding-left: 10px;
+}
+
+#start_date,
+#end_date,
+#ddl_linechart_opt,
+#ddl_pvttbl_aggrcol,
+#ddl_pvttbl_col {
+    width: 49% !important;
+    margin-right: 4px;
+    display: inline-block;
+}
+
+#end_date,
+#ddl_trend_group,
+#ddl_pvttbl_col {
+    margin-right: 0px;
+}
+
+#ddl_group_date_type1,
+#ddl_group_date_type2,
+#ddl_trend_group {
+    width: 34% !important;
+    display: none;
+}
+
+#ddl_aggregate_data,
+#ddl_groupby1,
+#ddl_groupby2,
+#ddl_trends {
+    display: inline-block;
+}
+
+#chk_trends_view {
+    width: 25px !important;
+}
+
+#ddl_milestone_opt {
+    width: 49% !important;
+    display: inline-block;
+}
+
+.chart_active {
+    border: 1px solid blue;
+}
+
+#ddl_udf_name option[udf_name] {
+    background-color: gray;
+    color: white;
+}
+
+#btn_create_chart {
+    width: 50px;
+    height: 30px;
+    border-radius: 5px;
+    border: none;
+}
+
+#div_charttype table td[colspan="2"] {
+    text-align: center;
+}
+
+#preview_card_container {
+    margin-top: 10px;
+}
+
+#preview_card {
+    width: 100%;
+    height: 100%;
+}
+
+    #preview_card .apexcharts-text, #preview_card .apexcharts-legend-series, #preview_card path[id^='SvgjsPath'] {
+        cursor: not-allowed !important;
+    }
+
+#preview_card_alert {
+    display: none !important;
+    font-size: 14px;
+    font-weight: bold;
+    color: #000;
+    background-color: #fff !important;
+    border-radius: 5px;
+    box-shadow: 1px 1px 5px gray !important;
+    width: 98%;
+    height: 100%;
+    top: 0;
+    margin: 4px;
+    min-height: 40% !important;
+}
+
+#card_title {
+    font-family: Helvetica, Arial, sans-serif;
+    opacity: 1;
+    font-weight: 900;
+    margin-left: 10px;
+}
+
+#card_alert {
+    font-weight: 500;
+    color: gray;
+    font-size: 13px;
+    display: block;
+    text-align: center;
+    padding: 62px 0px;
+    position: relative;
+}
+
+.cls_menucard_preview {
+    min-height: 30% !important;
+    position: absolute;
+    margin: 5px;
+    z-index: 1;
+}
+
+.cls_max_preview {
+    width: 25px;
+    height: 25px;
+    background-color: black;
+    color: white;
+    border-radius: 15px;
+    border: none;
+    position: absolute;
+    right: 10px;
+    top: 1px;
+    z-index: 1;
+    font-size: 15px;
+}
+
+    .cls_max_preview i {
+        margin-right: 0px;
+    }
+
+
+.cls_max_card {
+    width: 97% !important;
+    height: 89% !important;
+    min-height: 89% !important;
+    bottom: 0px;
+    margin: 5px;
+}
+
+
+/* Advance filter css */
+#btn_advanced_search {
+    width: 100px;
+    height: 30px;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.div-cntrl-icon {
+    display: inline-block;
+    float: right;
+}
+
+    .div-cntrl-icon .fltr-cntrl-icon {
+        font-size: 14px;
+        color: gray !important;
+    }
+
+.fltr-cndtn-inner {
+    padding: 5px 10px;
+}
+
+.popup-advance-search-online {
+    z-index: 110001;
+}
+
+    .popup-advance-search-online select {
+        width: 250px;
+        height: 30px;
+        margin: 5px 0px;
+        border: 1px solid #ccc !important;
+        background: white;
+    }
+
+#btn_Clear_Filter {
+    left: 16px;
+    background-color: red;
+    width: 110px;
+    border-radius: 24px !important;
+    height: 32px;
+}
+
+.picker-columns {
+    z-index: 1100001;
+}
+/* Advance filter css end */

@@ -1,0 +1,106 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.fragments.EasyWeatherWeatherConditionFragment">
+
+    <!--    <androidx.cardview.widget.CardView-->
+    <!--        android:id="@+id/cvCurrunt"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="70dp"-->
+    <!--        android:layout_margin="10dp"-->
+    <!--        app:cardCornerRadius="10dp"-->
+    <!--        app:cardBackgroundColor="@color/carbg"-->
+    <!--        app:cardElevation="8dp">-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:orientation="horizontal"
+        android:padding="3sp"
+        android:weightSum="3">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1.5">
+
+            <TextView
+                android:id="@+id/dayTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textAllCaps="true"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textStyle="bold"
+                android:gravity="left"
+                android:textColor="@color/textcolor"
+                android:textSize="15sp"
+                android:typeface="serif" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/conditionTextView"
+                android:gravity="left"
+                android:layout_centerHorizontal="true"
+                android:textColor="@color/textcolor"
+                android:singleLine="true"
+                android:layout_marginTop="3sp"
+                android:textSize="13sp"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_weight="0.7">
+            <ImageView
+                android:id="@+id/weatherIconImageView"
+                android:layout_width="70dp"
+                android:layout_height="60dp"
+                android:scaleType="fitCenter"
+                android:layout_gravity="center"
+                android:adjustViewBounds="true"
+                />
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_weight="0.8">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/textcolor"
+                android:textSize="13sp"
+                android:id="@+id/highTemperatureTextView"
+                android:gravity="center"
+                android:paddingTop="5dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/textcolor"
+                android:textSize="13sp"
+                android:id="@+id/lowTemperatureTextView"
+                android:gravity="center"
+                android:paddingTop="4dp"
+                />
+        </LinearLayout>
+
+    </LinearLayout>
+    <!--    </androidx.cardview.widget.CardView>-->
+</RelativeLayout>

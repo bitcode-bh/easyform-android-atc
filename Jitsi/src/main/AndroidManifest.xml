@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.easyform.jitsi">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application>
+        <activity
+            android:name=".ui.activitys.CameraPreviewActivity"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="com.jitsi.finish" />
+            </intent-filter>
+
+
+        </activity>
+        <activity
+            android:name=".ui.activitys.JitsiMeetViewActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true"
+            tools:targetApi="n">
+
+            <intent-filter>
+                <action android:name="com.jitsi.sendParticipateId" />
+            </intent-filter>
+
+
+        </activity>
+        <activity android:name=".ui.activitys.MainActivityJitsi" />
+
+        <receiver
+            android:name=".broadcasts.JitsiPluginBroadcast"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.easyform.jitsi.JitsiPluginCall" />
+                <action android:name="com.easyform.jitsi.notification" />
+                <action android:name="com.easyform.jitsi.rejectnotification" />
+                <action android:name="com.easyform.jitsi.Reject" />
+                <action android:name="com.easyform.jitsi.done" />
+                <action android:name="com.easyform.jitsi.JitsiMeetCall" />
+                <action android:name="com.easyform.jitsi.JitsiScreenShareNoti" />
+                <action android:name="com.easyform.jitsi.Jitsi-event_broadcast" />
+                <action android:name="com.easyform.jitsi.Jitsi-event_broadcast-noti" />
+                <action android:name="com.easyform.jitsi.size" />
+                <action android:name="com.easyform.jitsi.remoteSize" />
+                <action android:name="com.easyform.jitsi.StopScreen" />
+                <action android:name="com.jitsi.finish" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
