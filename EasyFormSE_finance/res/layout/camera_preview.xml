@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_contraint_lay"
+    android:layout_width="match_parent"
+    android:background="@color/colorPrimary"
+    android:layout_height="match_parent">
+
+
+    <ImageView
+        android:id="@+id/fullscreen_imagepreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        android:gravity="center"
+        android:scaleType="fitXY"
+        android:keepScreenOn="true"
+        android:src="@color/white"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textColor="?attr/fullscreenTextColor"
+        android:contentDescription="" />
+
+    <FrameLayout
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <include
+        android:id="@+id/lay_cameratext"
+        layout="@layout/camera_text"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <ImageView
+        android:id="@+id/switchcamera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="camera_change"
+        android:onClick="onClick"
+        android:src="@drawable/frontcamera_foreground"
+        app:layout_constraintEnd_toEndOf="@+id/preview"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <include
+        android:id="@+id/la_cameracontrol"
+        layout="@layout/camera_control"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_animator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:text="1"
+        android:textColor="@color/white"
+        android:textSize="70sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintGuide_percent="0.5"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/topview"
+        android:layout_width="wrap_content"
+        android:layout_height="100dp"
+        android:background="@drawable/border_mask"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/viewRectangleMask"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/viewRectangleMask"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:background="@drawable/border"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/viewRectangleMask"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topview" />
+
+
+
+    <View
+        android:id="@+id/bottomview"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:background="@drawable/border_mask"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/viewRectangleMask" />
+
+    <View
+        android:id="@+id/leftiew"
+        android:layout_width="@dimen/common_50_dp"
+        android:layout_height="100dp"
+        android:background="@drawable/border_mask"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottomview"
+        app:layout_constraintRight_toLeftOf="@id/viewRectangleMask"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topview" />
+
+    <View
+        android:id="@+id/rightiew"
+        android:layout_width="@dimen/common_50_dp"
+        android:layout_height="100dp"
+        android:background="@drawable/border_mask"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottomview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/viewRectangleMask"
+        app:layout_constraintTop_toBottomOf="@id/topview" />
+
+
+    <Button
+        android:id="@+id/cancle_btn"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="0dp"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/crop_btn"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        android:text="CANCLE" />
+
+    <Button
+        android:id="@+id/crop_btn"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="0dp"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toRightOf="@+id/cancle_btn"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="CROP" />
+
+    <ProgressBar
+        android:id="@+id/photoProgress"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:visibility="gone"
+        android:progressTint="@color/colorAccent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <Button
+        android:id="@+id/btn_upside"
+        android:background="@drawable/round_button_back"
+        android:layout_width="@dimen/common_30_dp"
+        android:layout_height="@dimen/common_30_dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/viewRectangleMask"
+        app:layout_constraintLeft_toLeftOf="@id/viewRectangleMask"
+        app:layout_constraintRight_toRightOf="@id/viewRectangleMask" />
+
+    <Button
+        android:id="@+id/btn_down_side"
+        android:background="@drawable/round_button_back"
+        android:layout_width="@dimen/common_30_dp"
+        android:layout_height="@dimen/common_30_dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/viewRectangleMask"
+        app:layout_constraintLeft_toLeftOf="@id/viewRectangleMask"
+        app:layout_constraintRight_toRightOf="@id/viewRectangleMask" />
+
+    <Button
+        android:id="@+id/btn_left_side"
+        android:layout_width="@dimen/common_30_dp"
+        android:layout_height="@dimen/common_30_dp"
+        android:visibility="gone"
+        android:background="@drawable/round_button_back"
+        app:layout_constraintBottom_toBottomOf="@id/viewRectangleMask"
+        app:layout_constraintTop_toTopOf="@id/viewRectangleMask"
+        app:layout_constraintRight_toLeftOf="@id/viewRectangleMask" />
+
+
+    <Button
+        android:id="@+id/btn_right_side"
+        android:background="@drawable/round_button_back"
+        android:layout_width="@dimen/common_30_dp"
+        android:layout_height="@dimen/common_30_dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/viewRectangleMask"
+        app:layout_constraintTop_toTopOf="@id/viewRectangleMask"
+        app:layout_constraintLeft_toRightOf="@id/viewRectangleMask" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

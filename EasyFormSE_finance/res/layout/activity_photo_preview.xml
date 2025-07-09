@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/fullscreenBackgroundColor"
+    android:theme="@style/ThemeOverlay.EasyFormDevelopment.FullscreenContainer"
+    tools:context=".photo.PhotoPreviewActivity">
+
+    <ImageView
+        android:id="@+id/fullscreen_imageview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:scaleType="fitXY"
+        android:keepScreenOn="true"
+        android:src="@color/colorAccent"
+        android:textColor="?attr/fullscreenTextColor" />
+
+    <FrameLayout
+        android:id="@+id/lay_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <LinearLayout
+            android:id="@+id/fullscreen_content_controls"
+            style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="horizontal"
+            tools:ignore="UselessParent">
+
+            <Button
+                android:id="@+id/btn_cancle"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="CANCLE" />
+
+            <Button
+                android:id="@+id/dummy_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="CROP" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/lay_saving"
+            style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
+            android:layout_width="match_parent"
+            android:visibility="gone"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="horizontal"
+            tools:ignore="UselessParent">
+            <TextView
+                android:text="Please wait..."
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:textSize="20sp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/viewRectangle"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@drawable/border"
+            android:layout_marginLeft="50dp"
+            android:layout_gravity="top|center"
+            android:layout_marginTop="100dp"
+            android:layout_marginRight="50dp" />
+    </FrameLayout>
+
+</FrameLayout>

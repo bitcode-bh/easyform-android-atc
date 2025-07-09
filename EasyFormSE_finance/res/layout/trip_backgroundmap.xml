@@ -1,0 +1,74 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="6">
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5.6"
+        tools:context="com.example.chetanpatel.mapp.MapsActivity">
+
+        <TextView
+            android:id="@+id/txt_maintext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|top"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/my_site_button"
+            android:padding="10dp"
+            android:textStyle="bold"
+            android:text="Do not close this Map view until you reach to destination."
+            android:paddingLeft="10dp"/>
+    </fragment>
+
+    <LinearLayout
+        android:id="@+id/lay_fetching"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.4"
+        android:weightSum="1"
+        android:orientation="horizontal">
+
+<!--        <ProgressBar-->
+<!--            android:id="@+id/progress_bar"-->
+<!--            android:background="@color/colorPrimary"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_weight="0.2"-->
+<!--            android:gravity="center"-->
+<!--            android:indeterminateDrawable="@drawable/progress"-->
+<!--            android:layout_height="match_parent"/>-->
+        <Button
+            android:id="@+id/btn_easyform"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:layout_gravity="center"
+            android:layout_weight="0.5"
+            android:gravity="center"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:text="Back to App"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btn_minimize"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:layout_gravity="center"
+            android:layout_weight="0.5"
+            android:gravity="center"
+            android:layout_marginStart="0.5dp"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:text="Minimize"
+            android:textColor="@color/white" />
+
+
+    </LinearLayout>
+</LinearLayout>

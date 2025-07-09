@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="30dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/mbtBackup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|top"
+            android:text="Database Backup Via Email" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/mbtLogBackup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:visibility="visible"
+            android:text="Log BackUp Via Email" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchLogBackup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enable Log for Services"
+            android:layout_marginTop="10dp"
+            android:textSize="15dp" />
+
+
+
+    </LinearLayout>
+
+
+</FrameLayout>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:background="@color/black"
+    tools:context="NewCameraActivity">
+
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/flMainView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/acIvImagePreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY" />
+
+        <com.otaliastudios.cameraview.CameraView
+            android:id="@+id/cvMainCamera"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:keepScreenOn="true"
+            app:cameraEngine="camera2"
+            app:cameraFacing="back"
+            app:cameraFlash="off"
+            app:cameraGestureLongTap="autoFocus"
+            app:cameraGestureTap="autoFocus"
+            app:cameraMode="picture"
+            app:cameraAutoFocusResetDelay="0"
+            app:cameraPictureMetering="true"
+            app:cameraPreview="texture"
+            app:cameraPreviewFrameRate="55" />
+        <!--app:cameraPictureSizeAspectRatio="1:78"-->
+    </FrameLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/rlView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="@id/flMainView"
+        app:layout_constraintEnd_toEndOf="@id/flMainView"
+        app:layout_constraintStart_toStartOf="@id/flMainView"
+        app:layout_constraintTop_toTopOf="@id/flMainView">
+
+        <com.sky.atc.easyformse.utils.newView.MyBackgroundView
+            android:id="@+id/mbView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <View
+            android:id="@+id/viewRectangleMask"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/border"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.sky.atc.easyformse.utils.newView.MyCustomView
+            android:id="@+id/mcvData"
+            android:layout_width="100dp"
+            android:visibility="gone"
+            android:layout_height="100dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnUpSide"
+            android:layout_width="@dimen/common_30_dp"
+            android:layout_height="@dimen/common_30_dp"
+            android:background="@drawable/round_button_back"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/viewRectangleMask"
+            app:layout_constraintTop_toTopOf="@id/viewRectangleMask"
+            app:layout_constraintLeft_toLeftOf="@id/viewRectangleMask"
+            app:layout_constraintRight_toRightOf="@id/viewRectangleMask" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnDownSide"
+            android:layout_width="@dimen/common_30_dp"
+            android:layout_height="@dimen/common_30_dp"
+            android:background="@drawable/round_button_back"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/viewRectangleMask"
+            app:layout_constraintLeft_toLeftOf="@id/viewRectangleMask"
+            app:layout_constraintRight_toRightOf="@id/viewRectangleMask"
+            app:layout_constraintTop_toBottomOf="@id/viewRectangleMask" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnStartSide"
+            android:layout_width="@dimen/common_30_dp"
+            android:visibility="gone"
+            android:layout_height="@dimen/common_30_dp"
+            android:background="@drawable/round_button_back"
+            app:layout_constraintStart_toStartOf="@id/viewRectangleMask"
+            app:layout_constraintBottom_toBottomOf="@id/viewRectangleMask"
+            app:layout_constraintEnd_toStartOf="@id/viewRectangleMask"
+            app:layout_constraintTop_toTopOf="@id/viewRectangleMask" />
+
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnEndSide"
+            android:layout_width="@dimen/common_30_dp"
+            android:layout_height="@dimen/common_30_dp"
+            android:background="@drawable/round_button_back"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/viewRectangleMask"
+            app:layout_constraintEnd_toEndOf="@id/viewRectangleMask"
+            app:layout_constraintStart_toEndOf="@id/viewRectangleMask"
+            app:layout_constraintTop_toTopOf="@id/viewRectangleMask" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <RelativeLayout
+        android:id="@+id/rlCameraViews"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivSwitchCamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="Camera Change"
+            android:src="@drawable/frontcamera_foreground" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:weightSum="3">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txtSi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:text="MF"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txtMGnt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:text="MF"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ivCaptureFront"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@drawable/cameraclick_foreground"
+                android:text="Capture Image" />
+
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ivFlash"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@drawable/flashoff_foreground"
+                android:text="Flash" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/llButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="2dp"
+        android:elevation="@dimen/common_50_dp"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/mbtCancel"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="3dp"
+            android:layout_weight="1"
+            android:text="CANCEL" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/mbtCrop"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="3dp"
+            android:layout_weight="1"
+            android:text="CROP" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

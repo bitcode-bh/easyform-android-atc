@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:descendantFocusability="beforeDescendants"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/llOne"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:screenOrientation="portrait">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <!--            <ImageView-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_marginLeft="@dimen/common_30_dp"-->
+            <!--                android:src="@drawable/keyboard_backspace"-->
+            <!--                android:layout_height="match_parent"/>-->
+
+            <Button
+                android:id="@+id/Retry"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_new"
+                android:text="Retry"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/save_draw"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:layout_marginStart="1dp"
+                android:background="@drawable/button_bg_new"
+                android:text="Save"
+                android:textColor="@color/white" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/ChoosenImageView_lay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/llOne"
+        android:layout_marginTop="2dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/flOne"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true">
+
+        <FrameLayout
+            android:id="@+id/Flayoutbtn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom">
+
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_marginEnd="20dp"-->
+<!--                android:layout_marginBottom="50dp"-->
+<!--                android:gravity="end|bottom">-->
+
+<!--                <com.sky.atc.easyformse.VerticalSeekBar-->
+<!--                    android:id="@+id/seekBar1"-->
+<!--                    android:visibility="visible"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="@dimen/seek_height"-->
+<!--                    android:layout_marginBottom="@dimen/margin_bottom"-->
+<!--                    android:max="20" />-->
+<!--            </LinearLayout>-->
+
+
+            <LinearLayout
+                android:id="@+id/Layoutbtn"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_gravity="bottom"
+                android:background="#80337ab7"
+                android:gravity="center|bottom"
+                android:orientation="horizontal"
+                android:weightSum="5">
+
+                <LinearLayout
+                    android:id="@+id/layColor"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:visibility="visible">
+
+                    <ImageButton
+                        android:id="@+id/btnColor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/selectercolor"
+                        android:padding="10dp"
+                        android:src="@drawable/color" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layErase"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:visibility="visible">
+
+                    <ImageButton
+                        android:id="@+id/btnErase"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/selectereraser"
+                        android:padding="10dp"
+                        android:src="@drawable/eraser" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layBrush"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:visibility="visible">
+
+                    <ImageButton
+                        android:id="@+id/btnBrush"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/selecterbrush"
+                        android:padding="10dp"
+                        android:src="@drawable/brush"
+                        tools:ignore="SpeakableTextPresentCheck" />
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="50dp"
+        android:gravity="end|bottom">
+
+        <com.sky.atc.easyformse.VerticalSeekBar
+            android:id="@+id/seekBar1"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/seek_height"
+            android:layout_marginBottom="@dimen/margin_bottom"
+            android:max="20" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/lay_textrecognize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/flOne"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <RadioGroup
+            android:id="@+id/radio_calltype"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="@dimen/common_10_dp"
+            android:background="@drawable/azuretextback"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <RadioButton
+                android:id="@+id/radio_normalread"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Analog" />
+
+            <RadioButton
+                android:id="@+id/radio_sevensegment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Seven Segment" />
+
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/azuretextback"
+            android:gravity="center"
+            android:padding="@dimen/common_10_dp"
+            android:text="please select appropriate value from highlighted reading."
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvOldImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/azuretextback"
+            android:focusable="true"
+            android:gravity="center"
+            android:padding="@dimen/common_10_dp"
+            android:text="Select Old Image"
+            android:textColor="@color/white"
+            android:textIsSelectable="true"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="250dp">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/common_30_dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/azuretextback"
+                android:fadeScrollbars="false"
+                android:scrollbarStyle="outsideInset"
+                android:scrollbarThumbVertical="@drawable/scrollview_thumb"
+                android:scrollbarTrackVertical="@drawable/vertical_scrollview_traack">
+
+                <TextView
+                    android:id="@+id/azure_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="true"
+                    android:focusable="true"
+                    android:padding="@dimen/common_10_dp"
+                    android:text="Please wait..."
+                    android:textColor="@color/white"
+                    android:textIsSelectable="true"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </ScrollView>
+        </RelativeLayout>
+
+        <Button
+            android:id="@+id/btn_entermanul"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:layout_marginTop="@dimen/common_10_dp"
+            android:background="@drawable/azuretextback"
+            android:padding="@dimen/common_10_dp"
+            android:text="ENTER MANUAL"
+            android:textColor="@color/white"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/btnRefresh"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/azuretextback"
+                android:padding="@dimen/common_10_dp"
+                android:text="Refresh"
+                android:textColor="@color/white"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnExit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_new"
+                android:text="exit"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/common_10_dp"
+            android:gravity="center"
+            android:text="READING: "
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/selected_reading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/common_10_dp"
+            android:gravity="center"
+            android:text="Detect Type:"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/img_tflite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</RelativeLayout>

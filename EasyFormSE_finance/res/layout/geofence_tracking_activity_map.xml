@@ -1,0 +1,73 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/linear_map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:id="@+id/btnZoomin"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="right|top"
+                android:layout_marginTop="60dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/my_site_button"
+                android:padding="10dp"
+                android:paddingLeft="10dp"
+                android:src="@drawable/navigation" />
+
+            <ImageButton
+                android:id="@+id/btnTrackinglist"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="right|top"
+                android:layout_marginTop="110dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/my_site_button"
+                android:padding="10dp"
+                android:paddingLeft="10dp"
+                android:src="@drawable/list" />
+
+
+        </fragment>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linear_layout_recycleview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp">
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mRvTrackingList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                tools:listitem="@layout/add_geofence_title"/>
+        </HorizontalScrollView>
+    </LinearLayout>
+</LinearLayout>

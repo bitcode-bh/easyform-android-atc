@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#124191"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="100dp"
+        android:gravity="center|top"
+        android:text="Nokia"
+        android:textColor="@color/white"
+        android:textSize="60sp"
+        android:typeface="monospace"
+
+        />
+
+</LinearLayout>
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:background="#0071bd"-->
+    <!--android:orientation="vertical">-->
+
+    <!--&lt;!&ndash;<TextView&ndash;&gt;-->
+    <!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:layout_height="match_parent"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:paddingTop="100dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:gravity="center|top"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:text="Nokia"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:textColor="@color/white"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:textSize="60sp"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:typeface="monospace"&ndash;&gt;-->
+
+    <!--&lt;!&ndash;/>&ndash;&gt;-->
+
+
+
+    <!--<ImageView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="100dp"-->
+        <!--android:src="@drawable/idea"-->
+        <!--android:layout_marginTop="100dp"-->
+        <!--android:gravity="center|top"-->
+        <!--android:text="Nokia"-->
+        <!--android:textColor="@color/white"-->
+        <!--android:textSize="60sp"-->
+        <!--android:typeface="monospace"-->
+
+        <!--/>-->
+
+
+
+
+
+<!--</LinearLayout>-->

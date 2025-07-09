@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:background="@drawable/border"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/alertnotice"
+        android:text="You have used your reading quota.\nDo you want to select previous reading or enter manually?"
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:padding="@dimen/common_10_dp"
+        android:textColor="@color/atcred"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_height="wrap_content"/>
+
+    <ImageView
+        android:layout_marginTop="@dimen/common_10_dp"
+        android:id="@+id/goProDialogImage"
+        android:padding="@dimen/common_10_dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/atc_logo"/>
+
+    <TextView
+        android:layout_marginTop="@dimen/common_10_dp"
+        android:id="@+id/previous_text"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:padding="@dimen/common_10_dp"
+        android:background="@drawable/border"
+        android:textColor="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>

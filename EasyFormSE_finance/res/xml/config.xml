@@ -1,0 +1,258 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="io.cordova.helloCordova" version="2.0.0" xmlns="http://www.w3.org/ns/widgets">
+
+    <name>
+        Hello Cordova
+    </name>
+
+    <description>
+        A sample Apache Cordova application that responds to the deviceready event.
+    </description>
+
+    <author email="dev@cordova.apache.org" href="http://cordova.io">
+        Apache Cordova Team
+    </author>
+
+    <access origin="*.apache.org" />
+    <access origin="*" />
+
+    <content src="index.html" />
+
+    <preference name="loglevel" value="DEBUG" />
+    <preference name="useBrowserHistory" value="true" />
+    <preference name="exit-on-suspend" value="false" />
+
+    <feature name="Camera">
+        <param name="android-package" value="org.apache.cordova.camera.CameraLauncher" />
+    </feature>
+
+    <!-- scanner -->
+    <feature name="scanner_plug">
+        <param name="android-package" value="com.sky.atc.easyformse.scanner_plug" />
+    </feature>
+
+    <!-- get apk version details -->
+    <feature name="version_plug">
+        <param name="android-package" value="com.sky.atc.easyformse.version_plug" />
+    </feature>
+
+    <feature name="update_version">
+        <param name="android-package" value="com.sky.atc.easyformse.update_version" />
+    </feature>
+
+    <!-- call login web service from native plugin -->
+    <feature name="login_detail_plug">
+        <param name="android-package" value="com.sky.atc.easyformse.login_detail_plug" />
+    </feature>
+    <!-- insert/update query plugin -->
+    <feature name="SqlitePlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.SqlitePlugin" />
+    </feature>
+    <feature name="maulik">
+        <param name="android-package" value="com.sky.atc.easyformse.maulik" />
+    </feature>
+
+  <feature name="webview_plugin">
+    <param name="android-package" value="com.sky.atc.easyformse.webview_plugin" />
+    <param name="onload" value="true" />
+  </feature>
+
+    <feature name="camera_new">
+        <param name="android-package" value="com.sky.atc.easyformse.camera_new" />
+    </feature>
+
+    <!-- get signature plugin -->
+    <feature name="signature">
+        <param name="android-package" value="com.sky.atc.easyformse.signature" />
+    </feature>
+
+    <!-- get MSL plugin -->
+    <feature name="elevation">
+        <param name="android-package" value="com.sky.atc.easyformse.elevation" />
+    </feature>
+
+    <!-- get distance plugin -->
+    <feature name="distance">
+        <param name="android-package" value="com.sky.atc.easyformse.distance" />
+    </feature>
+
+    <feature name="weather_plug">
+        <param name="android-package" value="com.sky.atc.easyformse.weather_plug" />
+    </feature>
+
+    <!-- view pointer in map plugin -->
+    <feature name="map">
+        <param name="android-package" value="com.sky.atc.easyformse.map" />
+    </feature>
+
+    <feature name="App">
+        <param name="android-package" value="org.apache.cordova.App" />
+    </feature>
+    <feature name="navigation_new_plug">
+        <param name="android-package" value="com.sky.atc.easyformse.navigation_new_plug" />
+    </feature>
+    <!-- print document -->
+    <feature name="print_plug">
+        <param name="android-package" value="com.sky.atc.easyformse.print_plug" />
+    </feature>
+    <feature name="current_lat">
+        <param name="android-package" value="com.sky.atc.easyformse.current_lat" />
+    </feature>
+    <feature name="large_photo">
+        <param name="android-package" value="com.sky.atc.easyformse.large_photo" />
+    </feature>
+    <feature name="delete_database">
+        <param name="android-package" value="com.sky.atc.easyformse.delete_database" />
+    </feature>
+    <feature name="video_plugin">
+        <param name="android-package" value="com.sky.atc.easyformse.video_plugin" />
+    </feature>
+
+    <feature name="pdf_download">
+        <param name="android-package" value="com.sky.atc.easyformse.pdf_download" />
+    </feature>
+
+    <feature name="SupportPageMapsPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.SupportPageMapsPlugin" />
+    </feature>
+
+  <feature name="openDialPadPlugin">
+    <param name="android-package" value="com.sky.atc.easyformse.openDialPadPlugin" />
+  </feature>
+
+  <feature name="openMailComposerPlugin">
+    <param name="android-package" value="com.sky.atc.easyformse.openMailComposerPlugin" />
+  </feature>
+
+    <feature name="openWhatsappPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.openWhatsappPlugin" />
+    </feature>
+
+    <feature name="TripPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.TripPlugin" />
+    </feature>
+
+
+
+    <feature name="CustomerPageMapsPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.CustomerPageMapsPlugin" />
+    </feature>
+    <feature name="ShowDbPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.ShowDbPlugin" />
+    </feature>
+
+    <feature name="ExportExcelPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.excelreport.ExportExcelPlugin" />
+    </feature>
+
+    <feature name="ForgotPasswordPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.ForgotPasswordPlugin"/>
+    </feature>
+
+    <feature name="CalendarEventPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.CalendarEventPlugin"/>
+    </feature>
+
+    <feature name="ProfilePhotoPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.ProfilePhotoPlugin"/>
+    </feature>
+
+
+    <feature name="UploadPhotoPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.UploadPhotoPlugin"/>
+    </feature>
+    <feature name="UserMapViewPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.mapview.UserMapViewPlugin"/>
+    </feature>
+
+    <feature name="ARMeasure">
+        <param name="android-package" value="com.sky.atc.easyformse.measurement.ArMeasurementPlugin"/>
+    </feature>
+
+    <feature name="DynamicChatPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.chat.DynamicChatPlugin" />
+    </feature>
+
+    <feature name="SpeechtotextPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.SpeechtotextPlugin" />
+    </feature>
+
+    <feature name="MeterReadingPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.MeterReadingPlugin" />
+    </feature>
+
+    <feature name="SupportPageMapsPlugin_Green">
+        <param name="android-package" value="com.sky.atc.easyformse.SupportPageMapsPlugin_Green" />
+    </feature>
+
+    <feature name="SiteRoutePlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.SiteRoutePlugin" />
+    </feature>
+
+    <feature name="ZoomMeetingPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.ZoomMeetingPlugin" />
+    </feature>
+
+    <feature name="RfTrackPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.RfTrackPlugin" />
+    </feature>
+
+
+    <feature name="Whitelist">
+        <param name="android-package" value="org.apache.cordova.WhitelistPlugin" />
+        <param name="onload" value="true" />
+    </feature>
+
+    <feature name="JitsiMeetingPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.JitsiMeetingPlugin" />/>
+    </feature>
+    <feature name="ViewTaskByCalendar">
+        <param name="android-package" value="com.sky.atc.easyformse.calender.ViewTaskByCalendar" />/>
+    </feature>
+    <feature name="AttendancePlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.AttendancePlugin" />/>
+    </feature>
+    <feature name="ArMeasurePlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.ArMeasurePlugin"/>
+    </feature>
+
+    <feature name="AttendanceTaskCreatePlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.AttendanceTaskCreatePlugin"/>
+    </feature>
+
+    <feature name="AttendancePendingPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.AttendancePendingPlugin"/>
+    </feature>
+
+    <feature name="GeofenceTrackingPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.GeofenceTrackingPlugin"/>
+    </feature>
+
+    <feature name="VibrationPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.VibrationPlugin"/>
+    </feature>
+
+    <feature name="BiometricLoginPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.BiometricLoginPlugin"/>
+    </feature>
+
+    <feature name="NotificationPagePlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.NotificationPagePlugin"/>
+    </feature>
+    <feature name="InsertNewLatLngPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.InsertNewLatLngPlugin"/>
+    </feature>
+
+    <feature name="SafetyMeasurePlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.SafetyMeasurePlugin"/>
+    </feature>
+    <feature name="weather_plug_onlyinfo">
+        <param name="android-package" value="com.sky.atc.easyformse.weather_plug_onlyinfo"/>
+    </feature>
+
+    <allow-intent href="http://*/*"></allow-intent>
+    <allow-intent href="https://*/*"></allow-intent>
+    <platform name="android">
+        <allow-intent href="market:*" />
+    </platform>
+</widget>

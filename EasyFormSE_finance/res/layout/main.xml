@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:background="@color/colorAccent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/preview1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="9">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <FrameLayout
+            android:id="@+id/preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include layout="@layout/camera_text" />
+
+        <ImageView
+            android:id="@+id/switchcamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:contentDescription="camera_change"
+            android:onClick="onClick"
+            android:src="@drawable/frontcamera_foreground" />
+
+        <include layout="@layout/camera_control" />
+
+        <TextView
+            android:id="@+id/text_animator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="1"
+            android:textColor="@color/white"
+            android:textSize="70sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        </FrameLayout>
+
+        <View
+            android:id="@+id/viewRectangle"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_gravity="top|center"
+            android:layout_marginLeft="@dimen/common_50_dp"
+            android:layout_marginTop="100dp"
+            android:layout_marginRight="@dimen/common_50_dp"
+            android:background="@drawable/border"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</LinearLayout>

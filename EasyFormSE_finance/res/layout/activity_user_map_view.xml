@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.sky.atc.easyformse.mapview.UserMapViewActivity">
+
+    <fragment
+        android:id="@+id/usermap"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.example.chetanpatel.mapp.MapsActivity">
+
+    </fragment>
+
+    <View
+        android:id="@+id/mapoverview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@color/Black"
+        android:alpha="0.3"/>
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:indeterminateDrawable="@drawable/progress1"
+            tools:ignore="MissingConstraints" />
+
+        <TextView
+            android:id="@+id/progressBarinsideText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:textColor="@color/Black"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:text="Fatching User's locations"
+
+            />
+
+
+
+
+</RelativeLayout>

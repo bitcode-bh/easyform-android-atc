@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:theme="@style/ToolBarStyle"
+        android:background="@color/toolbarcolor">
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <com.riontech.calendar.CustomCalendar
+        android:id="@+id/customCalendar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:endMonth="07"
+        app:endYear="2050"
+        app:startMonth="01"
+        app:startYear="2015" />
+
+</LinearLayout>

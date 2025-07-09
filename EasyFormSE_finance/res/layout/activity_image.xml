@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent">
+
+<LinearLayout
+        android:id="@+id/root1"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="0dp"
+        android:keepScreenOn="true">
+
+
+
+<!--    <ImageView-->
+<!--            android:id="@+id/preview"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@color/blue"-->
+<!--            android:adjustViewBounds="true"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
+
+<!--    <com.labters.documentscannerandroid.GraphicOverlay-->
+<!--            android:id="@+id/graphic_overlay"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="0dp"-->
+<!--            android:background="@color/colorPrimary"-->
+<!--            app:layout_constraintLeft_toLeftOf="@id/preview"-->
+<!--            app:layout_constraintRight_toRightOf="@id/preview"-->
+<!--            app:layout_constraintTop_toTopOf="@id/preview"-->
+<!--            app:layout_constraintBottom_toBottomOf="@id/preview"/>-->
+
+
+</LinearLayout>
+
+</ScrollView>
+<!--</androidx.core.widget.NestedScrollView>-->
