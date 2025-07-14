@@ -1751,9 +1751,7 @@ MkLocation.prototype = {
             let server_task_id = JSON.parse(storage.getItem('server_task_id'));
             let p_server_task_id = JSON.parse(storage.getItem('p_server_task_id'));
 
-            var data_json = JSON.parse(storage.getItem('list_json'));
-            var list_data = JSON.parse(data_json);
-            var waypoint_dependency = list_data[0].waypoint_dependency;
+            let waypoint_dependency = localStorage.getItem('trip_waypoint_dependency');
             if (waypoint_dependency == "" || waypoint_dependency == null || waypoint_dependency == undefined) {
                 waypoint_dependency = "trip_dependent";
             }

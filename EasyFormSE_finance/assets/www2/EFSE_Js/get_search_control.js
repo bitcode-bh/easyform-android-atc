@@ -1078,7 +1078,6 @@ function onsuccess_get_all_searched_list(e) {
                     }
                     // $("#ddl_search_type20_" + curr_btnSearch_Counter + "")
                     // .attr('size', 1);
-                    // autofull type20 dropdown on page load automatically
                 }
             }
             if (view_style == 'dropdownview') {
@@ -1905,7 +1904,14 @@ function onsuccess_get_all_searched_list_New(e) {
                 }
 
                 //bind onchange event of single opt dropdown after all ddls are auto filled [conflict between auto fill and onchange event in ATC](12062020)
-                check_and_call_next_single_option();
+
+                Type20_AutoBind_Onchange_Array.shift();
+                if (Type20_AutoBind_Onchange_Array.length > 0) {
+                    call_multi_autobind_type20_child_dropdown(Type20_AutoBind_Onchange_Array);
+                }
+                else {
+                    check_and_call_next_single_option();
+                }
 
             }
 
@@ -2070,6 +2076,18 @@ function check_and_call_next_single_option() {
                 call_multi_autobind_type20_child_dropdown(Type20_AutoBind_Onchange_Array);
             }
             else {
+
+                // in case where parent is not selected and want to select child - mk - 16042025
+                if (auto_open_id_text != "") {
+                    auto_open_id_text = "";
+                    $("#popover_edit_text").trigger("onclick");
+                    $("#popover_edit_text").removeAttr("onclick");
+                }
+                if (auto_open_id_qr != "") {
+                    $("#popover_scan_image").trigger("onclick");
+                    $("#popover_scan_image").removeAttr("onclick");
+                }
+
                 check_and_call_next_single_fill_data_option();
             }
         }
@@ -2108,7 +2126,7 @@ function check_and_call_next_single_fill_data_option() {
     }
 }
 
-// immidiately auto fill child dropdown when getting only 1 item in parent dropdwon in page load
+// immidiately auto fill child dropdown when getting only 1 item in parent dropdwon in load
 function autofill_child_type20_dropdown_onload(t_ddl_counter) {
     $("#ddl_search_type20_" + t_ddl_counter + "").trigger("onchange");
 }
@@ -2849,6 +2867,7 @@ function onsuccess_get_data_to_fill_ul_New(e, fill_btnSearch_Counter) {
 
             var list_value;
             var obj_id = message[0].id;
+            var checksheet_type_id = message[0].checksheet_type_id;
             var Data_Table_Json = message[0].detail;
             var fields_Array = [];
 
@@ -2864,12 +2883,27 @@ function onsuccess_get_data_to_fill_ul_New(e, fill_btnSearch_Counter) {
                 }
             }
 
+            var cntrl_prop = Data_Table_Json[0].prop;
+            if (cntrl_prop == "" || cntrl_prop == null || cntrl_prop == undefined) {
+                is_template_required++;
+            }
+           
             if (is_template_required > 0) {
+
+                var checksheet_json = Data_Json[0].checksheet_json;
+                if (checksheet_json == "" || checksheet_json == null || checksheet_json == undefined) {
+                    // in case data fetch from other than normal tables  
+                    checksheet_json = [];
+                }
+                else {
+                    checksheet_json = JSON.parse(checksheet_json);
+                }
+
                 var cntrl_prop = Data_Table_Json[0].prop;
                 if (cntrl_prop == "" || cntrl_prop == null || cntrl_prop == undefined) {
 
                     // merge only if getting 3 keys 26032023
-                    var blank_data = glob_template_json;
+                    var blank_data = checksheet_json;
                     for (i = 0; i < blank_data.length; i++) {                       //added this logic for info tbl label issue [17022023]
                         var bl_que_id = blank_data[i].que_id;
                         var bl_type = blank_data[i].type;
@@ -2897,8 +2931,22 @@ function onsuccess_get_data_to_fill_ul_New(e, fill_btnSearch_Counter) {
                     var value = Data_Table_Json[j].ans[0];
                     var cntrl_prop = Data_Table_Json[j].prop;
                     if (cntrl_prop == "" || cntrl_prop == null || cntrl_prop == undefined) {
-                        // to auto fill quelog data [27042021]
-                        if (Data_Table_Json[j].type == 7) {
+                   
+                        var cntrl_type = Data_Table_Json[j].type;
+                        if (cntrl_type == 8) {
+
+                            var misc_Array = Data_Table_Json[j].prop[0].misc_data;
+                            var value1 = misc_Array[0].value;
+                            value1 = itemObj._checkStrObj(misc_Array[0].value);  // check_item
+                            var mode = value1[0].mode;
+
+                            fields_Array.push({
+                                "queid": que_id,
+                                "value": value,
+                                "mode": mode
+                            });
+                        }
+                        else if (cntrl_type == 7) {
                             //img autofill [FT-18022025]
                             fields_Array.push({
                                 "queid": que_id,
@@ -3046,7 +3094,7 @@ function onsuccess_get_data_to_fill_ul_New(e, fill_btnSearch_Counter) {
                 open_popup_for_ddl_item_info(tempfieldArray);
             }
             else {
-                fill_data_to_box(obj_id, list_value, tempfieldArray, fill_btnSearch_Counter);
+                fill_data_to_box(obj_id, list_value, tempfieldArray, fill_btnSearch_Counter, checksheet_type_id);
             }
         } else {
             alert1(Data_Json[0].message);
@@ -3195,7 +3243,12 @@ function empty_data_to_box(temp_btnSearch_Counter) {
                 var box_id = [];
                 $("." + box_class + " :input").each(function () {
                     var box_id_temp = ($(this).attr('id'));
-                    box_id.push(box_id_temp);
+                    if (box_id_temp.indexOf("_cbtn_") > -1) {
+                        // do not emty camera hidden fields - mk - 10072025
+                    }
+                    else {
+                        box_id.push(box_id_temp);
+                    }
                 });
 
                 for (fk = 0; fk < box_id.length; fk++) {
@@ -3211,7 +3264,7 @@ function empty_data_to_box(temp_btnSearch_Counter) {
 }
 
 // put searched details to boxes on particular list click
-function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearch_Counter) {
+function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearch_Counter, t_checksheet_type_id) {
     try {
         loading();
         var myArray = itemObj._checkStrObj(tempfieldArray);  		// check_item
@@ -3311,7 +3364,12 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                         // below text box found to fill
                         $("." + box_class + " :input").each(function () {
                             var box_id_temp = ($(this).attr('id'));
-                            box_id.push(box_id_temp);
+                            if (box_id_temp.indexOf("_cbtn_") > -1) {
+                                // do not emty camera hidden fields - mk - 10072025
+                            }
+                            else {
+                                box_id.push(box_id_temp);
+                            }
                         });
 
                         //img autofill [FT-18022025]
@@ -3378,78 +3436,83 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                     var img_ary = myArray[fi].img_ary;
 
                                     var img_src = img_ary[0];
-                                    var p_name = img_ary[1];
-                                    var photo_id = img_ary[4];
-                                    var curr_file_size_mb = img_ary[5];
-                                    var img_que_id = myArray[fi].queid;
+                                    if (img_src == "" || img_src == null || img_src == undefined) {
+                                        // photo is not exist in original entity - mk - 10072025
+                                    }
+                                    else {
+                                        var p_name = img_ary[1];
+                                        var photo_id = img_ary[4];
+                                        var curr_file_size_mb = img_ary[5];
+                                        var img_que_id = myArray[fi].queid;
 
-                                    var Condition_Data_Str = $('#hdn_condition_data_' + temp_btnSearch_Counter + '').val();
+                                        var Condition_Data_Str = $('#hdn_condition_data_' + temp_btnSearch_Counter + '').val();
 
-                                    var t_Condition_Data_Str = decodeURIComponent(Condition_Data_Str)
-                                    var Condition_Data = JSON.parse(t_Condition_Data_Str);
-                                    var value_new = Condition_Data[0].value_new;
-                                    var type20_checksheet_id = value_new[0].Checksheet_id;
+                                        var t_Condition_Data_Str = decodeURIComponent(Condition_Data_Str)
+                                        var Condition_Data = JSON.parse(t_Condition_Data_Str);
+                                        var value_new = Condition_Data[0].value_new;
+                                        var type20_checksheet_id = value_new[0].Checksheet_id;
 
-                                    localStorage.setItem('ID_useType22', obj_id);
+                                        localStorage.setItem('ID_useType22', obj_id);
 
-                                    var img_src = get_upload_media_live_link(img_que_id, type20_checksheet_id);
+                                        var img_src = get_upload_media_live_link(img_que_id, type20_checksheet_id, t_checksheet_type_id);
 
-                                    $("#" + curr_box_id + "").attr('src', img_src);
+                                        $("#" + curr_box_id + "").attr('src', img_src);
 
-                                    let new_que_id = $("#div_cbtn_" + img_new_id).attr('que_id');
+                                        let new_que_id = $("#div_cbtn_" + img_new_id).attr('que_id');
 
-                                    if (form_flag == 0 || form_flag == 6) {
-                                        for (var j = 0; j < jsonObj_old.length; j++) {
-                                            var json_que_id = jsonObj_old[j].que_id;
-                                            if (new_que_id == json_que_id) {
+                                        if (form_flag == 0 || form_flag == 6) {
+                                            for (var j = 0; j < jsonObj_old.length; j++) {
+                                                var json_que_id = jsonObj_old[j].que_id;
+                                                if (new_que_id == json_que_id) {
 
-                                                img_ary[4] = "";
-                                                img_ary[5] = "";
+                                                    img_ary[4] = "";
+                                                    img_ary[5] = "";
 
-                                                let task_create_popup = $('.popup-new-task-create.modal-in:visible');
-                                                if (task_create_popup.length > 0) {
-                                                    //new task create popup [FT-08052025]
-                                                    jsonObj_task_add[j].ans = img_ary;
+                                                    let task_create_popup = $('.popup-new-task-create.modal-in:visible');
+                                                    if (task_create_popup.length > 0) {
+                                                        //new task create popup [FT-08052025]
+                                                        jsonObj_task_add[j].ans = img_ary;
+                                                    }
+                                                    else {
+                                                        jsonObj_old[j].ans = img_ary;
+                                                    }
+                                                    break;
                                                 }
-                                                else {
-                                                    jsonObj_old[j].ans = img_ary;
-                                                }
-                                                break;
                                             }
                                         }
-                                    }
 
-                                    let old_primary_id = obj_id;
-                                    let old_checksheet_id = type20_checksheet_id;
-                                    let old_que_id = JSON.stringify(img_que_id);
-                                    let new_checksheet_id = value_new[0].Current_Checksheet_id;
-                                    let new_checksheet_type = JSON.parse(storage.getItem('checksheet_type_filter'));
+                                        let old_primary_id = obj_id;
+                                        let old_checksheet_id = type20_checksheet_id;
+                                        let old_que_id = JSON.stringify(img_que_id);
+                                        let new_checksheet_id = value_new[0].Current_Checksheet_id;
+                                        let new_checksheet_type = JSON.parse(storage.getItem('checksheet_type_filter'));
 
-                                    if (form_flag == 6) {
-                                        new_checksheet_type = "5";
-                                    }
+                                        if (form_flag == 6) {
+                                            new_checksheet_type = "5";
+                                        }
 
-                                    let param_obj = [];
-                                    param_obj.push({
-                                        "old_id": old_primary_id,
-                                        "old_cid": old_checksheet_id,
-                                        "old_qd": old_que_id,
-                                        "old_t22id": "0",
-                                        "old_t22i": "0",
-                                        "new_id": "",
-                                        "new_ctype": new_checksheet_type,
-                                        "new_cid": new_checksheet_id,
-                                        "new_qd": new_que_id,
-                                        "new_t22id": "0",
-                                        "new_t22i": "0"
-                                    });
+                                        let param_obj = [];
+                                        param_obj.push({
+                                            "old_id": old_primary_id,
+                                            "old_cid": old_checksheet_id,
+                                            "old_qd": old_que_id,
+                                            "old_t22id": "0",
+                                            "old_t22i": "0",
+                                            "new_id": "",
+                                            "new_ctype": new_checksheet_type,
+                                            "new_cid": new_checksheet_id,
+                                            "new_qd": new_que_id,
+                                            "new_t22id": "0",
+                                            "new_t22i": "0"
+                                        });
 
-                                    $("#" + curr_box_id + "").attr('autofill', "true");
-                                    $("#" + curr_box_id + "").attr('autofill_obj', JSON.stringify(param_obj));
+                                        $("#" + curr_box_id + "").attr('autofill', "true");
+                                        $("#" + curr_box_id + "").attr('autofill_obj', JSON.stringify(param_obj));
 
-                                    if (new_checksheet_type != 1) {
-                                        // task/customer/user
-                                        upload_autofill_photo_temp(old_primary_id, old_checksheet_id, old_que_id, new_checksheet_type, new_checksheet_id, new_que_id);
+                                        if (new_checksheet_type != 1) {
+                                            // task/customer/user
+                                            upload_autofill_photo_temp(old_primary_id, old_checksheet_id, old_que_id, new_checksheet_type, new_checksheet_id, new_que_id);
+                                        }
                                     }
                                 }
                                 else {
@@ -4228,6 +4291,9 @@ function call_multi_autobind_type20_child_dropdown(multi_autobind_Array_t) {
                 t_JoinTableName, t_Checksheet_id, t_window_style,
                 t_view_style);
         }
+        else {
+            check_and_call_next_single_option();
+        }
     } catch (e) {
         alert1(e + '_call_multi_autobind_type20_child_dropdown()');
         loading_hide();
@@ -4418,11 +4484,20 @@ function autofill_type20_dropdown_onload(Type20_AutoFill_DDL_Array_t) {
                         }
                     }
                 }
-                if (ref_valid == 0) {
-                    popup_search_items_show_type20(t_new_id, t_TableName, t_JoinTableName, t_Checksheet_id, t_window_style, t_view_style)
-                } else {
+
+                let act_view_style = push_data[0].view_style;
+                if (act_view_style == "listview") {
+                    // do not autofill listview searchables in page load - mk - 20052025
                     Type20_AutoFill_DDL_Array.shift();
                     autofill_type20_dropdown_onload(Type20_AutoFill_DDL_Array);
+                }
+                else {
+                    if (ref_valid == 0) {
+                        popup_search_items_show_type20(t_new_id, t_TableName, t_JoinTableName, t_Checksheet_id, t_window_style, t_view_style)
+                    } else {
+                        Type20_AutoFill_DDL_Array.shift();
+                        autofill_type20_dropdown_onload(Type20_AutoFill_DDL_Array);
+                    }
                 }
             }
             else {
@@ -4536,7 +4611,7 @@ function hide_current_type_loading(t_new_id) {
         $("#ddl_search_type20_" + t_new_id + "").prop("disabled", false);
     }
 
-    // enable searchable dropdown in page load (treated as normal dropdown so enable it)
+    // enable searchable dropdown in after load (treated as normal dropdown so enable it)
     if (glob_type20_cust_checksheetid == '' || glob_type20_cust_checksheetid == null || glob_type20_cust_checksheetid == undefined || glob_type20_cust_checksheetid == "0" || glob_type20_cust_checksheetid == "undefined") { }
     else {
         $("#ddl_search_type20_" + t_new_id + "").prop("disabled", false);
@@ -5904,8 +5979,23 @@ function get_filled_dropdown_data(t_new_id, TableName, JoinTableName, Checksheet
 var new_id_G;
 var glob_type20_cust_checksheetid = 0;
 
+var auto_open_id_text = "";
+var auto_open_id_qr = "";
+
 function get_dropdown_data_edit_text(t_new_id, TableName, JoinTableName, Checksheet_id, customer_checksheetid, ddl_info_view, autofill, add_cust_from_search) {
     // Edit Text
+
+    var ddl_type = $("#ddl_search_type20_" + t_new_id + "").attr("ddl_type");
+    var parent_ddl_id = $("#ddl_search_type20_" + t_new_id + "").attr("parent_ddl_id");
+    var parent_ddl_val = $("#" + parent_ddl_id).val();
+    var ddl_len = $("#ddl_search_type20_" + t_new_id + " option").length;
+    if (ddl_len == 1 && ddl_type == "ddl_child" && parent_ddl_val == 0) {
+        auto_open_id_text = t_new_id;
+    }
+    else {
+        auto_open_id_text = "";
+    }
+
     ddl_search_type = "normal";
     get_dropdown_data(t_new_id, TableName, JoinTableName, Checksheet_id, customer_checksheetid, ddl_info_view, autofill, add_cust_from_search);
 }

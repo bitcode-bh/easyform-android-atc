@@ -1372,9 +1372,14 @@ function check_old_task_for_checksheet(selected_check_type, selected_checksheet_
         storage.setItem('c_is_readchecksheet', JSON.stringify(c_is_readchecksheet));
         storage.setItem('c_is_online', JSON.stringify(c_is_online));
 
-        if (c_is_icon_display == "" || c_is_icon_display == null || c_is_icon_display == undefined) {
+        var company_id = JSON.parse(storage.getItem('company_id'));
+        if (c_is_icon_display == "true" || company_id == "157") {
             c_is_icon_display = "true";
         }
+        else {
+            c_is_icon_display = "false";
+        }
+
         storage.setItem('c_is_icon_display', JSON.stringify(c_is_icon_display));                      //to show/hide checksheet contol icon
 
         var Background_Image = $("#Chk_Back_" + c_index + "").val();

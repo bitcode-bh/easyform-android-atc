@@ -108,6 +108,10 @@ function update_current_checksheet_status() {
                     if (end_status == end_trip_status) {
                         check_n_auto_stop_trip_on_submit();
                     }
+                    else {
+                        alert("End Trip Status is not configured or not matched!");
+                        loading_hide();
+                    }
                 }
                 else {
                     update_current_checksheet_status_post();

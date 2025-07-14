@@ -471,6 +471,12 @@ function back_button(page) {
                 //vibrate_device();
                 //user_choice = confirm("Your changes are not saved. Are you sure, you want to go back?");
 
+                var company_id = JSON.parse(storage.getItem('company_id'));
+                if (company_id == 157) {
+                    // No Autosave functionality for ATC - mk - 10072025
+                    btnNAS_counter = 1;
+                }
+
                 if (btnNAS_counter == 0) {
                     // auto save log
                     auto_savelog();
@@ -819,7 +825,7 @@ function onsuccess_get_my_profile_details_F7(e) {
         //}
 
         get_user_data_online();
-       
+
     }
     catch (e) {
         alert1(e + '_onsuccess_get_my_profile_details_F7');
@@ -828,7 +834,7 @@ function onsuccess_get_my_profile_details_F7(e) {
 
 //////////////----profile user detail tbl start-----/////////////////
 function get_user_data_online() {
-    
+
     loading();
 
     let user_id = JSON.parse(storage.getItem('user_id'));
@@ -863,7 +869,7 @@ function get_user_data_online() {
             alert("User data is not available!");
         }
         else {
-            
+
             $("#title_user_profile").show();
 
             var prop = user_data[0].prop;
@@ -1900,6 +1906,11 @@ function start_stop_trip(trip_status) {
             stillviolation_event = "false";
         }
 
+        let trip_vehicle_type = localStorage.getItem('trip_vehicle_type');
+        if (trip_vehicle_type == "" || trip_vehicle_type == null || trip_vehicle_type == undefined) {
+            trip_vehicle_type = "";
+        }
+
         var t_tid = JSON.parse(storage.getItem('tid'));
         var q_jsonobj = [];
         q_jsonobj.push({
@@ -1907,7 +1918,8 @@ function start_stop_trip(trip_status) {
             'tid': t_tid,
             'odometer_point': odometer_array,
             'ETA': t_ETA,
-            'stillviolation_event': stillviolation_event
+            'stillviolation_event': stillviolation_event,
+            'vehicle_type': trip_vehicle_type
         });
         //alert1(JSON.stringify(q_jsonobj));
 
@@ -1929,11 +1941,21 @@ function onsuccess_start_stop_trip(e) {
             localStorage.setItem('trip_status', t_trip_status);
             localStorage.setItem('trip_tid', t_tid);
             localStorage.setItem('trip_ser_task_id', t_ser_task_id);
+
+            let data_json = JSON.parse(storage.getItem('list_json'));
+            let list_data = JSON.parse(data_json);
+            let waypoint_dependency = list_data[0].waypoint_dependency;
+            if (waypoint_dependency == "" || waypoint_dependency == null || waypoint_dependency == undefined) {
+                waypoint_dependency = "trip_dependent";
+            }
+
+            localStorage.setItem('trip_waypoint_dependency', waypoint_dependency);
         }
         else {
             localStorage.setItem('trip_status', '1');
             localStorage.setItem('trip_tid', '');
             localStorage.setItem('trip_ser_task_id', '');
+            localStorage.setItem('trip_waypoint_dependency', '');
         }
 
         try {
@@ -3047,7 +3069,7 @@ function mk_get_order_by_obj(ddl_order_by, ddl_order_type) {
 }
 
 
-function get_upload_media_live_link(que_id, check_type) {
+function get_upload_media_live_link(que_id, check_type, t_checksheet_type_id) {
     try {
 
         var primary_id = JSON.parse(localStorage.getItem('ID_useType22'));
@@ -3059,15 +3081,20 @@ function get_upload_media_live_link(que_id, check_type) {
         var uniqcode = JSON.parse(storage.getItem('uniqcode'));
         var global_resumable_url = JSON.parse(storage.getItem('global_resumable_url'));
 
-        if (form_flag == 7) {
-            var checksheet_type_filter = "3";
-        } else if (form_flag == 6) {
-            var checksheet_type_filter = "5";
-        } else if (form_flag == 8) {
-            var checksheet_type_filter = "7";
+        if (t_checksheet_type_id == "" || t_checksheet_type_id == null || t_checksheet_type_id == undefined) {
+            if (form_flag == 7) {
+                var checksheet_type_filter = "3";
+            } else if (form_flag == 6) {
+                var checksheet_type_filter = "5";
+            } else if (form_flag == 8) {
+                var checksheet_type_filter = "7";
+            }
+            else {
+                var checksheet_type_filter = "1";
+            }
         }
         else {
-            var checksheet_type_filter = "1";
+            var checksheet_type_filter = t_checksheet_type_id;
         }
 
         var type22_popup = $('.popup-type22:visible');
@@ -3662,6 +3689,23 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
                 if (Photo_id == '' || Photo_id == null || Photo_id == undefined) { }
                 else {
                     Photo_Id_Array.push({ "photo_id": Photo_id });
+
+                    if (form_flag == 0 || form_flag == 6) {
+                        for (var j = 0; j < jsonObj_old.length; j++) {
+                            var json_que_id = jsonObj_old[j].que_id;
+                            if (new_qd == json_que_id) {
+                                let task_create_popup = $('.popup-new-task-create.modal-in:visible');
+                                if (task_create_popup.length > 0) {
+                                    //replace new photo_id in ans json [FT-11072025]
+                                    jsonObj_task_add[j].ans[4] = Photo_id;  
+                                }
+                                else {
+                                    jsonObj_old[j].ans[4] = Photo_id;
+                                }
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             else {

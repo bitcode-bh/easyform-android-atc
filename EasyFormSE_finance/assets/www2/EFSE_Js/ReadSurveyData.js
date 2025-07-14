@@ -552,6 +552,14 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         view_label = "false";
                     }
 
+                    // for other than login url where label & control logic - mk - 09072025
+                    if (i > 0) {
+                        if (jsonObj[i - 1].type == 5 || jsonObj[i - 1].type == 500) {
+                            view_label = "true";
+                            prop_name = jsonObj[i - 1].prop[0].name;
+                        }
+                    }
+
                     if (view_label == "true") {
                         var lbl_display = 1;
                         if (i != 0) {

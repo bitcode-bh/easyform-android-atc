@@ -1316,6 +1316,13 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                     var is_grey = task_setting.is_grey;
                 }
 
+                if (site_lat == "" || site_lat == null || site_lat == undefined || site_lat == "0") {
+                    site_lat = user_lat;
+                }
+                if (site_long == "" || site_long == null || site_long == undefined || site_long == "0") {
+                    site_long = user_long;
+                }
+
                 //check if sub-task is approved or rejected
                 var task_status = myArray_main[i].status1;
                 //alert1("task status: " + task_status + ", approve_status: " + approve_status + ", rejected_status: " + rejected_status);
@@ -1841,6 +1848,10 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                         var font_size = myArray[j].font_size;
                         var format = myArray[j].format;
                         var color = myArray[j].color;
+                        if (color == "#ffff") {
+                            color = "";
+                        }
+
                         var align = myArray[j].align;
                         if (align == "" || align == null || align == undefined) {
                             align = "left";
@@ -5292,7 +5303,7 @@ function check_type_for_pdf_report() {
 
         let domain_url = JSON.parse(storage.getItem('global_url'));
         var check_pdf = "old";
-        if (company_id == 1842 || pdf_view_type == "server_pdf") {
+        if (company_id == 1842 || pdf_view_type == "server_pdf" || pdf_view_type == "" || pdf_view_type == null || pdf_view_type == undefined) {
             //old pdf
         }
         else {

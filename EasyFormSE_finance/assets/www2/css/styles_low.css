@@ -2169,9 +2169,9 @@ div[id^=new_item_] input:focus, div[id^=new_item_] button:focus {
     /*float: right;*/
 }
 
-.form-ico {
+/*.form-ico {
     visibility: hidden;
-}
+}*/
 
 .notification-counter {
     position: absolute;

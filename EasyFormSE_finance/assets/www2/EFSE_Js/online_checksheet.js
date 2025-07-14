@@ -240,28 +240,38 @@ function update_task_status_on_pm_checksheet_submit_online() {
                     var locObj = new MkLocation();
                     locObj._addWaypoint("status_change");
 
-                    if (last_submit_button_Array.length > 0) {
-                        // redirect to target udf after updating status - sub task control is avialable in checksheet - mk - 10072024
-                        let main_udf_id = $("#div_aggr_data_" + curr_type37_new_id + "").attr("main_udf_id");
-                        if (main_udf_id == "" || main_udf_id == null || main_udf_id == undefined) {
-                            //window.location.reload();
-                            refresh_site_list_common();
+                    var selected_server_task_id = JSON.parse(storage.getItem('server_task_id'));
+                    var old_status = JSON.parse(storage.getItem('start_status'));
+                    var new_status = JSON.parse(storage.getItem('end_status'));
+
+                    //status change comment sent if checksheet is online and curr_btn_mode is updatetasknsubmit [FT-14072025]
+                    send_comment_for_status_change(selected_server_task_id, old_status, new_status);
+
+
+                    setTimeout(function () {
+                        if (last_submit_button_Array.length > 0) {
+                            // redirect to target udf after updating status - sub task control is avialable in checksheet - mk - 10072024
+                            let main_udf_id = $("#div_aggr_data_" + curr_type37_new_id + "").attr("main_udf_id");
+                            if (main_udf_id == "" || main_udf_id == null || main_udf_id == undefined) {
+                                //window.location.reload();
+                                refresh_site_list_common();
+                            }
+                            else {
+                                var role_id = JSON.parse(storage.getItem('role_id'));
+
+                                var t_main_column_array = $("#div_aggr_data_" + curr_type37_new_id + "").attr('main_udf_data')
+                                t_main_column_array = JSON.parse(t_main_column_array);
+
+                                let flow_id = t_main_column_array[0].main_flow_id;
+                                let flow_name = t_main_column_array[0].main_flow_name;
+                                storage.setItem('flow_Array', JSON.stringify(''));
+                                redirect_on_module_click(flow_name, main_udf_id, flow_id, 'Flow', role_id);
+                            }
                         }
                         else {
-                            var role_id = JSON.parse(storage.getItem('role_id'));
-
-                            var t_main_column_array = $("#div_aggr_data_" + curr_type37_new_id + "").attr('main_udf_data')
-                            t_main_column_array = JSON.parse(t_main_column_array);
-
-                            let flow_id = t_main_column_array[0].main_flow_id;
-                            let flow_name = t_main_column_array[0].main_flow_name;
-                            storage.setItem('flow_Array', JSON.stringify(''));
-                            redirect_on_module_click(flow_name, main_udf_id, flow_id, 'Flow', role_id);
+                            update_task_status_on_pm_checksheet_submit_post();
                         }
-                    }
-                    else {
-                        update_task_status_on_pm_checksheet_submit_post();
-                    }
+                    }, 1000);
                 }
                 else {
                     alert(message);

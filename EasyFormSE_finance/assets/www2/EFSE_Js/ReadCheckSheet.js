@@ -561,6 +561,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
         var invoice_found = 0;
         for (i = 0; i < jsonObj.length; i++) {
             var cnrl_type = jsonObj[i].type;
+            var prop_name = jsonObj[i].prop[0].name;
+
             if (cnrl_type == 10) { }
             else {
                 // objectclass and objectname 09022021
@@ -695,6 +697,15 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         view_label = "false";
                     }
 
+
+                    // for other than login url where label & control logic - mk - 09072025
+                    if (i > 0) {
+                        if (jsonObj[i - 1].type == 5 || jsonObj[i - 1].type == 500) {
+                            view_label = "true";
+                            prop_name = jsonObj[i - 1].prop[0].name;
+                        }
+                    }
+
                     if (view_label == "true") {
                         var lbl_display = 1;
                         if (i != 0) {
@@ -704,7 +715,6 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             }
                         }
                         if (lbl_display == 1) {
-                            var prop_name = jsonObj[i].prop[0].name;
                             if (prop_name == "" || prop_name == null || prop_name == undefined) { }
                             else {
                                 label_str += '<div id="div_lbl_' + new_id + '">';
@@ -1371,7 +1381,6 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             }
                         }
 
-                        var prop_name = jsonObj[i].prop[0].name;
                         var obj = {
                             index: i,
                             que_id: jsonObj[i].que_id,
@@ -1623,8 +1632,6 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         newdiv += "<div id='div_sign_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
                         newdiv += label_str;
-
-                        var prop_name = jsonObj[i].prop[0].name;
 
                         var obj = {
                             read_type: 'readchecksheet',
@@ -2173,8 +2180,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             var param_cust_search = "open_dropdown_popup_for_cust_search(this)";
                             newdiv += '<div class="item-input item-input-field form-div add-cust-outer" style="width:100% !important;">';
                             newdiv += '<input type="text" id="type20_txt_' + new_id + '" onkeyup="' + param_keyup + '" style="width:75% !important;" class="form-ele" placeholder="Add New Cell...">';
-                            newdiv += '<i id="addCust_txtbox_' + new_id + '" class="fa form-ico fa-plus" onclick="' + param_cust_add + '" style="margin-right:30px;margin-top:5px;padding:0 10px;display:inline;"></i>';
-                            newdiv += '<i id="searchCust_txtbox_' + new_id + '" class="fa form-ico fa-search" onclick="' + param_cust_search + '" style="padding-left:10px;margin-top:-10%;display:inline;"></i>';
+                            newdiv += '<i id="addCust_txtbox_' + new_id + '" class="fa form-ico fa-plus" onclick="' + param_cust_add + '" style="margin-right:30px;margin-top:5px;padding:0 10px;display:inline; visibility:visible"></i>';
+                            newdiv += '<i id="searchCust_txtbox_' + new_id + '" class="fa form-ico fa-search" onclick="' + param_cust_search + '" style="padding-left:10px;margin-top:-10%;display:inline; visibility:visible"></i>';
                             newdiv += '</div>';
                             //newdiv += '</div>';
                         }
@@ -2366,7 +2373,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                                 var multi_str = 'multiple';
                             }
 
-                            newdiv += '<div class="item-input item-input-field form-div" style="' + ddl_width + disp_type20_ddl + '" onclick="' + ddl_param + '" ' + enable_disable + '><img id="ddl_loading_' + new_id + '" src="images/loading_type20.gif" style="position: absolute; left: 50%; top: 7px; display:none">';
+                            newdiv += '<div class="item-input item-input-field form-div type20-ddl-outer" style="' + ddl_width + disp_type20_ddl + '" onclick="' + ddl_param + '" ' + enable_disable + '><img id="ddl_loading_' + new_id + '" src="images/loading_type20.gif" style="position: absolute; left: 50%; top: 7px; display:none">';
 
                             var ios_device = localStorage.getItem('ios_device');
                             if (ios_device == 'iphone' || F7_device == 'android') {
@@ -2825,8 +2832,6 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         }
 
-                        var prop_name = jsonObj[i].prop[0].name;
-
                         newdiv += '<div id="div_upload_doc_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" name="' + prop_name + '" ' + common_str + '>' + mendatory_img + '';
                         newdiv += label_str;
 
@@ -2898,8 +2903,6 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         else {
                             var param = 'capture_video("' + i + '", "' + jsonObj[i].que_id + '", "video_' + new_id + '", "' + form_flag + '")';
                         }
-
-                        var prop_name = jsonObj[i].prop[0].name;
 
                         var obj = {
                             read_type: 'readchecksheet',

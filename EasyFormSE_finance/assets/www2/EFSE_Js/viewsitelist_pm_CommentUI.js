@@ -132,38 +132,78 @@ function onsuccess_get_comment(e) {
                 var createdate = data[c].createdate;
                 var mail_from = data[c].from;
                 var mail_to = data[c].email_json;
+                var checksheet_id = data[c].checksheet_id;
+                var que_id = data[c].que_id;
+                var step_id = data[c].step_id;
 
                 var d = new Date(createdate)
                 var comment_ms = d.getTime();
 
-                if (mail_to == "" || mail_to == null || mail_to == undefined) {
-                    var activity_type = "comment";
+                //if (mail_to == "" || mail_to == null || mail_to == undefined) {
+                //    var activity_type = "comment";
+                //}
+                //else {
+                //    var activity_type = "email";
+                //}
+
+                var From = data[c].from;
+                if (From == '' || From == null || From == undefined) {
+                    var activity_type = 'comment';
                 }
                 else {
-                    var activity_type = "email";
+                    if (checksheet_id == 0 && que_id == 0 && step_id == 0) {
+                        var activity_type = 'email';
+                    }
+                    else {
+                        var activity_type = 'control_comment';
+                    }
+                    comment_user = From.split('@')[0];
                 }
 
-                activity_Array.push({
-                    'activity_type': activity_type,
-                    'millisecond': comment_ms,
-                    'UserName': comment_user,
-                    'comment': comment_text,
-                    'date': createdate,
-                    'Subject': data[c].subject,
-                    'Body': comment_text,
-                    'From': mail_from,
-                    'To': data[c].email_json,
-                    'Cc': data[c].json_cc,
-                    'Bcc': data[c].json_bcc
-                });
+                let t_UserName = data[c].UserName;
+                if (t_UserName == "" || t_UserName == null || t_UserName == undefined) {
+                    t_UserName = comment_user;
+                }
 
+                if (checksheet_id == -1 && que_id == -1 && step_id == -1) {
+                    var status_millisecond = d.getTime();
+
+                    activity_Array.push({
+                        'activity_type': 'status_change',
+                        'millisecond': status_millisecond,
+                        'UserName': t_UserName,
+                        'Status_Name': "",
+                        'Prev_Status_Name': "",
+                        "Status_Message": comment_text,
+                        'date': createdate
+                    });
+                }
+                else {
+                    var Attachment = data[c].json_path;
+
+                    activity_Array.push({
+                        'activity_type': activity_type,
+                        'millisecond': comment_ms,
+                        'UserName': t_UserName,
+                        'comment': comment_text,
+                        'date': createdate,
+                        'Subject': data[c].subject,
+                        'Body': comment_text,
+                        'From': mail_from,
+                        'To': data[c].email_json,
+                        'Cc': data[c].json_cc,
+                        'Bcc': data[c].json_bcc,
+                        'Attachment': Attachment,
+                        'contact': data[c].sms_json
+                    });
+                }
             }
 
-            get_task_history();
-
+            //get_task_history();
+            append_comment_history();
         }
         else {
-            get_task_history();
+            //get_task_history();
         }
     }
     catch (e) {
@@ -222,213 +262,7 @@ function onsuccess_get_task_history(e) {
                 });
             }
 
-            activity_Array = sort_by_key(activity_Array, 'millisecond');
-            activity_Array.reverse();
-
-            for (a = 0; a < activity_Array.length; a++) {
-                var activity_type = activity_Array[a].activity_type;
-                if (activity_type == 'sub_task') {
-                    // sub task creation
-
-                    //var customerid = activity_Array[a].customerid;
-                    //var sub_task_id = activity_Array[a].id;
-                    //var sub_status = activity_Array[a].Status;
-                    //var sub_task_ms = activity_Array[a].millisecond;
-                    var create_date = activity_Array[a].CreateDTTM;
-                    var assign_date = activity_Array[a].AssignDate;
-                    var sub_task_data = activity_Array[a].taskdata;
-                    sub_task_data = JSON.parse(sub_task_data);
-
-                    var user_found = 0, purpose_found = 0;
-                    var sub_task_username, sub_task_purpose;
-                    for (s = 0; s < sub_task_data.length; s++) {
-                        var type = sub_task_data[s].type;
-                        if (type == 0 || type == 5 || type == 7 || type == 10) { }
-                        else {
-                            var que_id = sub_task_data[s].que_id;
-                            if (que_id == 4) {
-                                sub_task_username = sub_task_data[s].ans[0];
-                                user_found++;
-                            }
-                            else if (que_id == 18) {
-                                sub_task_purpose = sub_task_data[s].ans[0];
-                                purpose_found++;
-                            }
-
-                            if (user_found > 0 && purpose_found > 0) {
-                                break;
-                            }
-
-                        }
-                    }
-
-                    var d = new Date(create_date);
-                    h_modified_date = formatAMPM(d);
-
-                    var n = h_modified_date.indexOf("ago");
-                    if (n > -1) {
-                        var time_str = h_modified_date.replace(' ago', '');
-                        var datetime_str = time_str + ' <small>ago</small>';
-                    }
-                    else {
-                        var t = getPosition(h_modified_date, ' ', 2);
-                        var date_str = h_modified_date.substring(0, t);
-                        var time_str = h_modified_date.substring(t, h_modified_date.length);
-                        var datetime_str = date_str + ' <small>' + time_str + '</small>';
-                    }
-
-                    var list_item = '<div class="timeline-item">';
-                    list_item += '<div class="timeline-item-date">' + datetime_str + '</div>';
-                    list_item += '<div class="timeline-item-divider"></div>';
-                    list_item += '<div class="timeline-item-content"><div class="timeline-item-inner">';
-                    list_item += '<div class="mail-icon"><i class="fa fa-plus cls_task_ico"></i></div>';
-                    list_item += '<div class="timeline-item-time"><b>' + sub_task_username + '</b> had planned visit on ' + assign_date + '</div>';
-                    list_item += '</div></div></div>';
-                    history_append(list_item, a);
-                }
-                else if (activity_type == 'status_change') {
-                    // status change
-                    var h_username = activity_Array[a].UserName;
-                    var h_status_name = activity_Array[a].Status_Name;
-                    var h_prev_status_name = activity_Array[a].Prev_Status_Name;
-                    var h_modified_date = activity_Array[a].date;
-
-                    var n = h_modified_date.indexOf("ago");
-                    if (n > -1) {
-                        var time_str = h_modified_date.replace(' ago', '');
-                        var datetime_str = time_str + ' <small>ago</small>';
-                    }
-                    else {
-                        var t = getPosition(h_modified_date, ' ', 2);
-                        var date_str = h_modified_date.substring(0, t);
-                        var time_str = h_modified_date.substring(t, h_modified_date.length);
-                        var datetime_str = date_str + ' <small>' + time_str + '</small>';
-                    }
-
-                    var list_item = '<div class="timeline-item">';
-                    list_item += '<div class="timeline-item-date">' + datetime_str + '</div>';
-                    list_item += '<div class="timeline-item-divider"></div>';
-                    list_item += '<div class="timeline-item-content"><div class="timeline-item-inner">';
-
-                    if (h_prev_status_name == "") {
-                        var str = '<b>' + h_username + '</b> added this task to ' + h_status_name;
-                        list_item += '<div class="mail-icon"><i class="fa fa-cube cls_task_ico"></i></div>';
-                    }
-                    else {
-                        var str = '<b>' + h_username + '</b> moved this task from ' + h_prev_status_name + ' to ' + h_status_name;
-                        list_item += '<div class="mail-icon"><i class="fa fa-random cls_task_ico"></i></div>';
-                    }
-
-                    list_item += '<div class="timeline-item-time">' + str + '</div>';
-                    list_item += '</div></div></div>';
-
-                    history_append(list_item, a);
-                }
-                else if (activity_type == 'comment') {
-                    var comment_date = activity_Array[a].date;
-                    var comment_username = activity_Array[a].UserName;
-                    var comment_text = activity_Array[a].comment;
-
-                    var d = new Date(comment_date)
-                    h_modified_date = formatAMPM(d);
-
-                    var n = h_modified_date.indexOf("ago");
-                    if (n > -1) {
-                        var time_str = h_modified_date.replace(' ago', '');
-                        var datetime_str = time_str + ' <small>ago</small>';
-                    }
-                    else {
-                        var t = getPosition(h_modified_date, ' ', 2);
-                        var date_str = h_modified_date.substring(0, t);
-                        var time_str = h_modified_date.substring(t, h_modified_date.length);
-                        var datetime_str = date_str + ' <small>' + time_str + '</small>';
-                    }
-
-                    var list_item = '<div class="timeline-item">';
-                    list_item += '<div class="timeline-item-date">' + datetime_str + '</div>';
-                    list_item += '<div class="timeline-item-divider"></div>';
-                    list_item += '<div class="timeline-item-content"><div class="timeline-item-inner">';
-                    list_item += '<div class="mail-icon"><i class="fa fa-comment cls_task_ico"></i></div>';
-                    //list_item += '<div class="timeline-item-time"><b>' + comment_username + '</b> commented:</div>';
-                    list_item += '<div class="timeline-item-text"><b>' + comment_username + '</b> commented: </div>';
-
-                    var html = isHTML(comment_text);
-                    if (html == true) {
-                        var comment_html = comment_text;
-                    }
-                    else {
-                        var comment_html = htmlDecode(comment_text);
-                    }
-
-                    list_item += '<div class="timeline-item-text">' + comment_html + '</div>';
-                    list_item += '</div></div></div>';
-
-                    history_append(list_item, a);
-
-                }
-                else if (activity_type == 'email') {
-                    var comment_date = activity_Array[a].date;
-                    var comment_username = activity_Array[a].UserName;
-                    var comment_text = activity_Array[a].Body;
-                    var subject_text = activity_Array[a].Subject;
-                    var from_text = activity_Array[a].From;
-                    from_text = from_text.toLowerCase();
-
-                    var d = new Date(comment_date)
-                    h_modified_date = formatAMPM(d);
-
-                    var n = h_modified_date.indexOf("ago");
-                    if (n > -1) {
-                        var time_str = h_modified_date.replace(' ago', '');
-                        var datetime_str = time_str + ' <small>ago</small>';
-                    }
-                    else {
-                        var t = getPosition(h_modified_date, ' ', 2);
-                        var date_str = h_modified_date.substring(0, t);
-                        var time_str = h_modified_date.substring(t, h_modified_date.length);
-                        var datetime_str = date_str + ' <small>' + time_str + '</small>';
-                    }
-
-                    var html = isHTML(comment_text);
-                    if (html == true) {
-                        var comment_html = comment_text;
-                    }
-                    else {
-                        var comment_html = htmlDecode(comment_text);
-                    }
-
-                    var count = '';
-                    if (comment_html.indexOf('<p>', 1) > -1) {
-                        end_index = comment_html.indexOf('<details', 1);
-                        var comment_html = comment_html.substring(0, end_index);
-                        count = (comment_text.match(/<details/g) || []).length;
-                    }
-
-                    var obj = JSON.stringify(activity_Array[a]);
-                    obj = encodeURIComponent(obj);
-                    var param = "open_mail_reply_popup('" + obj + "', '" + datetime_str + "')";
-
-                    var list_item = '<div class="timeline-item" onclick="' + param + '">';
-                    list_item += '<div class="timeline-item-date">' + datetime_str + '</div>';
-                    list_item += '<div class="timeline-item-divider"></div>';
-                    list_item += '<div class="timeline-item-content"><div class="timeline-item-inner">';
-                    list_item += '<div class="timeline-item-title"><div class="text-limit-title"><b>' + from_text + '</b></div><div class="mail-icon"><i class="fa fa-envelope cls_task_ico"></i></div></div>';
-                    list_item += '<div class="timeline-item-subtitle text-limit">' + subject_text + '<div class="mail-icon" style="color:blue;margin-right:2px;"><b>' + count + '</b></div></div>';
-
-                    list_item += '<div class="timeline-item-text text-limit">' + comment_html + '</div>';
-                    list_item += '</div></div>';
-
-                    history_append(list_item, a);
-
-                }
-            }
-
-            setTimeout(function () {
-                $("textarea").each(function () {
-                    this.style.height = (this.scrollHeight + 0) + 'px';
-                });
-            }, 100 * a);
-
+            append_comment_history();
         }
         else {
             alert1(message);
@@ -439,6 +273,232 @@ function onsuccess_get_task_history(e) {
     catch (e) {
         loading_hide();
         alert1(e);
+    }
+}
+
+function append_comment_history() {
+    try {
+
+        activity_Array = sort_by_key(activity_Array, 'millisecond');
+        activity_Array.reverse();
+
+        for (a = 0; a < activity_Array.length; a++) {
+            var activity_type = activity_Array[a].activity_type;
+            if (activity_type == 'sub_task') {
+                // sub task creation
+
+                //var customerid = activity_Array[a].customerid;
+                //var sub_task_id = activity_Array[a].id;
+                //var sub_status = activity_Array[a].Status;
+                //var sub_task_ms = activity_Array[a].millisecond;
+                var create_date = activity_Array[a].CreateDTTM;
+                var assign_date = activity_Array[a].AssignDate;
+                var sub_task_data = activity_Array[a].taskdata;
+                sub_task_data = JSON.parse(sub_task_data);
+
+                var user_found = 0, purpose_found = 0;
+                var sub_task_username, sub_task_purpose;
+                for (s = 0; s < sub_task_data.length; s++) {
+                    var type = sub_task_data[s].type;
+                    if (type == 0 || type == 5 || type == 7 || type == 10) { }
+                    else {
+                        var que_id = sub_task_data[s].que_id;
+                        if (que_id == 4) {
+                            sub_task_username = sub_task_data[s].ans[0];
+                            user_found++;
+                        }
+                        else if (que_id == 18) {
+                            sub_task_purpose = sub_task_data[s].ans[0];
+                            purpose_found++;
+                        }
+
+                        if (user_found > 0 && purpose_found > 0) {
+                            break;
+                        }
+
+                    }
+                }
+
+                var d = new Date(create_date);
+                h_modified_date = formatAMPM(d);
+
+                var n = h_modified_date.indexOf("ago");
+                if (n > -1) {
+                    var time_str = h_modified_date.replace(' ago', '');
+                    var datetime_str = '<small>' + time_str + ' ago</small>';
+                }
+                else {
+                    var t = getPosition(h_modified_date, ' ', 2);
+                    var date_str = h_modified_date.substring(0, t);
+                    var time_str = h_modified_date.substring(t, h_modified_date.length);
+                    var datetime_str = '<small>' + date_str + ' ' + time_str + '</small>';
+                }
+
+                var list_item = '<div class="timeline-item">';
+                list_item += '<div class="timeline-item-date">' + datetime_str + '</div>';
+                list_item += '<div class="timeline-item-divider"></div>';
+                list_item += '<div class="timeline-item-content"><div class="timeline-item-inner">';
+                list_item += '<div class="mail-icon"><i class="fa fa-plus cls_task_ico"></i></div>';
+                list_item += '<div class="timeline-item-time"><b>' + sub_task_username + '</b> had planned visit on ' + assign_date + '</div>';
+                list_item += '</div></div></div>';
+                history_append(list_item, a);
+            }
+            else if (activity_type == 'status_change') {
+                // status change
+                var Status_Message = activity_Array[a].Status_Message;
+                var h_username = activity_Array[a].UserName;
+                var h_status_name = activity_Array[a].Status_Name;
+                var h_prev_status_name = activity_Array[a].Prev_Status_Name;
+                var h_modified_date = activity_Array[a].date;
+
+                var n = h_modified_date.indexOf("ago");
+                if (n > -1) {
+                    var time_str = h_modified_date.replace(' ago', '');
+                    var datetime_str = '<small>' + time_str + ' ago</small>';
+                }
+                else {
+                    var t = getPosition(h_modified_date, ' ', 2);
+                    var date_str = h_modified_date.substring(0, t);
+                    var time_str = h_modified_date.substring(t, h_modified_date.length);
+                    var datetime_str = '<small>' + date_str + ' ' + time_str + '</small>';
+                }
+
+                var list_item = '<div class="timeline-item">';
+                list_item += '<div class="timeline-item-date">' + datetime_str + '</div>';
+                list_item += '<div class="timeline-item-divider"></div>';
+                list_item += '<div class="timeline-item-content"><div class="timeline-item-inner">';
+
+                if (Status_Message == "" || Status_Message == null || Status_Message == undefined) {
+                    if (h_prev_status_name == "") {
+                        var str = '<b>' + h_username + '</b> added this task to ' + h_status_name;
+                        list_item += '<div class="mail-icon"><i class="fa fa-cube cls_task_ico"></i></div>';
+                    }
+                    else {
+                        var str = '<b>' + h_username + '</b> moved this task from ' + h_prev_status_name + ' to ' + h_status_name;
+                        list_item += '<div class="mail-icon"><i class="fa fa-random cls_task_ico"></i></div>';
+                    }
+                }
+                else {
+                    var str = Status_Message;
+                    list_item += '<div class="mail-icon"><i class="fa fa-random cls_task_ico"></i></div>';
+                }
+
+                list_item += '<div class="timeline-item-time">' + str + '</div>';
+                list_item += '</div></div></div>';
+
+                history_append(list_item, a);
+            }
+            else if (activity_type == 'comment') {
+                var comment_date = activity_Array[a].date;
+                var comment_username = activity_Array[a].UserName;
+                var comment_text = activity_Array[a].comment;
+
+                var d = new Date(comment_date)
+                h_modified_date = formatAMPM(d);
+
+                var n = h_modified_date.indexOf("ago");
+                if (n > -1) {
+                    var time_str = h_modified_date.replace(' ago', '');
+                    var datetime_str = '<small>' + time_str + ' ago</small>';
+                }
+                else {
+                    var t = getPosition(h_modified_date, ' ', 2);
+                    var date_str = h_modified_date.substring(0, t);
+                    var time_str = h_modified_date.substring(t, h_modified_date.length);
+                    var datetime_str = '<small>' + date_str + ' ' + time_str + '</small>';
+                }
+
+                var list_item = '<div class="timeline-item">';
+                list_item += '<div class="timeline-item-date">' + datetime_str + '</div>';
+                list_item += '<div class="timeline-item-divider"></div>';
+                list_item += '<div class="timeline-item-content"><div class="timeline-item-inner">';
+                list_item += '<div class="mail-icon"><i class="fa fa-comment cls_task_ico"></i></div>';
+                //list_item += '<div class="timeline-item-time"><b>' + comment_username + '</b> commented:</div>';
+                list_item += '<div class="timeline-item-text"><b>' + comment_username + '</b> commented: </div>';
+
+                var html = isHTML(comment_text);
+                if (html == true) {
+                    var comment_html = comment_text;
+                }
+                else {
+                    var comment_html = htmlDecode(comment_text);
+                }
+
+                list_item += '<div class="timeline-item-text">' + comment_html + '</div>';
+                list_item += '</div></div></div>';
+
+                history_append(list_item, a);
+
+            }
+            else if (activity_type == 'email') {
+                var comment_date = activity_Array[a].date;
+                var comment_username = activity_Array[a].UserName;
+                var comment_text = activity_Array[a].Body;
+                var subject_text = activity_Array[a].Subject;
+                var from_text = activity_Array[a].From;
+                from_text = from_text.toLowerCase();
+
+                var d = new Date(comment_date)
+                h_modified_date = formatAMPM(d);
+
+                var n = h_modified_date.indexOf("ago");
+                if (n > -1) {
+                    var time_str = h_modified_date.replace(' ago', '');
+                    var datetime_str = '<small>' + time_str + ' ago</small>';
+                }
+                else {
+                    var t = getPosition(h_modified_date, ' ', 2);
+                    var date_str = h_modified_date.substring(0, t);
+                    var time_str = h_modified_date.substring(t, h_modified_date.length);
+                    var datetime_str = '<small>' + date_str + ' ' + time_str + '</small>';
+                }
+
+                var html = isHTML(comment_text);
+                if (html == true) {
+                    var comment_html = comment_text;
+                }
+                else {
+                    var comment_html = htmlDecode(comment_text);
+                }
+
+                var count = '';
+                if (comment_html.indexOf('<p>', 1) > -1) {
+                    end_index = comment_html.indexOf('<details', 1);
+                    var comment_html = comment_html.substring(0, end_index);
+                    count = (comment_text.match(/<details/g) || []).length;
+                }
+
+                var obj = JSON.stringify(activity_Array[a]);
+                obj = encodeURIComponent(obj);
+                var param = "open_mail_reply_popup('" + obj + "', '" + datetime_str + "')";
+
+                var list_item = '<div class="timeline-item" onclick="' + param + '">';
+                list_item += '<div class="timeline-item-date">' + datetime_str + '</div>';
+                list_item += '<div class="timeline-item-divider"></div>';
+                list_item += '<div class="timeline-item-content"><div class="timeline-item-inner">';
+                list_item += '<div class="timeline-item-title"><div class="text-limit-title"><b>' + from_text + '</b></div><div class="mail-icon"><i class="fa fa-envelope cls_task_ico"></i></div></div>';
+                list_item += '<div class="timeline-item-subtitle text-limit">' + subject_text + '<div class="mail-icon" style="color:blue;margin-right:2px;"><b>' + count + '</b></div></div>';
+
+                list_item += '<div class="timeline-item-text text-limit">' + comment_html + '</div>';
+                list_item += '</div></div>';
+
+                history_append(list_item, a);
+
+            }
+        }
+
+        setTimeout(function () {
+            $("textarea").each(function () {
+                this.style.height = (this.scrollHeight + 0) + 'px';
+            });
+        }, 100 * a);
+
+        loading_hide();
+
+    }
+    catch (e) {
+        loading_hide();
+        alert1(e + '_append_comment_history');
     }
 }
 
@@ -1743,3 +1803,102 @@ function onfail_plugin_call_for_jitsi_meeting(e) {
     loading_hide();
     //alert1(e + '_onfail_plugin_call_for_jitsi_meeting');
 }
+
+var glob_statusName_ary = [];
+get_statusName_from_numericStatus = () => {
+    try {
+        var company_id = JSON.parse(storage.getItem('company_id'));
+        company_id = company_id.replace(/"/g, "");
+        var flow_id = JSON.parse(storage.getItem('wayflow'));
+
+        var Company_data = [];
+        Company_data.push({
+            "Company_id": company_id,
+            "Flow_id": flow_id,
+            "Flag": "get_data"
+        });
+
+        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Get_ddl_Data', JSON.stringify(Company_data), function (e) {
+            var response = JSON.parse(e.responseText);
+            var status = response[0].status;
+            var message = response[0].message;
+            if (status == 1) {
+                var Data = response[0]["data"];
+                Data = JSON.parse(Data);
+                var FSM_Data = Data[0]["FSM_Data"];
+
+                var status_name_ary = [];
+                for (i = 0; i < FSM_Data.length; i++) {
+                    var Status_Name = FSM_Data[i].Status_Name;
+                    var Status = FSM_Data[i].Status;
+                    status_name_ary[Status] = Status_Name;
+                }
+
+                glob_statusName_ary = status_name_ary;
+            }
+            else {
+                alert1(message);
+            }
+
+
+            loading_hide();
+
+        }, onfail);
+        getdata.callOtherDomain();
+    }
+    catch (e) {
+        loading_hide();
+        alert1(e + '_get_statusName_from_numericStatus');
+    }
+}
+
+function send_comment_for_status_change(s_task_id, s_old_status, s_new_status) {
+    try {
+        var user_name = JSON.parse(storage.getItem('username'));
+        var user_id = JSON.parse(storage.getItem('user_id'));
+        var ms = new Date().getTime();
+        var client_id = user_id + '_' + ms;
+
+        var old_status = glob_statusName_ary[s_old_status];
+        var new_status = glob_statusName_ary[s_new_status];
+
+        var message = '<b style="font-family: sans-serif; font-size: 14px;">' + user_name + '</b> moved this task from ' + old_status + ' to ' + new_status + '.';
+
+        var param_obj = [];
+        param_obj.push({
+            "subject": "",
+            "message": message,
+            "From": "",
+            "email": [],
+            "Cc": [],
+            "Bcc": [],
+            "contact": [],
+            "server_task_id": s_task_id,
+            "checksheet_id": -1,
+            "step_id": -1,
+            "que_id": -1,
+            "client_request_id": client_id
+        });
+
+        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Mobile_Notification_Master', JSON.stringify(param_obj), function (e) {
+            var Suc_Message = e.responseText;
+            Suc_Message = eval('(' + Suc_Message + ')');
+            var message = Suc_Message[0].message;
+            var status = Suc_Message[0].status;
+            if (status == 1) {
+                $("#Commentdata").val('');
+
+                get_sub_tasks(s_task_id);
+            }
+            else {
+                mk_notify(message, "danger");
+            }
+        }, onfail);
+        getdata.callOtherDomain();
+    }
+    catch (e) {
+        loading_hide();
+        alert1(e + '_send_comment_for_status_change');
+    }
+}
+

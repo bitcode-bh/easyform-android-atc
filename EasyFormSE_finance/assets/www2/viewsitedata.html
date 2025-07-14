@@ -64,7 +64,8 @@
 
     <script src="EFSE_Js/viewsitelist_pm_on.js" type="text/javascript"></script>
     <script src="EFSE_Js/online_checksheet.js" type="text/javascript"></script>
-    <script src="EFSE_Js/group_task.js"></script>
+    <script src="EFSE_Js/group_task.js" type="text/javascript"></script>
+    <script src="EFSE_Js/viewsitelist_pm_CommentUI.js" type="text/javascript"></script>
 
     <!--select picker-->
     <link href="Plugin_Js/bootstrap-select.css" rel="stylesheet" type="text/css" />
@@ -660,6 +661,10 @@
             function pageload_main() {
                 if (typeof (myApp) != "undefined") {
                     data_to_read();
+
+                    setTimeout(function () {
+                       get_statusName_from_numericStatus();
+                    }, 1000)
                 }
                 else {
                     setTimeout(function () { pageload_main(); }, 500);

@@ -588,7 +588,13 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         //// Concat string of 2 elements answers [FT - 19042024]
                         var concat_statement = value[0].concat_statement;
                         if (concat_statement == '' || concat_statement == null || concat_statement == undefined) {
-                            var txt_answer = $("#txt_" + new_id + "").val();
+
+                            if (glob_add_cust_from_search == "true") {
+                                // customer create from plus button -- ATC UAT NEW - mk - 07092025
+                            }
+                            else {
+                                var txt_answer = $("#txt_" + new_id + "").val();
+                            }
                         }
                         else {
                             $("#txt_" + new_id + "").val('');
@@ -4220,6 +4226,21 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                             localStorage.setItem('trip_status', '0');
                                             localStorage.setItem('trip_tid', t_tid);
                                             localStorage.setItem('trip_ser_task_id', t_ser_task_id);
+
+                                            let vehicle_type = "";
+                                            for (let vt = 0; vt < json.length; vt++) {
+                                                let vt_qid = json[vt].que_id;
+                                                if (vt_qid == "1109") {
+                                                    let t_ans = json[vt].ans[0];
+                                                    if (t_ans == "" || t_ans == null || t_ans == undefined) { }
+                                                    else {
+                                                        vehicle_type = t_ans; 
+                                                    }
+                                                    break;
+                                                }
+                                            }
+                                            localStorage.setItem('trip_vehicle_type', vehicle_type);
+
                                             setTimeout(function () {
                                                 start_stop_trip(0);
                                             }, 1000);

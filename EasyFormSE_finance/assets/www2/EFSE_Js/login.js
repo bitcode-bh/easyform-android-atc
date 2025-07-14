@@ -2445,6 +2445,7 @@ function clear_localStorage() {
     else {
         trip_Array = JSON.parse(trip_Array);
     }
+    let trip_waypoint_dependency = localStorage.getItem('trip_waypoint_dependency');
     var last_notification = localStorage.getItem('last_notification');
 
     window.localStorage.clear();
@@ -2481,5 +2482,6 @@ function clear_localStorage() {
     localStorage.setItem('trip_tid', trip_tid);
     localStorage.setItem('trip_ser_task_id', trip_ser_task_id);
     localStorage.setItem("trip_Array", JSON.stringify(trip_Array));
+    localStorage.setItem('trip_waypoint_dependency', trip_waypoint_dependency);
     localStorage.setItem('last_notification', last_notification);
 }

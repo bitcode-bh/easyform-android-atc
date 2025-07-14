@@ -124,21 +124,23 @@ function checknsubmit_on_click(go_to_chk_no, updatestep) {
 var last_submit_button_Array = [];
 function updatetasknsubmit_on_click(go_to_chk_no, t_shortest_path, t_status, t_dependency, t_trip, stillviolation_event, btn_check_type) {
     try {
-        curr_btn_mode = "check_validation_only";
 
-        if (last_submit_button_Array.length > 0) {
-            //if press 2nd time submit btn (in case of validation error[status 11 from api] then get mobile checksheet json from ary [FT-01072025]
-            jsonObj_old = last_submit_button_Array[0].jsonObj_old;
-        }
-
-        validate_and_submit_surveydata(go_to_chk_no, 0, jsonObj_old);
-        if (Validation_True == 1) {
-            // do not create task if main checksheet is not fully submittable - mk - 26052025
-            return false;
-        }
-      
         let sub_task_elem = $("button[id^='btn_type_37_add_invoice_']").length;
         if (sub_task_elem > 0) {
+
+            curr_btn_mode = "check_validation_only";
+
+            if (last_submit_button_Array.length > 0) {
+                //if press 2nd time submit btn (in case of validation error[status 11 from api] then get mobile checksheet json from ary [FT-01072025]
+                jsonObj_old = last_submit_button_Array[0].jsonObj_old;
+            }
+
+            validate_and_submit_surveydata(go_to_chk_no, 0, jsonObj_old);
+            if (Validation_True == 1) {
+                // do not create task if main checksheet is not fully submittable - mk - 26052025
+                return false;
+            }
+
             let type37_controls = $("button[id^='btn_type_37_add_invoice_']");
             let valid_img_vis = $(type37_controls[0]).parent().find("img[src='images/mendatory.gif']").css("visibility");
             if (valid_img_vis == "hidden") {
@@ -146,7 +148,7 @@ function updatetasknsubmit_on_click(go_to_chk_no, t_shortest_path, t_status, t_d
                 sub_task_elem = 0;
             }
         }
-        
+
         if (sub_task_elem > 0) {
             // type37 Generate All Invoice button is exist
             last_submit_button_Array = [];
