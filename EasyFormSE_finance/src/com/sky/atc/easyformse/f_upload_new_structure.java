@@ -1,12 +1,14 @@
 package com.sky.atc.easyformse;
 
+import static com.sky.atc.easyformse.DeviceEventsUtils.VideoSizeConverter;
+import static com.sky.atc.easyformse.sqlitewraper.context;
+
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -15,18 +17,13 @@ import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Address;
-import android.location.Geocoder;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
-
-import androidx.core.app.NotificationCompat;
-
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.core.app.NotificationCompat;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
@@ -51,27 +48,22 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.ksoap2.serialization.SoapObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -80,13 +72,13 @@ import io.michaelrocks.paranoid.Obfuscate;
 import static com.sky.atc.easyformse.DeviceEventsUtils.VideoSizeConverter;
 import static com.sky.atc.easyformse.sqlitewraper.context;
 
- /**
+/**
  * updated by NareshChocha on 11/03/2022.
  *
  * @author NareshChocha
  */
- //UPLOAD SERVICE
- @Obfuscate
+//UPLOAD SERVICE
+@Obfuscate
 public class f_upload_new_structure extends WakefulIntentService {
 
 
@@ -101,6 +93,12 @@ public class f_upload_new_structure extends WakefulIntentService {
 
     // upload still violation entry
      private static final String METHOD_NAME_corner13 = "Insert_Device_Event_Master";
+
+    // for status change comment
+    private static final String METHOD_NAME_corner7 = "WCF_Mobile_Notification_Master";
+    // for get status name
+    private static final String METHOD_NAME_corner8 = "WCF_Get_ddl_Data";
+
 
     //for Fake Location Entry
     private static final String NAMESPACE6 = "http://tempuri.org/";
@@ -723,7 +721,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                             }
 
                         } else {
-                            LogUtils.writeUploadLogToFile("Status: " + status1 , METHOD_NAME_corner3,"Upload Task");
+                            LogUtils.writeUploadLogToFile("Status: " + status1, METHOD_NAME_corner3, "Upload Task");
                         }
                         c.moveToNext();
 
@@ -1701,7 +1699,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                             status, step, moduledef, global_var, "task2", tid_new,
                             moduleid, punchFlag, inMs, outMs, durationPunch, millisecond, editFlag, matchKeyId, roleID, old_status);
 
-                    boolean isSuccess = update_history(tid_new, restext, millisecond, old_status);
+                    boolean isSuccess = update_history(tid_new, restext, millisecond, old_status, tid);
                     if (k != 0) {
                         k = 1;
                     }
@@ -1727,7 +1725,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
     // ----------------------update_task_history------------------------------------//
 
-    boolean update_history(int tid_new, String restext, String millisecond, String oldStatus) throws JSONException {
+    boolean update_history(int tid_new, String restext, String millisecond, String oldStatus, int t_id) throws JSONException {
 
         boolean isSuccess;
 
@@ -1761,6 +1759,9 @@ public class f_upload_new_structure extends WakefulIntentService {
                 // long task_c = database.update("task_master_history", t_i1, t,
                 // null);
 
+                // for get status name by flow id and notification master api call 14072025
+                GetDdlData(t_id);
+                Mobile_Notification_Master(t_id);
 
                 Cursor cuser2 = database.rawQuery(
                         "SELECT sid FROM lat_plug", null);
@@ -1808,9 +1809,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                 }
 
                 uploadLogDeleteUtils.statusUpdateDeleteLog(tid, oldStatus);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     public void run() {
                         Toast toast = Toast.makeText(sqlitewraper.context,"Api: "+ METHOD_NAME_corner2 +"\nStatus: "+ status1 + " Message: " +  Message_s, Toast.LENGTH_LONG);
@@ -1818,7 +1817,6 @@ public class f_upload_new_structure extends WakefulIntentService {
                     }
                 });
             }
-
 
 
         } else {
@@ -2206,7 +2204,7 @@ public class f_upload_new_structure extends WakefulIntentService {
         try {
             c.close();
         } catch (Exception e) {
-            LogUtils.writeUploadLogToFile(e.getMessage(),"", "cursorClose");
+            LogUtils.writeUploadLogToFile(e.getMessage(), "", "cursorClose");
         }
     }
 
@@ -3065,21 +3063,21 @@ public class f_upload_new_structure extends WakefulIntentService {
                             data1.put("imei", imei);
                             data1.put("app_id", appid);
                             data1.put("userid", userid);
-                            data1.put("mobile_primary_key",id);
-                            data1.put("maxviolation",maxVioData);
-                            data1.put("tid",tid);
+                            data1.put("mobile_primary_key", id);
+                            data1.put("maxviolation", maxVioData);
+                            data1.put("tid", tid);
 
                             //  if (Event_type.equalsIgnoreCase("speed")){
 
                             Cursor c3 = database.rawQuery(
-                                    "SELECT server_task_id from task_master where tid="+tid, null);
+                                    "SELECT server_task_id from task_master where tid=" + tid, null);
                             c3.moveToLast();
                             String sid = "0";
-                            if(c3.getCount()>0){
+                            if (c3.getCount() > 0) {
                                 sid = c3.getString(0);
 
                             }
-                            data1.put("sid",sid);
+                            data1.put("sid", sid);
                             c3.close();
 
 
@@ -3122,6 +3120,157 @@ public class f_upload_new_structure extends WakefulIntentService {
 
         } catch (Exception e) {
             ////e.printStackTrace()();
+
+        }
+    }
+
+    Map<String, String> globStatusNameMap = new HashMap<>();
+
+    //for get status name by flow id 14072025
+    public void GetDdlData(int tid) {
+        JSONObject data1 = new JSONObject();
+
+
+        Cursor c3 = database.rawQuery(
+                "SELECT appid,company_Id FROM Login_Master", null);
+        c3.moveToFirst();
+        String company_Id;
+        int count = c3.getCount();
+        try {
+            if (count > 0) {
+
+                company_Id = c3.getString(1);
+                c3.close();
+
+                data1.put("Company_id", company_Id);
+            }
+
+            String moduleid;
+            Cursor c4 = database.rawQuery(
+                    "SELECT moduleid FROM task_master where tid="
+                            + tid, null);
+            c4.moveToLast();
+            moduleid = c4.getString(0);
+
+            c4.close();
+
+            data1.put("Flow_id", moduleid);
+            data1.put("Flag", "get_data");
+
+            String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURL, METHOD_NAME_corner8, data1);
+            JSONArray jsonArray = new JSONArray(restext);
+            String status1 = null;
+
+            for (int k1 = 0; k1 < jsonArray.length(); k1++) {
+                JSONObject jsonObject = jsonArray
+                        .getJSONObject(0);
+
+                status1 = jsonObject.getString("status");
+                String message;
+
+                if (status1.equalsIgnoreCase("1")) {
+
+                    JSONArray dataArray = new JSONArray(jsonObject.getString("data"));
+                    JSONArray fsmDataArray = dataArray.getJSONObject(0).getJSONArray("FSM_Data");
+                    Map<String, String> statusNameMap = new HashMap<>();
+
+                    for (int i = 0; i < fsmDataArray.length(); i++) {
+                        JSONObject fsmItem = fsmDataArray.getJSONObject(i);
+
+                        String statusKey = fsmItem.optString("Status");       // e.g., "2"
+                        String statusName = fsmItem.optString("Status_Name"); // e.g., "Completed"
+
+                        statusNameMap.put(statusKey, statusName);
+                    }
+
+                    globStatusNameMap = statusNameMap; // Set globally
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //     for status change comment:
+    public void Mobile_Notification_Master(int tid) {
+        JSONObject data1 = new JSONObject();
+        Cursor c3 = database.rawQuery(
+                "SELECT user_id,username,company_Id FROM Login_Master", null);
+        c3.moveToFirst();
+        String username;
+        String user_id;
+        String old_status = "";
+        String new_status = "";
+        int count = c3.getCount();
+
+        try {
+            if (count > 0) {
+
+                user_id = c3.getString(0);
+                username = c3.getString(1);
+                c3.close();
+
+
+                String client_id = user_id + "_" + System.currentTimeMillis();
+
+
+                Cursor c5 = database.rawQuery(
+                        "SELECT old_status,status FROM task_master_history where tid="
+                                + tid, null);
+                c5.moveToLast();
+                old_status = c5.getString(0);
+                new_status = c5.getString(1);
+                c5.close();
+
+                old_status = globStatusNameMap.getOrDefault(old_status, "Unknown");
+                new_status = globStatusNameMap.getOrDefault(new_status, "Unknown");
+                String message = username + " moved this task from " + old_status + " to " + new_status;
+
+                String servertaskid;
+                Cursor c4 = database.rawQuery(
+                        "SELECT server_task_id FROM task_master where tid="
+                                + tid, null);
+                c4.moveToLast();
+                servertaskid = c4.getString(0);
+
+                c4.close();
+
+
+                data1.put("subject", "");
+                data1.put("message", message);
+                data1.put("From", "");
+                data1.put("email", "[]");
+                data1.put("Cc", "[]");
+                data1.put("Bcc", "[]");
+                data1.put("contact", "[]");
+                data1.put("server_task_id", servertaskid);
+                data1.put("checksheet_id", "-1");
+                data1.put("step_id", "-1");
+                data1.put("que_id", "-1");
+                data1.put("client_request_id", client_id);
+
+
+                String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURL, METHOD_NAME_corner7, data1);
+                JSONArray jsonArray = new JSONArray(restext);
+                String status1 = null;
+
+                for (int k1 = 0; k1 < jsonArray.length(); k1++) {
+                    JSONObject jsonObject = jsonArray
+                            .getJSONObject(0);
+
+                    status1 = jsonObject.getString("status");
+
+                    if (status1.equalsIgnoreCase("1")) {
+
+                    }
+
+                }
+
+            }
+
+        } catch (Exception e) {
 
         }
     }

@@ -9,18 +9,17 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.AudioAttributes;
+import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.sky.atc.easyformse.DeviceEventsUtils;
@@ -62,7 +61,7 @@ public class SpeedViolation {
     private static  float lastMaxSpeed;
     private static  float lastMaxMilli;
     private static  long savedMilli;
-
+    static MySharedPreferences pref;
     public static void onSpeedViolationOccured(float speed, double lat, double lon, String provider, String tripflag, float acc,String timelocation) {
 
 
@@ -73,7 +72,7 @@ public class SpeedViolation {
         Log.d("SPEED_PROVIDER", provider);
         Log.d("SPEED_DETECTEDMILLI", String.valueOf(detectedMilli));
 
-
+        pref = sqlitewraper.getSecureShared("MyPref");
 
         //-------------------Speed Violation-----------//
         if (!d.getusername().equalsIgnoreCase("0")) {
@@ -82,6 +81,80 @@ public class SpeedViolation {
 
             //if trip is running
             if (tripStatus() > 0) {
+//                speed violation should be dynamically changed as per vehicle_type 11072025
+                String vehicaletype = pref.getString("vehicle_type","Private-2W");
+
+
+                    Cursor a_t2 = database
+                            .rawQuery(
+                                    "select speed,speed_violation_time,normal_acc,normal_deacc,hard_acc,hard_deacc,gap_milli from Thresold_New WHERE vehicle_type =" + "'" + vehicaletype + "'" , null);
+
+
+                    if(a_t2.getCount() > 0)
+                    {
+                        a_t2.moveToFirst();
+                        String newspeed,speed_violation_time, normal_acc, normal_deacc, hard_acc, hard_deacc, gap_milli;
+                        newspeed = a_t2.getString(0);
+                        speed_violation_time = a_t2.getString(1);
+                        normal_acc = a_t2.getString(2);
+                        normal_deacc = a_t2.getString(3);
+                        hard_acc = a_t2.getString(4);
+                        hard_deacc = a_t2.getString(5);
+                        gap_milli = a_t2.getString(6);
+
+
+                        pref.putString("speed_limit", newspeed);
+                        pref.putString("normal_acc", normal_acc);
+                        pref.putString("normal_deacc", normal_deacc);
+                        pref.putString("hard_acc", hard_acc);
+                        pref.putString("hard_deacc", hard_deacc);
+                        pref.putString("gap_milli", gap_milli);
+                        pref.commit();
+
+                        MySharedPreferences editor = sqlitewraper.getSecureShared("pre1");
+                        editor.putString("speedviolation", speed_violation_time);
+                        editor.commit();
+
+                        a_t2.close();
+                    }
+
+                    else {
+                        Cursor a_t3 = database
+                                .rawQuery(
+                                        "select speed,normal_acc,normal_deacc,hard_acc,hard_deacc,gap_milli from Thresold",
+                                        null);
+                        a_t3.moveToFirst();
+
+                        if (a_t3.getCount() > 0) {
+
+                            String newspeed, normal_acc, normal_deacc, hard_acc, hard_deacc, gap_milli;
+                            newspeed = a_t3.getString(0);
+                            normal_acc = a_t3.getString(1);
+                            normal_deacc = a_t3.getString(2);
+                            hard_acc = a_t3.getString(3);
+                            hard_deacc = a_t3.getString(4);
+                            gap_milli = a_t3.getString(5);
+
+                            // String isact_track = d.getFeatureFlag("isact_track");
+
+
+                            pref = sqlitewraper.getSecureShared("MyPref");
+
+                            pref.putString("speed_limit", newspeed);
+                            pref.putString("normal_acc", normal_acc);
+                            pref.putString("normal_deacc", normal_deacc);
+                            pref.putString("hard_acc", hard_acc);
+                            pref.putString("hard_deacc", hard_deacc);
+                            pref.putString("gap_milli", gap_milli);
+                            pref.commit();
+                            a_t3.close();
+
+                        }
+
+                    }
+
+
+
 
                 //if current speed is greater than speed limit and last speed is less than speed limit
                 //than violation is started
@@ -276,7 +349,7 @@ public class SpeedViolation {
 
         SQLiteDatabase database = sqlitewraper.getDatabase();
 
-        android.database.Cursor tripflag = database.rawQuery(
+        Cursor tripflag = database.rawQuery(
                 "select * from lat_plug where trip_status = 0", null);
         tripflag.moveToFirst();
         int tripflagCount = tripflag.getCount();
@@ -366,7 +439,7 @@ public class SpeedViolation {
     }
 
     public static String gettid(){
-        android.database.Cursor tripflag = database.rawQuery("select tid from lat_plug where trip_status = 0", null);
+        Cursor tripflag = database.rawQuery("select tid from lat_plug where trip_status = 0", null);
         tripflag.moveToLast();
         int tripflagCount = tripflag.getCount();
 

@@ -238,14 +238,16 @@ public class GpsReceiverService extends WakefulIntentService {
                         insert_t(g_ontime, g_offtime, gp_ontime, gp_offtime,
                                 phone_on1, phone_off2, gp_duration, gprs_duration, phone_duration, date);
 
-                        boolean isInserted = DeviceEventsUtils.insertIntoEvents(g_offtime, g_ontime, String.valueOf(gp_duration), "Gps_outage");
+                            if (!sqlitewraper.isMockAvailable) {
+                                boolean isInserted = DeviceEventsUtils.insertIntoEvents(g_offtime, g_ontime, String.valueOf(gp_duration), "Gps_outage");
 
-                        if (isInserted){
-                            Log.d("####gpsservice", String.valueOf(isInserted));
-                            ContentValues args = new ContentValues();
-                            args.put("g_offtime", String.valueOf(0));
-                            long temp = database.update("gpsrec", args, null, null);
-                        }
+                                if (isInserted) {
+                                    Log.d("####gpsservice", String.valueOf(isInserted));
+                                    ContentValues args = new ContentValues();
+                                    args.put("g_offtime", String.valueOf(0));
+                                    long temp = database.update("gpsrec", args, null, null);
+                                }
+                            }
                         }
 
                     } else {

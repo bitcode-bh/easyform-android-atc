@@ -21,5 +21,5 @@ class DownloadConstant {
     static final String METHOD_FLOWMASTER = "Offline_Download_Checksheet_Flow_Master_AppId";
     static final String METHOD_TASKUPDATE_USERSWAP = "Wcf_Off_Download_task_master_After_UserSwap_UpdateTask_HV";
     static final String METHOD_TASKDOWNLOAD_AFTERUSERSWAP = "Wcf_Off_Download_task_master_After_UserSwap_HV_New";
-
+    static final String METHOD_THRESHOLD_NEW = "download_company_threshold_master";
 }

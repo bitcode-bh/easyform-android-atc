@@ -3,12 +3,10 @@ package com.sky.atc.easyformse;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.util.Log;
 
-import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.trip.LocationOutageUtils;
 import com.sky.atc.easyformse.trip.TripBackgroundMapActivity;
@@ -23,8 +21,6 @@ import org.json.JSONException;
 
 import io.michaelrocks.paranoid.Obfuscate;
 
-import static android.content.Context.MODE_PRIVATE;
-
 //Trip plugin to start and end the trip
 @Obfuscate
 public class TripPlugin extends CordovaPlugin {
@@ -37,6 +33,8 @@ public class TripPlugin extends CordovaPlugin {
     CordovaArgs args;
     MySharedPreferences editor;
     String stillviolation_event;
+    String vehicle_type;
+    MySharedPreferences pref;
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
@@ -61,6 +59,16 @@ public class TripPlugin extends CordovaPlugin {
                     stillviolation_event = "false";
                 }
 
+                try{
+                    vehicle_type = args.getJSONObject(0).getString("vehicle_type");
+                }
+                catch (Exception e)
+                {
+                    vehicle_type = "Private-2W";
+                }
+                pref = sqlitewraper.getSecureShared("MyPref");
+                pref.putString("vehicle_type",vehicle_type);
+                pref.commit();
 
                 if (odometerpoint.equalsIgnoreCase("[]")) {
                     odometerpoint = "0";
@@ -88,7 +96,7 @@ public class TripPlugin extends CordovaPlugin {
                     //Once trip is insertd from TripMapUi the result will be received onActivityResult
                     //ph_s.startmap = true;
 
-                    MySharedPreferences pref;
+
                     pref = sqlitewraper.getSecureShared("CHECKFIRSTTIMEPERMISSION");
                     String checkpermissionfirstattempt = pref.getString("CHECKFIRSTTIMEPERMISSION", "0");
                     if(checkpermissionfirstattempt.equalsIgnoreCase("0"))

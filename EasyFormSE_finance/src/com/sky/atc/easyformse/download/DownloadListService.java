@@ -1,7 +1,6 @@
 package com.sky.atc.easyformse.download;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
@@ -9,35 +8,27 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
-import androidx.core.app.NotificationCompat;
-
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.sky.atc.easyformse.AddressApi;
 import com.sky.atc.easyformse.B_new;
 import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.R;
-import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.geofencenew.GeofenceDownlodService;
 import com.sky.atc.easyformse.location_server;
-import com.sky.atc.easyformse.login_plug;
-import com.sky.atc.easyformse.newfused;
 import com.sky.atc.easyformse.ph_s;
 import com.sky.atc.easyformse.sqlitewraper;
 import com.sky.atc.easyformse.touch_server;
 
-
 import net.sqlcipher.database.SQLiteDatabase;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 
@@ -74,6 +65,7 @@ public class DownloadListService extends WakefulIntentService {
         int taskCount = 1;
         int k = 0;
         int taskuserwapCount = 1;
+        int thresholdnewCount = 1;
 
         try {
             database = sqlitewraper.getDatabase();
@@ -151,6 +143,17 @@ public class DownloadListService extends WakefulIntentService {
                     }
                 }
             }
+            // Threshold_new download
+            // If task completed successfully than threshold_new will be download
+            if(taskCount == 2)
+            {
+                while (thresholdnewCount == 1) {
+                    String u_c1 = b.GetValue();
+                    if (!u_c1.equalsIgnoreCase("NA")) {
+                        thresholdnewCount = w.thresholdnewDownload();
+                    }
+                }
+            }
 
             //TASK SWAP DOWANLOAD
             while (taskuserwapCount == 1) {
@@ -159,7 +162,7 @@ public class DownloadListService extends WakefulIntentService {
             }
 
             //Update the status of counter table after download finish
-            if (userFlowCount == 2 && flowMasterCount == 2 && taskCount == 2 && checksheetCount == 2) {
+            if (userFlowCount == 2 && flowMasterCount == 2 && taskCount == 2 && checksheetCount == 2 &&  thresholdnewCount == 2) {
 
                 updateStatus("1");
                 updateStatus("2");

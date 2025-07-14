@@ -6,21 +6,17 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-
-import net.sqlcipher.database.SQLiteDatabase;
-
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.Environment;
-
-import androidx.core.app.ActivityCompat;
-
 import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.sky.atc.easyformse.attendance.AttandanceUtils;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.download.DownloadListService;
+
+import net.sqlcipher.database.SQLiteDatabase;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -804,40 +800,41 @@ public class sql_class implements Runnable {
         a_t1.close();
 
 
+//        hide code because this is call speedviolation.java class handle 11072025
         //saving thresold value to sharedprefenes from table
-        Cursor a_t2 = database
-                .rawQuery(
-                        "select speed,normal_acc,normal_deacc,hard_acc,hard_deacc,gap_milli from Thresold",
-                        null);
-        a_t2.moveToFirst();
-
-        if (a_t2.getCount() > 0) {
-
-            String speed, normal_acc, normal_deacc, hard_acc, hard_deacc, gap_milli;
-            speed = a_t2.getString(0);
-            normal_acc = a_t2.getString(1);
-            normal_deacc = a_t2.getString(2);
-            hard_acc = a_t2.getString(3);
-            hard_deacc = a_t2.getString(4);
-            gap_milli = a_t2.getString(5);
-
-            // String isact_track = d.getFeatureFlag("isact_track");
-
-
-            pref = sqlitewraper.getSecureShared("MyPref");
-//            editor = pref.edit();
-
-            pref.putString("speed_limit", speed);
-            pref.putString("normal_acc", normal_acc);
-            pref.putString("normal_deacc", normal_deacc);
-            pref.putString("hard_acc", hard_acc);
-            pref.putString("hard_deacc", hard_deacc);
-            pref.putString("gap_milli", gap_milli);
-            pref.commit();
-
-
-        }
-        a_t2.close();
+//        Cursor a_t2 = database
+//                .rawQuery(
+//                        "select speed,normal_acc,normal_deacc,hard_acc,hard_deacc,gap_milli from Thresold",
+//                        null);
+//        a_t2.moveToFirst();
+//
+//        if (a_t2.getCount() > 0) {
+//
+//            String speed, normal_acc, normal_deacc, hard_acc, hard_deacc, gap_milli;
+//            speed = a_t2.getString(0);
+//            normal_acc = a_t2.getString(1);
+//            normal_deacc = a_t2.getString(2);
+//            hard_acc = a_t2.getString(3);
+//            hard_deacc = a_t2.getString(4);
+//            gap_milli = a_t2.getString(5);
+//
+//            // String isact_track = d.getFeatureFlag("isact_track");
+//
+//
+//            pref = sqlitewraper.getSecureShared("MyPref");
+////            editor = pref.edit();
+//
+//            pref.putString("speed_limit", speed);
+//            pref.putString("normal_acc", normal_acc);
+//            pref.putString("normal_deacc", normal_deacc);
+//            pref.putString("hard_acc", hard_acc);
+//            pref.putString("hard_deacc", hard_deacc);
+//            pref.putString("gap_milli", gap_milli);
+//            pref.commit();
+//
+//
+//        }
+//        a_t2.close();
 
         //start activity recognization service
         Cursor a_t3 = database.rawQuery(

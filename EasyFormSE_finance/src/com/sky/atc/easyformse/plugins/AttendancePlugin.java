@@ -21,6 +21,7 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 // multiple attendance supervisor engineer (static taskchecksheetjson)
 public class AttendancePlugin extends CordovaPlugin {
 
@@ -149,16 +150,23 @@ public class AttendancePlugin extends CordovaPlugin {
             }
         } else {
 
-            LogUtils.writeAttendanceLogToFile("error: resultCode is RESULT_CANCELED :: " + intent.getExtras().getString("errorMsg", ""), "onActivityResult AttendancePlugin");
-            // this.callbackContext.error("error: resultCode is RESULT_CANCELED " + resultCode);
-            if(intent.getExtras().getString("errorMsg").equalsIgnoreCase(""))
+            try{
+                LogUtils.writeAttendanceLogToFile("error: resultCode is RESULT_CANCELED :: " + intent.getExtras().getString("errorMsg", ""), "onActivityResult AttendancePlugin");
+                // this.callbackContext.error("error: resultCode is RESULT_CANCELED " + resultCode);
+                if(intent.getExtras().getString("errorMsg").equalsIgnoreCase(""))
+                {
+                    // if error msg  null toast is not display
+                }
+                else {
+                    Toast.makeText(context, intent.getExtras().getString("errorMsg", ""), Toast.LENGTH_LONG).show();
+                }
+                this.callbackContext.error("");
+            }
+            catch (Exception e)
             {
-                // if error msg  null toast is not display
+                this.callbackContext.error("");
             }
-            else {
-                Toast.makeText(context, intent.getExtras().getString("errorMsg", ""), Toast.LENGTH_LONG).show();
-            }
-            this.callbackContext.error("");
+
         }
 
     }

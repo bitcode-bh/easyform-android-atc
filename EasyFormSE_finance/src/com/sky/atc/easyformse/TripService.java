@@ -377,19 +377,40 @@ public class TripService extends WakefulIntentService implements LocationListene
 
     private  void GetTripStartLocation()
     {
-        android.database.Cursor check = database.rawQuery(
-                "select s_lat,s_lon,min_milli from lat_plug where trip_status = 0", null);
+        try {
+            android.database.Cursor check = database.rawQuery(
+                    "select s_lat,s_lon,min_milli from lat_plug where trip_status = 0", null);
 
-        check.moveToFirst();
-        if ((check.getCount() > 0)) {
-            String lat = check.getString(0);
-            String lon = check.getString(1);
-            TripStartTime = check.getString(2);
-            check.close();
+            check.moveToFirst();
+            if ((check.getCount() > 0)) {
+                String latStr = check.getString(0);
+                String lonStr = check.getString(1);
+                TripStartTime = check.getString(2);
+                check.close();
 
-            startLocation = new Location("");
-            startLocation.setLatitude(Double.valueOf(lat));
-            startLocation.setLongitude(Double.valueOf(lon));
+                if (latStr != null && lonStr != null &&
+                        !latStr.trim().isEmpty() && !lonStr.trim().isEmpty()) {
+
+                    try {
+                        double lat = Double.parseDouble(latStr.trim());
+                        double lon = Double.parseDouble(lonStr.trim());
+
+                        startLocation = new Location("");
+                        startLocation.setLatitude(lat);
+                        startLocation.setLongitude(lon);
+
+                    } catch (NumberFormatException e) {
+                        Log.e("TripService", "Invalid latitude or longitude format: " +
+                                "lat=" + latStr + ", lon=" + lonStr, e);
+                    }
+
+                }
+
+            }
+        }
+        catch (Exception e)
+        {
+            Log.d("Exception",e.toString());
         }
     }
     @Override

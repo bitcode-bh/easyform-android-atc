@@ -1,7 +1,6 @@
 package com.sky.atc.easyformse.download;
 
 import static com.sky.atc.easyformse.download.DownloadConstant.WCFURL;
-import static com.sky.atc.easyformse.sqlitewraper.context;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
@@ -71,8 +70,8 @@ class DownloadMainStructure {
     private int u_id = -2;
     private int counterTaskMaster = 1;
     private int flagTaskMaster = 1;
-
-
+    private int counterThreshold = 1;
+    private int flagThreshold = 1;
     private SQLiteDatabase database = sqlitewraper.getDatabase();
     private boolean isFirsttime = isFirsttime();
     private boolean countCounter=true;
@@ -1175,6 +1174,9 @@ class DownloadMainStructure {
             contentText = "UserDefine Downloading...";
         } else if (id == 4) {
             contentText = "FlowMaster  Downloading...";
+        }
+        else if (id == 5) {
+            contentText = "Threshold  Downloading...";
         }
 
 
@@ -2444,5 +2446,232 @@ class DownloadMainStructure {
         }
         c1.close();
         return jsonArray;
+    }
+
+
+
+    //Threshold_New Download
+    int thresholdnewDownload() {
+        String restext = null;
+        int k = 0;
+
+        try {
+            database = sqlitewraper.getDatabase();
+
+            JSONObject data1 = data();
+
+            Cursor c3 = database.rawQuery(
+                    "SELECT appid,company_Id FROM Login_Master", null);
+            c3.moveToFirst();
+            String appid;
+            String company_Id;
+            int count = c3.getCount();
+            try{
+                if (count > 0) {
+                    appid = c3.getString(0);
+                    company_Id = c3.getString(1);
+
+
+                    data1.put("company_Id",company_Id);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            c3.close();
+
+            Cursor c2 = database.rawQuery(
+                    "SELECT MAX(millisecond) FROM  Thresold_New ", null);
+
+            try {
+                if (c2.getCount() > 0) {
+                    c2.moveToFirst();
+
+                    String millisecond = c2.getString(0);
+
+                    cursorClose(c2);
+
+                    if (millisecond == null) {
+                        data1.put("millisecond", 0);
+                    } else {
+
+                        data1.put("millisecond", millisecond);
+                    }
+                }
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+            }
+
+            JSONArray jsds = new JSONArray();
+            jsds.put(data1);
+
+            String url = DownloadConstant.DOWNLOAD_URL + DownloadConstant.METHOD_THRESHOLD_NEW + "?Data=";
+            String da = URLEncoder.encode(jsds.toString(), "UTF-8");
+            url = url + da;
+
+            HttpResponse response = downloadWithStreming(url, data1);
+            if (response != null) {
+                k = insertIntoThreshold(response);
+            } else {
+                k = 1;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            writeLogToFile(e.getMessage(), "Threshold_New_DOWNLOAD");
+            // TODO: handle exception
+        }
+        return k;
+    }
+
+
+
+    private int insertIntoThreshold(HttpResponse response) {
+
+        int d = 0;
+        try {
+            StatusLine statusLine = response.getStatusLine();
+            int statusCode = statusLine.getStatusCode();
+
+            if (statusCode == 200) {
+                HttpEntity entity = response.getEntity();
+                InputStream content = entity.getContent();
+                Reader streamReader = new InputStreamReader(content);
+                JsonReader reader = new JsonReader(streamReader);
+                reader.setLenient(true);
+                try {
+                    while (reader.hasNext() && (!(reader.peek() == JsonToken.END_DOCUMENT))) {
+
+                        String status1 = "";
+                        String message = "";
+
+                        if (!(reader.peek() == JsonToken.END_DOCUMENT)) {
+                            reader.beginObject();
+                            String status = reader.nextName();
+                            if (status.equals("status")) {
+                                status1 = reader.nextString();
+                            }
+                            String message1 = reader.nextName();
+                            if (message1.equals("message")) {
+                                message = reader.nextString();
+                            }
+
+                            if (status1.equalsIgnoreCase("2")) {
+
+//                                String t1;
+//                                t1 = "_id = 4";
+//                                ContentValues cv2 = new ContentValues();
+//
+//                                cv2.put("status", "2");
+//
+//                                long temp12 = database.update("download_counter", cv2, t1,
+//                                        null);
+
+                                generateNotification(5, null);
+                                d = 2;
+                            }
+
+                            if (status1.equalsIgnoreCase("1")) {
+                                JSONArray innerdata = new JSONArray(message);
+                                int length = innerdata.length();
+
+                                for (int j = 0; j < length; j++) {
+
+                                    JSONObject innerdatobj = innerdata.getJSONObject(j);
+
+                                   // int threshold_id = innerdatobj.getInt("threshold_id");
+                                    String speed = innerdatobj.getString("Speed");
+                                    String millisecond = innerdatobj.getString("millisecond");
+                                    String normal_acc = innerdatobj.getString("Normal_ACC");
+                                    String normal_deacc = innerdatobj.getString("Normal_DEACC");
+                                    String hard_acc = innerdatobj.getString("Hard_ACC");
+                                    String hard_deacc = innerdatobj.getString("Hard_DEACC");
+                                    String gap_milli = innerdatobj.getString("Gap_Milli");
+                                    String speed_violation_time = innerdatobj.getString("Speed_Violation_Time");
+                                    String territory = innerdatobj.getString("territory");
+                                    String vehicle_type = innerdatobj.getString("vehicle_type");
+
+//                                    String t1;
+//                                    t1 = "_id = 5";
+//                                    ContentValues cv2 = new ContentValues();
+//                                    cv2.put("counter", counterFlowMaster);
+//                                    long temp1 = database.update("download_counter", cv2,
+//                                            t1, null);
+
+                                    generateNotification(5, null); //Threshold downloading start show notification
+
+//                                    Cursor c4 = database.rawQuery(
+//                                            "SELECT * FROM  Thresold_New WHERE threshold_id ="
+//                                                    + threshold_id, null);
+//                                    c4.moveToFirst();
+
+                                    ContentValues cv1 = new ContentValues();
+//                                    cv1.put("threshold_id", threshold_id);
+                                    cv1.put("speed", speed);
+                                    cv1.put("millisecond", millisecond);
+                                    cv1.put("normal_acc", normal_acc);
+                                    cv1.put("normal_deacc", normal_deacc);
+                                    cv1.put("hard_acc", hard_acc);
+                                    cv1.put("hard_deacc", hard_deacc);
+                                    cv1.put("gap_milli", gap_milli);
+                                    cv1.put("speed_violation_time", speed_violation_time);
+                                    cv1.put("territory", territory);
+                                    cv1.put("vehicle_type", vehicle_type);
+
+
+//
+//                                    if (c4.getCount() > 0) {
+//                                        String t;
+//                                        t = "threshold_id =" + threshold_id;
+//
+//                                        long temp = database.update("Thresold_New", cv1, t,
+//                                                null);
+//
+//                                        if (!isFirsttime) {
+//                                            counterThreshold++;
+//                                        }
+//
+//                                    } else {
+
+                                        long temp = database.insert("Thresold_New", null,
+                                                cv1);
+                                        counterThreshold++;
+
+//                                    }
+                                    d = 1;
+                                   // cursorClose(c4);
+                                }
+                                flagThreshold = 0;
+                            }
+
+                            if (status1.equalsIgnoreCase("5")) {
+                                d = 1;
+                            }
+
+                            Log.d("##QQ", reader.toString());
+                            reader.endObject();
+
+                        } else {
+                            reader.close();
+                            reader = null;
+                            streamReader.close();
+                        }
+                    }
+                    reader.close();
+                    streamReader.close();
+
+//                    if (taskdownloadflag != 0) {
+//                        return 1;
+//                    }
+                } catch (Exception e) {
+                    reader.close();
+                    streamReader.close();
+                }
+            } else {
+                return 1;
+            }
+        } catch (Exception e) {
+            d = 1;
+        }
+        return d;
     }
 }
