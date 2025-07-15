@@ -530,7 +530,7 @@ public class f_upload_new_structure extends WakefulIntentService {
             // need to change
             c = database
                     .rawQuery(
-                            "select tid,checksheetid,step,username,server_task_id,status,millisecond,moduledef,p_server_task_id,initialstatus,lat,long,match_temp_id,p_match_temp_id from task_master where ((server_task_id='0' and p_tid is null and is_online != 1) or (p_server_task_id is not null and p_tid is not null and server_task_id='0' and is_online != 1) ) ",
+                            "select tid,checksheetid,step,username,server_task_id,status,millisecond,moduledef,p_server_task_id,initialstatus,lat,long,match_temp_id,p_match_temp_id from task_master where ((server_task_id='0' and p_tid is null or p_tid is 'null' or p_tid is '' and is_online != 1) or (p_server_task_id is not null and p_tid is not null and server_task_id='0' and is_online != 1) ) ",
                             null);
             c.moveToFirst();
             int count = c.getCount();
