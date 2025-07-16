@@ -1078,7 +1078,6 @@ function onsuccess_get_all_searched_list(e) {
                     }
                     // $("#ddl_search_type20_" + curr_btnSearch_Counter + "")
                     // .attr('size', 1);
-                    // autofull type20 dropdown on page load automatically
                 }
             }
             if (view_style == 'dropdownview') {
@@ -2077,6 +2076,18 @@ function check_and_call_next_single_option() {
                 call_multi_autobind_type20_child_dropdown(Type20_AutoBind_Onchange_Array);
             }
             else {
+
+                // in case where parent is not selected and want to select child - mk - 16042025
+                if (auto_open_id_text != "") {
+                    auto_open_id_text = "";
+                    $("#popover_edit_text").trigger("onclick");
+                    $("#popover_edit_text").removeAttr("onclick");
+                }
+                if (auto_open_id_qr != "") {
+                    $("#popover_scan_image").trigger("onclick");
+                    $("#popover_scan_image").removeAttr("onclick");
+                }
+
                 check_and_call_next_single_fill_data_option();
             }
         }
@@ -2115,7 +2126,7 @@ function check_and_call_next_single_fill_data_option() {
     }
 }
 
-// immidiately auto fill child dropdown when getting only 1 item in parent dropdwon in page load
+// immidiately auto fill child dropdown when getting only 1 item in parent dropdwon in load
 function autofill_child_type20_dropdown_onload(t_ddl_counter) {
     $("#ddl_search_type20_" + t_ddl_counter + "").trigger("onchange");
 }
@@ -4473,11 +4484,20 @@ function autofill_type20_dropdown_onload(Type20_AutoFill_DDL_Array_t) {
                         }
                     }
                 }
-                if (ref_valid == 0) {
-                    popup_search_items_show_type20(t_new_id, t_TableName, t_JoinTableName, t_Checksheet_id, t_window_style, t_view_style)
-                } else {
+
+                let act_view_style = push_data[0].view_style;
+                if (act_view_style == "listview") {
+                    // do not autofill listview searchables in page load - mk - 20052025
                     Type20_AutoFill_DDL_Array.shift();
                     autofill_type20_dropdown_onload(Type20_AutoFill_DDL_Array);
+                }
+                else {
+                    if (ref_valid == 0) {
+                        popup_search_items_show_type20(t_new_id, t_TableName, t_JoinTableName, t_Checksheet_id, t_window_style, t_view_style)
+                    } else {
+                        Type20_AutoFill_DDL_Array.shift();
+                        autofill_type20_dropdown_onload(Type20_AutoFill_DDL_Array);
+                    }
                 }
             }
             else {
@@ -4591,7 +4611,7 @@ function hide_current_type_loading(t_new_id) {
         $("#ddl_search_type20_" + t_new_id + "").prop("disabled", false);
     }
 
-    // enable searchable dropdown in page load (treated as normal dropdown so enable it)
+    // enable searchable dropdown in after load (treated as normal dropdown so enable it)
     if (glob_type20_cust_checksheetid == '' || glob_type20_cust_checksheetid == null || glob_type20_cust_checksheetid == undefined || glob_type20_cust_checksheetid == "0" || glob_type20_cust_checksheetid == "undefined") { }
     else {
         $("#ddl_search_type20_" + t_new_id + "").prop("disabled", false);
@@ -5959,8 +5979,23 @@ function get_filled_dropdown_data(t_new_id, TableName, JoinTableName, Checksheet
 var new_id_G;
 var glob_type20_cust_checksheetid = 0;
 
+var auto_open_id_text = "";
+var auto_open_id_qr = "";
+
 function get_dropdown_data_edit_text(t_new_id, TableName, JoinTableName, Checksheet_id, customer_checksheetid, ddl_info_view, autofill, add_cust_from_search) {
     // Edit Text
+
+    var ddl_type = $("#ddl_search_type20_" + t_new_id + "").attr("ddl_type");
+    var parent_ddl_id = $("#ddl_search_type20_" + t_new_id + "").attr("parent_ddl_id");
+    var parent_ddl_val = $("#" + parent_ddl_id).val();
+    var ddl_len = $("#ddl_search_type20_" + t_new_id + " option").length;
+    if (ddl_len == 1 && ddl_type == "ddl_child" && parent_ddl_val == 0) {
+        auto_open_id_text = t_new_id;
+    }
+    else {
+        auto_open_id_text = "";
+    }
+
     ddl_search_type = "normal";
     get_dropdown_data(t_new_id, TableName, JoinTableName, Checksheet_id, customer_checksheetid, ddl_info_view, autofill, add_cust_from_search);
 }
