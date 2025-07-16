@@ -27,6 +27,7 @@ function get_list_of_task_for_compare_online() {
             var status_array = list_data[0].status;
             var query = "select server_task_id, millisecond, is_delete_photo, is_delete_log, is_delete_sub, is_valid_log from task_master where (flag=1 or flag=3) and moduleid = '" + selected_module_id + "' and username='"
                 + username + "' and status != -1 and (status not in(" + status_array + ") or (is_delete_photo is not null and is_delete_photo != ''))";
+
             //alert1(query);
             var q_jsonobj = [];
             q_jsonobj.push({
@@ -1182,6 +1183,10 @@ function onsuccess_get_list_of_pm_sites_online(e) {
             var task_removable = list_data[0].task_removable;
             var task_editable = list_data[0].task_editable;
             var upload_pending_display = list_data[0].upload_pending_display;
+
+            // always display upload pending green panel - mk - 16072025 05:39
+            upload_pending_display = "true";
+
             var customer_info = list_data[0].customer_info;
             var CommentUI = list_data[0].CommentUI;
             var site_route = list_data[0].site_route;

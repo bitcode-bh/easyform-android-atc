@@ -2452,8 +2452,36 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         //    newdiv += '<div id="div_Search_' + new_id + '" class="' + ele_class + '" style="display:none; padding:10px">' + mendatory_img + '';
                         //}
 
+                        var add_cust_from_search = push_data[0].add_cust_from_search;                       //added this key for ATC (add new customer from search string) [atc.bb - 03052021]
+                        if (add_cust_from_search == "" || add_cust_from_search == null || add_cust_from_search == undefined || add_cust_from_search == "0") {
+                            add_cust_from_search = "false";
+                        }
+
                         var type20_is_hide = jsonObj[i].prop[0].is_hide;
                         newdiv += '<div id="div_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" is_hide="' + type20_is_hide + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+
+                        if (add_cust_from_search == "true") {
+
+                            //new development for ATC battery bank [haresh1.vt - 01062021]
+                            var param_keyup = "change_flag_for_text_cust_addition('" + new_id + "')";
+                            var param_cust_add = "get_popup_to_add_item_online('" + customer_checksheetid + "', '" + add_cust_from_search + "', '" + new_id + "')";
+                            var param_cust_search = "open_dropdown_popup_for_cust_search(this)";
+                            newdiv += '<div class="item-input item-input-field form-div add-cust-outer" style="width:100% !important;">';
+
+                            if (jsonObj[i].ans == '') {
+                                newdiv += '<input type="text" id="type20_txt_' + new_id + '" onkeyup="' + param_keyup + '" style="width:75% !important;" class="form-ele" placeholder="Add New Cell...">';
+                            }
+                            else {
+                                var ans_value = jsonObj[i].ans[0];
+                                var ans_id = jsonObj[i].ans[1];
+                                newdiv += '<input type="text" id="type20_txt_' + new_id + '" value="' + ans_value + '" value1="' + ans_id + '" name="1" cust_add_flag="1"  onkeyup="' + param_keyup + '" style="width:75% !important;" class="form-ele" placeholder="Add New Cell...">';
+                            }
+
+                            newdiv += '<i id="addCust_txtbox_' + new_id + '" class="fa form-ico fa-plus" onclick="' + param_cust_add + '" style="margin-right:30px;margin-top:5px;padding:0 10px;display:inline; visibility:visible"></i>';
+                            newdiv += '<i id="searchCust_txtbox_' + new_id + '" class="fa form-ico fa-search" onclick="' + param_cust_search + '" style="padding-left:10px;margin-top:-10%;display:inline; visibility:visible"></i>';
+                            newdiv += '</div>';
+                            //newdiv += '</div>';
+                        }
 
                         // new type20 dependency
                         newdiv += '<input id="hdn_type20_dependency_data_' + new_id + '" type="hidden" value=' + encodeURIComponent(JSON.stringify(data)) + '>';
@@ -2651,11 +2679,6 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                     customer_checksheetid = "";
                                 }
 
-                                var add_cust_from_search = push_data[0].add_cust_from_search;                       //added this key for ATC (add new customer from search string) [atc.bb - 03052021]
-                                if (add_cust_from_search == "" || add_cust_from_search == null || add_cust_from_search == undefined || add_cust_from_search == "0") {
-                                    add_cust_from_search = "false";
-                                }
-
                                 var ddl_info_view = push_data[0].ddl_info_view;
                                 if (ddl_info_view == "" || ddl_info_view == null || ddl_info_view == undefined) {
                                     ddl_info_view = "true";
@@ -2698,7 +2721,14 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                     }
                                 }
 
-                                newdiv += '<div class="item-input item-input-field form-div" style="' + ddl_width + '" onclick="' + ddl_param + '" ' + enable_disable + '><img id="ddl_loading_' + new_id + '" src="images/loading_type20.gif" style="position: absolute; left: 50%; top: 7px; display:none">';
+                                if (add_cust_from_search == "true") {
+                                    var disp_type20_ddl = "display:none;"
+                                }
+                                else {
+                                    var disp_type20_ddl = "";
+                                }
+
+                                newdiv += '<div class="item-input item-input-field form-div" style="' + ddl_width + disp_type20_ddl + '" onclick="' + ddl_param + '" ' + enable_disable + '><img id="ddl_loading_' + new_id + '" src="images/loading_type20.gif" style="position: absolute; left: 50%; top: 7px; display:none">';
 
                                 var multi_select = push_data[0].multi_select;
                                 if (multi_select == "true") {
