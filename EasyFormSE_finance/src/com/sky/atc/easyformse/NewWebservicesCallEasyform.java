@@ -189,6 +189,8 @@ public class NewWebservicesCallEasyform {
     }
 
 
+    static String currentUrl = null;
+    static String finalMessage;
     public static void after_response(String json, final String webmethod, String errorLogString ,String companyFeatureid,String appUrl) {
         try {
             String status = null;
@@ -227,30 +229,49 @@ public class NewWebservicesCallEasyform {
                 if (status.equals("4")) {
                     if (!webmethod.equalsIgnoreCase("Device_Login_With_Multi_Role_Crypto")) {
 
-                        B_new b = new B_new();
-                        b.SetValue("NA", "NA");
 
-                        final String finalMessage = message;
+                        String finalMessage2 = message;
+                        // multiple log out issue resolve 16072025
+                        new Handler(Looper.getMainLooper()).post(() -> {
+                            currentUrl = ph_s.getCurrentHtmlUrl();
 
-                        String login_key = "False";
+                            if (currentUrl != null && currentUrl.toLowerCase().contains("login.html")) {
+                                Log.d("##Check", "login.html is already shown, skipping Android code.");
+                                return;
+                            }
+                            else {
 
-                        MySharedPreferences editor = sqlitewraper.getSecureShared("pre1");
-                        editor.putString("login_key", login_key);
-                        editor.commit();
+                                B_new b = new B_new();
+                                b.SetValue("NA", "NA");
 
-                        Intent i = new Intent(sqlitewraper.context, MainActivity.class);
-                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        sqlitewraper.context.startActivity(i);
+                                finalMessage = finalMessage2;
 
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            public void run() {
-                                Toast toast = Toast.makeText(sqlitewraper.context, finalMessage, Toast.LENGTH_LONG);
-                                toast.show();
-                                B_new b_new = new B_new();
+                                String login_key = "False";
 
-                                Log.d("##webmethod", finalMessage + "=" + webmethod + " " + b_new);
+                                MySharedPreferences editor = sqlitewraper.getSecureShared("pre1");
+                                editor.putString("login_key", login_key);
+                                editor.commit();
+
+                                Intent i = new Intent(sqlitewraper.context, MainActivity.class);
+                                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                sqlitewraper.context.startActivity(i);
+
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    public void run() {
+                                        Toast toast = Toast.makeText(sqlitewraper.context, finalMessage, Toast.LENGTH_LONG);
+                                        toast.show();
+                                        B_new b_new = new B_new();
+
+                                        Log.d("##webmethod", finalMessage + "=" + webmethod + " " + b_new);
+                                    }
+                                });
                             }
                         });
+
+
+
+
+
 
                     }
                 }

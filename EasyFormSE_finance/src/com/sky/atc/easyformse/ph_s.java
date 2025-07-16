@@ -121,6 +121,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
     boolean ShowGPSAlert = false;
     boolean alltimelocation = false;
     boolean isShowNotiDialog = false;
+    public static ph_s instance;
+
     //brodcast for gps on/off
     private final BroadcastReceiver mReceivedSMSReceiver = new BroadcastReceiver() {
         @Override
@@ -174,6 +176,7 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
     public void onCreate(Bundle savedInstanceState) {
         LogUtils.writeRfTrackLogToFile("Celled onCreate ", this.getClass().getName());
         super.onCreate(savedInstanceState);
+        instance = this;
         sqlitewraper.checkIsFakeLocation(getApplicationContext());
 //      getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE); //to disable screenshot of activity
         database = sqlitewraper.getDatabase();
@@ -1840,5 +1843,13 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         }
 
 
+    }
+
+    // check which html page load
+    public static String getCurrentHtmlUrl() {
+        if (instance != null && instance.appView != null) {
+            return instance.appView.getUrl();
+        }
+        return null;
     }
 }
