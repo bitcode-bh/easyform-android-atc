@@ -8,17 +8,16 @@ import android.app.TaskStackBuilder;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
-import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
-
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
@@ -30,7 +29,6 @@ import com.sky.atc.easyformse.R;
 import com.sky.atc.easyformse.attendance.newattendanceutils.AttendanceUtil;
 import com.sky.atc.easyformse.attendance.newattendanceutils.models.AttendanceData;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
-import com.sky.atc.easyformse.ph_s;
 import com.sky.atc.easyformse.sqlitewraper;
 import com.sky.atc.easyformse.trip.LocationOutageUtils;
 import com.sky.atc.easyformse.trip.TripBackgroundMapActivity;
@@ -107,11 +105,11 @@ public class GeofenceTrasitionServicenew extends IntentService {
                 pref.commit();
 
                 AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
-                int Duration = -1;
+                String Duration ;
                 boolean shouldStopTrip = false;
                 if(mAttendanceData.getAuto_punchout_duration() != null) {
                     try {
-                        Duration = Integer.parseInt(mAttendanceData.getAuto_punchout_duration());
+                        Duration = mAttendanceData.getAuto_punchout_duration();
                         if (isAfterDuaration(Duration)) {
                             shouldStopTrip = true;
                         }
@@ -151,10 +149,38 @@ public class GeofenceTrasitionServicenew extends IntentService {
 
         }
     }
-    private boolean isAfterDuaration(int value) {
-        Calendar now = Calendar.getInstance();
-        int hour = now.get(Calendar.HOUR_OF_DAY); // 0 to 23
-        return hour >= value;
+    private boolean isAfterDuaration(String value) {
+        if (value == null || value.isEmpty()) {
+            return false; // Handle empty or null input safely
+        }
+
+        // Split the string value by ":"
+        String[] timeParts = value.split(":");
+        if (timeParts.length != 2) {
+            return false; // If the string doesn't contain a valid hour:minute format, return false
+        }
+
+        try {
+            int valueHour = Integer.parseInt(timeParts[0]); // Hour part (e.g., "14" -> 14)
+            int valueMinute = Integer.parseInt(timeParts[1]); // Minute part (e.g., "00" -> 0)
+
+            // Get the current time
+            Calendar now = Calendar.getInstance();
+            int currentHour = now.get(Calendar.HOUR_OF_DAY); // Current hour (0-23)
+            int currentMinute = now.get(Calendar.MINUTE); // Current minute (0-59)
+
+            // If the current time hour is greater than the input value hour
+            if (currentHour > valueHour) {
+                return true;
+            }
+            // If the current time hour is equal to the input value hour, compare minutes
+            else if (currentHour == valueHour) {
+                return currentMinute >= valueMinute; // If minutes are equal or after the specified minutes, return true
+            }
+            return false; // If the current time is before the input time
+        } catch (NumberFormatException e) {
+            return false; // If parsing fails, handle gracefully by returning false
+        }
     }
 
     private boolean isAfter6PM() {
@@ -164,7 +190,7 @@ public class GeofenceTrasitionServicenew extends IntentService {
     }
     private int tripStatus(){
 
-        android.database.Cursor tripflag = database.rawQuery(
+        Cursor tripflag = database.rawQuery(
                 "select * from lat_plug where trip_status = 0", null);
         tripflag.moveToFirst();
         int tripflagCount = tripflag.getCount();

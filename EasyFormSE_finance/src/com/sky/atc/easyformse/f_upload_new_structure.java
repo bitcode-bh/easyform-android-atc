@@ -92,7 +92,7 @@ public class f_upload_new_structure extends WakefulIntentService {
     private static final String METHOD_NAME_corner4 = "WCF_Insert_Update_Delete_Punch_Master";
 
     // upload still violation entry
-     private static final String METHOD_NAME_corner13 = "Insert_Device_Event_Master";
+    private static final String METHOD_NAME_corner13 = "Insert_Device_Event_Master";
 
     // for status change comment
     private static final String METHOD_NAME_corner7 = "WCF_Mobile_Notification_Master";
@@ -111,12 +111,11 @@ public class f_upload_new_structure extends WakefulIntentService {
     com.sky.atc.easyformse.NewWebservicesCallEasyform NewWebservicesCallEasyform;
 
 
-
     Cursor c;
     Cursor c_sub;
     int p_f, f_f;
 
-    int  bufferSize;
+    int bufferSize;
     String name_file;
     int ch_number, track_chnumber;
     double track_byte_g;
@@ -125,11 +124,11 @@ public class f_upload_new_structure extends WakefulIntentService {
     int offset = 0;
     String Message_s = null;
     ArrayList<String> steparray = new ArrayList<>();
-     // not using so comments
+    // not using so comments
     // ArrayList<String> logsteparray = new ArrayList<>();
     ArrayList<String> deletesubjsonArray = new ArrayList<>();
     JSONArray jsonArray = new JSONArray();
-     // not using so comments
+    // not using so comments
     // JSONArray logjsonArray = new JSONArray();
     JSONArray deletesublogjsonArray = new JSONArray();
     HashMap<Integer, JSONArray> meMap = new HashMap<>();
@@ -138,13 +137,13 @@ public class f_upload_new_structure extends WakefulIntentService {
     int deletetidcntlog;
     int deletetidcntlog1;
     int isphotodel = 0;
-     // not using so comments
+    // not using so comments
     // int islogdel = 0;
     int isvideodel = 0;
     B_new b;
-    private String  ph_id;
-     String status1 = null;
-     private static SharedPreferences sharedPreferences= sqlitewraper.context.getSharedPreferences("LogWrite",0);
+    private String ph_id;
+    String status1 = null;
+    private static SharedPreferences sharedPreferences = sqlitewraper.context.getSharedPreferences("LogWrite", 0);
 
     public f_upload_new_structure() {
         super("fupload_off_easyform");
@@ -153,7 +152,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
     @Override
     protected void doWakefulWork(Intent arg0) {
-        LogUtils.writeUploadLogToFile("INTERNET_FLAG :" + sqlitewraper.internetflag,"", "f_upload_new_structure");
+        LogUtils.writeUploadLogToFile("INTERNET_FLAG :" + sqlitewraper.internetflag, "", "f_upload_new_structure");
         Log.d("####INTERNET_FLAG", String.valueOf(sqlitewraper.internetflag));
         if (sqlitewraper.internetflag == 1) {
 
@@ -206,8 +205,8 @@ public class f_upload_new_structure extends WakefulIntentService {
                                 String siteid = c_sub.getString(1);
                                 int checksheetid = c_sub.getInt(2);
                                 // not using so comments
-                               // float height = (float) c_sub.getDouble(3);
-                               // String tower_type = c_sub.getString(4);
+                                // float height = (float) c_sub.getDouble(3);
+                                // String tower_type = c_sub.getString(4);
                                 int server_task_id = c_sub.getInt(5);
                                 int status = c_sub.getInt(6);
                                 int step = c_sub.getInt(7);
@@ -218,7 +217,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                             } catch (Exception e) {
 
-                                LogUtils.writeUploadLogToFile(e.getMessage(), "","UPLOAD_TASK_SUB");
+                                LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_TASK_SUB");
 
                             }
                             c_sub.moveToNext();
@@ -254,14 +253,14 @@ public class f_upload_new_structure extends WakefulIntentService {
                                 upload_task_master(tid_sub, server_task_id, siteid, checksheetid, step, status, task_milli, edtiFlag);
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                LogUtils.writeUploadLogToFile(e.getMessage(),"" ,"UPLOAD_TASK_MAIN");
+                                LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_TASK_MAIN");
 
                             }
                             cursorClose(c_sub);
                         }
 
                     } catch (Exception e) {
-                        LogUtils.writeUploadLogToFile(e.toString(),"","f_upload_new_structure");
+                        LogUtils.writeUploadLogToFile(e.toString(), "", "f_upload_new_structure");
                         ////e.printStackTrace()();
                     }
                     c.moveToNext();
@@ -314,7 +313,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                     if (status.equalsIgnoreCase("1")) {
                         update_fakelocation(id);
                     } else {
-                        LogUtils.writeUploadLogToFile("server response: "+jsonArray.toString(), METHOD_NAME_corner6,"upload_fakelocation ");
+                        LogUtils.writeUploadLogToFile("server response: " + jsonArray.toString(), METHOD_NAME_corner6, "upload_fakelocation ");
                         k++;
                     }
                 }
@@ -503,7 +502,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                 } catch (Exception e) {
                     k++;
-                    LogUtils.writeUploadLogToFile(e.getMessage(), "","FUPLOAD_TRIP");
+                    LogUtils.writeUploadLogToFile(e.getMessage(), "", "FUPLOAD_TRIP");
                     // e.printStackTrace();
                 }
                 c.moveToNext();
@@ -735,7 +734,7 @@ public class f_upload_new_structure extends WakefulIntentService {
             c.close();
         } catch (Exception e) {
             upload_task++;
-            LogUtils.writeUploadLogToFile(e.getMessage(), METHOD_NAME_corner3,"Upload Task");
+            LogUtils.writeUploadLogToFile(e.getMessage(), METHOD_NAME_corner3, "Upload Task");
         }
         //Update Parent server task id of newly uploaded task
         update_p_id();
@@ -776,7 +775,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
     void update_task_flag(int tid, int status, String millisecond) {
         String t;
-        t = "tid=" + tid + " and status=" + status + " and  millisecond=" + "'" +millisecond + "'";
+        t = "tid=" + tid + " and status=" + status + " and  millisecond=" + "'" + millisecond + "'";
         ContentValues t_i = new ContentValues();
         t_i.put("flag", 2);
 
@@ -851,11 +850,9 @@ public class f_upload_new_structure extends WakefulIntentService {
                 data1.put("c_type", c_type);
                 data1.put("server_task_id", server_task_id);
                 String btn_action;
-                if(f_type.equalsIgnoreCase("") || f_type == null)
-                {
+                if (f_type.equalsIgnoreCase("") || f_type == null) {
                     btn_action = "go to";
-                }
-                else {
+                } else {
                     btn_action = f_type;
                 }
                 data1.put("btn_action", btn_action);
@@ -883,7 +880,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                             UploadUtils.isValidLog(tid, dataKey, checksheetID, step);
                         } else {
                             k++;
-                            LogUtils.writeUploadLogToFile("Response : "+jsonArray.toString(),  METHOD_NAME_corner,"Upload File");
+                            LogUtils.writeUploadLogToFile("Response : " + jsonArray.toString(), METHOD_NAME_corner, "Upload File");
                         }
                     }
                 } else {
@@ -900,7 +897,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                 k++;
                 ////e.printStackTrace()();
-                LogUtils.writeUploadLogToFile(e.getMessage(), "","UPLOAD_FILES");
+                LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_FILES");
             }
             c.moveToNext();
         }
@@ -1003,7 +1000,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                                     toast.show();
                                 }
                             });
-                            LogUtils.writeUploadLogToFile("Status: " +status+" ( "+msg + " )", METHOD_NAME_corner4,"Upload punch");
+                            LogUtils.writeUploadLogToFile("Status: " + status + " ( " + msg + " )", METHOD_NAME_corner4, "Upload punch");
                         }
                     }
                 } else {
@@ -1012,7 +1009,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                 }
             } catch (final Exception e) {
                 k++;
-                LogUtils.writeUploadLogToFile(e.getMessage(), "","UPLOAD_PUNCH");
+                LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_PUNCH");
             }
             c.moveToNext();
         }
@@ -1109,55 +1106,55 @@ public class f_upload_new_structure extends WakefulIntentService {
     }
 
 
-     // not using so comments
-    /*public void technicianDeleteLog(String checkshhetid, String servertaksid, String stepno) {
+    // not using so comments
+   /*public void technicianDeleteLog(String checkshhetid, String servertaksid, String stepno) {
 
 
-        int tid = 0;
-        try {
+       int tid = 0;
+       try {
 
-            Cursor c3 = database
-                    .rawQuery(
-                            "select tid from task_master where server_task_id='"
-                                    + servertaksid + "' ", null);
-            c3.moveToFirst();
-            int k = c3.getCount();
+           Cursor c3 = database
+                   .rawQuery(
+                           "select tid from task_master where server_task_id='"
+                                   + servertaksid + "' ", null);
+           c3.moveToFirst();
+           int k = c3.getCount();
 
-            if (k > 0) {
+           if (k > 0) {
 
-                tid = c3.getInt(0);
-            }
+               tid = c3.getInt(0);
+           }
 
-            c3.close();
-
-
-            islogdel = 0;
-            if (tidcntlog != tid) {
-
-                tidcntlog = tid;
-                logjsonArray = new JSONArray(new ArrayList<String>());
-                logsteparray.clear();
-            }
+           c3.close();
 
 
-            JSONObject data1 = new JSONObject();
+           islogdel = 0;
+           if (tidcntlog != tid) {
 
-            Cursor c1 = database
-                    .rawQuery(
-                            "select c_name,c_type from checksheet where checksheetid='"
-                                    + checkshhetid + "' ", null);
+               tidcntlog = tid;
+               logjsonArray = new JSONArray(new ArrayList<String>());
+               logsteparray.clear();
+           }
 
-            c1.moveToFirst();
 
-            String c_name = c1.getString(0);
-            String c_type = c1.getString(1);
-            islogdel = 1;
-            c1.close();
+           JSONObject data1 = new JSONObject();
 
-            Cursor c2 = database
-                    .rawQuery(
-                            "select subcategory from checksheet where checksheetid='"
-                                    + checkshhetid + "' and step='" + stepno + "' ", null);
+           Cursor c1 = database
+                   .rawQuery(
+                           "select c_name,c_type from checksheet where checksheetid='"
+                                   + checkshhetid + "' ", null);
+
+           c1.moveToFirst();
+
+           String c_name = c1.getString(0);
+           String c_type = c1.getString(1);
+           islogdel = 1;
+           c1.close();
+
+           Cursor c2 = database
+                   .rawQuery(
+                           "select subcategory from checksheet where checksheetid='"
+                                   + checkshhetid + "' and step='" + stepno + "' ", null);
 
             c2.moveToFirst();
             String chstep = c2.getString(0);
@@ -1205,35 +1202,35 @@ public class f_upload_new_structure extends WakefulIntentService {
                 cursorClose(c5);
             }
 
-            cursorClose(c3);
+           cursorClose(c3);
 
-            String statustask = compareStatuswithTaskmaster(tid);
+           String statustask = compareStatuswithTaskmaster(tid);
 
             if (statustask.equalsIgnoreCase(status)) {
                 status = "0";
             }
 
-            DeviceEventsUtils.insert_task_master_revert("is_delete_log", status, tid);
+           DeviceEventsUtils.insert_task_master_revert("is_delete_log", status, tid);
 
             ContentValues cv2 = new ContentValues();
             cv2.put("status", status);
 //            cv2.put("flag", 3);
-            String t3 = "tid='" + tid + "'";
+           String t3 = "tid='" + tid + "'";
 
             long temp2 = database.update(
                     "task_master", cv2, t3, null);
             temp2++;
 
-            parentStatusUpdate(tid);
+           parentStatusUpdate(tid);
 
 
-        } catch (Exception e) {
+       } catch (Exception e) {
 
             e.printStackTrace();
         }
 //        c.moveToNext();
 //        cursour_close(c);
-    }*/
+   }*/
 
     //New Logic for Parent task satus update for deleted photos
     public void parentStatusUpdate(int tid) {
@@ -1623,7 +1620,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                         update_pid(pid, "p_master", tid, millisecond);
                     } else {
                         k++;
-                        LogUtils.writeUploadLogToFile("UPLOAD_FAILED:","" ,"PHOTO_UPLOAD_RESUMABLE");
+                        LogUtils.writeUploadLogToFile("UPLOAD_FAILED:", "", "PHOTO_UPLOAD_RESUMABLE");
                     }
 
                 } else {
@@ -1693,6 +1690,20 @@ public class f_upload_new_structure extends WakefulIntentService {
                 int f_count = query_p_f_master("f_master", tid, millisecond);
                 int p_count = query_p_f_master("p_master", tid, millisecond);
                 if (f_count == 0 && p_count == 0) {
+
+                    // handling for blank old_status in technician call 15072025
+                    if (old_status.equalsIgnoreCase("") || old_status.equalsIgnoreCase("null") || old_status == null) {
+
+                        Cursor c2 = database
+                                .rawQuery(
+                                        "SELECT status FROM task_master_history WHERE tid='" + tid + "' ORDER BY tid desc LIMIT 1, 1", null);
+                        c2.moveToFirst();
+                        if (c2.getCount() > 0) {
+                            old_status = c2.getString(0);
+
+                        }
+                        c2.close();
+                    }
 
                     String restext = upload_task_history(tid_n, siteid,
                             checksheetid, height, tower_type, server_task_id,
@@ -1795,7 +1806,7 @@ public class f_upload_new_structure extends WakefulIntentService {
             isSuccess = false;
             UploadLogDeleteUtils uploadLogDeleteUtils = new UploadLogDeleteUtils();
 
-            try{
+            try {
                 JSONArray jsonArray2 = new JSONArray(Message_s);
 
                 for (int k1 = 0; k1 < jsonArray2.length(); k1++) {
@@ -1812,7 +1823,7 @@ public class f_upload_new_structure extends WakefulIntentService {
             } catch (Exception e) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     public void run() {
-                        Toast toast = Toast.makeText(sqlitewraper.context,"Api: "+ METHOD_NAME_corner2 +"\nStatus: "+ status1 + " Message: " +  Message_s, Toast.LENGTH_LONG);
+                        Toast toast = Toast.makeText(sqlitewraper.context, "Api: " + METHOD_NAME_corner2 + "\nStatus: " + status1 + " Message: " + Message_s, Toast.LENGTH_LONG);
                         toast.show();
                     }
                 });
@@ -1968,7 +1979,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
 
         } catch (Exception e) {
-            LogUtils.writeUploadLogToFile(e.toString(), METHOD_NAME_corner2,"upload_task_history");
+            LogUtils.writeUploadLogToFile(e.toString(), METHOD_NAME_corner2, "upload_task_history");
             throw e;
             // TODO: handle exception
         }
@@ -2015,21 +2026,21 @@ public class f_upload_new_structure extends WakefulIntentService {
         database.update("total_file", args, t1, null);
     }
 
-     // not using so comments
-    /*public String getRealPathFromURI(Uri contentUri) {
-        // can post image
-        String[] proj = {MediaStore.Images.Media.DATA};
-        Cursor cursor = context.getContentResolver().query(
-                contentUri, proj, // Which columns to
-                // return
-                null, // WHERE clause; which rows to return (all rows)
-                null, // WHERE clause selection arguments (none)
-                null); // Order-by clause (ascending by name)
-        int column_index = cursor
-                .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        return cursor.getString(column_index);
-    }*/
+    // not using so comments
+   /*public String getRealPathFromURI(Uri contentUri) {
+       // can post image
+       String[] proj = {MediaStore.Images.Media.DATA};
+       Cursor cursor = context.getContentResolver().query(
+               contentUri, proj, // Which columns to
+               // return
+               null, // WHERE clause; which rows to return (all rows)
+               null, // WHERE clause selection arguments (none)
+               null); // Order-by clause (ascending by name)
+       int column_index = cursor
+               .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+       cursor.moveToFirst();
+       return cursor.getString(column_index);
+   }*/
 
     public String value(String field) {
         try {
@@ -2161,31 +2172,31 @@ public class f_upload_new_structure extends WakefulIntentService {
 
     // ----------------------------------------------------------------------
     // not using so comments
-    /*String add(double lat, double lon) {
+   /*String add(double lat, double lon) {
 
-        String address = null;
+       String address = null;
 
-        try {
-            Geocoder gcd = new Geocoder(context,
-                    Locale.getDefault());
-            List<Address> addresses = gcd.getFromLocation(lat, lon, 1);
-            if (addresses.size() > 0) {
-                Address a = addresses.get(0);
-                for (int k = 0; k < a.getMaxAddressLineIndex(); k++) {
-                    if (address == null)
-                        address = a.getAddressLine(k);
-                    else
-                        address = address + "," + a.getAddressLine(k);
-                }
-                address = address + "," + a.getCountryName();
-            }
+       try {
+           Geocoder gcd = new Geocoder(context,
+                   Locale.getDefault());
+           List<Address> addresses = gcd.getFromLocation(lat, lon, 1);
+           if (addresses.size() > 0) {
+               Address a = addresses.get(0);
+               for (int k = 0; k < a.getMaxAddressLineIndex(); k++) {
+                   if (address == null)
+                       address = a.getAddressLine(k);
+                   else
+                       address = address + "," + a.getAddressLine(k);
+               }
+               address = address + "," + a.getCountryName();
+           }
 
-        } catch (Exception e) {
-            ////e.printStackTrace()();
-        }
-        return address;
+       } catch (Exception e) {
+           ////e.printStackTrace()();
+       }
+       return address;
 
-    }*/
+   }*/
 
     private boolean isMyServiceRunning(Context context, String Myservice) {
         ActivityManager manager = (ActivityManager) context
@@ -2416,7 +2427,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                         httppost.setEntity(reqEntity);
                         // log write
                         try {
-                            boolean mStringLogWrite = sharedPreferences.getBoolean("isLogWrite",false);
+                            boolean mStringLogWrite = sharedPreferences.getBoolean("isLogWrite", false);
                             if (mStringLogWrite)
                                 reqEntity.writeTo(new FileOutputStream(Utils.getRootFolderFile(sqlitewraper.context) + "/" + LogUtils.LogFolderName + "/" + "output.txt"));
                         } catch (Exception e) {
@@ -2428,7 +2439,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                         } else {
 
-                            LogUtils.writeUploadLogToFile(String.valueOf(response.getStatusLine().getStatusCode()),"", "UPLLOAD_VIDEO");
+                            LogUtils.writeUploadLogToFile(String.valueOf(response.getStatusLine().getStatusCode()), "", "UPLLOAD_VIDEO");
                             return 1;
 
 
@@ -2471,8 +2482,8 @@ public class f_upload_new_structure extends WakefulIntentService {
                         null);
                 c3.moveToLast();
                 // not using so comments
-                /*int company_id = c3.getInt(2);
-                String imei = c3.getString(3);*/
+               /*int company_id = c3.getInt(2);
+               String imei = c3.getString(3);*/
                 cursorClose(c3);
 
                 c = database
@@ -2553,20 +2564,18 @@ public class f_upload_new_structure extends WakefulIntentService {
                             String appURL;
                             int k;
                             appURL = sqlitewraper.context.getResources().getString(R.string.App_URL).split("/")[2].trim();
-                            if(appURL.equalsIgnoreCase("login.easyform.in"))
-                            {
+                            if (appURL.equalsIgnoreCase("login.easyform.in")) {
                                 // for login url
-                                 k = sendFileToServer1(path,
-                                                context.getResources().getString(R.string.Resumable_URL) + "flowupload",
-                                                name_file, ch_number, CompanyId, CustomerUniq, offset, track_byte_g, checksheetid_new, que_id, step_No, type, size, Ph_id, it_id, th_path, server_task_id, extn, appid, username, u_c, devicetype, appversion);
+                                k = sendFileToServer1(path,
+                                        context.getResources().getString(R.string.Resumable_URL) + "flowupload",
+                                        name_file, ch_number, CompanyId, CustomerUniq, offset, track_byte_g, checksheetid_new, que_id, step_No, type, size, Ph_id, it_id, th_path, server_task_id, extn, appid, username, u_c, devicetype, appversion);
 
-                            }
-                            else {
+                            } else {
                                 // for other url
                                 //txt file upload issue so change video url to use resumbale url 05-03-2024
-                                 k= sendFileToServer1(path,
-                                            context.getResources().getString(R.string.Video_URL) + "/api/flowupload",
-                                            name_file, ch_number, CompanyId, CustomerUniq, offset, track_byte_g, checksheetid_new, que_id, step_No, type, size, Ph_id, it_id, th_path, server_task_id, extn, appid, username, u_c, devicetype, appversion);
+                                k = sendFileToServer1(path,
+                                        context.getResources().getString(R.string.Video_URL) + "/api/flowupload",
+                                        name_file, ch_number, CompanyId, CustomerUniq, offset, track_byte_g, checksheetid_new, que_id, step_No, type, size, Ph_id, it_id, th_path, server_task_id, extn, appid, username, u_c, devicetype, appversion);
 
                             }
 
@@ -2592,7 +2601,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                             }
                         } catch (Exception e) {
 
-                            LogUtils.writeUploadLogToFile(e.getMessage(), "","UPLOAD_VIDEO");
+                            LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_VIDEO");
 
                             String exception = String.valueOf(e);
                             if (exception.equals("java.io.EOFException")) {
@@ -2984,9 +2993,9 @@ public class f_upload_new_structure extends WakefulIntentService {
             }
         }
     }
-//upload stillviolation events 27-12-2023
-    public void UploadStillViolation()
-    {
+
+    //upload stillviolation events 27-12-2023
+    public void UploadStillViolation() {
         Cursor check = null;
         try {
 
