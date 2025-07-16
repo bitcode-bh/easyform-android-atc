@@ -698,6 +698,11 @@ function viewlist_checklist() {
                     //alert1("getting previous step...");
                     back_on_click();
                 }
+                else {
+                    // rare case back issue - mk - 15072025
+                    storage.setItem('curr_btn_mode', JSON.stringify("back"));
+                    changeurl("viewsitelist_pm_grouplist.html");
+                }
             } else {
                 //back button disable
                 //changeurl("viewsitelist_pm_grouplist.html");

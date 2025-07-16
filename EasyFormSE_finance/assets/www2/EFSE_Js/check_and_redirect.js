@@ -255,3 +255,8 @@ function check_decimal_point(decimal_point, answer, prop_name) {
         }
     }
 }
+
+redirect_on_link_url = (t_ele) => {
+    let href_str = $(t_ele).attr("href");
+    window.location.href = href_str;
+}

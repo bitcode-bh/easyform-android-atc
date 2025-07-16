@@ -180,6 +180,7 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
                     loading_hide();
                     alert(myArray[0].message);
                     storage.setItem('rm_mili', JSON.stringify(''));
+                    storage.setItem('crash_status', JSON.stringify('0'));
                     changeurl("Login.html");
 
                 } else if (status == 11 && myArray[0].message == 'Validation Error') {

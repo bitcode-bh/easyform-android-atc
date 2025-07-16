@@ -703,6 +703,10 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         if (jsonObj[i - 1].type == 5 || jsonObj[i - 1].type == 500) {
                             view_label = "true";
                             prop_name = jsonObj[i - 1].prop[0].name;
+
+                            if (prop_name == "" || prop_name == null || prop_name == undefined) {
+                                prop_name = jsonObj[i].prop[0].name;
+                            }
                         }
                     }
 

@@ -557,6 +557,10 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         if (jsonObj[i - 1].type == 5 || jsonObj[i - 1].type == 500) {
                             view_label = "true";
                             prop_name = jsonObj[i - 1].prop[0].name;
+
+                            if (prop_name == "" || prop_name == null || prop_name == undefined) {
+                                prop_name = jsonObj[i].prop[0].name;
+                            }
                         }
                     }
 
@@ -728,6 +732,14 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         }
 
                         if (read_only == true) {
+
+                            if (form_flag == 2) {
+                                // clickable link DV-14072025                    
+                                if (ans_str.startsWith("https://")) {
+                                    ans_str = "<a target='_blank' href='" + ans_str + "' onclick='redirect_on_link_url(this)'>" + ans_str + "</a>";
+                                }
+                            }
+
                             let summary_str = get_summary_str(new_id, prop_name, ans_str, check_type, que_id);
                             newdiv += summary_str;
                         }

@@ -1373,7 +1373,8 @@ function check_old_task_for_checksheet(selected_check_type, selected_checksheet_
         storage.setItem('c_is_online', JSON.stringify(c_is_online));
 
         var company_id = JSON.parse(storage.getItem('company_id'));
-        if (c_is_icon_display == "true" || company_id == "157") {
+        if (company_id == "157") {
+            // display icon for ATC company
             c_is_icon_display = "true";
         }
         else {

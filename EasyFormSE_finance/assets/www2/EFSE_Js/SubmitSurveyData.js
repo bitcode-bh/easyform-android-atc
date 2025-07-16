@@ -657,7 +657,9 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                     check_flag = false;
                                 }
                                 else {
-                                    regex = ["^[A-Za-z0-9 .:\/,?#&(){};@_÷*+-]+$", "Invalid String"];
+                                    // commented static regex - mk - 14072025
+                                    check_flag = false;
+                                    // regex = ["^[A-Za-z0-9 .:\/,?#&(){};@_÷*+-]+$", "Invalid String"];
                                 }
                             }
 
