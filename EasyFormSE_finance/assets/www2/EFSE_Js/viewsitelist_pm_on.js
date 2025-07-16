@@ -25,9 +25,17 @@ function get_list_of_task_for_compare_online() {
             var data_json = JSON.parse(storage.getItem('list_json'));
             var list_data = JSON.parse(data_json);
             var status_array = list_data[0].status;
-            var query = "select server_task_id, millisecond, is_delete_photo, is_delete_log, is_delete_sub, is_valid_log from task_master where (flag=1 or flag=3) and moduleid = '" + selected_module_id + "' and username='"
-                + username + "' and status != -1 and (status not in(" + status_array + ") or (is_delete_photo is not null and is_delete_photo != ''))";
 
+            let flow_Array = JSON.parse(storage.getItem('flow_Array'));
+            if (flow_Array.length > 1) {
+                var query = "select server_task_id, millisecond, is_delete_photo, is_delete_log, is_delete_sub, is_valid_log from task_master where (flag=1 or flag=3) and moduleid = '" + selected_module_id + "' and username='"
+                    + username + "' and status != -1 and (status in(" + status_array + ") or (is_delete_photo is not null and is_delete_photo != ''))";
+            }
+            else {
+                var query = "select server_task_id, millisecond, is_delete_photo, is_delete_log, is_delete_sub, is_valid_log from task_master where (flag=1 or flag=3) and moduleid = '" + selected_module_id + "' and username='"
+                    + username + "' and status != -1 and (status not in(" + status_array + ") or (is_delete_photo is not null and is_delete_photo != ''))";
+            }
+     
             //alert1(query);
             var q_jsonobj = [];
             q_jsonobj.push({
