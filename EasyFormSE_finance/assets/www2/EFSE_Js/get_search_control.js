@@ -3219,41 +3219,43 @@ function empty_data_to_box(temp_btnSearch_Counter) {
         var Fill_Data = itemObj._checkStrObj(decodeURIComponent(Fill_Data_Str));  		// check_item
         for (fj = 0; fj < Fill_Data.length; fj++) {
             var box_class = Fill_Data[fj].classname;
+            var objectfill = Fill_Data[fj].objectfill;
+            if (objectfill != "label") {
+                var ddl_found = $("." + box_class + "").find("select");
+                var rdo_found = $("." + box_class + "").find("input[type='radio']");
+                if (ddl_found.length > 0) {
+                    var below_ddl_id = $("." + box_class + "").find("select").attr("id");
+                    $("#" + below_ddl_id + " option").removeAttr("selected");
+                    $("#" + below_ddl_id + "").val($("#" + below_ddl_id + " option:first").val());
 
-            var ddl_found = $("." + box_class + "").find("select");
-            var rdo_found = $("." + box_class + "").find("input[type='radio']");
-            if (ddl_found.length > 0) {
-                var below_ddl_id = $("." + box_class + "").find("select").attr("id");
-                $("#" + below_ddl_id + " option").removeAttr("selected");
-                $("#" + below_ddl_id + "").val($("#" + below_ddl_id + " option:first").val());
-
-                var onchange_avail = $("#" + below_ddl_id + "").attr("onchange");
-                if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
-                else {
-                    setTimeout(function () {
-                        $("#" + below_ddl_id + "").trigger("onchange");
-                    }, 1000);
-                }
-            }
-            else if (rdo_found.length > 0) {
-                $('div.' + box_class + ' input[type="radio"]').prop('checked', false);
-            }
-            else {
-                // below text box found to empty
-                var box_id = [];
-                $("." + box_class + " :input").each(function () {
-                    var box_id_temp = ($(this).attr('id'));
-                    if (box_id_temp.indexOf("_cbtn_") > -1) {
-                        // do not emty camera hidden fields - mk - 10072025
-                    }
+                    var onchange_avail = $("#" + below_ddl_id + "").attr("onchange");
+                    if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
                     else {
-                        box_id.push(box_id_temp);
+                        setTimeout(function () {
+                            $("#" + below_ddl_id + "").trigger("onchange");
+                        }, 1000);
                     }
-                });
+                }
+                else if (rdo_found.length > 0) {
+                    $('div.' + box_class + ' input[type="radio"]').prop('checked', false);
+                }
+                else {
+                    // below text box found to empty
+                    var box_id = [];
+                    $("." + box_class + " :input").each(function () {
+                        var box_id_temp = ($(this).attr('id'));
+                        if (box_id_temp.indexOf("_cbtn_") > -1) {
+                            // do not emty camera hidden fields - mk - 10072025
+                        }
+                        else {
+                            box_id.push(box_id_temp);
+                        }
+                    });
 
-                for (fk = 0; fk < box_id.length; fk++) {
-                    var curr_box_id = box_id[fk];
-                    $("#" + curr_box_id + "").val("");
+                    for (fk = 0; fk < box_id.length; fk++) {
+                        var curr_box_id = box_id[fk];
+                        $("#" + curr_box_id + "").val("");
+                    }
                 }
             }
         }
