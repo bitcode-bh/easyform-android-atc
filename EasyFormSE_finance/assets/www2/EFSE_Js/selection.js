@@ -1928,6 +1928,10 @@ function get_list_of_modules_online() {
                                                 }
                                             }
 
+                                            if (count == "" || count == null || count == undefined) {
+                                                count = 0;
+                                            }
+
                                             // put counter badge
                                             list_item += '<span class="mkbadge button button-fill offline_counter">' + count + '</span><span class="offline_loader" style="display:none;"><img src="images/ajax-loader.gif" style="width:28px; height:28px"></span>';
                                         }

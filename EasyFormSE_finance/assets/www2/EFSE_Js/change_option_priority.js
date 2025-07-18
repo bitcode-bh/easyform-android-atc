@@ -36,20 +36,30 @@ function check_in_all_tasks(t_sub_acq_tid_Array) {
 
 
 function check_in_task(tid) {
-    var query = "select f_data from f_master where tid = '" + tid + "' and c_type = '5'";
+    //var query = "select f_data from f_master where tid = '" + tid + "' and c_type = '5'";
+    var query = "select fm.c_id, fm.f_data, ch.data from f_master fm JOIN checksheet ch ON fm.c_id = ch.checksheetid where fm.tid = '" + tid + "' and fm.c_type = '5'";
     var q_jsonobj = [];
     q_jsonobj.push({
         data: query,
-        p: "0"
+        p: "1"
     });
     cordova.exec(onsuccess_check_in_task, onfail_check_in_task, 'SqlitePlugin', 'showValues', q_jsonobj);
 }
 
 function onsuccess_check_in_task(e) {
     try {
-        var f_data = JSON.parse(e);
-        var myArrayData = itemObj._checkStrObj(f_data[0].data);
+        //var f_data = JSON.parse(e);
+        //var myArrayData = itemObj._checkStrObj(f_data[0].data);
 
+        // convert 3 key to full JSON - mk - 18072025
+        var myArray = JSON.parse(e);
+        let blank_data = myArray[0].data;
+        blank_data = JSON.parse(blank_data);
+        var f_data = myArray[0].f_data;
+        f_data = JSON.parse(f_data);
+        var myArrayData = itemObj._checkStrObj(f_data[0].data);
+        myArrayData = merge_checksheet_template_n_log_form_json(blank_data, myArrayData);
+     
         var new_priority = $(priority_ddl_id).val();
         for (i = 0; i < myArrayData.length; i++) {
             var name = myArrayData[i].prop[0].name;
@@ -85,11 +95,12 @@ function onfail_check_in_task(e) {
 function onsuccess_change_option_priority() {
     try {
         //alert1("Priority Found !");
-        var query = "select f_data from f_master where tid = '" + priority_tid + "' and c_type = '5'";
+        //var query = "select f_data from f_master where tid = '" + priority_tid + "' and c_type = '5'";
+        var query = "select fm.c_id, fm.f_data, ch.data from f_master fm JOIN checksheet ch ON fm.c_id = ch.checksheetid where fm.tid = '" + priority_tid + "' and fm.c_type = '5'";
         var q_jsonobj = [];
         q_jsonobj.push({
             data: query,
-            p: "0"
+            p: "1"
         });
         cordova.exec(set_old_priority, onfail_onsuccess_change_option_priority, 'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
@@ -101,8 +112,17 @@ function set_old_priority(e) {
     try {
         alert1("This priority is already in use!");
 
-        var f_data = JSON.parse(e);
+        //var f_data = JSON.parse(e);
+        //var myArrayData = itemObj._checkStrObj(f_data[0].data);
+
+        // convert 3 key to full JSON - mk - 18072025
+        var myArray = JSON.parse(e);
+        let blank_data = myArray[0].data;
+        blank_data = JSON.parse(blank_data);
+        var f_data = myArray[0].f_data;
+        f_data = JSON.parse(f_data);
         var myArrayData = itemObj._checkStrObj(f_data[0].data);
+        myArrayData = merge_checksheet_template_n_log_form_json(blank_data, myArrayData);
 
         var old_priority;
         for (i = 0; i < myArrayData.length; i++) {
@@ -127,7 +147,8 @@ function set_old_priority(e) {
 function select_task_to_change_priority() {
     try {
         //alert1("Priority Not Found ! Updating task priority...");
-        var query = "select f_data from f_master where tid = '" + priority_tid + "' and c_type = '5'";
+        //var query = "select f_data from f_master where tid = '" + priority_tid + "' and c_type = '5'";
+        var query = "select fm.c_id, fm.f_data, ch.data from f_master fm JOIN checksheet ch ON fm.c_id = ch.checksheetid where fm.tid = '" + priority_tid + "' and fm.c_type = '5'";
         var q_jsonobj = [];
         q_jsonobj.push({
             data: query,
@@ -141,9 +162,19 @@ function select_task_to_change_priority() {
 
 function update_priority_of_task(e) {
     try {
+        //var myArray = JSON.parse(e);
+        //var f_data = itemObj._checkStrObj(myArray[0].f_data);
+        //var myArrayData = itemObj._checkStrObj(f_data[0].data);
+
+        // convert 3 key to full JSON - mk - 18072025
         var myArray = JSON.parse(e);
-        var f_data = itemObj._checkStrObj(myArray[0].f_data);
+        let blank_data = myArray[0].data;
+        blank_data = JSON.parse(blank_data);
+        var f_data = myArray[0].f_data;
+        f_data = JSON.parse(f_data);
         var myArrayData = itemObj._checkStrObj(f_data[0].data);
+        myArrayData = merge_checksheet_template_n_log_form_json(blank_data, myArrayData);
+
         var priority = $(priority_ddl_id).val();
         var old_priority;
         for (i = 0; i < myArrayData.length; i++) {

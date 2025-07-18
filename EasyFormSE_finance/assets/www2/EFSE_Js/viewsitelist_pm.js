@@ -1284,7 +1284,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                         var name = data[q].prop[0].name;
                                     }
                                     var type = data[q].type;
-                                    if (name == 'Priority' && type == 3) {
+                                    if ((name == 'Priority' || Panding_que_id_json[p].header == "Priority") && type == 3) {
                                         old_priority = data[q].ans[0];
                                         priority_found = 1;
                                     }
