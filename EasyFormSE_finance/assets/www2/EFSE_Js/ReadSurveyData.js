@@ -2459,6 +2459,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var type20_is_hide = jsonObj[i].prop[0].is_hide;
                         newdiv += '<div id="div_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" is_hide="' + type20_is_hide + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += label_str;
 
                         if (add_cust_from_search == "true") {
 
@@ -2592,7 +2593,6 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             newdiv += '</div>';
                         }
                         else {
-                            newdiv += label_str;
 
                             if (view_style == 'dropdownview') {
                                 // dropdownview
