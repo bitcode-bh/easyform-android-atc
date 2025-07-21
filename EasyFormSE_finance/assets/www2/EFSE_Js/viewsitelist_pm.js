@@ -1307,7 +1307,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                             }
                                         }
                                     } else {
-                                        var ans_lable = data[q].ans;
+                                        var ans_lable = data[q].ans[0];
                                     }
 
                                     ans_lable = ans_lable.toString();

@@ -25,13 +25,16 @@ function change_option_priority(ddl_id, selected_site, selected_priority_tid, ti
 }
 
 function check_in_all_tasks(t_sub_acq_tid_Array) {
-    if (t_sub_acq_tid_Array.length > 0) {
-        check_in_task(t_sub_acq_tid_Array[0]);
-    }
-    else {
-        // priority not found
-        select_task_to_change_priority();
-    }
+    //if (t_sub_acq_tid_Array.length > 0) {
+    //    check_in_task(t_sub_acq_tid_Array[0]);
+    //}
+    //else {
+
+    // Same priority can be selected in multiple task - mk - 21072025
+    // priority not found
+    select_task_to_change_priority();
+
+    //}
 }
 
 
@@ -59,7 +62,7 @@ function onsuccess_check_in_task(e) {
         f_data = JSON.parse(f_data);
         var myArrayData = itemObj._checkStrObj(f_data[0].data);
         myArrayData = merge_checksheet_template_n_log_form_json(blank_data, myArrayData);
-     
+
         var new_priority = $(priority_ddl_id).val();
         for (i = 0; i < myArrayData.length; i++) {
             var name = myArrayData[i].prop[0].name;
