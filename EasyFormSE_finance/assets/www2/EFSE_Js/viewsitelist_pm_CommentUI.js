@@ -204,6 +204,9 @@ function onsuccess_get_comment(e) {
         }
         else {
             //get_task_history();
+
+            alert(message);
+            loading_hide();
         }
     }
     catch (e) {
