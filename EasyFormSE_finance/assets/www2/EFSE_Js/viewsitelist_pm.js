@@ -299,6 +299,7 @@ function get_list_of_pm_sites_New(search_keyword) {
         $("#txtsearch").val("");
         $("#tab1").unbind('scroll');
         $("#btn_Create_Task").hide();
+        $("#btn_advanced_search").hide();
 
         var selected_module_id = JSON.parse(storage.getItem('wayflow'));
 
@@ -2859,7 +2860,7 @@ function refresh_pm_site_list() {
         // if (survey_mode == "online") {
         // get_list_of_pm_sites_online();
         // } else {
-        loading();
+        //loading();
         //label_timer = setInterval(starttimer, 1000); // start refreshing
         // label change timer
         var query = "select username from Login_Master";
