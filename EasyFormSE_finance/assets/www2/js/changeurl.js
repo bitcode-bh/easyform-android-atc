@@ -140,6 +140,7 @@ set_profile_pic = (imageData) => {
 
 // update user profile photo in user json
 var Photo_Id_Array = [];
+var Cust_Photo_Id_Array = [];
 function get_user_data_profile_photo(e) {
 
     var response = JSON.parse(e);
