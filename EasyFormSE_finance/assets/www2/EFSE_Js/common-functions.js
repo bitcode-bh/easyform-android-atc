@@ -3663,7 +3663,7 @@ function get_column_array_for_type8_as_per_dateFormat(datetime_format, display_v
     }
 }
 
-upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_qd) => {
+upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_qd, autofill_form_flag) => {
     try {
         var param_obj = [];
         param_obj.push({
@@ -3695,7 +3695,7 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
                 else {
                     Photo_Id_Array.push({ "photo_id": Photo_id });
 
-                    if (form_flag == 0 || form_flag == 6) {
+                    if (autofill_form_flag == 0 || autofill_form_flag == 6) {
                         for (var j = 0; j < jsonObj_old.length; j++) {
                             var json_que_id = jsonObj_old[j].que_id;
                             if (new_qd == json_que_id) {

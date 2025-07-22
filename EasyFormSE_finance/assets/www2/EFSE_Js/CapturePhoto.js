@@ -1239,9 +1239,18 @@ function check_customer_photo_entry(e) {
 
     if (photo_id == '' || photo_id == null || photo_id == undefined) { }
     else {
-        Photo_Id_Array.push({ "photo_id": photo_id });
-    }
 
+        let type20_cust_add_popup = $('#popup_container_type20_add:visible').length;
+        if (type20_cust_add_popup > 0) {
+            // Customer Form
+            Cust_Photo_Id_Array.push({ "photo_id": photo_id });
+        }
+        else {
+            // Task Form
+            Photo_Id_Array.push({ "photo_id": photo_id });
+        }
+
+    }
     var curr_img_div_id = JSON.parse(storage.getItem('img_div_id'));
     var smallImage = document.getElementById(curr_img_div_id);
 

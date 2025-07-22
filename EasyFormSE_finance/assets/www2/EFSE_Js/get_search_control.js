@@ -2887,7 +2887,7 @@ function onsuccess_get_data_to_fill_ul_New(e, fill_btnSearch_Counter) {
             if (cntrl_prop == "" || cntrl_prop == null || cntrl_prop == undefined) {
                 is_template_required++;
             }
-           
+
             if (is_template_required > 0) {
 
                 var checksheet_json = Data_Json[0].checksheet_json;
@@ -2931,7 +2931,7 @@ function onsuccess_get_data_to_fill_ul_New(e, fill_btnSearch_Counter) {
                     var value = Data_Table_Json[j].ans[0];
                     var cntrl_prop = Data_Table_Json[j].prop;
                     if (cntrl_prop == "" || cntrl_prop == null || cntrl_prop == undefined) {
-                   
+
                         var cntrl_type = Data_Table_Json[j].type;
                         if (cntrl_type == 8) {
 
@@ -3270,6 +3270,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
     try {
         loading();
         var myArray = itemObj._checkStrObj(tempfieldArray);  		// check_item
+        var autofill_form_flag = $('#hdn_select_all_fill_data_' + temp_btnSearch_Counter + '').attr("autofill_form_flag");
         var Fill_Data_Str = $('#hdn_select_all_fill_data_' + temp_btnSearch_Counter + '').val();
         $('#search_item_name_Search_' + temp_btnSearch_Counter + '').val(temp_cell_value);
         $('#search_item_name_Search_' + temp_btnSearch_Counter + '').attr('title', obj_id);
@@ -3462,7 +3463,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
 
                                         let new_que_id = $("#div_cbtn_" + img_new_id).attr('que_id');
 
-                                        if (form_flag == 0 || form_flag == 6) {
+                                        if (autofill_form_flag == 0 || autofill_form_flag == 6) {
                                             for (var j = 0; j < jsonObj_old.length; j++) {
                                                 var json_que_id = jsonObj_old[j].que_id;
                                                 if (new_que_id == json_que_id) {
@@ -3487,10 +3488,18 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                         let old_checksheet_id = type20_checksheet_id;
                                         let old_que_id = JSON.stringify(img_que_id);
                                         let new_checksheet_id = value_new[0].Current_Checksheet_id;
-                                        let new_checksheet_type = JSON.parse(storage.getItem('checksheet_type_filter'));
-
-                                        if (form_flag == 6) {
-                                            new_checksheet_type = "5";
+                                        
+                                        if (autofill_form_flag == 6) {
+                                            // Task checksheet
+                                            var new_checksheet_type = "5";
+                                        }
+                                        else if (autofill_form_flag == 7) {
+                                            // Customer checksheet
+                                            var new_checksheet_type = "3";
+                                        }
+                                        else {
+                                            // Mobile Log checksheet
+                                            var new_checksheet_type = "1";
                                         }
 
                                         let param_obj = [];
@@ -3513,7 +3522,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
 
                                         if (new_checksheet_type != 1) {
                                             // task/customer/user
-                                            upload_autofill_photo_temp(old_primary_id, old_checksheet_id, old_que_id, new_checksheet_type, new_checksheet_id, new_que_id);
+                                            upload_autofill_photo_temp(old_primary_id, old_checksheet_id, old_que_id, new_checksheet_type, new_checksheet_id, new_que_id, autofill_form_flag);
                                         }
                                     }
                                 }
@@ -5502,15 +5511,36 @@ function add_new_item_by_type20(t_jsonObj) {
     var user_id = JSON.parse(storage.getItem('user_id'));
     var checksheet_id = localStorage.getItem('check_type_customer');
 
-    // remove duplicate photo ids
-    if (Photo_Id_Array.length > 0) {
-        Photo_Id_Array = Photo_Id_Array.reduce(function (item, e1) {
-            var matches = item.filter(function (e2) { return e1.photo_id == e2.photo_id });
-            if (matches.length == 0) {
-                item.push(e1);
-            }
-            return item;
-        }, []);
+    var t_Photo_Id_Array = [];
+    let type20_cust_add_popup = $('#popup_container_type20_add:visible').length;
+    if (type20_cust_add_popup > 0) {
+        // Customer Form
+        if (Cust_Photo_Id_Array.length > 0) {
+            Cust_Photo_Id_Array = Cust_Photo_Id_Array.reduce(function (item, e1) {
+                var matches = item.filter(function (e2) { return e1.photo_id == e2.photo_id });
+                if (matches.length == 0) {
+                    item.push(e1);
+                }
+                return item;
+            }, []);
+
+            t_Photo_Id_Array = Cust_Photo_Id_Array;
+        }
+    }
+    else {
+        // Task Form
+        // remove duplicate photo ids
+        if (Photo_Id_Array.length > 0) {
+            Photo_Id_Array = Photo_Id_Array.reduce(function (item, e1) {
+                var matches = item.filter(function (e2) { return e1.photo_id == e2.photo_id });
+                if (matches.length == 0) {
+                    item.push(e1);
+                }
+                return item;
+            }, []);
+
+            t_Photo_Id_Array = Photo_Id_Array;
+        }
     }
 
     var Param_obj = [];
@@ -5527,7 +5557,7 @@ function add_new_item_by_type20(t_jsonObj) {
         'createby': user_id,
         'UpdatedBy': user_id,
         "checksheet_type": 3,
-        'photo_temp': Photo_Id_Array
+        'photo_temp': t_Photo_Id_Array
     });
 
     var cust_data_json = t_jsonObj;

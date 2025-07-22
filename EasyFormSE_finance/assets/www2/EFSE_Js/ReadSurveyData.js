@@ -2775,7 +2775,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                 newdiv += '<input id="hdn_target_id_array_' + new_id + '" type="hidden">';
                                 newdiv += '<input id="hdn_multi_autobind_child_data_' + new_id + '" type="hidden">';
                                 newdiv += '<input id="hdn_condition_data_' + new_id + '" type="hidden" value=' + encodeURIComponent(JSON.stringify(condition_data)) + '>';
-                                newdiv += '<input id="hdn_select_all_fill_data_' + new_id + '" type="hidden" value=' + encodeURIComponent(JSON.stringify(Fill_Data)) + '>';
+                                newdiv += '<input id="hdn_select_all_fill_data_' + new_id + '" type="hidden" value=' + encodeURIComponent(JSON.stringify(Fill_Data)) + ' autofill_form_flag = "' + form_flag + '">';
                                 newdiv += '</div>';
                             } else {
                                 // tableview/listview
@@ -2792,7 +2792,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                     var param_qr = '';
                                 }
 
-                                newdiv += '<input id="hdn_select_all_fill_data_' + new_id + '" type="hidden" value=' + encodeURIComponent(JSON.stringify(Fill_Data)) + '>';
+                                newdiv += '<input id="hdn_select_all_fill_data_' + new_id + '" type="hidden" value=' + encodeURIComponent(JSON.stringify(Fill_Data)) + ' autofill_form_flag = "' + form_flag + '">';
                                 newdiv += '<input id="hdn_condition_data_' + new_id + '" type="hidden" value=' + encodeURIComponent(JSON.stringify(condition_data)) + '>';
 
                                 var clickcheck = "$(this).attr('name', '0')";
