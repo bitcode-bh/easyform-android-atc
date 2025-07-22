@@ -5648,6 +5648,8 @@ function onsucess_Insert_Json_1(invocation1) {
                 var option = "<option value=" + new_cell_value + " value1=" + new_cust_id + ">" + new_cust_name + "</option>";
                 $("#ddl_search_type20_" + new_id_G + "").append(option);
 
+                $("#ddl_search_type20_" + new_id_G + "").attr('name', '1');
+
                 set_dropdown_data(new_cust_name, new_id_G);
 
                 // check searchable view and create html string for newly added customer below searchable dropdown
