@@ -4662,7 +4662,6 @@ function insert_new_entry() {
         }
         else {
             var t_curr_btn_mode = curr_btn_mode;
-            flag = "0";
         }
 
         if (fileData == '' || fileData == null || fileData == undefined) {
