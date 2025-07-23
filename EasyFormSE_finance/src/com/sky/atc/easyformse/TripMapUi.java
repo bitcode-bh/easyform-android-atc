@@ -569,11 +569,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             // location get after update lat_plug entry for start trip 07072025
                 long temp = database.update("lat_plug", latc, t, null);
             AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
-            int Duration = -1;
+            String Duration ;
             boolean shouldStopTrip = false;
             if(mAttendanceData.getAuto_punchout_duration() != null) {
                 try {
-                    Duration = Integer.parseInt(mAttendanceData.getAuto_punchout_duration());
+                    Duration = mAttendanceData.getAuto_punchout_duration();
                     if (isAfterDuaration(Duration)) {
                         shouldStopTrip = true;
                     }
@@ -663,10 +663,38 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         int hour = now.get(Calendar.HOUR_OF_DAY);
         return hour >= 18;
     }
-    private boolean isAfterDuaration(int value) {
-        Calendar now = Calendar.getInstance();
-        int hour = now.get(Calendar.HOUR_OF_DAY); // 0 to 23
-        return hour >= value;
+    private boolean isAfterDuaration(String value) {
+        if (value == null || value.isEmpty()) {
+            return false; // Handle empty or null input safely
+        }
+
+        // Split the string value by ":"
+        String[] timeParts = value.split(":");
+        if (timeParts.length != 2) {
+            return false; // If the string doesn't contain a valid hour:minute format, return false
+        }
+
+        try {
+            int valueHour = Integer.parseInt(timeParts[0]); // Hour part (e.g., "14" -> 14)
+            int valueMinute = Integer.parseInt(timeParts[1]); // Minute part (e.g., "00" -> 0)
+
+            // Get the current time
+            Calendar now = Calendar.getInstance();
+            int currentHour = now.get(Calendar.HOUR_OF_DAY); // Current hour (0-23)
+            int currentMinute = now.get(Calendar.MINUTE); // Current minute (0-59)
+
+            // If the current time hour is greater than the input value hour
+            if (currentHour > valueHour) {
+                return true;
+            }
+            // If the current time hour is equal to the input value hour, compare minutes
+            else if (currentHour == valueHour) {
+                return currentMinute >= valueMinute; // If minutes are equal or after the specified minutes, return true
+            }
+            return false; // If the current time is before the input time
+        } catch (NumberFormatException e) {
+            return false; // If parsing fails, handle gracefully by returning false
+        }
     }
     private void startgeofence(LatLng geoFenceMarker,float Radius ,String siteid,int enterExitflag) {
         if (geoFenceMarker != null) {
