@@ -30,28 +30,29 @@ public class restartservice extends BroadcastReceiver {
         database=sqlitewraper.getDatabase();
 
         try {
-            boolean check = isMyServiceRunning(sqlitewraper.context,
-                    newfused_gps.class.getName());
-            if(check) {
-            } else {
-
-                Log.d("####restartservice","brodcastcalled1");
-                Cursor tripflag = database.rawQuery(
-                        "select * from lat_plug where trip_status = 0", null);
-                tripflag.moveToFirst();
-                int tripflagCount = tripflag.getCount();
-                tripflag.close();
-
-                Log.d("####restartservice", String.valueOf(tripflagCount));
-                if (tripflagCount==0) {
-
-                    Log.d("####restartservice","brodcastcalled2");
-                    Intent i = new Intent(sqlitewraper.context,
-                            newfused_gps.class);
-                    sqlitewraper.context.startService(i);
-                }
-
-            }
+            //hide newfused and activity_recognition code  23-07-2025
+//            boolean check = isMyServiceRunning(sqlitewraper.context,
+//                    newfused_gps.class.getName());
+//            if(check) {
+//            } else {
+//
+//                Log.d("####restartservice","brodcastcalled1");
+//                Cursor tripflag = database.rawQuery(
+//                        "select * from lat_plug where trip_status = 0", null);
+//                tripflag.moveToFirst();
+//                int tripflagCount = tripflag.getCount();
+//                tripflag.close();
+//
+//                Log.d("####restartservice", String.valueOf(tripflagCount));
+//                if (tripflagCount==0) {
+//
+////                    Log.d("####restartservice","brodcastcalled2");
+////                    Intent i = new Intent(sqlitewraper.context,
+////                            newfused_gps.class);
+////                    sqlitewraper.context.startService(i);
+//                }
+//
+//            }
         } catch(Exception e) {
             Log.d("####restartserviceEx",e.toString());
         }

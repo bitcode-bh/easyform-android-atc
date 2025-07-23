@@ -266,14 +266,14 @@ public class MainActivity extends Activity {
         String isact_track = d.getFeatureFlag("isact_track");
         // --------------comment for temporary---------------//
         if (isact_track.equalsIgnoreCase("1")) {
-
-            boolean check4 = isMyServiceRunning(context,
-                    Activity_recognition.class.getName());
-            if (!check4) {
-                Intent i = new Intent(context,
-                        Activity_recognition.class);
-                context.startService(i);
-            }
+            //hide newfused and activity_recognition code  23-07-2025
+//            boolean check4 = isMyServiceRunning(context,
+//                    Activity_recognition.class.getName());
+//            if (!check4) {
+//                Intent i = new Intent(context,
+//                        Activity_recognition.class);
+//                context.startService(i);
+//            }
         }
 
 

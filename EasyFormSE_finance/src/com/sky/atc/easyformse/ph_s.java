@@ -379,15 +379,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
                 if (gps.equalsIgnoreCase("2")) {
 
-
-                    boolean check = isMyServiceRunning(sqlitewraper.context,
-                            newfused_gps.class.getName());
-                    if (check) {
-                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-                        stopService(i);
-                    }
-
-//
                     boolean check123 = isMyServiceRunning(sqlitewraper.context,
                             newfused.class.getName());
                     if (check123) {
@@ -395,13 +386,20 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         stopService(i);
                     }
 
+//                    hide newfused and activity_recognition code  23-07-2025
 
-                    boolean checkActivity_recognition = isMyServiceRunning(sqlitewraper.context,
-                            Activity_recognition.class.getName());
-                    if (checkActivity_recognition) {
-                        Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
-                        stopService(i);
-                    }
+//                    boolean check = isMyServiceRunning(sqlitewraper.context,
+//                            newfused_gps.class.getName());
+//                    if (check) {
+//                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
+//                        stopService(i);
+//                    }
+//                    boolean checkActivity_recognition = isMyServiceRunning(sqlitewraper.context,
+//                            Activity_recognition.class.getName());
+//                    if (checkActivity_recognition) {
+//                        Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
+//                        stopService(i);
+//                    }
 
                     pref = sqlitewraper.getSecureShared("MyPref");
                     pref.putBoolean("isuploadlastentry", false); // Saving string
@@ -768,20 +766,21 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         a_t.close();
 
         if (!username.equalsIgnoreCase("0")) {
-            boolean check = isMyServiceRunning(sqlitewraper.context,
-                    newfused_gps.class.getName());
-            if (check) {
-
-                Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-                sqlitewraper.context.startService(i);
-
-            } else {
-
-                Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-                sqlitewraper.context.startService(i);
-
-
-            }
+            //hide newfused and activity_recognition code  23-07-2025
+//            boolean check = isMyServiceRunning(sqlitewraper.context,
+//                    newfused_gps.class.getName());
+//            if (check) {
+//
+//                Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
+//                sqlitewraper.context.startService(i);
+//
+//            } else {
+//
+//                Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
+//                sqlitewraper.context.startService(i);
+//
+//
+//            }
 
             boolean check2 = isMyServiceRunning(sqlitewraper.context,
                     newfused.class.getName());
@@ -790,12 +789,12 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                 sqlitewraper.context.startService(i);
             }
 
-            boolean check3 = isMyServiceRunning(sqlitewraper.context,
-                    Activity_recognition.class.getName());
-            if (!check3) {
-                Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
-                sqlitewraper.context.startService(i);
-            }
+//            boolean check3 = isMyServiceRunning(sqlitewraper.context,
+//                    Activity_recognition.class.getName());
+//            if (!check3) {
+//                Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
+//                sqlitewraper.context.startService(i);
+//            }
         }
     }
 

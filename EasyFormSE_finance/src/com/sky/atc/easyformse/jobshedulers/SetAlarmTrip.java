@@ -37,37 +37,38 @@ public class SetAlarmTrip extends BroadcastReceiver
 //        Toast.makeText(context, "Alarm !!!!!!!!!!", Toast.LENGTH_LONG).show();// For example
 
         try {
-            boolean check = isMyServiceRunning(sqlitewraper.context,
-                    newfused_gps.class.getName());
-            if (!check) {
-
-                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                    if (tripStatus() > 0) {
-                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            sqlitewraper.context.startForegroundService(i);
-                        }else {
-                            sqlitewraper.context.startService(i);
-                        }
-                    }
-                }
-            }else {
-                long currentMilli=System.currentTimeMillis();
-                long duration=currentMilli-DataUtils.getServiceMilli();
-
-                if (duration>60000){
-
-                    if (tripStatus() > 0) {
-                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            sqlitewraper.context.startForegroundService(i);
-                        }else {
-                            sqlitewraper.context.startService(i);
-                        }
-                    }
-                }
-            }
+//            boolean check = isMyServiceRunning(sqlitewraper.context,
+//                    newfused_gps.class.getName());
+//            if (!check) {
+//
+//                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//
+//                    if (tripStatus() > 0) {
+//                        //hide newfused and activity_recognition code  23-07-2025
+////                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
+////                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+////                            sqlitewraper.context.startForegroundService(i);
+////                        }else {
+////                            sqlitewraper.context.startService(i);
+////                        }
+//                    }
+//                }
+//            }else {
+//                long currentMilli=System.currentTimeMillis();
+//                long duration=currentMilli-DataUtils.getServiceMilli();
+//
+//                if (duration>60000){
+//
+//                    if (tripStatus() > 0) {
+//                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                            sqlitewraper.context.startForegroundService(i);
+//                        }else {
+//                            sqlitewraper.context.startService(i);
+//                        }
+//                    }
+//                }
+//            }
             boolean checkfused = isMyServiceRunning(sqlitewraper.context,
                     newfused.class.getName());
             if (!checkfused) {
@@ -104,27 +105,27 @@ public class SetAlarmTrip extends BroadcastReceiver
                 }
             }
 
-
-            boolean checkfused2 = isMyServiceRunning(sqlitewraper.context,
-                    Activity_recognition.class.getName());
-            if (!checkfused2) {
-
-                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-//                Toast.makeText(sqlitewraper.context,"Give Required Location Permission!!",Toast.LENGTH_SHORT).show();
-
-                } else {
-
-                    if (tripStatus() > 0) {
-                        Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            sqlitewraper.context.startForegroundService(i);
-                        }else {
-                            sqlitewraper.context.startService(i);
-                        }
-                    }
-                }
-            }
+            //hide newfused and activity_recognition code  23-07-2025
+//            boolean checkfused2 = isMyServiceRunning(sqlitewraper.context,
+//                    Activity_recognition.class.getName());
+//            if (!checkfused2) {
+//
+//                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//
+////                Toast.makeText(sqlitewraper.context,"Give Required Location Permission!!",Toast.LENGTH_SHORT).show();
+//
+//                } else {
+//
+//                    if (tripStatus() > 0) {
+//                        Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                            sqlitewraper.context.startForegroundService(i);
+//                        }else {
+//                            sqlitewraper.context.startService(i);
+//                        }
+//                    }
+//                }
+//            }
 
             Log.d("##SETALARM", "1");
             wl.release();

@@ -438,14 +438,14 @@ public class newfused extends Service implements LocationListener {
         }
 
         //  when mock location provider true, trip flag added 1 because fused location pot map not draw properly 07-04-2025
-        if(location.isFromMockProvider())
-        {
-            loc_change.putExtra("tripflag", "1");
-        }
-        else {
-            loc_change.putExtra("tripflag", "2");
-        }
-
+//        if(location.isFromMockProvider())
+//        {
+//            loc_change.putExtra("tripflag", "1");
+//        }
+//        else {
+//            loc_change.putExtra("tripflag", "2");
+//        }
+        loc_change.putExtra("tripflag", "2");
         loc_change.putExtra("loc", location);
         loc_change.putExtra("address", "");
         loc_change.putExtra("speed", location.getSpeed());
