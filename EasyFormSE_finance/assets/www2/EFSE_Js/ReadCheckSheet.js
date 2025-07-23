@@ -3517,13 +3517,15 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     // set AssignDate
                     var cal_val = $('#cal_' + curr_clps_new_id + '_' + check_type + '_10').val();
                     if (cal_val == '' || cal_val == null || cal_val == undefined) {
-                        var date = new Date();
-                        var month = (1 + date.getMonth()).toString();
-                        month = month.length > 1 ? month : '0' + month;
-                        var day = date.getDate().toString();
-                        day = day.length > 1 ? day : '0' + day;
-                        var year = date.getFullYear();
-                        var date_s = month + '/' + day + '/' + year;
+                        //var date = new Date();
+                        //var month = (1 + date.getMonth()).toString();
+                        //month = month.length > 1 ? month : '0' + month;
+                        //var day = date.getDate().toString();
+                        //day = day.length > 1 ? day : '0' + day;
+                        //var year = date.getFullYear();
+                        //var date_s = month + '/' + day + '/' + year;
+
+                        let  date_s = convert_datetime_by_format("", "date");
                         $('#cal_' + curr_clps_new_id + '_' + check_type + '_10').val(date_s);
                     }
                     //$('#cal_' + curr_clps_new_id + '_' + check_type + '_10').prop("disabled", true);
