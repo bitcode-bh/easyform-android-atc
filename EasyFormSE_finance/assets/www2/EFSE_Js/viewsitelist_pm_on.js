@@ -35,7 +35,7 @@ function get_list_of_task_for_compare_online() {
                 var query = "select server_task_id, millisecond, is_delete_photo, is_delete_log, is_delete_sub, is_valid_log from task_master where (flag=1 or flag=3) and moduleid = '" + selected_module_id + "' and username='"
                     + username + "' and status != -1 and (status not in(" + status_array + ") or (is_delete_photo is not null and is_delete_photo != ''))";
             }
-     
+
             //alert1(query);
             var q_jsonobj = [];
             q_jsonobj.push({
@@ -1681,7 +1681,7 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                             "site_lat": site_lat,
                             "site_long": site_long,
                             "survey_date": survey_date,
-                            "siteid": ser_milli
+                            "ser_milli": ser_milli
                         };
                         user_column_obj = JSON.stringify(user_column_obj);
                         var t_user_column_obj = encodeURIComponent(user_column_obj);
@@ -2292,12 +2292,26 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                     }
                     //////////////
 
+                    var task_details_obj = {
+                        "siteid": siteid,
+                        "site_name": site_name,
+                        "ser_task_id": ser_task_id,
+                        "task_status": task_status,
+                        "module_id": module_id,
+                        "module_name": module_name,
+                        "task_update": task_update,
+                        "site_lat": site_lat,
+                        "site_long": site_long,
+                        "survey_date": survey_date,
+                        "siteid": ser_milli
+                    };
+                    task_details_obj = JSON.stringify(task_details_obj);
 
                     let t_global_var = myArray_main[i].global_var;
                     list_item += '<input type="hidden" id="lst_global_var_' + ser_task_id + '" value="' + encodeURIComponent(t_global_var) + '">';
 
                     // store system var
-                    list_item += '<input type="hidden" id="lst_sys_var_' + ser_task_id + '" value="' + encodeURIComponent(JSON.stringify(type20_columndata)) + '">';
+                    list_item += '<input type="hidden" id="lst_sys_var_' + ser_task_id + '" value="' + encodeURIComponent(JSON.stringify(type20_columndata)) + '" task-data="' + encodeURIComponent(task_details_obj) + '">';
                     type20_columndata = [];
                     /////
 
@@ -4319,47 +4333,75 @@ function view_task_details_from_task_master(t_server_task_id, t_id) {
         data: query,
         p: "1"
     });
-    cordova.exec(onsuccess_view_task_details_from_task_master, onfail_view_task_details_from_task_master, 'SqlitePlugin', 'showValues', q_jsonobj);
-}
+    cordova.exec(function (e) {
 
-function onsuccess_view_task_details_from_task_master(e) {
-    var myArray = JSON.parse(e);
-    if (myArray.length == 0) {
-        alert1("No details available, please tap on the task first!")
-    }
-    else {
         myApp.popup('.popup-cust_info');
         var myTableDiv = document.getElementById("myDynamicTable");
         myTableDiv.innerHTML = '';
         var table = document.createElement('TABLE');
         table.className = "table_ans";
 
-        var p = myArray[0];
-        for (var key in p) {
-            if (key == 'task_id' || key == 'rate' || key == 'site_flag' || key == 'server_task_flag' || key == 'site_address' || key == 'percentage' || key == 'inspect_count' || key == 'height'
-                || key == 'display_siteid' || key == 'end_of_date' || key == 'tower_type' || key == 'moduledef' || key == 'is_down_complete' || key == 'list_html' || key == 'user_id' || key == 'lat' || key == 'long' || key == 'data') {
+        var myArray = JSON.parse(e);
+        if (myArray.length == 0) {
+            // alert1("No details available, please tap on the task first!");
 
+            var task_details_obj = $('#lst_sys_var_' + t_server_task_id + '').attr("task-data");
+            task_details_obj = decodeURIComponent(task_details_obj);
+            var p = JSON.parse(task_details_obj);
+            for (var key in p) {
+                if (key == 'task_id' || key == 'rate' || key == 'site_flag' || key == 'server_task_flag' || key == 'site_address' || key == 'percentage' || key == 'inspect_count' || key == 'height'
+                    || key == 'display_siteid' || key == 'end_of_date' || key == 'tower_type' || key == 'moduledef' || key == 'is_down_complete' || key == 'list_html' || key == 'user_id' || key == 'lat' || key == 'long' || key == 'data') {
+
+                }
+                else {
+                    var tr = document.createElement('TR');
+                    tr.className = "tr_ans";
+                    table.appendChild(tr);
+
+                    var td1 = document.createElement('TD');
+                    td1.innerHTML = key;
+                    td1.className = "td1_ans";
+
+                    var td2 = document.createElement('TD');
+                    td2.innerHTML = p[key];
+                    td2.className = "td2_ans";
+
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                }
             }
-            else {
-                var tr = document.createElement('TR');
-                tr.className = "tr_ans";
-                table.appendChild(tr);
+        }
+        else {
 
-                var td1 = document.createElement('TD');
-                td1.innerHTML = key;
-                td1.className = "td1_ans";
+            var p = myArray[0];
+            for (var key in p) {
+                if (key == 'task_id' || key == 'rate' || key == 'site_flag' || key == 'server_task_flag' || key == 'site_address' || key == 'percentage' || key == 'inspect_count' || key == 'height'
+                    || key == 'display_siteid' || key == 'end_of_date' || key == 'tower_type' || key == 'moduledef' || key == 'is_down_complete' || key == 'list_html' || key == 'user_id' || key == 'lat' || key == 'long' || key == 'data') {
 
-                var td2 = document.createElement('TD');
-                td2.innerHTML = p[key];
-                td2.className = "td2_ans";
+                }
+                else {
+                    var tr = document.createElement('TR');
+                    tr.className = "tr_ans";
+                    table.appendChild(tr);
 
-                tr.appendChild(td1);
-                tr.appendChild(td2);
+                    var td1 = document.createElement('TD');
+                    td1.innerHTML = key;
+                    td1.className = "td1_ans";
+
+                    var td2 = document.createElement('TD');
+                    td2.innerHTML = p[key];
+                    td2.className = "td2_ans";
+
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                }
             }
+
         }
 
         myTableDiv.appendChild(table);
-    }
+
+    }, onfail_view_task_details_from_task_master, 'SqlitePlugin', 'showValues', q_jsonobj);
 }
 
 function onfail_view_task_details_from_task_master(e) {
