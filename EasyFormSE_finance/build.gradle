@@ -50,9 +50,9 @@ android {
         //shared prefernces secure
         resValue "string", "SECURESHARED", "true"
         //trip map congfiguration
-        resValue "string", "TRIPMAPBACK", "true"
+        resValue "string", "TRIPMAPBACK", "false"
         //flad for mock location check
-        resValue "string", "MOCKLOCATION", "true"
+        resValue "string", "MOCKLOCATION", "false"
         // for physical events check
         resValue "string", "EVENTS", "true"
         // for show event activity toast
@@ -215,7 +215,7 @@ dependencies {
 
     // implementation project(path: ':Jitsi')
     // implementation project(path: ':easyform-zoom-chat')
-     implementation project(path: ':faceDetectionModel')
+   //  implementation project(path: ':faceDetectionModel')
     // implementation project(path: ':documentscanner')
      implementation project(path: ':videoapp')  // if any user face video crash issue use videoapp module 09-08-2023
 
