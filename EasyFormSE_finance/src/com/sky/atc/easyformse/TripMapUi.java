@@ -562,6 +562,7 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 editor.putString("unique_trip_id", unique_trip_id);
                 editor.putString("slat", s_lat);
                 editor.putString("slon", s_lon);
+                editor.putString("trip_start_battery", String.valueOf(DeviceEventsUtils.getBatteryInfo()));
                 editor.commit();
 
                 insertTrackmaster(s_lat, s_lon);

@@ -373,19 +373,20 @@ public class GpsReceiverService extends WakefulIntentService {
                 } else if (gps.equalsIgnoreCase("1") || gps.equalsIgnoreCase("2")) {
 
                     if(tripStatus()>0){
-                        boolean check = isMyServiceRunning(sqlitewraper.context,
-                                newfused_gps.class.getName());
-                        if (!check) {
-
-                            Intent i = new Intent(sqlitewraper.context,
-                                    newfused_gps.class);
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                sqlitewraper.context.startForegroundService(i);
-                            }else {
-                                sqlitewraper.context.startService(i);
-                            }
-
-                        }
+                        //hide newfused and activity_recognition code  23-07-2025
+//                        boolean check = isMyServiceRunning(sqlitewraper.context,
+//                                newfused_gps.class.getName());
+//                        if (!check) {
+//
+//                            Intent i = new Intent(sqlitewraper.context,
+//                                    newfused_gps.class);
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                                sqlitewraper.context.startForegroundService(i);
+//                            }else {
+//                                sqlitewraper.context.startService(i);
+//                            }
+//
+//                        }
 
                         boolean check1 = isMyServiceRunning(sqlitewraper.context,
                                 newfused.class.getName());
@@ -433,22 +434,22 @@ public class GpsReceiverService extends WakefulIntentService {
 
 
             if (isact_track.equalsIgnoreCase("1")) {
-
-                boolean check4 = isMyServiceRunning(sqlitewraper.context,
-                        Activity_recognition.class.getName());
-                if (check4) {
-                } else {
-
-                    Intent i = new Intent(sqlitewraper.context,
-                            Activity_recognition.class);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        sqlitewraper.context.startForegroundService(i);
-                    }else {
-                        sqlitewraper.context.startService(i);
-                    }
-
-
-                }
+                //hide newfused and activity_recognition code  23-07-2025
+//                boolean check4 = isMyServiceRunning(sqlitewraper.context,
+//                        Activity_recognition.class.getName());
+//                if (check4) {
+//                } else {
+//
+//                    Intent i = new Intent(sqlitewraper.context,
+//                            Activity_recognition.class);
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                        sqlitewraper.context.startForegroundService(i);
+//                    }else {
+//                        sqlitewraper.context.startService(i);
+//                    }
+//
+//
+//                }
             }
 
 
@@ -493,12 +494,13 @@ public class GpsReceiverService extends WakefulIntentService {
                         sqlitewraper.context.stopService(i);
                     }
 
-                    boolean check1 = isMyServiceRunning(sqlitewraper.context,
-                            newfused_gps.class.getName());
-                    if (check1) {
-                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-                        sqlitewraper.context.stopService(i);
-                    }
+                    //hide newfused and activity_recognition code  23-07-2025
+//                    boolean check1 = isMyServiceRunning(sqlitewraper.context,
+//                            newfused_gps.class.getName());
+//                    if (check1) {
+//                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
+//                        sqlitewraper.context.stopService(i);
+//                    }
                 }
             }
         }

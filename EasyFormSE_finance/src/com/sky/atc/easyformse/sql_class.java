@@ -721,8 +721,8 @@ public class sql_class implements Runnable {
                 if (gps.equalsIgnoreCase("0")) {
 
 
-                    boolean check_gps = isMyServiceRunning(sqlitewraper.context,
-                            newfused_gps.class.getName());
+//                    boolean check_gps = isMyServiceRunning(sqlitewraper.context,
+//                            newfused_gps.class.getName());
 
                     boolean check = isMyServiceRunning(sqlitewraper.context,
                             newfused.class.getName());
@@ -734,12 +734,12 @@ public class sql_class implements Runnable {
 
                     }
 
-                    if (check_gps) {
-
-                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-                        sqlitewraper.context.stopService(i);
-
-                    }
+//                    if (check_gps) {
+//
+//                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
+//                        sqlitewraper.context.stopService(i);
+//
+//                    }
 
 
                 } else if (gps.equalsIgnoreCase("1") || gps.equalsIgnoreCase("2")) {
@@ -850,16 +850,16 @@ public class sql_class implements Runnable {
             isloc_track = a_t3.getString(2);
 
             if (isact_track.equalsIgnoreCase("1")) {
-
-                boolean check4 = isMyServiceRunning(sqlitewraper.context,
-                        Activity_recognition.class.getName());
-                if (!check4) {
-
-                    Intent i = new Intent(sqlitewraper.context,
-                            Activity_recognition.class);
-                    sqlitewraper.context.startService(i);
-
-                }
+                //hide newfused and activity_recognition code  23-07-2025
+//                boolean check4 = isMyServiceRunning(sqlitewraper.context,
+//                        Activity_recognition.class.getName());
+//                if (!check4) {
+//
+//                    Intent i = new Intent(sqlitewraper.context,
+//                            Activity_recognition.class);
+//                    sqlitewraper.context.startService(i);
+//
+//                }
             }
 
             pref.putString("istrip", istrip);

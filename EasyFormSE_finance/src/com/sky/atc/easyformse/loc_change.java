@@ -44,7 +44,7 @@ public class loc_change extends WakefulIntentService {
 	String tripflag;
 	Long fusedtime;
 	// location distance meter value
-	int meterdistancevalue = 200;
+	int meterdistancevalue = 300;
 	static ArrayList<Long> arrayList = new ArrayList<>();
 	public loc_change() {
 		super("loc_change");

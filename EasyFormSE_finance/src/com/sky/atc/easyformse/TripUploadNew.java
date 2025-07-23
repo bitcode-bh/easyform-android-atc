@@ -7,6 +7,7 @@ import android.location.Geocoder;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.utils.LogUtils;
 import com.sky.atc.easyformse.utils.Utils;
 
@@ -338,9 +339,14 @@ public class TripUploadNew {
             }
         }
 
-        //tripflag=1 : GPS Latlong  3 = Speed Violation latlong
+//        //tripflag=1 : GPS Latlong  3 = Speed Violation latlong
+//        Cursor check = database.rawQuery(
+//                "select _id,lat,lon,date,speed,address,accuracy,tripflag,waypoint,waypoint_type from track_master where tripflag IN (1,3) and date>="
+//                        + min_milli + " and date <=" + max_milli
+//                        + " order by date", null);
+        //tripflag=2 : fused Latlong  3 = Speed Violation latlong
         Cursor check = database.rawQuery(
-                "select _id,lat,lon,date,speed,address,accuracy,tripflag,waypoint,waypoint_type from track_master where tripflag IN (1,3) and date>="
+                "select _id,lat,lon,date,speed,address,accuracy,tripflag,waypoint,waypoint_type from track_master where tripflag IN (2,3) and date>="
                         + min_milli + " and date <=" + max_milli
                         + " order by date", null);
 
@@ -836,6 +842,10 @@ public class TripUploadNew {
                     data1.put("eta", eta);
                     data1.put("unique_trip_id", unique_trip_id);
                     data1.put("fused_ac", fusedactualpath);
+                    MySharedPreferences editor;
+                    editor = sqlitewraper.getSecureShared("MY_TRIP");
+                    data1.put("trip_start_battery", editor.getString("trip_start_battery","0"));
+                    data1.put("trip_end_battery", DeviceEventsUtils.getBatteryInfo());
 //							writeToFile(data1.toString());
 //                    SoapObject data = new SoapObject(NAMESPACE_13,
 //                            METHOD_NAME_corner13);
