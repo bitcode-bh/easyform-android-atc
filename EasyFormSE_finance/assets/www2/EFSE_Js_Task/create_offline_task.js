@@ -455,24 +455,18 @@ function onsuccess_get_data_for_task_online() {
         var company_id = JSON.parse(storage.getItem('company_id'));
         var user_id = JSON.parse(storage.getItem('user_id'));
         var role_id = JSON.parse(storage.getItem('role_id'));
-        var selected_site = JSON.parse(storage.getItem('siteid'));
-        var selected_server_task_id = JSON.parse(storage.getItem('server_task_id'));
-
-        if (selected_site == "" || selected_site == null || selected_site == undefined) {
-            selected_site = "0";
-        }
-
+       
         var param_obj = [];
         param_obj.push({
             'Company_Id': company_id,
             'User_Id': user_id,
             'moduleid': moduleid,
-            'siteid': selected_site,
-            'server_task_id': selected_server_task_id,
+            'siteid': 0,
+            'server_task_id': 0,          // 0 will return only mapping for single role
             'role_id': role_id
         });
 
-        var getdata = new Webservicecall_REST(common_global_wcf_url + 'WCF_GetCustomerWithGlobalVar_With_Role_Port', JSON.stringify(param_obj), function (e) {
+        var getdata = new Webservicecall_REST(common_global_wcf_url + 'WCF_GetCustomerWithGlobalVar_With_Role_Port_Without_Task', JSON.stringify(param_obj), function (e) {
             var responseText = JSON.parse(e.responseText);
             var status = responseText[0].status;
             if (status == 1) {
@@ -483,7 +477,7 @@ function onsuccess_get_data_for_task_online() {
             }
             else {
                 loading_hide();
-                //alert1(responseText[0].message);
+                alert1(responseText[0].message);
             }
 
         }, onfail);
