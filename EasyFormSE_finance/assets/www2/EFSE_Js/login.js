@@ -1190,6 +1190,7 @@ function updateuniquecode_android(invocation, res_type) {
             update_app_version();
         }
         else if (result[0].status == 5000) {
+            myApp.closeModal('.popover-login');
             loading_hide();
         }
         else if (result[0].status == 12) {
@@ -2421,6 +2422,7 @@ function clear_localStorage() {
     let global_resumable_url = JSON.parse(storage.getItem('global_resumable_url'));
     let common_global_wcf_url = JSON.parse(storage.getItem('common_global_wcf_url'));
     let username = JSON.parse(storage.getItem('username'));
+    let last_username = JSON.parse(storage.getItem('last_username'));
     let crash_status = JSON.parse(storage.getItem('crash_status'));
     let data_json = JSON.parse(storage.getItem('list_json'));
 
@@ -2463,6 +2465,7 @@ function clear_localStorage() {
     storage.setItem('global_resumable_url', JSON.stringify(global_resumable_url));
     storage.setItem('common_global_wcf_url', JSON.stringify(common_global_wcf_url));
     storage.setItem('username', JSON.stringify(username));
+    storage.setItem('last_username', JSON.stringify(last_username));
     storage.setItem('crash_status', JSON.stringify(crash_status));
     storage.setItem('data_json', JSON.stringify(data_json));
 
