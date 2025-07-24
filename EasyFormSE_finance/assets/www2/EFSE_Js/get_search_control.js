@@ -2753,7 +2753,10 @@ function get_data_to_fill_ul_New(obj_id, temp_cell_value, temp_btnSearch_Counter
                 }
 
                 if (is_template_required > 0) {
-                    get_template_checksheet_from_server(checksheet_id);
+                    if (checksheet_id == "" || checksheet_id == null || checksheet_id == undefined || checksheet_id == 0) { }
+                    else {
+                        get_template_checksheet_from_server(checksheet_id);
+                    }
                 }
             }
 
