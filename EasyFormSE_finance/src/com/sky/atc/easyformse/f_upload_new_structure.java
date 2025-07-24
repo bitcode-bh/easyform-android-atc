@@ -850,8 +850,8 @@ public class f_upload_new_structure extends WakefulIntentService {
                 data1.put("c_type", c_type);
                 data1.put("server_task_id", server_task_id);
                 String btn_action;
-                if (f_type.equalsIgnoreCase("") || f_type == null) {
-                    btn_action = "go to";
+                if (f_type == null || f_type.equalsIgnoreCase("")) {
+                    btn_action = "goto";
                 } else {
                     btn_action = f_type;
                 }
