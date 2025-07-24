@@ -2448,7 +2448,8 @@ function clear_localStorage() {
         trip_Array = JSON.parse(trip_Array);
     }
     let trip_waypoint_dependency = localStorage.getItem('trip_waypoint_dependency');
-    var last_notification = localStorage.getItem('last_notification');
+    let last_notification = localStorage.getItem('last_notification');
+    let download_completed = localStorage.getItem('download_completed');
 
     window.localStorage.clear();
     $.jStorage.flush();
@@ -2486,5 +2487,5 @@ function clear_localStorage() {
     localStorage.setItem('trip_ser_task_id', trip_ser_task_id);
     localStorage.setItem("trip_Array", JSON.stringify(trip_Array));
     localStorage.setItem('trip_waypoint_dependency', trip_waypoint_dependency);
-    localStorage.setItem('last_notification', last_notification);
+    localStorage.setItem('download_completed', download_completed);
 }

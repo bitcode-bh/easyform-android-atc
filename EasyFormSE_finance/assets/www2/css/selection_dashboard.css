@@ -45,7 +45,7 @@
     height: 0;
 }
 
-#module_list span[id^='circle_'] {
+#module_list span[id^='circle_'], #module_list .offline_counter {
     background-color: initial !important;
 }
 

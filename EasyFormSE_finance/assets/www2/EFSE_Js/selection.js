@@ -17,7 +17,7 @@ function get_counter_for_online_flow() {
 
             //offline module
             $(".offline_loader").show();
-            $(".offline_counter").hide();
+            //$(".offline_counter").hide();
         }
 
         localStorage.setItem('udf_count_array', '');
@@ -840,7 +840,7 @@ function SuccessCallBack_get_modules(e) {
 
                                     // put counter badge
                                     //list_item += '<span class="mkbadge button button-fill offline_counter">' + count + '</span><span class="offline_loader" style="display:none;"><img src="images/ajax-loader.gif" style="width:28px; height:28px"></span>';
-                                    list_item += '<span class="mkbadge offline_counter">' + count + '</span><span class="offline_loader" style="display:none;"><img src="images/ajax-loader.gif" style="width:28px; height:28px"></span>';
+                                    list_item += '<span class="mkbadge button button-fill offline_counter cls_task_ico">' + count + '</span>';
                                 }
                                 else {
                                     if (myArray[0].type == 'Flow') {
@@ -1933,7 +1933,7 @@ function get_list_of_modules_online() {
                                             }
 
                                             // put counter badge
-                                            list_item += '<span class="mkbadge button button-fill offline_counter">' + count + '</span><span class="offline_loader" style="display:none;"><img src="images/ajax-loader.gif" style="width:28px; height:28px"></span>';
+                                            list_item += '<span class="mkbadge button button-fill offline_counter cls_task_ico">0</span>';
                                         }
                                         else {
                                             if (myArray[0].type == 'Flow') {
