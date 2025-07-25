@@ -29,7 +29,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -62,10 +61,12 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.sky.atc.easyformse.datautils.DataUtils;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.location.SpeedCalculation;
 import com.sky.atc.easyformse.trip.TripMapUtils;
 
+import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 
 import org.apache.http.HttpEntity;
@@ -82,6 +83,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.michaelrocks.paranoid.Obfuscate;
 
@@ -115,7 +118,8 @@ public class newfused extends Service implements LocationListener {
     String CHANNEL_ID = "my_channel_01";
 
     MySharedPreferences sharedPreferences;
-
+    private final static int DELAY = 30000;
+    private Timer timer = new Timer();
 
     //New Location Method
     private FusedLocationProviderClient fusedLocationClient;
@@ -162,9 +166,15 @@ public class newfused extends Service implements LocationListener {
         Log.d("NITNEWFUSED", "onstartcommand");
         pref = sqlitewraper.getSecureShared("MyPref");
 
+        //new service updatemilli
+        checkServicemilli();
+        startServUpdateTask();
+
         boolean isuploadlastentry = pref.getBoolean("isuploadlastentry",false);
 //        check location and upload in server
         if(!isuploadlastentry) {
+            //new service updatemilli
+
             start_alaramManager();
         }
 
@@ -525,4 +535,82 @@ public class newfused extends Service implements LocationListener {
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerTime, intervalMillis,pendingIntent);
     }
 
+    private void updateServiceMilli() {
+
+        pref = sqlitewraper.getSecureShared("MyPref");
+//        editor = pref.edit();
+        pref.putString("SERVICEUPDATE", String.valueOf(System.currentTimeMillis())); // Saving string
+        pref.commit();
+    }
+
+    //to check if service is not running for specific period of time if trip is running
+    private void checkServicemilli() {
+
+        try{
+
+            database = sqlitewraper.getDatabase();
+
+            pref = sqlitewraper.getSecureShared("MyPref");
+            String serviceupdate = pref.getString("SERVICEUPDATE", null);
+
+            if (serviceupdate != null) {
+
+                Log.d("####new_fused", "checkServicesmilli");
+                Cursor tripflag = database.rawQuery(
+                        "select * from lat_plug where trip_status = 0", null);
+                tripflag.moveToFirst();
+                int tripflagCount = tripflag.getCount();
+                tripflag.close();
+
+                if (tripflagCount > 0) {
+
+                    if (!serviceupdate.equalsIgnoreCase("0")) {
+
+                        long servicestart = System.currentTimeMillis();
+                        long stopduration = servicestart - Long.valueOf(serviceupdate);
+
+                        DataUtils.setServiceMilli(servicestart);
+
+                        if (stopduration > 120000) {
+
+                            boolean isInserted = DeviceEventsUtils.insertIntoEvents(serviceupdate, String.valueOf(servicestart), String.valueOf(stopduration), "Service_outage");
+                            if (isInserted) {
+
+                                pref = sqlitewraper.getSecureShared("MyPref");
+                                pref.putString("SERVICEInsert","1");
+                                pref.putString("SERVICEUPDATE", "0"); // Saving string
+                                pref.commit();
+                            }
+                        }
+                    }
+                }
+            }
+        }catch (Exception e){
+
+            pref = sqlitewraper.getSecureShared("MyPref");
+//                            editor = pref.edit();
+            pref.putString("SERVICEUPDATE", "0"); // Saving string
+            pref.commit();
+        }
+    }
+
+
+    //timer for every 30 seconds to check if service is running or not
+    private void startServUpdateTask() {
+
+        if(timer != null) {
+            timer.cancel();
+        }
+        timer = new Timer();
+        final int counter = 0;
+
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                Log.d("NITNEWFUSED_GPS", String.valueOf(counter));
+                checkServicemilli();
+                updateServiceMilli();
+            }
+        }, DELAY, DELAY);
+    }
 }
