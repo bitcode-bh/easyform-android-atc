@@ -2014,7 +2014,7 @@ div[id^=div_step_Col_] .list-block ul:before, div[id^=div_step_Col_] .list-block
 
 .li-new-cust {
     border: solid 1px #ccc;
-    width: 50%;
+    width: 100%;
     display: inline-block;
 }
 

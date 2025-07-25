@@ -1165,7 +1165,7 @@ function onsuccess_get_all_searched_list(e) {
                     let li_txt = '<li class="item-content li-new-cust" style="float:left; margin-top: 5px">';
                     li_txt += '<div class="div-type20-new-cust"><a id="ddl_cust_creation" onclick="' + param + '" class="back link icon-only cls-new-cust">Create</a></div>';
                     li_txt += '</li>';
-                    li_txt += '<li class="item-content li-new-cust" style="float: right; margin-top: 5px">';
+                    li_txt += '<li class="item-content li-new-cust" style="float: right; margin-top: 5px;;display:none;">';                                 //---display:none for ATC coz added + btn for create new [FT-25072025]
                     li_txt += '<div class="div-type20-new-cust"><a id="ddl_new_cust_creation" onclick="' + param_new + '" class="back link icon-only cls-new-cust">Create New</a></div>';
                     li_txt += '</li>';
 
@@ -1983,7 +1983,7 @@ function onsuccess_get_all_searched_list_New(e) {
                         li_txt += '<li class="item-content li-new-cust" style="float:left;">';
                         li_txt += '<div class="div-type20-new-cust"><a id="ddl_cust_creation" onclick="' + param + '" class="back link icon-only cls-new-cust">Create</a></div>';
                         li_txt += '</li>';
-                        li_txt += '<li class="item-content li-new-cust" style="float: right;">';
+                        li_txt += '<li class="item-content li-new-cust" style="float: right;display:none;">';                                                   //---display:none for ATC coz added + btn for create new [FT-25072025]
                         li_txt += '<div class="div-type20-new-cust"><a id="ddl_new_cust_creation" onclick="' + param_new + '" class="back link icon-only cls-new-cust">Create New</a></div>';
                         li_txt += '</li>';
 
