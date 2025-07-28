@@ -14,7 +14,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center|top"
-            android:text="Device details via email " />
+            android:text="Show Device Details " />
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/mbtnshowpermission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10sp"
+            android:layout_gravity="center|top"
+            android:text="Show app setting " />
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/mbtncheckattendance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10sp"
+            android:layout_gravity="center|top"
+            android:text="Show attendace Details  " />
 
     </LinearLayout>
 
