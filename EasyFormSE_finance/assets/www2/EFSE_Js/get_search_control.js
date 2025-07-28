@@ -3255,9 +3255,55 @@ function empty_data_to_box(temp_btnSearch_Counter) {
                         }
                     });
 
+                    if (box_id.length == 0 || box_id[0] == undefined) {
+                        $("." + box_class + " textarea").each(function () {
+                            var box_id_temp = ($(this).attr('id'));
+                            box_id.push(box_id_temp);
+                        });
+                    }
+
+                    if (box_id.length == 0 || box_id[0] == undefined) {
+                        $("." + box_class + " select").each(function () {
+                            var box_id_temp = ($(this).attr('id'));
+                            box_id.push(box_id_temp);
+                        });
+                    }
+
+                    if (box_id.length == 0 || box_id[0] == undefined) {
+                        $("." + box_class + " img[id^=cbtn]").each(function () {
+                            var box_id_temp = ($(this).attr('id'));
+                            box_id.push(box_id_temp);
+                        });
+                    }
+
                     for (fk = 0; fk < box_id.length; fk++) {
                         var curr_box_id = box_id[fk];
                         $("#" + curr_box_id + "").val("");
+
+                        if ($("#" + curr_box_id + "").is("img")) {
+                            $("#" + curr_box_id + "").attr("src", "images/camera.png");
+
+                            // empty cam ans - mk - 28072025 - atc
+                            var autofill_form_flag = $('#hdn_select_all_fill_data_' + temp_btnSearch_Counter + '').attr("autofill_form_flag");
+                            if (autofill_form_flag == 0 || autofill_form_flag == 6) {
+                                var new_que_id = $("#" + curr_box_id + "").parents("div[id^='div_cbtn_']").attr("que_id");
+                                for (var j = 0; j < jsonObj_old.length; j++) {
+                                    var json_que_id = jsonObj_old[j].que_id;
+                                    if (new_que_id == json_que_id) {
+
+                                        let task_create_popup = $('.popup-new-task-create.modal-in:visible');
+                                        if (task_create_popup.length > 0) {
+                                            //new task create popup [FT-08052025]
+                                            jsonObj_task_add[j].ans = [""];
+                                        }
+                                        else {
+                                            jsonObj_old[j].ans = [""];
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
