@@ -147,6 +147,7 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                     'reject_status': checksheet_list[j].reject_status,
                     'Checksheet_Icon': checksheet_list[j].Checksheet_Icon,
                     "sub_flow_name": checksheet_list[j].sub_flow_name,
+                    "udf_name": checksheet_list[j].udf_name,
                     "id": checksheet_list[j].id,
                     "type": checksheet_list[j].type
                 });
@@ -195,6 +196,7 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                         'reject_status': checksheet_list[j].reject_status,
                         'Checksheet_Icon': checksheet_list[j].Checksheet_Icon,
                         "sub_flow_name": checksheet_list[j].sub_flow_name,
+                        "udf_name": checksheet_list[j].udf_name,
                         "id": checksheet_list[j].id,
                         "type": checksheet_list[j].type
                     });
@@ -233,6 +235,7 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                             old_checksheet_list[m].id = checksheet_list[k].id;
                             old_checksheet_list[m].is_mandatory = checksheet_list[k].is_mandatory;
                             old_checksheet_list[m].sub_flow_name = checksheet_list[k].sub_flow_name;
+                            old_checksheet_list[m].udf_name = checksheet_list[k].udf_name;
                             old_checksheet_list[m].is_online = checksheet_list[k].is_online;
                             old_checksheet_list[m].is_disabled = checksheet_list[k].is_disabled;
                             loc_chk_found++;
@@ -284,6 +287,7 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                             'reject_status': checksheet_list[k].reject_status,
                             'Checksheet_Icon': checksheet_list[k].Checksheet_Icon,
                             "sub_flow_name": checksheet_list[k].sub_flow_name,
+                            "udf_name": checksheet_list[k].udf_name,
                             "id": checksheet_list[k].id,
                             "type": checksheet_list[k].type
                         });
@@ -641,9 +645,9 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status) {
                     }
                     else {
                         // bind sub flow
-                        var name = new_checksheet_list[i].sub_flow_name;
+                        var name = new_checksheet_list[i].udf_name;
                         if (name == "" || name == null || name == undefined) {
-                            name = '';
+                            name = new_checksheet_list[i].sub_flow_name;
                         }
 
                         if (is_submited == 1 || is_submited == 2 && gb_check == 'false') {

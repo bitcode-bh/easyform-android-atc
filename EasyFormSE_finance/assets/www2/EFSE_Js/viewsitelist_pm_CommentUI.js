@@ -202,9 +202,11 @@ function onsuccess_get_comment(e) {
             //get_task_history();
             append_comment_history();
         }
-        else {
+        else if (status == 2) {
             //get_task_history();
-
+            loading_hide();
+        }
+        else {
             alert(message);
             loading_hide();
         }
