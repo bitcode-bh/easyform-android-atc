@@ -209,13 +209,13 @@ public class gprs extends BroadcastReceiver {
 
 					if (g_ontime1 > g_offtime1) {
 						gprs_duration = g_ontime1 - g_offtime1;
+						if (gprs_duration > 1000) {
+							insert_t(g_ontime, g_offtime, gp_ontime, gp_offtime,
+									phone_on1, phone_off2, gp_duration,
+									gprs_duration, phone_duration, date);
 
-						insert_t(g_ontime, g_offtime, gp_ontime, gp_offtime,
-								phone_on1, phone_off2, gp_duration,
-								gprs_duration, phone_duration, date);
-
-						boolean isInserted = DeviceEventsUtils.insertIntoEvents(gp_offtime,gp_ontime, String.valueOf(gprs_duration),"Gprs_outage");
-
+							boolean isInserted = DeviceEventsUtils.insertIntoEvents(gp_offtime, gp_ontime, String.valueOf(gprs_duration), "Gprs_outage");
+						}
 					}
 
 					else {

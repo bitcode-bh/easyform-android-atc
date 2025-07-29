@@ -99,15 +99,15 @@ public class PowerSaveModeReceiver extends BroadcastReceiver {
             Duration = PowerSavingmodeOff - PowersavingmodeOn;
             long minutes = TimeUnit.MILLISECONDS.toMinutes(Duration);
 
-
-            boolean isInserted = DeviceEventsUtils.insertIntoEvents(String.valueOf(PowersavingmodeOn), String.valueOf(PowerSavingmodeOff), String.valueOf(Duration), "PowerSavingMode");
-            if (isInserted) {
-                sendalert();
-                pref.putLong("PowerSavingmodeOff", 0);
-                pref.putLong("PowersavingmodeOn", 0);
-                pref.commit();
+            if (Duration > 1000) {
+                boolean isInserted = DeviceEventsUtils.insertIntoEvents(String.valueOf(PowersavingmodeOn), String.valueOf(PowerSavingmodeOff), String.valueOf(Duration), "PowerSavingMode");
+                if (isInserted) {
+                    sendalert();
+                    pref.putLong("PowerSavingmodeOff", 0);
+                    pref.putLong("PowersavingmodeOn", 0);
+                    pref.commit();
+                }
             }
-
 
         }
     }
