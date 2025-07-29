@@ -1044,7 +1044,7 @@ public class MainActivity extends Activity {
         this.registerReceiver(new gpsreciever(), intentFilter);
         this.registerReceiver(new phoneon(), intentFilter1);
         this.registerReceiver(new BootReceiver(), intentFilter1);
-        this.registerReceiver(new activity_recognize(), intentFilter2);
+       // this.registerReceiver(new activity_recognize(), intentFilter2);
         this.registerReceiver(new onreboot(), intentFilter3);
         this.registerReceiver(new ShutdownReceiver(), intentFilter4);
 

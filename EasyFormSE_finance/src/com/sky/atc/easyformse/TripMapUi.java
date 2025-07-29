@@ -32,6 +32,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -68,6 +69,7 @@ import com.sky.atc.easyformse.geofencenew.GeofenceTrasitionServicenew;
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -567,6 +569,8 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
                 insertTrackmaster(s_lat, s_lon);
                 insertLocation_log_Tbl(s_lat, s_lon);
+
+                Check_PowerSavingMode(trip_status);  // check power saving mode on off in trip start time 29072025
             // location get after update lat_plug entry for start trip 07072025
                 long temp = database.update("lat_plug", latc, t, null);
             AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
@@ -621,6 +625,8 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             //insert lat long in to track_master
             insertTrackmaster(s_lat, s_lon);
             insertLocation_log_Tbl(s_lat, s_lon);
+
+            Check_PowerSavingMode(trip_status);  // check power saving mode on off in trip start time 29072025
 
             latc.put("trip_shflag", "1");
             latc.put("max_milli", System.currentTimeMillis());
@@ -1265,5 +1271,98 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 //
 //
 //        }
+    }
+
+
+    public void Check_PowerSavingMode(String trip_status)
+    {
+        boolean isPowerSaving;
+        long PowersavingmodeOn;
+        String Event_strt;
+        String Event_end;
+        String Event_type;
+
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        isPowerSaving = powerManager.isPowerSaveMode();
+
+        Date now = new Date();
+        Long time = now.getTime();
+
+
+        ArrayList<String> logindetails = new ArrayList<>();
+        logindetails = DeviceEventsUtils.getLoginDetails();
+        String userid = logindetails.get(0);
+        String imei = logindetails.get(1);
+        String appid = logindetails.get(2);
+        String username1 = logindetails.get(3);
+
+
+        ContentValues c = new ContentValues();
+        c.put("username", username1);
+        c.put("lat", DeviceEventsUtils.getCurrentLatLng().latitude);
+        c.put("lon", DeviceEventsUtils.getCurrentLatLng().longitude);
+        c.put("th_s", "");
+        c.put("is_send", "0");
+        c.put("battery", DeviceEventsUtils.getBatteryInfo());
+        c.put("timezone", DeviceEventsUtils.getTimeZone());
+        c.put("imei", imei);
+        c.put("appid", appid);
+        c.put("userid", userid);
+        String tid = DeviceEventsUtils.gettid();
+        c.put("tid",tid);
+        if (isPowerSaving) {
+            if(trip_status.equalsIgnoreCase("0")) {
+
+                PowersavingmodeOn = time;
+                c.put("Event_strt", PowersavingmodeOn);
+                c.put("Event_end", "0");
+                c.put("Event_type", "PowerSavingMode");
+                c.put("duration", "0");
+                c.put("utcstart", DeviceEventsUtils.utcCalculationOffset(PowersavingmodeOn));
+                c.put("utcend", DeviceEventsUtils.utcCalculationOffset(0));
+
+                long tempinsert = database.insert("Events", null, c);
+            }
+            else if(trip_status.equalsIgnoreCase("1"))
+            {
+                android.database.Cursor c2 = database.rawQuery("SELECT _id,Event_strt,Event_end,Event_type FROM  Events WHERE _id = " +
+                    "(SELECT MAX(_id) FROM Events where Event_type in('Still','StillViolation','Vehicle','Walking','On Bicycle','On Foot','Running','PowerSavingMode') )", null);
+                    c2.moveToFirst();
+
+
+
+                if (c2.getCount() > 0) {
+                    String id = c2.getString(0);
+                    Event_strt = c2.getString(1);
+                    Event_end = c2.getString(2);
+                    Event_type = c2.getString(3);
+
+                    if(Event_type.equalsIgnoreCase("PowerSavingMode")) {
+                        if (Event_end.equalsIgnoreCase("0")) {
+
+                          long  Duration = time - Long.parseLong(Event_strt);
+
+                            String cnd;
+                            cnd = "_id=" + id;
+                            ContentValues c_path = new ContentValues();
+                            c_path.put("Event_end", time);
+                            c_path.put("duration", Duration);
+                            c_path.put("utcend", DeviceEventsUtils.utcCalculationOffset(time));
+
+                            long temp = database.update("Events", c_path, cnd, null);
+
+
+                                Intent z_n12 = new Intent(sqlitewraper.context, Event.class);
+                                WakefulIntentService.sendWakefulWork(sqlitewraper.context,
+                                        z_n12);
+
+
+                        }
+                    }
+                }
+            }
+        }
+
+
     }
 }
