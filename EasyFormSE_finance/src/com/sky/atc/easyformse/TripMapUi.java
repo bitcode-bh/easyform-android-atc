@@ -810,7 +810,7 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         args1.put("IS_LOC", time);
         args1.put("address", add);
         args1.put("username", username);
-        args1.put("tripflag", "1");
+        args1.put("tripflag", "2");
 
         long temp_mast = database.insert("track_master", null, args1);
 

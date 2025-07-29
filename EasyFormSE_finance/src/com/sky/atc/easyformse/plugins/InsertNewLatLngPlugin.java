@@ -224,7 +224,7 @@ public class InsertNewLatLngPlugin extends CordovaPlugin {
             args1.put("IS_LOC", time);
             args1.put("address", add);
             args1.put("username", username);
-            args1.put("tripflag", "1");
+            args1.put("tripflag", "2");
             args1.put("waypoint", "1");
             args1.put("speed", speed);
             args1.put("locationtime", locatiiontime);
