@@ -5398,13 +5398,17 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     $("." + type17_box_class + "").css("display", "block");
 
                     var number_box_id = $("." + type17_box_class + " :input").attr("id");
-                    var nobox_id = document.getElementById(number_box_id);
-                    if (nobox_id == "" || nobox_id == null || nobox_id == undefined) { }
-                    else {
-                        nobox_id.addEventListener(event_str, function () {
-                            get_value_from_other_step(encodeURIComponent(JSON.stringify(paramData)));
-                        }, false);
-                    }
+                    //var nobox_id = document.getElementById(number_box_id);
+                    //if (nobox_id == "" || nobox_id == null || nobox_id == undefined) { }
+                    //else {
+                    //    nobox_id.addEventListener(event_str, function () {
+                    //        get_value_from_other_step(encodeURIComponent(JSON.stringify(paramData)));
+                    //    }, false);
+                    //}
+                    $('#' + number_box_id + '').on('input', { param: paramData }, function (event) {
+                        let paramData = event.data.param;
+                        get_value_from_other_step(encodeURIComponent(JSON.stringify(paramData)));
+                    });
                 }
             }
         }
