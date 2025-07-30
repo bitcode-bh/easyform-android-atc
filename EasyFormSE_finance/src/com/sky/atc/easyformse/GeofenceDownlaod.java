@@ -75,7 +75,7 @@ public class GeofenceDownlaod {
     boolean isShowNoti = false;
     int incr=0;
     static SQLiteDatabase database = sqlitewraper.getDatabase();
-
+    NotificationManager notificationManager;
     public static int uploadGeofenceTracking() {
 
         int k = 0;
@@ -364,7 +364,7 @@ public class GeofenceDownlaod {
                                 isShowNoti = false;
                                 GeoFenceDraw geoFenceDraw = new GeoFenceDraw();
                                 geoFenceDraw.getSiteinfoNew();
-
+                                notificationManager.cancel(147);
                                 Log.d("###GeofenceDownload", String.valueOf(status));
                             }
 
@@ -555,56 +555,56 @@ public class GeofenceDownlaod {
         PendingIntent contentIntent = PendingIntent.getActivity(sqlitewraper.context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Builder b = new NotificationCompat.Builder(sqlitewraper.context);
 
-        NotificationManager notificationManager = (NotificationManager) sqlitewraper.context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager = (NotificationManager) sqlitewraper.context.getSystemService(Context.NOTIFICATION_SERVICE);
         b.setAutoCancel(false)
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(icon)
                 .setContentTitle("Downloading")
                 .setContentIntent(contentIntent)
-                .setContentText(moduleName + " : " + contentText)
+                .setContentText(contentText)
                 .setSubText(contentText)
                 .setOngoing(true)
                 .setChannelId(CHANNEL_ID);
-                    if(isShowNoti)
-                    {
-                        new Thread(new Runnable() {
-                            @Override
-                                    public void run() {
-                                        int incr;
-                                        for (incr = 0; incr <= 100; incr+=10) {
-                                            // Sets the progress indicator to a max value, the current completion percentage and "determinate" state
-                                            b.setProgress(100, incr, false);
-                                            // Displays the progress bar for the first time.
-                                            if (notificationManager != null) {
-                                                notificationManager.notify(147, b.build());
-                                            }
-                                            try {
-                                                // notification display issue so sleep thread 1 second
-                                                // Sleep for 1 second
-                                                Thread.sleep(1*1000);
-                                            } catch (InterruptedException e) {
-                                                Log.d("TAG", "sleep failure");
-                                            }
-                                        }
-                                        // When the loop is finished, updates the notification
-                                        // Removes the progress bar and cancel notification
-                                        b.setContentText("Finish")
-                                                .setProgress(0,0,false);
-                                        if (notificationManager != null) {
-                                            notificationManager.cancel(147);
-                                        }
-                                    }
-                                }
-                                // Starts the thread by calling the run() method in its Runnable
-                        ).start();
-                    }
-                    else {
-                        b.setContentText("Finish")
-                                .setProgress(0,0,false);
-                        if (notificationManager != null) {
-                            notificationManager.cancel(147);
-                        }
-                    }
+//                    if(isShowNoti)
+//                    {
+//                        new Thread(new Runnable() {
+//                            @Override
+//                                    public void run() {
+//                                        int incr;
+//                                        for (incr = 0; incr <= 100; incr+=10) {
+//                                            // Sets the progress indicator to a max value, the current completion percentage and "determinate" state
+//                                            b.setProgress(100, incr, false);
+//                                            // Displays the progress bar for the first time.
+//                                            if (notificationManager != null) {
+//                                                notificationManager.notify(147, b.build());
+//                                            }
+//                                            try {
+//                                                // notification display issue so sleep thread 1 second
+//                                                // Sleep for 1 second
+//                                                Thread.sleep(1*1000);
+//                                            } catch (InterruptedException e) {
+//                                                Log.d("TAG", "sleep failure");
+//                                            }
+//                                        }
+//                                        // When the loop is finished, updates the notification
+//                                        // Removes the progress bar and cancel notification
+//                                        b.setContentText("Finish")
+//                                                .setProgress(0,0,false);
+//                                        if (notificationManager != null) {
+//                                            notificationManager.cancel(147);
+//                                        }
+//                                    }
+//                                }
+//                                // Starts the thread by calling the run() method in its Runnable
+//                        ).start();
+//                    }
+//                    else {
+//                        b.setContentText("Finish")
+//                                .setProgress(0,0,false);
+//                        if (notificationManager != null) {
+//                            notificationManager.cancel(147);
+//                        }
+//                    }
 
 
 
@@ -613,8 +613,9 @@ public class GeofenceDownlaod {
             notificationManager.createNotificationChannel(mChannel);
         }
 
-
-
+        if (notificationManager != null) {
+            notificationManager.notify(147, b.build());
+        }
     }
 
 }
