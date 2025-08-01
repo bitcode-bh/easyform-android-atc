@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.sky.atc.easyformse.attendance.newattendanceutils.AttendanceUtil;
+import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 
 import java.io.File;
@@ -124,8 +125,16 @@ public class SettingFragment extends Fragment {
                 new Handler().postDelayed(new Runnable(){
 
                     public void run() {
-                        OpenDialog( AttendanceUtil.getAttendanceDataList().toString(),"Attendance Details");
-                    }
+                        String formattedMsg;
+                        MySharedPreferences mySharedPreferences = sqlitewraper.getSecureShared("AttendanceData");
+                        formattedMsg = mySharedPreferences.getString("attendanceJson","");
+                        formattedMsg = formattedMsg
+                                .replace("},", "}\n\n") // Separate items
+                                .replace(",", "\n")     // Commas become line breaks
+                                .replace("{", "{\n")    // Start brace
+                                .replace("}", "\n}");   // End brace
+
+                        OpenDialog( formattedMsg,"Attendance Details");                    }
 
                 }, 200L);
 
