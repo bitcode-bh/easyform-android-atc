@@ -113,7 +113,9 @@ public class LocationOutageUtils {
             Notification notification = new NotificationCompat.Builder(sqlitewraper.context, "channel01")
                     .setSmallIcon(android.R.drawable.ic_dialog_info)
                     .setContentTitle("Location Fetcing")
-                    .setContentText("We are not able to fetch your location during trip please check your setting")
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText("We are not able to fetch your location during trip please check your setting"))
+                    .setSound(sound)
                     .setSound(sound)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)   // heads-up
                     .build();

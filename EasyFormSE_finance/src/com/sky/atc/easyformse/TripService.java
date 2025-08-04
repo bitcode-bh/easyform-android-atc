@@ -967,7 +967,7 @@ public class TripService extends WakefulIntentService implements LocationListene
                                 // Check duration or 24-hour time condition
                                 if (mAttendanceData.getAuto_punchout_duration() == null || mAttendanceData.getAuto_punchout_duration().equalsIgnoreCase("")) {
                                     if (is24HoursPassed(Long.parseLong(TripStartTime))) {
-                                        shouldStopTrip = true;
+                                        stopTrip(location,punchoutstatus);
                                     }
                                 }
                                 else {
