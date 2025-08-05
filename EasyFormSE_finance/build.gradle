@@ -14,32 +14,33 @@ android {
     //defualt config set from server
     defaultConfig {
         // Application Configuration
-        applicationId "com.easyform.atctesting"
+        applicationId "com.easyform.atcpv"
         minSdkVersion project.ext.minSdk  //not set from server
         targetSdkVersion project.ext.targetSdk //not set from server
-        versionCode 96    //not set from server
-        versionName "A_19.6.16.25.2_F7"
+        versionCode 107    //not set from server
+//        versionName "A_19.6.16.25.2_F7"
+        versionName "ATC_19.6.29_F7_V1"
         multiDexEnabled true //not set from server
 
+        
+        resValue "string", "App_URL", "https://atcmwfm.americantower.com/web"
+        resValue "string", "Video_URL", "https://atcmwfm.americantower.com/Api/"
+        resValue "string", "WCFURL", "https://atcmwfm.americantower.com/coreapi/api/"
+        resValue "string", "Resumable_URL", "https://atcmwfm.americantower.com/Api/"
+        resValue "string", "Common_Wcf_Url", "https://atcmwfm.americantower.com/coreapi/api/"
 
-        // Login URL
-        resValue "string", "App_URL", "https://atcmwfm-uat.americantower.com/WEB/"
-        resValue "string", "Video_URL", "https://atcmwfm-uat.americantower.com/api/"
-        resValue "string", "WCFURL", "https://atcmwfm-uat.americantower.com/coreapi/api/"
-        resValue "string", "Resumable_URL", "https://atcmwfm-uat.americantower.com/coreapi/api/"
-        resValue "string", "Common_Wcf_Url", "https://atcmwfm-uat.americantower.com/coreapi/api/"
-
-        resValue "string", "LOGINWCFURL", "https://atcmwfm-uat.americantower.com/coreapi/api/"
-        resValue "string", "DOWNLOADWCFURL", "https://atcmwfm-uat.americantower.com/coreapi/api/"
-        resValue "string", "UPLOADWCFURL", "https://atcmwfm-uat.americantower.com/coreapi/api/"
-        resValue "string", "GEOWCFURL", "https://atcmwfm-uat.americantower.com/coreapi/api/"
-        resValue "string", "TASKDOWNLOADURL", "https://atcmwfm-uat.americantower.com/coreapi/api/"
-        resValue "string", "OCR", "https://development.easyform.in/coreapi/api/"
+        resValue "string", "LOGINWCFURL", "https://atcmwfm.americantower.com/core_login/api/"
+        resValue "string", "DOWNLOADWCFURL", "https://atcmwfm.americantower.com/core_download/api/"
+        resValue "string", "UPLOADWCFURL", "https://atcmwfm.americantower.com/core_upload/api/"
+        resValue "string", "GEOWCFURL", "https://atcmwfm.americantower.com/core_geo/api/"
+        resValue "string", "TASKDOWNLOADURL", "https://atcmwfm.americantower.com/core_app_download/api/"
+        resValue "string", "OCR", "https://atcmwfm.americantower.com/Azure-OCR/api/"
 
 
-        resValue "string", "UploadTask", "https://atcmwfm-uat.americantower.com/UploadTask/EF_Service.svc/v1/"
-        resValue "string", "UploadQuestionLog", "https://atcmwfm-uat.americantower.com/UploadQuestionLog/EF_Service.svc/v1/"
-        resValue "string", "UploadTechnician", "https://atcmwfm-uat.americantower.com/UploadTechnician/EF_Service.svc/v1/"
+        resValue "string", "UploadTask", "https://atcmwfm.americantower.com/core_uploadtask/api/"
+        resValue "string", "UploadQuestionLog", "https://atcmwfm.americantower.com/core_uploadquestionlog/api/"
+        resValue "string", "UploadTechnician", "https://atcmwfm.americantower.com/core_uploadtechnician/api/"
+
 
         //SSL", "false"
         resValue "string", "SSL", "false"
@@ -90,8 +91,8 @@ android {
             keyPassword 'skypatel7'
             storeFile file('E:/Android_Studio/key')
             storePassword 'skypatel7'
-         /*   v1SigningEnabled true
-            v2SigningEnabled true*/
+            v1SigningEnabled true
+            v2SigningEnabled true
             enableV3Signing true
             enableV4Signing true
         }
