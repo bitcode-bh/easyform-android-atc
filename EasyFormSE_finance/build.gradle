@@ -18,11 +18,10 @@ android {
         minSdkVersion project.ext.minSdk  //not set from server
         targetSdkVersion project.ext.targetSdk //not set from server
         versionCode 107    //not set from server
-//        versionName "A_19.6.16.25.2_F7"
         versionName "ATC_19.6.29_F7_V1"
         multiDexEnabled true //not set from server
 
-        
+
         resValue "string", "App_URL", "https://atcmwfm.americantower.com/web"
         resValue "string", "Video_URL", "https://atcmwfm.americantower.com/Api/"
         resValue "string", "WCFURL", "https://atcmwfm.americantower.com/coreapi/api/"
