@@ -84,10 +84,16 @@ public class f_upload_new_structure extends WakefulIntentService {
 
     //for WCFURL
     private static final String WCFURL = sqlitewraper.context.getResources().getString(R.string.UPLOADWCFURL);
+
+    private static final String UPLOADQUESTIONLOG = sqlitewraper.context.getResources().getString(R.string.UploadQuestionLog);
     private static final String METHOD_NAME_corner = "WCF_InsertQuestionMaster_Log_EF_1_0_0_0";
     //    private static final String METHOD_NAME_corner2 = "WCF_upload_technician_data_EF_0_4_0_0";
+    private static final String UPLOADTECGNICIAN = sqlitewraper.context.getResources().getString(R.string.UploadTechnician);
+
     private static final String METHOD_NAME_corner2 = "WCFTechnicianDataUpload";
     //    private static final String METHOD_NAME_corner3 = "Insert_Task_Master_And_Task_Sub_Master_Using_Mobile";
+    private static final String UPLOADTASK = sqlitewraper.context.getResources().getString(R.string.UploadTask);
+
     private static final String METHOD_NAME_corner3 = "InsertUpdateDelete_MainAndSub_Task";
     private static final String METHOD_NAME_corner4 = "WCF_Insert_Update_Delete_Punch_Master";
 
@@ -652,7 +658,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                     if (!u_c1.equalsIgnoreCase("NA")) {
 
-                        String restext = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, WCFURL, METHOD_NAME_corner3, matchKeyId, null);
+                        String restext = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, UPLOADTASK, METHOD_NAME_corner3, matchKeyId, null);
                         JSONArray jsonArray = new JSONArray(restext);
 
                         String status1 = null;
@@ -860,7 +866,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                 if (!u_c1.equalsIgnoreCase("NA")) {
 
-                    String resString = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, WCFURL, METHOD_NAME_corner, matchKeyID, null);
+                    String resString = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, UPLOADQUESTIONLOG, METHOD_NAME_corner, matchKeyID, null);
                     JSONArray jsonArray = new JSONArray(resString);
 
                     for (int k1 = 0; k1 < jsonArray.length(); k1++) {
@@ -1931,7 +1937,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                 //Edited task form submit
                 dataString = editTaskData(tid, server_task_id, status, utcmilliseconds);
-                restext1 = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(dataString, WCFURL, METHOD_NAME_corner3, matchKeyId, roleID);
+                restext1 = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(dataString, UPLOADTASK, METHOD_NAME_corner3, matchKeyId, roleID);
 
                 JSONArray responseArray = new JSONArray(restext1);
                 JSONObject response = responseArray.getJSONObject(0);
@@ -1953,7 +1959,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                     //technician call - call for status update
 
                     if (!u_c1.equalsIgnoreCase("NA")) {
-                        restext = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, WCFURL, METHOD_NAME_corner2, matchKeyId, roleID);
+                        restext = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, UPLOADTECGNICIAN, METHOD_NAME_corner2, matchKeyId, roleID);
                     }
                 }
 
@@ -1972,7 +1978,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                 //technician call - call for status update
                 if (!u_c1.equalsIgnoreCase("NA")) {
-                    restext = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, WCFURL, METHOD_NAME_corner2, matchKeyId, roleID);
+                    restext = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, UPLOADTECGNICIAN, METHOD_NAME_corner2, matchKeyId, roleID);
                 }
 
             }
