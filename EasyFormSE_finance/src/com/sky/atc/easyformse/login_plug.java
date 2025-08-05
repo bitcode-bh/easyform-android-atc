@@ -459,16 +459,28 @@ public class login_plug implements Runnable {
 
                                 String thrsoldArray = jsonObject.getString("Threshold");
 
-                                JSONArray jsonArray = new JSONArray(thrsoldArray);
-                                JSONObject jsonObject1 = jsonArray.getJSONObject(0);
-
-                                if (jsonObject1.has("speed_violation_time")) {
-                                    String speedViolation = jsonObject1.getString("speed_violation_time");
-                                    MySharedPreferences editor = sqlitewraper.getSecureShared("pre1");
-                                    editor.putString("speedviolation", speedViolation);
-                                    editor.commit();
-
+                                if(thrsoldArray.equalsIgnoreCase("[]"))
+                                {
+                                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                        public void run() {
+                                            Toast toast = Toast.makeText(context, "Threshold array value getting null", Toast.LENGTH_LONG);
+                                            toast.show();
+                                        }
+                                    });
                                 }
+                                else {
+                                    JSONArray jsonArray = new JSONArray(thrsoldArray);
+                                    JSONObject jsonObject1 = jsonArray.getJSONObject(0);
+
+                                    if (jsonObject1.has("speed_violation_time")) {
+                                        String speedViolation = jsonObject1.getString("speed_violation_time");
+                                        MySharedPreferences editor = sqlitewraper.getSecureShared("pre1");
+                                        editor.putString("speedviolation", speedViolation);
+                                        editor.commit();
+
+                                    }
+                                }
+
                             }
 
                             //For Chat Login
