@@ -5449,6 +5449,10 @@ function get_popup_to_add_item_online(t_checksheet_id, t_add_cust_from_search, t
     glob_add_cust_from_search = t_add_cust_from_search;
     glob_new_cust_flag = flag;
 
+    // upgrade zindex in case task create > searchable click > + button click for add customer > datetimepicker - mk - 06082025
+    $("#temp_datetimepicker_style").remove();
+    $("body").append("<style id='temp_datetimepicker_style'>.picker-columns { z-index: 14012; }</style>");
+
     if (t_add_cust_from_search == "true") {
         //----add new customer from search in type20 for ATC [atc.bb - 05052021]
         localStorage.setItem('type20_text_cust_id', t_new_id);
@@ -5768,6 +5772,7 @@ function onfail_Insert_Json_1(e) {
 }
 
 function hide_type20_add_popup() {
+    $("#temp_datetimepicker_style").remove();
     $("#popup_container_type20_add").empty();
     $('.footer-type20-add').empty();
     myApp.closeModal('.popup-type20-add');
