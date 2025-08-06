@@ -3084,14 +3084,14 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                                 if (inv_display_flag == "0") {
                                     // 0 means table view but fixed list view
-                                    if (li_length < min_record) {
+                                    if (tbl_length < min_record) {
                                         inv_calc_answer = "";
 
                                         alert1("Minimum " + min_record + " records are required for " + prop_name);
                                     }
                                 }
                                 else {
-                                    if (tbl_length < min_record) {
+                                    if (li_length < min_record) {
                                         inv_calc_answer = "";
 
                                         alert1("Minimum " + min_record + " records are required for " + prop_name);
