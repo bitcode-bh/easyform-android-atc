@@ -594,51 +594,107 @@ function fire_T30_dependency(t_new_id, view_type, dependency, user_choice, confi
 
                 var checksheet_id = curr_survey_data["check_type"];
 
-                // for 1st 6 type30 dropdowns
-                if (t_new_id == "0_" + checksheet_id + "_73" || t_new_id == "0_" + checksheet_id + "_55") {
-                    $(".without_confirm_airtel").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_74" || t_new_id == "0_" + checksheet_id + "_59") {
-                    $(".without_confirm_vil").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_75" || t_new_id == "0_" + checksheet_id + "_62") {
-                    $(".without_confirm_rjil").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_76" || t_new_id == "0_" + checksheet_id + "_65") {
-                    $(".without_confirm_bsnl").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_34" || t_new_id == "0_" + checksheet_id + "_40") {
-                    $(".without_confirm_ttsl").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_37" || t_new_id == "0_" + checksheet_id + "_39") {
-                    $(".without_confirm_tcl").show();
-                }
 
-                // 2nd 6 type30 dropdowns 12012022
-                else if (t_new_id == "0_" + checksheet_id + "_394") {
-                    $(".without_confirm_airtel1").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_410") {
-                    $(".without_confirm_vil1").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_415") {
-                    $(".without_confirm_rjil1").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_424") {
-                    $(".without_confirm_bsnl1").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_435") {
-                    $(".without_confirm_ttsl1").show();
-                }
-                else if (t_new_id == "0_" + checksheet_id + "_441") {
-                    $(".without_confirm_tcl1").show();
-                }
+                type30_comoon_hide_show_elements(checksheet_id, t_new_id);
+
+
             }
         }
 
 
         $('#div_dynddl_' + t_new_id + '').attr('name', JSON.stringify(data));
     }
+}
+
+function type30_comoon_hide_show_elements(checksheet_id, t_new_id) {
+
+    // for 1st 6 type30 dropdowns
+    if (t_new_id == "0_" + checksheet_id + "_73" || t_new_id == "0_" + checksheet_id + "_55") {
+        $(".without_confirm_airtel").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_74" || t_new_id == "0_" + checksheet_id + "_59") {
+        $(".without_confirm_vil").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_75" || t_new_id == "0_" + checksheet_id + "_62") {
+        $(".without_confirm_rjil").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_76" || t_new_id == "0_" + checksheet_id + "_65") {
+        $(".without_confirm_bsnl").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_34" || t_new_id == "0_" + checksheet_id + "_40") {
+        $(".without_confirm_ttsl").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_37" || t_new_id == "0_" + checksheet_id + "_39") {
+        $(".without_confirm_tcl").show();
+    }
+
+    // 2nd 6 type30 dropdowns 12012022
+    else if (t_new_id == "0_" + checksheet_id + "_394") {
+        $(".without_confirm_airtel1").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_410") {
+        $(".without_confirm_vil1").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_415") {
+        $(".without_confirm_rjil1").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_424") {
+        $(".without_confirm_bsnl1").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_435") {
+        $(".without_confirm_ttsl1").show();
+    }
+    else if (t_new_id == "0_" + checksheet_id + "_441") {
+        $(".without_confirm_tcl1").show();
+    }
+
+    // ATC UAT handling 13/07/2023 
+    //if (global_wcf_url.includes("https://atcmwfm-uat.americantower.com")) {
+
+    if (checksheet_id == 8187) {
+        // Energy Reading (AP) 17082023
+        //            if (t_new_id == "0_" + checksheet_id + "_215") {
+        //                $(".without_confirm_airtel0").show();
+        //            }
+        //            else if (t_new_id == "0_" + checksheet_id + "_238") {
+        //                $(".without_confirm_vil0").show();
+        //            }
+        //            else if (t_new_id == "0_" + checksheet_id + "_260") {
+        //                $(".without_confirm_rjil0").show();
+        //            }
+        //            else if (t_new_id == "0_" + checksheet_id + "_282") {
+        //                $(".without_confirm_bsnl0").show();
+        //            }
+
+        if (t_new_id == "0_" + checksheet_id + "_212") {
+            $(".without_confirm_airtel0").show();
+        }
+        else if (t_new_id == "0_" + checksheet_id + "_293") {
+            $(".without_confirm_vil0").show();
+        }
+        else if (t_new_id == "0_" + checksheet_id + "_257") {
+            $(".without_confirm_rjil0").show();
+        }
+        else if (t_new_id == "0_" + checksheet_id + "_279") {
+            $(".without_confirm_bsnl0").show();
+        }
+    }
+    else {
+        if (t_new_id == "0_" + checksheet_id + "_235") {
+            $(".without_confirm_airtel0").show();
+        }
+        else if (t_new_id == "0_" + checksheet_id + "_262") {
+            $(".without_confirm_vil0").show();
+        }
+        else if (t_new_id == "0_" + checksheet_id + "_284") {
+            $(".without_confirm_rjil0").show();
+        }
+        else if (t_new_id == "0_" + checksheet_id + "_305") {
+            $(".without_confirm_bsnl0").show();
+        }
+    }
+    //}
+
 }
 
 
@@ -736,6 +792,13 @@ function pass_required_values_to_querystring_dynddl(t_RowQueryWhereArray, type30
                         else {
                             // calendar found
                             var new_get_value = $("#" + where_box_id + "").val();
+
+                            var mode = $("#" + where_box_id + "").attr("data-field");
+                            if (mode == "time") {
+                                new_get_value = "2025/06/18 " + new_get_value;
+                                var cal_date = new Date(new_get_value);
+                                new_get_value = cal_date.getTime();
+                            }
                             //var cal_date = new Date(new_get_value);
                             //var new_get_value = cal_date.getTime();
                         }

@@ -405,46 +405,8 @@ function show_hide_Element(paramData, target_div) {
 
                         var checksheet_id = curr_survey_data["check_type"];
 
-                        // for 1st 6 type30 dropdowns
-                        if (t_new_id == "0_" + checksheet_id + "_73" || t_new_id == "0_" + checksheet_id + "_55") {
-                            $(".without_confirm_airtel").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_74" || t_new_id == "0_" + checksheet_id + "_59") {
-                            $(".without_confirm_vil").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_75" || t_new_id == "0_" + checksheet_id + "_62") {
-                            $(".without_confirm_rjil").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_76" || t_new_id == "0_" + checksheet_id + "_65") {
-                            $(".without_confirm_bsnl").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_34" || t_new_id == "0_" + checksheet_id + "_40") {
-                            $(".without_confirm_ttsl").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_37" || t_new_id == "0_" + checksheet_id + "_39") {
-                            $(".without_confirm_tcl").show();
-                        }
+                        type30_comoon_hide_show_elements(checksheet_id, t_new_id);
 
-
-                        // 2nd 6 type30 dropdowns 12012022
-                        else if (t_new_id == "0_" + checksheet_id + "_394") {
-                            $(".without_confirm_airtel1").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_410") {
-                            $(".without_confirm_vil1").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_415") {
-                            $(".without_confirm_rjil1").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_424") {
-                            $(".without_confirm_bsnl1").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_435") {
-                            $(".without_confirm_ttsl1").show();
-                        }
-                        else if (t_new_id == "0_" + checksheet_id + "_441") {
-                            $(".without_confirm_tcl1").show();
-                        }
                     }
                 }
 
