@@ -174,7 +174,7 @@ public class AttendanceUtil {
                     //show check out notification
                     if(Status.equalsIgnoreCase(mTaskData.getPunchout_Status()) || tripstatus.equals("1"))
                     {
-                        return;
+                       // return;
                     }
                     else {
                         notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
