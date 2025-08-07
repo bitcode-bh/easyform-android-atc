@@ -1155,6 +1155,15 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         }
                         else {
                             var cam_answer = jsonObj[i].ans;
+
+                            let autofill = $("#cbtn_" + new_id + "").attr('autofill');
+                            if (autofill == "true") {
+                                let photo_id_avail = jsonObj[i].ans[4];
+                                if (photo_id_avail == "" || photo_id_avail == null || photo_id_avail == undefined) {
+                                    cam_answer = "";
+                                }
+                            }
+
                         }
 
                         if (cam_answer == "" || cam_answer == null || cam_answer == undefined) {

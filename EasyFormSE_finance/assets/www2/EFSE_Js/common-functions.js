@@ -3679,7 +3679,7 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
             "new_t22i": "0"
         });
 
-        loading();
+        myApp.showPreloader('Fetching Image...');
         var getdata = new Webservicecall_REST(global_wcf_url + 'Photo_Temp_Clone', JSON.stringify(param_obj), function (e) {
             var Suc_Message = e.responseText;
             Suc_Message = eval('(' + Suc_Message + ')');
@@ -3717,6 +3717,9 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
                 mk_notify(message, "danger");
                 loading_hide();
             }
+
+            myApp.hidePreloader();
+
         }, onfail);
         getdata.callOtherDomain();
     }
