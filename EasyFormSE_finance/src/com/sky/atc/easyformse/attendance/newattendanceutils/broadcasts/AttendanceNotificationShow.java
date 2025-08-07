@@ -36,7 +36,7 @@ public class AttendanceNotificationShow extends BroadcastReceiver {
             if (notificationType == NotificationType.CheckIn) {
 //                contentText = "Mark your attendance by CHECK IN for today";  // change notification msg and remove click action 30062025
 //                actionString = "Check In";
-                contentText = "Your today's Punch In is pending , Do it from attendance option";
+                contentText = "Your today's start trip is pending , do it from Driver Safety Excellence.";
                 actionString = "";
                 MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
                 pref.putString("LastCheckinNoti", "true");
@@ -44,7 +44,7 @@ public class AttendanceNotificationShow extends BroadcastReceiver {
             } else if (notificationType == NotificationType.CheckOut) {
 //                contentText = "End your day by CHECK OUT for today";
 //                actionString = "Check Out";
-                contentText = "Your today's Punch out is pending , Do it from attendance option";
+                contentText = "Your today's end trip is pending , do it from Driver Safety Excellence.";
                 actionString = "";
             } else {
                 contentText = "";
