@@ -849,6 +849,19 @@ public class AttendanceTaskUtil {
      
       
     }
-
+    public static String getTripRuningOrnot(@NonNull SQLiteDatabase database, String taskid) {
+        Cursor taskMasterCursor = database
+                .rawQuery("select trip_status from lat_plug where tid =" + taskid , null);
+        taskMasterCursor.moveToLast();
+        int count = taskMasterCursor.getCount();
+        if (count > 0) {
+            String trip_status = taskMasterCursor.getString(0);
+            taskMasterCursor.close();
+            return trip_status;
+        } else {
+            taskMasterCursor.close();
+            return "";
+        }
+    }
 
 }

@@ -170,9 +170,9 @@ public class AttendanceUtil {
                 else {
 
                     String Status = AttendanceTaskUtil.getTaskMasterStatus(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId() , tid);
-
+                    String tripstatus = AttendanceTaskUtil.getTripRuningOrnot(database, tid);
                     //show check out notification
-                    if(Status.equalsIgnoreCase(mTaskData.getPunchout_Status()))
+                    if(Status.equalsIgnoreCase(mTaskData.getPunchout_Status()) || tripstatus.equals("1"))
                     {
                         return;
                     }
