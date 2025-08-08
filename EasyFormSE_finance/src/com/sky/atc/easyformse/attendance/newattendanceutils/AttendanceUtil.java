@@ -170,21 +170,53 @@ public class AttendanceUtil {
                 else {
 
                     String Status = AttendanceTaskUtil.getTaskMasterStatus(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId() , tid);
-                    String tripstatus = AttendanceTaskUtil.getTripRuningOrnot(database, tid);
-                    //show check out notification
-                    if(Status.equalsIgnoreCase(mTaskData.getPunchout_Status()) || tripstatus.equals("1"))
+                    int tripstatus = AttendanceTaskUtil.getTripRuningOrnot(database, tid);
+
+                    boolean istripstart = false;
+                    if(tripstatus > 0)
                     {
-                       // return;
+                        istripstart = true;
                     }
                     else {
-                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
-                        notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+                        istripstart = false;
+                    }
+                    //show check out notification
+                    if(Status.equalsIgnoreCase(mTaskData.getPunchout_Status()))
+                    {
+                        if(istripstart)
+                        {
+                            notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
+                            notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
 
-                        PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                            PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-                        setAlarmNotification(sqlitewraper.context,
-                                dayTime.get(1)
-                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+                            setAlarmNotification(sqlitewraper.context,
+                                    dayTime.get(1)
+                                    , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+                        }
+                    }
+                    else {
+
+                        if(istripstart)
+                        {
+                            notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
+                            notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+
+                            PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                            setAlarmNotification(sqlitewraper.context,
+                                    dayTime.get(1)
+                                    , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+                        }
+
+//                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
+//                        notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+//
+//                        PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+//
+//                        setAlarmNotification(sqlitewraper.context,
+//                                dayTime.get(1)
+//                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
                     }
 
                 }
