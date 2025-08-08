@@ -3287,8 +3287,6 @@ function redirect_page_pdf_preview(task_id, c_id, page_type) {
             }
         }
 
-        alert("PDF_path: " + PDF_path + "")
-
         if (F7_device == 'ios') {
             redirect_on_HTML_PDF_preview_ios(PDF_path);
         }
@@ -3704,7 +3702,7 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
                                 let task_create_popup = $('.popup-new-task-create.modal-in:visible');
                                 if (task_create_popup.length > 0) {
                                     //replace new photo_id in ans json [FT-11072025]
-                                    jsonObj_task_add[j].ans[4] = Photo_id;
+                                    jsonObj_task_add[j].ans[4] = Photo_id;  
                                 }
                                 else {
                                     jsonObj_old[j].ans[4] = Photo_id;
