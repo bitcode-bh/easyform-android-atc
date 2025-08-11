@@ -127,7 +127,7 @@ public class maulik extends CordovaPlugin {
             database = sqlitewraper.getDatabase();
             Cursor c = database
                     .rawQuery(
-                            "SELECT lat,lon,address, accuracy,date  FROM  track_master WHERE   _id = (SELECT MAX(_id) FROM track_master);",
+                            "SELECT lat,lon,address, accuracy,date  FROM  location_log WHERE   _id = (SELECT MAX(_id) FROM location_log);",
                             null);
             String  add = null, date;
 

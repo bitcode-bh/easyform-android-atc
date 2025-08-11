@@ -40,6 +40,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import io.michaelrocks.paranoid.Obfuscate;
 
 //import com.sky.atc.easyformse.geofencenew.GeofenceTrasitionServicenew;
@@ -73,24 +76,26 @@ public class SupportPageMapsPlugin_Green extends CordovaPlugin implements Locati
     private final long GEO_DURATION = Geofence.NEVER_EXPIRE;
     private final static int GEOFENCE_REQ_CODE = 0;
     private PendingIntent geoFencePendingIntent;
+    Executor executorService = Executors.newFixedThreadPool(2);
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        executorService.execute(() -> {
+            this.callbackContext = callbackContext;
+            context = this;
+            try {
+                database = sqlitewraper.getDatabase();
+                site_lat = args.getJSONObject(0).getString("site_lat");
+                site_lng = args.getJSONObject(0).getString("site_long");
+                company_id = args.getJSONObject(0).getString("Company_Id");
+                username = args.getJSONObject(0).getString("Username");
+                selected_sitename = args.getJSONObject(0).getString("Customer_Unique");
+                server_task_id = args.getJSONObject(0).getString("Task_Id");
+                radius = args.getJSONObject(0).getString("Radius");
+                supportDetails = args.getJSONObject(0).getString("Support_Details");
+                customerId = args.getJSONObject(0).getString("customer_id");
 
-        this.callbackContext = callbackContext;
-        context = this;
-        database = sqlitewraper.getDatabase();
-        site_lat = args.getJSONObject(0).getString("site_lat");
-        site_lng = args.getJSONObject(0).getString("site_long");
-        company_id = args.getJSONObject(0).getString("Company_Id");
-        username = args.getJSONObject(0).getString("Username");
-        selected_sitename = args.getJSONObject(0).getString("Customer_Unique");
-        server_task_id = args.getJSONObject(0).getString("Task_Id");
-        radius = args.getJSONObject(0).getString("Radius");
-        supportDetails = args.getJSONObject(0).getString("Support_Details");
-        customerId = args.getJSONObject(0).getString("customer_id");
-
-        // geofence with task without customer id 29-07-2024
+                // geofence with task without customer id 29-07-2024
 //        if (customerId.equalsIgnoreCase("0")) {
 //            String message = "Customer id may be 0";
 //            this.callbackContext.error(message);
@@ -98,8 +103,12 @@ public class SupportPageMapsPlugin_Green extends CordovaPlugin implements Locati
 //            getLocation();
 //        }
 
-        getLocation();
+                getLocation();
+            } catch (Exception e) {
+                this.callbackContext.error(e.toString());
+            }
 
+        });
         return true;
     }
 
@@ -177,7 +186,7 @@ public class SupportPageMapsPlugin_Green extends CordovaPlugin implements Locati
                     c.put("flowid", flowid);
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         public void run() {
-                            Toast toast = Toast.makeText(sqlitewraper.context,customerId + "- In ", Toast.LENGTH_LONG);
+                            Toast toast = Toast.makeText(sqlitewraper.context, customerId + "- In ", Toast.LENGTH_LONG);
                             toast.show();
                         }
                     });
@@ -187,17 +196,15 @@ public class SupportPageMapsPlugin_Green extends CordovaPlugin implements Locati
                 //start monitoring out event for specific place
                 if (!customerId.equalsIgnoreCase("0")) {
                     MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
-                    pref.putString("isTripPauseAfterTask","true");
+                    pref.putString("isTripPauseAfterTask", "true");
                     pref.commit();
                     startGeofence(new LatLng(Double.parseDouble(site_lat), Double.parseDouble(site_lng)), customerId, Float.parseFloat(radius), 1);
                     String ismapcheck;
-                    ismapcheck = pref.getString("IsMapcheck","false");
-                    if(LocationOutageUtils.isPiP)
-                    {
+                    ismapcheck = pref.getString("IsMapcheck", "false");
+                    if (LocationOutageUtils.isPiP) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            if (ismapcheck.equalsIgnoreCase("true"))
-                            {
-                                pref.putString("IsMapcheck","false");
+                            if (ismapcheck.equalsIgnoreCase("true")) {
+                                pref.putString("IsMapcheck", "false");
                                 pref.commit();
                                 TripBackgroundMapActivity.mActivity.finish();
                             }
@@ -236,18 +243,16 @@ public class SupportPageMapsPlugin_Green extends CordovaPlugin implements Locati
                 if (!customerId.equalsIgnoreCase("0")) {
                     //start monitoring out event for specific place
                     MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
-                    pref.putString("isTripPauseAfterTask","true");
+                    pref.putString("isTripPauseAfterTask", "true");
                     pref.commit();
                     startGeofence(new LatLng(Double.parseDouble(site_lat), Double.parseDouble(site_lng)), customerId, Float.parseFloat(radius), 1);
 
                     String ismapcheck;
-                    ismapcheck = pref.getString("IsMapcheck","false");
-                    if(LocationOutageUtils.isPiP)
-                    {
+                    ismapcheck = pref.getString("IsMapcheck", "false");
+                    if (LocationOutageUtils.isPiP) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            if (ismapcheck.equalsIgnoreCase("true"))
-                            {
-                                pref.putString("IsMapcheck","false");
+                            if (ismapcheck.equalsIgnoreCase("true")) {
+                                pref.putString("IsMapcheck", "false");
                                 pref.commit();
                                 TripBackgroundMapActivity.mActivity.finish();
                             }
