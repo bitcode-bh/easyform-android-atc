@@ -65,181 +65,188 @@ public class location_server extends WakefulIntentService {
 	protected void doWakefulWork(Intent arg0) {
 
 		if (sqlitewraper.internetflag == 1) {
-			time = System.currentTimeMillis();
-			database = sqlitewraper.getDatabase();
-			NewWebservicesCallEasyform = new NewWebservicesCallEasyform();
+			MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+			String companyFeatureid = prefs.getString("authcompanyfid", "0");
+			if (companyFeatureid == null || companyFeatureid.equalsIgnoreCase("") || companyFeatureid.equalsIgnoreCase("0")) {
 
-			int tid_n = 0;
+			} else {
 
-			c = database
-					.rawQuery(
-							"select _id,lat,lon,date,date_s,accuracy,provider,IS_SEND,address,username,speed,lac from location_log where IS_SEND='0'",
-							null);
 
-			c.moveToFirst();
-			int count = c.getCount();
-			if (c.getCount() > 0) {
-				for (int i = 0; i < c.getCount(); i++) {
-					try {
-						int p_flag, f_flag;
-						p_f = 0;
-						f_f = 0;
-						int tid = c.getInt(0);
-						tid_n = tid;
-						String lat = c.getString(1);
-						String lon = c.getString(2);
-						String date = c.getString(3);
-						String date_s = c.getString(4);
-						String accuracy = c.getString(5);
-						String provider = c.getString(6);
+				time = System.currentTimeMillis();
+				database = sqlitewraper.getDatabase();
+				NewWebservicesCallEasyform = new NewWebservicesCallEasyform();
 
-						pref = sqlitewraper.getSecureShared("MyPref");
-						pref.putLong("uploadmilisecond",Long.valueOf(date));
-						pref.commit();
+				int tid_n = 0;
 
-						int IS_SEND = c.getInt(7);
-						String username = c.getString(9);
-						String speed = c.getString(10);
-//						String address = add(Double.valueOf(lat), Double.valueOf(lon));
-						String address = AddressApi.getCompleteAddress(Double.valueOf(lat), Double.valueOf(lon));
+				c = database
+						.rawQuery(
+								"select _id,lat,lon,date,date_s,accuracy,provider,IS_SEND,address,username,speed,lac from location_log where IS_SEND='0'",
+								null);
 
-						String is_trip_location = c.getString(11);
-
-						String imei1 = DeviceEventsUtils.getImei();
+				c.moveToFirst();
+				int count = c.getCount();
+				if (c.getCount() > 0) {
+					for (int i = 0; i < c.getCount(); i++) {
 						try {
-							JSONObject ret = getLocationInfo(
-									Double.valueOf(lat), Double.valueOf(lon));
-							JSONObject add1;
-							String location_string = null;
+							int p_flag, f_flag;
+							p_f = 0;
+							f_f = 0;
+							int tid = c.getInt(0);
+							tid_n = tid;
+							String lat = c.getString(1);
+							String lon = c.getString(2);
+							String date = c.getString(3);
+							String date_s = c.getString(4);
+							String accuracy = c.getString(5);
+							String provider = c.getString(6);
 
-							add1 = ret.getJSONArray("results").getJSONObject(0);
+							pref = sqlitewraper.getSecureShared("MyPref");
+							pref.putLong("uploadmilisecond", Long.valueOf(date));
+							pref.commit();
 
-							address = add1.getString("formatted_address");
-						} catch (Exception e) {
-						}
+							int IS_SEND = c.getInt(7);
+							String username = c.getString(9);
+							String speed = c.getString(10);
+//						String address = add(Double.valueOf(lat), Double.valueOf(lon));
+							String address = AddressApi.getCompleteAddress(Double.valueOf(lat), Double.valueOf(lon));
 
-						if (address == null) {
+							String is_trip_location = c.getString(11);
 
+							String imei1 = DeviceEventsUtils.getImei();
 							try {
+								JSONObject ret = getLocationInfo(
+										Double.valueOf(lat), Double.valueOf(lon));
+								JSONObject add1;
+								String location_string = null;
 
-								Geocoder gcd = new Geocoder(
-										sqlitewraper.context,
-										Locale.getDefault());
-								List<Address> addresses = gcd.getFromLocation(
-										Double.valueOf(lat),
-										Double.valueOf(lon), 1);
-								if (addresses.size() > 0) {
-									Address a = addresses.get(0);
-									for (int k = 0; k < a
-											.getMaxAddressLineIndex(); k++) {
-										if (address == null)
-											address = a.getAddressLine(k);
-										else
-											address = address + ","
-													+ a.getAddressLine(k);
-									}
-									address = address + ","
-											+ a.getCountryName();
-								}
+								add1 = ret.getJSONArray("results").getJSONObject(0);
 
+								address = add1.getString("formatted_address");
 							} catch (Exception e) {
-								//e.printStackTrace();
-
 							}
 
-						}
+							if (address == null) {
 
-						ArrayList<String> utcmi;
-						utcmi = utcCalculationOffset(String.valueOf(time));
-						String timezone = utcmi.get(1);
-						String utcmilliseconds = utcmi.get(0);
+								try {
 
+									Geocoder gcd = new Geocoder(
+											sqlitewraper.context,
+											Locale.getDefault());
+									List<Address> addresses = gcd.getFromLocation(
+											Double.valueOf(lat),
+											Double.valueOf(lon), 1);
+									if (addresses.size() > 0) {
+										Address a = addresses.get(0);
+										for (int k = 0; k < a
+												.getMaxAddressLineIndex(); k++) {
+											if (address == null)
+												address = a.getAddressLine(k);
+											else
+												address = address + ","
+														+ a.getAddressLine(k);
+										}
+										address = address + ","
+												+ a.getCountryName();
+									}
 
+								} catch (Exception e) {
+									//e.printStackTrace();
 
-						// ------------------put data in jason----------------//
-
-						JSONObject data1 = new JSONObject();
-						data1.put("cellid", imei1);
-						data1.put("lat", lat);
-						data1.put("username", username);
-						data1.put("lon", lon);
-						data1.put("date", date);
-						data1.put("date_s", date_s);
-						data1.put("accuracy", accuracy);
-						data1.put("provider", provider);
-						data1.put("IS_SEND", IS_SEND);
-						data1.put("address", address);
-						data1.put("speed", speed);
-						data1.put("timezone", timezone);
-						data1.put("utcmilliseconds", utcmilliseconds);
-						data1.put("is_trip_location",is_trip_location);
-						// --------------- put jason
-						// auth-----------------------//
-
-						Cursor c3 = database.rawQuery(
-								"SELECT username,u_c ,company_id FROM Login_Master where username='"
-										+ username + "'", null);
-						c3.moveToFirst();
-						JSONObject data2 = new JSONObject();
-						if (c3.getCount() > 0) {
-							String username1 = c3.getString(0);
-							B_new b = new B_new();
-							String u_c = b.GetValue();
-							data2.put("username", username);
-							data2.put("u_c", u_c);
-						}
-						c3.close();
-
-
-						//temporary call to server is closed as per suggestion
-						isUpload=true;
-
-						if (isUpload){
-
-							String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURL, METHOD_NAME_corner,data2);
-
-							JSONArray jsonArray = new JSONArray(restext);
-							String status1 = null;
-							for (int k1 = 0; k1 < jsonArray.length(); k1++) {
-								JSONObject jsonObject = jsonArray.getJSONObject(0);
-								status1 = jsonObject.getString("status");
-							}
-							if (status1.equalsIgnoreCase("1")) {
-								{
-									String t;
-									t = "_id='" + tid + "'";
-									ContentValues t_i = new ContentValues();
-									t_i.put("IS_SEND", 1);
-									long task = database.update("location_log",
-											t_i, t, null);
-									task++;
-									c.moveToNext();
 								}
+
 							}
 
+							ArrayList<String> utcmi;
+							utcmi = utcCalculationOffset(String.valueOf(time));
+							String timezone = utcmi.get(1);
+							String utcmilliseconds = utcmi.get(0);
 
-						}else {
 
-							String t;
-							t = "_id='" + tid + "'";
-							ContentValues t_i = new ContentValues();
-							t_i.put("IS_SEND", 1);
-							long task = database.update("location_log",
-									t_i, t, null);
-							task++;
-							c.moveToNext();
+							// ------------------put data in jason----------------//
+
+							JSONObject data1 = new JSONObject();
+							data1.put("cellid", imei1);
+							data1.put("lat", lat);
+							data1.put("username", username);
+							data1.put("lon", lon);
+							data1.put("date", date);
+							data1.put("date_s", date_s);
+							data1.put("accuracy", accuracy);
+							data1.put("provider", provider);
+							data1.put("IS_SEND", IS_SEND);
+							data1.put("address", address);
+							data1.put("speed", speed);
+							data1.put("timezone", timezone);
+							data1.put("utcmilliseconds", utcmilliseconds);
+							data1.put("is_trip_location", is_trip_location);
+							// --------------- put jason
+							// auth-----------------------//
+
+							Cursor c3 = database.rawQuery(
+									"SELECT username,u_c ,company_id FROM Login_Master where username='"
+											+ username + "'", null);
+							c3.moveToFirst();
+							JSONObject data2 = new JSONObject();
+							if (c3.getCount() > 0) {
+								String username1 = c3.getString(0);
+								B_new b = new B_new();
+								String u_c = b.GetValue();
+								data2.put("username", username);
+								data2.put("u_c", u_c);
+							}
+							c3.close();
+
+
+							//temporary call to server is closed as per suggestion
+							isUpload = true;
+
+							if (isUpload) {
+
+								String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURL, METHOD_NAME_corner, data2);
+
+								JSONArray jsonArray = new JSONArray(restext);
+								String status1 = null;
+								for (int k1 = 0; k1 < jsonArray.length(); k1++) {
+									JSONObject jsonObject = jsonArray.getJSONObject(0);
+									status1 = jsonObject.getString("status");
+								}
+								if (status1.equalsIgnoreCase("1")) {
+									{
+										String t;
+										t = "_id='" + tid + "'";
+										ContentValues t_i = new ContentValues();
+										t_i.put("IS_SEND", 1);
+										long task = database.update("location_log",
+												t_i, t, null);
+										task++;
+										c.moveToNext();
+									}
+								}
+
+
+							} else {
+
+								String t;
+								t = "_id='" + tid + "'";
+								ContentValues t_i = new ContentValues();
+								t_i.put("IS_SEND", 1);
+								long task = database.update("location_log",
+										t_i, t, null);
+								task++;
+								c.moveToNext();
+							}
+
+						} catch (Exception e) {
+							//e.printStackTrace();
+
 						}
-
-					} catch (Exception e) {
-						//e.printStackTrace();
-
 					}
 				}
-			}
-			try {
-				c.close();
-			} catch (Exception e) {
+				try {
+					c.close();
+				} catch (Exception e) {
 
+				}
 			}
 		}
 	}

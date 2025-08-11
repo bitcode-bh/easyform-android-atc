@@ -57,7 +57,14 @@ public class newfused_recevier extends BroadcastReceiver {
         boolean isuploadlastentry = pref.getBoolean("isuploadlastentry",false);
 //        check location and upload in server
         if(isuploadlastentry) {
-            Check_location_and_upload();
+            MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+            String companyFeatureid = prefs.getString("authcompanyfid", "0");
+            if (companyFeatureid == null || companyFeatureid.equalsIgnoreCase("") || companyFeatureid.equalsIgnoreCase("0")) {
+
+            } else {
+                Check_location_and_upload();
+            }
+
         }
     }
 

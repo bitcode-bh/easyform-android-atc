@@ -41,6 +41,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.trip.LocationOutageUtils;
 
 import net.sqlcipher.database.SQLiteDatabase;
@@ -442,8 +443,15 @@ public class touch_server extends WakefulIntentService implements
             }
 
             try {
-                restext1 = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(jsonObj, WCFURL, METHOD_NAME_corner, jsonObj);
-                Log.d("##touchserverResponse", restext1);
+                MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+                String companyFeatureid = prefs.getString("authcompanyfid", "0");
+                if (companyFeatureid == null || companyFeatureid.equalsIgnoreCase("") || companyFeatureid.equalsIgnoreCase("0")) {
+
+                } else {
+                    restext1 = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(jsonObj, WCFURL, METHOD_NAME_corner, jsonObj);
+                    Log.d("##touchserverResponse", restext1);
+                }
+
 
             } catch (Exception e) {
                 e.printStackTrace();

@@ -44,6 +44,7 @@ import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.google.android.gms.maps.model.LatLng;
+import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.utils.LogUtils;
 
 import io.michaelrocks.paranoid.Obfuscate;
@@ -71,7 +72,11 @@ public class Event extends WakefulIntentService {
         try {
 
             if (sqlitewraper.internetflag == 1) {
+                MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+                String companyFeatureid = prefs.getString("authcompanyfid", "0");
+                if (companyFeatureid == null || companyFeatureid.equalsIgnoreCase("") || companyFeatureid.equalsIgnoreCase("0")) {
 
+                } else {
                 database = sqlitewraper.getDatabase();
                 // added more event type upload time 03/12/2024
                 check = database
@@ -239,7 +244,7 @@ public class Event extends WakefulIntentService {
 
                 }
                 check.close();
-
+                }
             }
 
         } catch (Exception e) {
