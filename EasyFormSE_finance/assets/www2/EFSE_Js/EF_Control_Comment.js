@@ -82,7 +82,9 @@ function get_control_wise_comments_for_filled_form(t_obj, check_type, cntrl_que_
             $('.popup-control-comment').find('.messages-content').scrollTop(9999);
 
             loading_hide();
-        }, onfail);
+        }, function (e) {
+            loading_hide();
+        });
         getdata.callOtherDomain();
     }
     catch (e) {

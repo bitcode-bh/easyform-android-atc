@@ -1848,7 +1848,9 @@ get_statusName_from_numericStatus = () => {
 
             loading_hide();
 
-        }, onfail);
+        }, function (e) {
+            loading_hide();
+        });
         getdata.callOtherDomain();
     }
     catch (e) {
