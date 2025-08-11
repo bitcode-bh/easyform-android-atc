@@ -100,6 +100,7 @@ public class f_upload_new_structure extends WakefulIntentService {
     // upload still violation entry
     private static final String METHOD_NAME_corner13 = "Insert_Device_Event_Master";
 
+    private static final String WCFURLNotification = sqlitewraper.context.getResources().getString(R.string.WCFURL);
     // for status change comment
     private static final String METHOD_NAME_corner7 = "WCF_Mobile_Notification_Master";
     // for get status name
@@ -3181,7 +3182,7 @@ public class f_upload_new_structure extends WakefulIntentService {
             data1.put("Flow_id", moduleid);
             data1.put("Flag", "get_data");
 
-            String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURL, METHOD_NAME_corner8, data1);
+            String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURLNotification, METHOD_NAME_corner8, data1);
             JSONArray jsonArray = new JSONArray(restext);
             String status1 = null;
 
@@ -3276,7 +3277,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                 data1.put("client_request_id", client_id);
 
 
-                String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURL, METHOD_NAME_corner7, data1);
+                String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURLNotification, METHOD_NAME_corner7, data1);
                 JSONArray jsonArray = new JSONArray(restext);
                 String status1 = null;
 
