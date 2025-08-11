@@ -2430,6 +2430,7 @@ function clear_localStorage() {
     let viewsite_btn_text_color = JSON.parse(storage.getItem('viewsite_btn_text_color'));
     let theme_lbl_theme_header = JSON.parse(storage.getItem('theme_lbl_theme_header'));
     let theme_logo_base64 = JSON.parse(storage.getItem('theme_logo_base64'));
+    let support_refrences1 = JSON.parse(storage.getItem('support_refrences1'));
 
     let shortest_path = localStorage.getItem('shortest_path');
     let json = localStorage.getItem('json');
@@ -2474,7 +2475,7 @@ function clear_localStorage() {
     storage.setItem('viewsite_btn_text_color', JSON.stringify(viewsite_btn_text_color));
     storage.setItem('theme_lbl_theme_header', JSON.stringify(theme_lbl_theme_header));
     storage.setItem('theme_logo_base64', JSON.stringify(theme_logo_base64));
-
+    storage.setItem('support_refrences1', JSON.stringify(support_refrences1));
 
     localStorage.setItem('shortest_path', shortest_path);
     localStorage.setItem('json', json);
