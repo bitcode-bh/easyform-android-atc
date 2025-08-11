@@ -2395,7 +2395,13 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                                 var def_id = default_value[0].id;
                                 var def_text = default_value[0].text;
 
-                                newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + ' default_value="1">' + op_str + '<option selected="selected" value="' + def_id + '">' + def_text + '</option></select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-10%;"></i></div>';
+                                if (def_text == "" || def_text == null || def_text == undefined) {
+                                    // default value not found
+                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + '>' + op_str + '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-10%;"></i></div>';
+                                }
+                                else {
+                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + ' default_value="1">' + op_str + '<option selected="selected" value="' + def_id + '">' + def_text + '</option></select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-10%;"></i></div>';
+                                }
                             }
 
                             newdiv += qr_ico_str;
