@@ -290,11 +290,19 @@ public final class barcodeactivity extends AppCompatActivity
     public void onBackPressed() {
         super.onBackPressed();
         if (cameraSource != null) {
-            cameraSource.release();
-            Intent i = new Intent();
-            setResult(android.app.Activity.RESULT_CANCELED, i);
-            finish();
+            try {
+                cameraSource.release(); // Safely release the camera
+            } catch (Exception e) {
+                Log.e("CameraActivity", "Error releasing camera source", e);
+            } finally {
+                cameraSource = null; // Avoid memory leaks by clearing the reference
+            }
         }
+
+        Intent i = new Intent();
+        setResult(android.app.Activity.RESULT_CANCELED, i);
+        finish();
+
     }
 
     private String[] getRequiredPermissions() {
