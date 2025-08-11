@@ -162,121 +162,130 @@ public class f_upload_new_structure extends WakefulIntentService {
         Log.d("####INTERNET_FLAG", String.valueOf(sqlitewraper.internetflag));
         if (sqlitewraper.internetflag == 1) {
 
-            //upload if there is any FCM data upload to pending
-            fcmDataUpload();
+            MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+            String companyFeatureid = prefs.getString("authcompanyfid", "0");
 
-            generateNotification(5, null, 0, 0);
+            if( companyFeatureid == null || companyFeatureid.equalsIgnoreCase("") || companyFeatureid.equalsIgnoreCase("0") )
+            {
 
-            database = sqlitewraper.getDatabase();
-            NewWebservicesCallEasyform = new NewWebservicesCallEasyform();
+            }
+            else {
+                //upload if there is any FCM data upload to pending
+                fcmDataUpload();
 
-            b = new B_new();
+                generateNotification(5, null, 0, 0);
 
-            //task create upload
-            int ser_data = upload_task();
+                database = sqlitewraper.getDatabase();
+                NewWebservicesCallEasyform = new NewWebservicesCallEasyform();
 
-            //fake location upload
-            int location_flag = upload_fakelocation();
+                b = new B_new();
 
-            //pending Geofence upload
-            int geofenceupload = GeofenceDownlaod.uploadGeofenceTracking();
+                //task create upload
+                int ser_data = upload_task();
 
-            // upload still violation events 27-12-2023
-            UploadStillViolation();
+                //fake location upload
+                int location_flag = upload_fakelocation();
 
-            //MAINTASK/SUBTASK UPLOAD START FROM HERE
-            c = database
-                    .rawQuery(
-                            "select tid,siteid,checksheetid,height,tower_type,server_task_id,status,step,millisecond,edit_flag from task_master where ((server_task_id !='0' and (p_tid is null or p_tid is 'null' or p_tid is '')) or (p_server_task_id is not null and p_tid is not null and server_task_id!='0')) and flag='1'",
-                            null);
-            c.moveToFirst();
-            int count = c.getCount();
-            if (c.getCount() > 0) {
-                for (int i = 0; i < c.getCount(); i++) {
-                    try {
-                        int tid = c.getInt(0);
+                //pending Geofence upload
+                int geofenceupload = GeofenceDownlaod.uploadGeofenceTracking();
 
-                        generateNotification(4, String.valueOf(tid), c.getCount(), i + 1);
+                // upload still violation events 27-12-2023
+                UploadStillViolation();
 
-                        //take sub task of selected task
-                        c_sub = database
-                                .rawQuery(
-                                        "select tid,siteid,checksheetid,height,tower_type,server_task_id,status,step,millisecond,edit_flag from task_master where ((p_server_task_id is not null and p_tid is not null and server_task_id!='0')) and flag='1' and p_tid=" + tid + " ",
-                                        null);
-                        c_sub.moveToFirst();
+                //MAINTASK/SUBTASK UPLOAD START FROM HERE
+                c = database
+                        .rawQuery(
+                                "select tid,siteid,checksheetid,height,tower_type,server_task_id,status,step,millisecond,edit_flag from task_master where ((server_task_id !='0' and (p_tid is null or p_tid is 'null' or p_tid is '')) or (p_server_task_id is not null and p_tid is not null and server_task_id!='0')) and flag='1'",
+                                null);
+                c.moveToFirst();
+                int count = c.getCount();
+                if (c.getCount() > 0) {
+                    for (int i = 0; i < c.getCount(); i++) {
+                        try {
+                            int tid = c.getInt(0);
 
-                        for (int j = 0; j < c_sub.getCount(); j++) {
-                            try {
-                                int tid_sub = c_sub.getInt(0);
-                                String siteid = c_sub.getString(1);
-                                int checksheetid = c_sub.getInt(2);
-                                // not using so comments
-                                // float height = (float) c_sub.getDouble(3);
-                                // String tower_type = c_sub.getString(4);
-                                int server_task_id = c_sub.getInt(5);
-                                int status = c_sub.getInt(6);
-                                int step = c_sub.getInt(7);
-                                String task_milli = c_sub.getString(8);
-                                String editFlag = c_sub.getString(9);
-                                upload_task_master(tid_sub, server_task_id, siteid, checksheetid, step, status,
-                                        task_milli, editFlag);
+                            generateNotification(4, String.valueOf(tid), c.getCount(), i + 1);
 
-                            } catch (Exception e) {
+                            //take sub task of selected task
+                            c_sub = database
+                                    .rawQuery(
+                                            "select tid,siteid,checksheetid,height,tower_type,server_task_id,status,step,millisecond,edit_flag from task_master where ((p_server_task_id is not null and p_tid is not null and server_task_id!='0')) and flag='1' and p_tid=" + tid + " ",
+                                            null);
+                            c_sub.moveToFirst();
 
-                                LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_TASK_SUB");
+                            for (int j = 0; j < c_sub.getCount(); j++) {
+                                try {
+                                    int tid_sub = c_sub.getInt(0);
+                                    String siteid = c_sub.getString(1);
+                                    int checksheetid = c_sub.getInt(2);
+                                    // not using so comments
+                                    // float height = (float) c_sub.getDouble(3);
+                                    // String tower_type = c_sub.getString(4);
+                                    int server_task_id = c_sub.getInt(5);
+                                    int status = c_sub.getInt(6);
+                                    int step = c_sub.getInt(7);
+                                    String task_milli = c_sub.getString(8);
+                                    String editFlag = c_sub.getString(9);
+                                    upload_task_master(tid_sub, server_task_id, siteid, checksheetid, step, status,
+                                            task_milli, editFlag);
+
+                                } catch (Exception e) {
+
+                                    LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_TASK_SUB");
+
+                                }
+                                c_sub.moveToNext();
 
                             }
-                            c_sub.moveToNext();
 
-                        }
+                            cursorClose(c_sub);
 
-                        cursorClose(c_sub);
+                            //parent task upload
 
-                        //parent task upload
-
-                        c_sub = database
-                                .rawQuery(
-                                        "select tid,siteid,checksheetid,height,tower_type,server_task_id,status,step,millisecond from task_master where   flag='1' and p_tid=" + tid + " ",
-                                        null);
-                        c_sub.moveToFirst();
+                            c_sub = database
+                                    .rawQuery(
+                                            "select tid,siteid,checksheetid,height,tower_type,server_task_id,status,step,millisecond from task_master where   flag='1' and p_tid=" + tid + " ",
+                                            null);
+                            c_sub.moveToFirst();
 
 
-                        if (c_sub.getCount() == 0) {
+                            if (c_sub.getCount() == 0) {
 
 
-                            try {
-                                int tid_sub = c.getInt(0);
-                                String siteid = c.getString(1);
-                                int checksheetid = c.getInt(2);
-                                // not using so comments
+                                try {
+                                    int tid_sub = c.getInt(0);
+                                    String siteid = c.getString(1);
+                                    int checksheetid = c.getInt(2);
+                                    // not using so comments
                                 /* float height = (float) c.getDouble(3);
                                 String tower_type = c.getString(4); */
-                                int server_task_id = c.getInt(5);
-                                int status = c.getInt(6);
-                                int step = c.getInt(7);
-                                String task_milli = c.getString(8);
-                                String edtiFlag = c.getString(9);
-                                upload_task_master(tid_sub, server_task_id, siteid, checksheetid, step, status, task_milli, edtiFlag);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_TASK_MAIN");
+                                    int server_task_id = c.getInt(5);
+                                    int status = c.getInt(6);
+                                    int step = c.getInt(7);
+                                    String task_milli = c.getString(8);
+                                    String edtiFlag = c.getString(9);
+                                    upload_task_master(tid_sub, server_task_id, siteid, checksheetid, step, status, task_milli, edtiFlag);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_TASK_MAIN");
 
+                                }
+                                cursorClose(c_sub);
                             }
-                            cursorClose(c_sub);
-                        }
 
-                    } catch (Exception e) {
-                        LogUtils.writeUploadLogToFile(e.toString(), "", "f_upload_new_structure");
-                        ////e.printStackTrace()();
+                        } catch (Exception e) {
+                            LogUtils.writeUploadLogToFile(e.toString(), "", "f_upload_new_structure");
+                            ////e.printStackTrace()();
+                        }
+                        c.moveToNext();
                     }
-                    c.moveToNext();
                 }
+                cursorClose(c);
+                //CHECK IF THERE ANY PENDING TASK
+                check_f_and_p_master();
+                generateNotification(7, null, 0, 0);
+                // upload_path();
             }
-            cursorClose(c);
-            //CHECK IF THERE ANY PENDING TASK
-            check_f_and_p_master();
-            generateNotification(7, null, 0, 0);
-            // upload_path();
         }
     }
 

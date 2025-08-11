@@ -1286,19 +1286,28 @@ class DownloadMainStructure {
             String roleid = prefs.getString("authroleidn", "0");
             String companyFeatureid = prefs.getString("authcompanyfid", "0");
 
-            httpGet.addHeader("auth1", data2.toString());
-            httpGet.addHeader("uname", username);
-            httpGet.addHeader("u_c", u_c);
-            httpGet.addHeader("Role_Id", roleid);
-            httpGet.addHeader("Company_Feature_Id", companyFeatureid);
+            if( companyFeatureid == null || companyFeatureid.equalsIgnoreCase("") || companyFeatureid.equalsIgnoreCase("0") )
+            {
+                    return null;
+            }
+            else {
+                httpGet.addHeader("auth1", data2.toString());
+                httpGet.addHeader("uname", username);
+                httpGet.addHeader("u_c", u_c);
+                httpGet.addHeader("Role_Id", roleid);
+                httpGet.addHeader("Company_Feature_Id", companyFeatureid);
 
-            JSONArray jsds = new JSONArray();
-            jsds.put(data);
+                JSONArray jsds = new JSONArray();
+                jsds.put(data);
 //            httpGet.setEntity(new StringEntity(jsds.toString(), HTTP.UTF_8));
-            HttpResponse response = client.execute(httpGet);
-            StatusLine statusLine = response.getStatusLine();
-            int statusCode = statusLine.getStatusCode();
-            httpResponse = response;
+                HttpResponse response = client.execute(httpGet);
+                StatusLine statusLine = response.getStatusLine();
+                int statusCode = statusLine.getStatusCode();
+                httpResponse = response;
+
+            }
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
