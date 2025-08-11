@@ -5852,17 +5852,16 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
             }
             else {
                 if (Type20_AutoFill_DDL_Array.length > 1) {
-                    //Type20_AutoFill_DDL_Array = [];              // commented on 04072019 - due to creating issue when there is collpsible and multiple type20 are available in single form  
-                    if (form_flag == 3) {
+                    //Type20_AutoFill_DDL_Array = [];              // commented on 04072019 - due to creating issue when there is collpsible and multiple type20 are available in single form
+
+                    // pv revenue leakage 30 checksheets - mk - 20052025
+                    var data_json = JSON.parse(storage.getItem('list_json'));
+                    var list_data = JSON.parse(data_json);
+                    var old_task_log = list_data[0].old_task_log;
+                    if (old_task_log == "true") {
                         Type20_AutoFill_DDL_Array = [];
                     }
-                    else {
-                        let blankAnsArray = $.grep(Type20_AutoFill_DDL_Array, function (item) {
-                            return item.answer == ""; // Remove blank ans object
-                        });
 
-                        Type20_AutoFill_DDL_Array = blankAnsArray;
-                    }
                 }
                 else {
                     Type20_AutoFill_DDL_Array = [];

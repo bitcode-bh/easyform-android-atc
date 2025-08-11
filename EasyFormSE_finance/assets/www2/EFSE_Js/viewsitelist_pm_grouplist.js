@@ -1336,19 +1336,36 @@ function onsuccess_get_list_of_pm_checksheets(e) {
 }
 
 
-function show_hide_group_checksheet() {
+function show_hide_group_checksheet(t_elem) {
     // remove autoscroll after checksheet submit - atc - 09062020
     //var scroll_top = $(".list_grp_checksheet").position().top;
     //$(".list_grp_checksheet").parents('.page-content').animate({ scrollTop: scroll_top });
 
-    var check_disp = $('.cls_grp_chekchseet').css('display');
-    if (check_disp == "none") {
-        $("#icon_group_checksheet").attr('class', 'fa fa-minus-square-o');
-        $('.cls_grp_chekchseet').show();
+    let t_group_name = $(t_elem).attr("group_ico");
+    if (t_group_name == "" || t_group_name == null || t_group_name == undefined) {
+        // listing from viewsitelist_pm_grouplist
+        var check_disp = $('.cls_grp_chekchseet').css('display');
+        if (check_disp == "none") {
+            $("#icon_group_checksheet").attr('class', 'fa fa-minus-square-o');
+            $('.cls_grp_chekchseet').show();
+        }
+        else {
+            $("#icon_group_checksheet").attr('class', 'fa fa-plus-square-o');
+            $('.cls_grp_chekchseet').hide();
+        }
     }
     else {
-        $("#icon_group_checksheet").attr('class', 'fa fa-plus-square-o');
-        $('.cls_grp_chekchseet').hide();
+        // listing from hybrid viewsitelist_sub_task_hybrid
+        //var check_disp = $('.cls_grp_chekchseet').css('display');
+        var curr_class = $(t_elem).find('i').attr("class");
+        if (curr_class == "fa fa-plus-square-o") {
+            $(t_elem).find('i').attr("class", 'fa fa-minus-square-o');
+            $("#checksheet_list li[group_name='" + t_group_name + "']").show();
+        }
+        else {
+            $(t_elem).find('i').attr("class", 'fa fa-plus-square-o');
+            $("#checksheet_list li[group_name='" + t_group_name + "']").hide();
+        }
     }
 }
 

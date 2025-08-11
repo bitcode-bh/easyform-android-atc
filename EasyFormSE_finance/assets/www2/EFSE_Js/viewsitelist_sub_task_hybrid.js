@@ -32,6 +32,7 @@ function onsuccess_get_checklist_data_for_subtask_hybrid(e) {
             var flow_id = flow_Array[flow_Array.length - 1].wayflow;
             var flow_flowname = flow_Array[flow_Array.length - 1].wayflow_name;
             //alert1(flow_flowname + " (" + flow_id + ") flow not found in flow master ! ");
+            loading_hide();
 
             // get flow online 20102021 
             get_checklist_data_for_subtask_hybrid_online(flow_id);
@@ -96,11 +97,31 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
         storage.setItem('start_status', JSON.stringify(start_status));
         var checksheet_list = JSON.parse(storage.getItem('task_data_column'));
 
-        // sort checklist array by order_id
-        checksheet_list = checksheet_list.sort(function (a, b) {
-            var x = a.order_id < b.order_id ? -1 : 1;
-            return x;
-        });
+        let group_found = 0;
+        for (c = 0; c < checksheet_list.length; c++) {
+            let Group_Name = checksheet_list[c].Group_Name;
+            if (Group_Name == "" || Group_Name == null || Group_Name == undefined) { }
+            else {
+                group_found++;
+                break;
+            }
+        }
+
+        if (group_found == 0) {
+            // sort checklist array by order_id
+            checksheet_list = checksheet_list.sort(function (a, b) {
+                var x = a.order_id < b.order_id ? -1 : 1;
+                return x;
+            });
+        }
+        else {
+            // sort checklist array by group name
+            checksheet_list = checksheet_list.sort(function (a, b) {
+                var x = a.Group_Name < b.Group_Name ? -1 : 1;
+                return x;
+            });
+        }
+
 
         // /--- set global values in storage start ------/ //
         var global_var_obj = myArray[0].global_var;
@@ -149,7 +170,8 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                     "sub_flow_name": checksheet_list[j].sub_flow_name,
                     "udf_name": checksheet_list[j].udf_name,
                     "id": checksheet_list[j].id,
-                    "type": checksheet_list[j].type
+                    "type": checksheet_list[j].type,
+                    "Group_Name": checksheet_list[j].Group_Name
                 });
             }
         } else {
@@ -198,7 +220,8 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                         "sub_flow_name": checksheet_list[j].sub_flow_name,
                         "udf_name": checksheet_list[j].udf_name,
                         "id": checksheet_list[j].id,
-                        "type": checksheet_list[j].type
+                        "type": checksheet_list[j].type,
+                        "Group_Name": checksheet_list[j].Group_Name
                     });
                 }
             } else {
@@ -238,6 +261,8 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                             old_checksheet_list[m].udf_name = checksheet_list[k].udf_name;
                             old_checksheet_list[m].is_online = checksheet_list[k].is_online;
                             old_checksheet_list[m].is_disabled = checksheet_list[k].is_disabled;
+                            old_checksheet_list[m].c_name = checksheet_list[k].c_name;
+                            old_checksheet_list[m].Group_Name = checksheet_list[k].Group_Name;
                             loc_chk_found++;
                             break;
                         }
@@ -289,7 +314,8 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                             "sub_flow_name": checksheet_list[k].sub_flow_name,
                             "udf_name": checksheet_list[k].udf_name,
                             "id": checksheet_list[k].id,
-                            "type": checksheet_list[k].type
+                            "type": checksheet_list[k].type,
+                            "Group_Name": checksheet_list[k].Group_Name
                         });
                     }
                 }
@@ -341,6 +367,11 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status) {
         var green_id = '';
         var checksheet_displaying = 0;
 
+        var group_name_array = [];
+        var group_btn_color_array = [];
+
+        var status_checksheet_only = list_data[0].status_checksheet_only;
+
         var flow_found = 0;
         for (i = 0; i < new_checksheet_list.length; i++) {
             var c_role_id = new_checksheet_list[i].role_id;
@@ -367,7 +398,6 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status) {
 
 
                 var st_found = 0;
-                var status_checksheet_only = list_data[0].status_checksheet_only;
                 if (status_checksheet_only == 'true') {
                     if (c_start_status == start_status) {
                         // checksheet status match with current status
@@ -604,19 +634,42 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status) {
                                 var dyn_class = '';
                             }
 
-                            var icon_base64 = new_checksheet_list[i].Checksheet_Icon;
-                            if (icon_base64 == '' || icon_base64 == null || icon_base64 == undefined) {
-                                icon_base64 = "check-square-o";
-                            }
+                        var list_item = '';
 
-                            if (icon_base64.indexOf("data:image") > -1) {
-                                //----base64
-                                var list_item = '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + '" class="' + dyn_class + ' ' + class_str + '"><a class="item-content button" style="padding-left:7px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                        /////////////create checksheet group button/////////
+                        var group_name = new_checksheet_list[i].Group_Name;
+                        if (group_name == "" || group_name == null || group_name == undefined) {
+                            group_name = "";
+                            var checksheet_disp = '';
+                        }
+                        else {
+                            group_btn_color_array.push(back_color);
+
+                            var checksheet_group_name = localStorage.getItem('checksheet_group_name');
+                            if (checksheet_group_name != "" && (curr_btn_mode == "back" || curr_btn_mode == "updatetasknsubmit" || curr_btn_mode == "submit" || curr_btn_mode == "reject")) {
+                                var checksheet_disp = 'display:block;';
+                                $("#icon_group_checksheet").attr('class', 'fa fa-minus-square-o');
                             }
                             else {
-                                //----FA icon
-                                var list_item = '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + '"><a class="item-content button" style="padding-left: 8px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-' + icon_base64 + '"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                                var checksheet_disp = 'display:none;';
                             }
+
+                            //if (group_name.indexOf(group_name_array[0]) > -1) {
+                            if ($.inArray(group_name, group_name_array) !== -1) { }
+                            else {
+                                group_name_array.push(group_name);
+                                list_item += '<li class="list_grp_checksheet" group_ico="' + group_name + '" onclick="show_hide_group_checksheet(this)" style="font-weight:bold;border-right: 15px solid #2196f3;"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i id="icon_group_checksheet_' + group_name + '" class="fa fa-plus-square-o" style="color: #000;font-size:18px;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + group_name + '</div></div></a></li>';
+                            }
+                        }
+                        //////////////////////
+
+                        var icon_base64 = new_checksheet_list[i].Checksheet_Icon;
+                        if (icon_base64 == '' || icon_base64 == null || icon_base64 == undefined) {
+                            list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-check-square-o"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                        }
+                        else {
+                            list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:7px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                        }
 
                             var Background_Image = new_checksheet_list[i].Background_Image;
                             if (Background_Image == '' || Background_Image == null || Background_Image == undefined) {
