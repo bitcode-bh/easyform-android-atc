@@ -1941,11 +1941,11 @@ div[id^=div_step_Col_] .list-block ul:before, div[id^=div_step_Col_] .list-block
 
 
 /* Icon pulse */
-.fa-pulse {
-    animation: pulse 1s infinite linear;
+.fa-pulse1 {
+    animation: pulse1 1s infinite linear;
 }
 
-@keyframes pulse {
+@keyframes pulse1 {
     0% {
         opacity: 1;
     }
@@ -2568,4 +2568,12 @@ div[id^='div_weather_'] .readmore-link {
     padding-top: 10px;
     height: 20px;
     width: 100%;
+}
+
+.img-loading {
+    font-size: 30px;
+    display: table-caption;
+    position: absolute;
+    top: 10px;
+    left: 65px;
 }

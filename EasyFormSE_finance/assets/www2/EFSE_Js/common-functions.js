@@ -3663,7 +3663,7 @@ function get_column_array_for_type8_as_per_dateFormat(datetime_format, display_v
     }
 }
 
-upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_qd, autofill_form_flag) => {
+upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_qd, autofill_form_flag, t_curr_box_id) => {
     try {
         var param_obj = [];
         param_obj.push({
@@ -3679,7 +3679,9 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
             "new_t22i": "0"
         });
 
-        myApp.showPreloader('Fetching Image...');
+        $("#" + t_curr_box_id + "").parent("div").find('i.fa-spinner').remove();
+        $("#" + t_curr_box_id + "").parent("div").append('<i class="fa fa-spinner fa-pulse img-loading"></i>');
+        //myApp.showPreloader('Fetching Image...');
         var getdata = new Webservicecall_REST(global_wcf_url + 'Photo_Temp_Clone', JSON.stringify(param_obj), function (e) {
             var Suc_Message = e.responseText;
             Suc_Message = eval('(' + Suc_Message + ')');
@@ -3718,7 +3720,11 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
                 loading_hide();
             }
 
-            myApp.hidePreloader();
+            setTimeout(function () {
+                $("#" + t_curr_box_id + "").parent("div").find('i.fa-spinner').remove();
+            }, 1000, t_curr_box_id);
+            
+            //myApp.hidePreloader();
 
         }, onfail);
         getdata.callOtherDomain();

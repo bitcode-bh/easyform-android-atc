@@ -2436,6 +2436,8 @@ function clear_localStorage() {
     let json = localStorage.getItem('json');
     let version = localStorage.getItem("version");
     let udf_count_array = localStorage.getItem('udf_count_array');
+
+    let last_supportCall_date = localStorage.getItem("supportCall_date");
     let app_info = localStorage.getItem('pre_app_info');
     let ios_device = localStorage.getItem('ios_device');
 
@@ -2481,6 +2483,8 @@ function clear_localStorage() {
     localStorage.setItem('json', json);
     localStorage.setItem("version", version);
     localStorage.setItem("udf_count_array", udf_count_array);
+
+    localStorage.setItem("supportCall_date", last_supportCall_date);
     localStorage.setItem("app_info", app_info);
     localStorage.setItem('ios_device', ios_device);
 
@@ -2489,4 +2493,5 @@ function clear_localStorage() {
     localStorage.setItem("trip_Array", JSON.stringify(trip_Array));
     localStorage.setItem('trip_waypoint_dependency', trip_waypoint_dependency);
     localStorage.setItem('download_completed', download_completed);
+    localStorage.setItem('last_notification', last_notification);
 }

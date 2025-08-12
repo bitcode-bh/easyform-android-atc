@@ -904,7 +904,7 @@ function SuccessCallBack_get_modules(e) {
 
             compare_time_for_user_notification();
             compare_time_for_online_count();
-            get_today_attendance_for_notification();
+            //get_today_attendance_for_notification();
         }
 
         localStorage.setItem('last_modulelist_count', module_count);
@@ -2011,7 +2011,7 @@ function get_list_of_modules_online() {
 
                 compare_time_for_user_notification();
                 compare_time_for_online_count();
-                get_today_attendance_for_notification();
+                //get_today_attendance_for_notification();
 
                 localStorage.setItem('last_modulelist_count', module_count);
 
@@ -2070,9 +2070,7 @@ function get_today_attendance_for_notification() {
         var t_photo_url = $("#menu_img_profile").attr("src");
         if (t_photo_url == "images/profile_pic.png") {
             //mk_notify("Profile picture is not set. It is used to fill attendance!");
-
-            // static removed profile notification top ui - mk - 12082025
-            //$("#noti_Attendance1").css("display", "block");
+            $("#noti_Attendance1").css("display", "block");
         }
         else {
 

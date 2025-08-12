@@ -2042,7 +2042,8 @@ function check_and_call_next_single_option() {
 
                     if (Fill_Data_str == '' || Fill_Data_str == null || Fill_Data_str == undefined) { }
                     else {
-                        get_data_from_selected_option(s_curr_btnSearch_Counter);
+                        //commented on 12082025 as multiple call for autofill searchable with single option
+                        //get_data_from_selected_option(s_curr_btnSearch_Counter);
                     }
 
                 }
@@ -3490,6 +3491,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                     var img_src = img_ary[0];
                                     if (img_src == "" || img_src == null || img_src == undefined) {
                                         // photo is not exist in original entity - mk - 10072025
+                                        $("#" + curr_box_id + "").attr("src", "images/camera.png");
                                     }
                                     else {
                                         var p_name = img_ary[1];
@@ -3537,7 +3539,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                         let old_checksheet_id = type20_checksheet_id;
                                         let old_que_id = JSON.stringify(img_que_id);
                                         let new_checksheet_id = value_new[0].Current_Checksheet_id;
-                                        
+
                                         if (autofill_form_flag == 6) {
                                             // Task checksheet
                                             var new_checksheet_type = "5";
@@ -3571,7 +3573,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
 
                                         if (new_checksheet_type != 1) {
                                             // task/customer/user
-                                            upload_autofill_photo_temp(old_primary_id, old_checksheet_id, old_que_id, new_checksheet_type, new_checksheet_id, new_que_id, autofill_form_flag);
+                                            upload_autofill_photo_temp(old_primary_id, old_checksheet_id, old_que_id, new_checksheet_type, new_checksheet_id, new_que_id, autofill_form_flag, curr_box_id);
                                         }
                                     }
                                 }

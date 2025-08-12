@@ -478,7 +478,18 @@ function onsuccess_get_list_of_pm_sites(e) {
         var type20_columndata = [];
         var myArray = JSON.parse(e);
         //alert1(JSON.stringify(myArray));
-        var filter_ddl_Array = [];
+
+        var limit_offset = parseInt(limit_range - default_range);
+        if (limit_offset == 0) {
+            var filter_ddl_Array = [];
+        }
+        else {
+            var old_filter_ddl_Array = localStorage.getItem('filter_ddl_Array');
+            old_filter_ddl_Array = JSON.parse(old_filter_ddl_Array);
+            var filter_ddl_Array = old_filter_ddl_Array;
+        }
+        
+
         //$("#site_list").empty();
 
         var data_json = JSON.parse(storage.getItem('list_json'));
