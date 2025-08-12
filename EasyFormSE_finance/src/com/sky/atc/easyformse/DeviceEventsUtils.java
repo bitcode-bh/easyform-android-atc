@@ -487,26 +487,26 @@ public class DeviceEventsUtils {
      * System.currentTimeMillis() plus random number and saving in SharedPreferences
      */
     public static String getImei() {
-//        TelephonyManager telephonyManager = (TelephonyManager) context
-//                .getSystemService(Context.TELEPHONY_SERVICE);
-//        ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE);
-
-//        if (telephonyManager != null) {
-//            try {
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                    imei = telephonyManager.getImei(0);
-//                } else {
-//                    imei = telephonyManager.getDeviceId(0);
-//                }
-//                if (imei == null) {
-//                    imei = telephonyManager.getDeviceId(0);
-//                }
-//            } catch (Exception e) {
-//                imei = null;
-//            }
-//
-//        }
+        TelephonyManager telephonyManager = (TelephonyManager) context
+                .getSystemService(Context.TELEPHONY_SERVICE);
+        ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE);
         String imei = null;
+        if (telephonyManager != null) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    imei = telephonyManager.getImei(0);
+                } else {
+                    imei = telephonyManager.getDeviceId(0);
+                }
+                if (imei == null) {
+                    imei = telephonyManager.getDeviceId(0);
+                }
+            } catch (Exception e) {
+                imei = null;
+            }
+
+        }
+
         if (imei == null) {
             AdvertisingIdClient.Info adInfo;
             try {

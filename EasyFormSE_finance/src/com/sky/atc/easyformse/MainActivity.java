@@ -629,6 +629,7 @@ public class MainActivity extends Activity {
                         + ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)
                         + ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
                         + ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS)
+                        + ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE)
 //                    + ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
 //                    + ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
 //                    + ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -649,7 +650,9 @@ public class MainActivity extends Activity {
                             ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_NETWORK_STATE) &&
                             ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) &&
                             ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) &&
+                            ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.READ_PHONE_STATE) &&
                             ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS)
+
 //                        ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACTIVITY_RECOGNITION) &&
 //                        ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) &&
 //                        ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) &&
@@ -678,11 +681,12 @@ public class MainActivity extends Activity {
                                         Manifest.permission.ACCESS_NETWORK_STATE,
                                         Manifest.permission.ACCESS_COARSE_LOCATION,
                                         Manifest.permission.ACCESS_FINE_LOCATION,
+                                        Manifest.permission.READ_PHONE_STATE,
                                         Manifest.permission.POST_NOTIFICATIONS
 //                                    Manifest.permission.READ_EXTERNAL_STORAGE,
 //                                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
 //                                    Manifest.permission.CAMERA,
-//                                    Manifest.permission.READ_PHONE_STATE,
+//
 //                                    Manifest.permission.ACTIVITY_RECOGNITION,
 //                                    Manifest.permission.RECORD_AUDIO,
 //                                    Manifest.permission.KILL_BACKGROUND_PROCESSES,
@@ -808,7 +812,7 @@ public class MainActivity extends Activity {
                             && grantResults[3] == PackageManager.PERMISSION_GRANTED
                             && grantResults[4] == PackageManager.PERMISSION_GRANTED
                             && grantResults[5] == PackageManager.PERMISSION_GRANTED
-//                       && grantResults[6] == PackageManager.PERMISSION_GRANTED
+                            && grantResults[6] == PackageManager.PERMISSION_GRANTED
 //                       && grantResults[7] == PackageManager.PERMISSION_GRANTED
 //                       && grantResults[8] == PackageManager.PERMISSION_GRANTED
 //                       && grantResults[9] == PackageManager.PERMISSION_GRANTED

@@ -301,7 +301,7 @@ public class newfused extends Service implements LocationListener {
     }
 
     void quite() {
-        if (lock.isHeld()) {
+        if (lock != null && lock.isHeld()) {
             lock.release();
         }
     }
