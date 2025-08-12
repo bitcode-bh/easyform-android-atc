@@ -2070,7 +2070,9 @@ function get_today_attendance_for_notification() {
         var t_photo_url = $("#menu_img_profile").attr("src");
         if (t_photo_url == "images/profile_pic.png") {
             //mk_notify("Profile picture is not set. It is used to fill attendance!");
-            $("#noti_Attendance1").css("display", "block");
+
+            // static removed profile notification top ui - mk - 12082025
+            //$("#noti_Attendance1").css("display", "block");
         }
         else {
 
