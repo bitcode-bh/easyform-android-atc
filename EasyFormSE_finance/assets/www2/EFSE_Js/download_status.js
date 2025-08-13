@@ -284,6 +284,7 @@ function onsuccess_get_download_counter(e) {
         enable_back_button();
         if (status == 2) {
             // alert1("download complete !");
+            $("#btn_skip").show();
             update_end_download_flag();
         } else {
             // alert1("download not complete !");

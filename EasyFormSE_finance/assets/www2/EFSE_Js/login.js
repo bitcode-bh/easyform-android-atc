@@ -1623,13 +1623,15 @@ function get_blank_user_checksheet() {
                     }
 
                     localStorage.setItem("allow_profile_change", allow_profile_change);
-                    changeurl("selection.html");
+                    //changeurl("selection.html");
+                    changeurl("download_status.html");
                 }
             }
             else {
                 loading_hide();
                 alert(responseText[0].message);
-                changeurl("selection.html");
+                //changeurl("selection.html");
+                changeurl("download_status.html");
             }
         }, onfail);
         getdata.callOtherDomain();
@@ -2453,6 +2455,8 @@ function clear_localStorage() {
     let trip_waypoint_dependency = localStorage.getItem('trip_waypoint_dependency');
     let last_notification = localStorage.getItem('last_notification');
     let download_completed = localStorage.getItem('download_completed');
+    let redirect_on_module = localStorage.getItem('redirect_on_module');
+    let user_list_feature_id = localStorage.getItem("user_list_feature_id");
 
     window.localStorage.clear();
     $.jStorage.flush();
@@ -2494,4 +2498,6 @@ function clear_localStorage() {
     localStorage.setItem('trip_waypoint_dependency', trip_waypoint_dependency);
     localStorage.setItem('download_completed', download_completed);
     localStorage.setItem('last_notification', last_notification);
+    localStorage.setItem('redirect_on_module', redirect_on_module);
+    localStorage.setItem('user_list_feature_id', user_list_feature_id);
 }

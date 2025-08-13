@@ -1609,10 +1609,10 @@ function get_download_counter_selection() {
         data: query,
         p: "1"
     });
-    cordova.exec(onsuccess_get_download_counter, onfail, 'SqlitePlugin', 'showValues', q_jsonobj);
+    cordova.exec(onsuccess_get_download_counter_selection, onfail, 'SqlitePlugin', 'showValues', q_jsonobj);
 }
 
-function onsuccess_get_download_counter(e) {
+function onsuccess_get_download_counter_selection(e) {
     try {
         var myArray = JSON.parse(e);
         var status = 2;
