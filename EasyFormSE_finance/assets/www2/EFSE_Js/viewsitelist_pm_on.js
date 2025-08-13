@@ -3637,7 +3637,7 @@ function update_online_task(e) {
         }
 
         let loc_global_var = myArray[0].global_var;
-        if (loc_global_var == "" || loc_global_var == null || loc_global_var == undefined || loc_global_var == " ") {
+        if (loc_global_var == "" || loc_global_var == null || loc_global_var == undefined || loc_global_var == " " || loc_global_var == "Unknown" || loc_global_var == 'null') {
             var new_global_var = "";
         }
         else {
@@ -4250,7 +4250,7 @@ function edit_global_var_main_task_online() {
 
         var global_var = online_task_details[0].task[0].global_var;
         var start_status = online_task_details[0].task[0].start_status;
-        if (global_var == '' || global_var == null || global_var == undefined) {
+        if (global_var == '' || global_var == null || global_var == undefined || global_var == 'Unknown' || global_var == 'null') {
         }
         else {
             global_var = JSON.parse(global_var);

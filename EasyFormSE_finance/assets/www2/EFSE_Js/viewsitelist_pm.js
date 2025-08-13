@@ -3095,7 +3095,7 @@ function onsuccess_check_task_n_update_globalvar(e) {
         //    || update_flag == 0 || update_flag == 2) {                
 
         //"update_flag = 2" added again for "sky expense" (4/12/2018)(https://trello.com/c/c9BrPn89/2405-tripsky-expenseopen-the-rejected-tab-go-in-to-the-detail-view-of-rejected-task-tap-on-trip-rejection-and-submit-it-trip-rejectio)
-        if (update_flag == '' || update_flag == null || update_flag == undefined || global_var_obj == '' || global_var_obj == null || global_var_obj == undefined || global_var_obj == ' ' || global_var_obj == "Unknown"
+        if (update_flag == '' || update_flag == null || update_flag == undefined || global_var_obj == '' || global_var_obj == null || global_var_obj == undefined || global_var_obj == ' ' || global_var_obj == "Unknown" || global_var_obj == "null"
             || update_flag == 0 || update_flag == 2) {
             // new task
             //changeurl("viewsitelist_pm_grouplist.html");
@@ -3182,7 +3182,7 @@ function onsuccess_check_subtask_n_update_globalvar(e) {
         if (myArray.length > 0) {
             for (j = 0; j < myArray.length; j++) {
                 var global_var_obj = myArray[j].global_var;
-                if (global_var_obj == '' || global_var_obj == null || global_var_obj == undefined || global_var_obj == ' ') {
+                if (global_var_obj == '' || global_var_obj == null || global_var_obj == undefined || global_var_obj == ' ' || global_var_obj == 'Unknown' || global_var_obj == 'null') {
                     // null global var
                 } else {
                     var myArray1 = JSON.parse(global_var_obj);

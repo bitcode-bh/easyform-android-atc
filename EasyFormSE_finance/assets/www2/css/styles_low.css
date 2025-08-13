@@ -1615,6 +1615,12 @@ html.pixel-ratio-3 .timeline-month .timeline-item:before {
     max-height: auto !important;
 }
 
+
+/*====modal ovarlay for framework7 confirm/alert box [09092021]===*/
+.modal-overlay.modal-overlay-visible {
+    z-index: 13000 !important;
+}
+
 /*---.modal-overlay for (view photo/re-capture) (set z-index of overlay div(choose option popup) less than choose popup [10042020])---*/
 .modal-overlay {
     z-index: 15500 !important;

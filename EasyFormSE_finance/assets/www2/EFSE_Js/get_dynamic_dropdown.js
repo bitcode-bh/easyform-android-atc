@@ -64,14 +64,26 @@ function get_dynddl_data_onclick(t_new_id, t_own_id, dep_only, type20_id) {
                     //confirm box btn text changes [09092021]
                     var Oktext = $('#' + t_own_id + ' option:selected').attr('Oktext');
                     var Canceltext = $('#' + t_own_id + ' option:selected').attr('Canceltext');
-                    var myApp_new = new Framework7({
-                        modalTitle: "",
-                        modalButtonOk: Oktext,
-                        modalButtonCancel: Canceltext
-                    });
+                    //var myApp_new = new Framework7({
+                    //    modalTitle: "",
+                    //    modalButtonOk: Oktext,
+                    //    modalButtonCancel: Canceltext
+                    //});
 
-                    vibrate_device();
-                    myApp_new.confirm(confirm_text,
+                    setTimeout(function () {
+                        $(".modal-button").hide();
+                        $(".modal-button-bold").hide();
+                    }, 100);
+
+
+                    setTimeout(function () {
+                        $(".modal-button").html(Canceltext).show();
+                        $(".modal-button-bold").html(Oktext).show();
+                    }, 300);
+
+                    //vibrate_device();
+                    //myApp_new.confirm(confirm_text,
+                    myApp.confirm(confirm_text,
                         function () {
                             //==========OK btn click===========
                             user_choice = true;
@@ -163,7 +175,7 @@ MkDynDDL.prototype = {
         var server_task_id = JSON.parse(storage.getItem('server_task_id'));
         if (server_task_id == "" || server_task_id == null || server_task_id == undefined || server_task_id == '0') {
             server_task_id = JSON.parse(storage.getItem('p_server_task_id'));
-        }       
+        }
 
         // custom development for atc (diesel filling checksheet)
         var SiteId = $("#ddl_search_type20_0_4456_48").val();
@@ -390,14 +402,26 @@ MkDynDDL.prototype = {
                                         Canceltext = "CANCEL";
                                     }
 
-                                    var myApp_new = new Framework7({
-                                        modalTitle: "",
-                                        modalButtonOk: Oktext,
-                                        modalButtonCancel: Canceltext
-                                    });
+                                    //var myApp_new = new Framework7({
+                                    //    modalTitle: "",
+                                    //    modalButtonOk: Oktext,
+                                    //    modalButtonCancel: Canceltext
+                                    //});
 
-                                    vibrate_device();
-                                    myApp_new.confirm(confirm_text,
+                                    setTimeout(function () {
+                                        $(".modal-button").hide();
+                                        $(".modal-button-bold").hide();
+                                    }, 100);
+
+
+                                    setTimeout(function () {
+                                        $(".modal-button").html(Canceltext).show();
+                                        $(".modal-button-bold").html(Oktext).show();
+                                    }, 300);
+
+                                    //vibrate_device();
+                                    //myApp_new.confirm(confirm_text,
+                                    myApp.confirm(confirm_text,
                                         function () {
                                             //==========OK btn click===========
                                             user_choice = true;

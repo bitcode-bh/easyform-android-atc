@@ -1170,7 +1170,7 @@ MkControls.prototype.build_type_30_dynddl = function () {
         //}
 
         if (this.view_type == 'numericview' || this.view_type == 'textview') {
-            str += '<i id="dynddl_btn_' + this.new_id + '" onclick="' + this.param + '" class="fa fa-check bg-f7" style="color:#fff;padding:10px;border-radius:16px;" ' + this.enable_disable + '></i></div>';
+            str += '<i id="dynddl_btn_' + this.new_id + '" onclick="' + this.param + '" class="fa fa-check bg-f7 form-ico" style="color:#fff;padding:4px;border-radius:16px; margin-top: 0px; margin-right: 0; " ' + this.enable_disable + '></i></div>';
         }
         else {
             if (this.enable_disable == 'disabled') {
