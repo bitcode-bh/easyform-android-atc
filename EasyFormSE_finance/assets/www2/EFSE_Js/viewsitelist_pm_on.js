@@ -15,7 +15,7 @@ function get_list_of_task_for_compare_online() {
         var list_data = JSON.parse(data_json);
         var search_value = list_data[0].search;
         if (search_value == "true") {
-            $('#btn_Search').show();
+            //$('#btn_Search').show();
         }
 
         var selected_module_id = JSON.parse(storage.getItem('wayflow'));

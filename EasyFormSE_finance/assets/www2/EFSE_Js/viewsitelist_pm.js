@@ -286,7 +286,7 @@ function get_list_of_pm_sites() {
     var list_data = JSON.parse(data_json);
     var search_value = list_data[0].search;
     if (search_value == "true") {
-        $('#btn_Search').show();
+        //$('#btn_Search').show();
     }
     get_list_of_pm_sites_New('');   // default blank search string
 }
