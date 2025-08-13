@@ -642,13 +642,13 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 checkAvailibilityOftrip(tid, latc, s_lat, s_lon, unique_trip_id);
             }
 //            Attendance flag true trip end time update task_master notiflag
-            String Attendance = pref.getString("Attendance","false");
-            if(Attendance.equalsIgnoreCase("true"))
-            {
-                AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
-                String t_id = AttendanceTaskUtil.getTaskMasterTid(sqlitewraper.getDatabase(),Integer.valueOf( mAttendanceData.getFlowId()), mAttendanceData.getKey(), DeviceEventsUtils.getLoginDetails().get(3), DeviceEventsUtils.getLoginDetails().get(0));
-                AttendanceTaskUtil.updateTaskmaster(sqlitewraper.getDatabase(), t_id,mAttendanceData.getPunchout_Status());
-            }
+//            String Attendance = pref.getString("Attendance","false");
+//            if(Attendance.equalsIgnoreCase("true"))
+//            {
+//                AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
+//                String t_id = AttendanceTaskUtil.getTaskMasterTid(sqlitewraper.getDatabase(),Integer.valueOf( mAttendanceData.getFlowId()), mAttendanceData.getKey(), DeviceEventsUtils.getLoginDetails().get(3), DeviceEventsUtils.getLoginDetails().get(0));
+//                AttendanceTaskUtil.updateTaskmaster(sqlitewraper.getDatabase(), t_id,mAttendanceData.getPunchout_Status());
+//            }
 
             //update the task master flag for upload
             String cnd;

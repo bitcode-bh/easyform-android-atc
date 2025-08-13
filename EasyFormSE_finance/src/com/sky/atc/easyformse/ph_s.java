@@ -482,16 +482,22 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 //            }
 //        }
 
-        String Attendance = pref.getString("Attendance","false");
-        if(Attendance.equalsIgnoreCase("false") || Attendance.equalsIgnoreCase("null"))
-        {
+        try{
+            String Attendance = pref.getString("Attendance","false");
+            if(Attendance.equalsIgnoreCase("false") || Attendance.equalsIgnoreCase("null"))
+            {
+            }
+            else {
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
+                    Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
+                    AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
+                }, 1000);
+            }
         }
-        else {
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
-                Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
-                AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
-            }, 1000);
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
 
         String AllPermission = sqlitewraper.context.getResources().getString(R.string.AllPermission);
