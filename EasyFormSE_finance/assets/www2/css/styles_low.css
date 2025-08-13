@@ -2358,6 +2358,10 @@ div[id^=new_item_] input:focus, div[id^=new_item_] button:focus {
         border-bottom: 1px solid #ccc;
     }
 
+.lbl_type5, label[id^='qh_0_'] {
+    color: #3b5dce;
+}
+
 .horizontal-rdo ul li {
     display: inline-block;
 }
