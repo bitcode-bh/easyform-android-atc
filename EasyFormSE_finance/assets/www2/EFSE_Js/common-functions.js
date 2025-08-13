@@ -3146,6 +3146,9 @@ function vibrate_device() {
 
 
 function get_profile_pic_path_android_ios() {
+    let profile_user_name = JSON.parse(storage.getItem('username'));
+
+    $(".navbar-fixed .navbar-inner .right").append("<span style='display: block; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
 
     $("#menu_img_profile").attr("onerror", "imageError()");
 
@@ -3704,7 +3707,7 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
                                 let task_create_popup = $('.popup-new-task-create.modal-in:visible');
                                 if (task_create_popup.length > 0) {
                                     //replace new photo_id in ans json [FT-11072025]
-                                    jsonObj_task_add[j].ans[4] = Photo_id;  
+                                    jsonObj_task_add[j].ans[4] = Photo_id;
                                 }
                                 else {
                                     jsonObj_old[j].ans[4] = Photo_id;
@@ -3723,7 +3726,7 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
             setTimeout(function () {
                 $("#" + t_curr_box_id + "").parent("div").find('i.fa-spinner').remove();
             }, 1000, t_curr_box_id);
-            
+
             //myApp.hidePreloader();
 
         }, onfail);

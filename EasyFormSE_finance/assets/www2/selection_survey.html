@@ -555,7 +555,7 @@
 
             var list_data = JSON.parse(data_json);
             var task_value = list_data[0].task;
-            //var search_value = list_data[0].search;
+            var search_value = list_data[0].search;
 
             var survey_mode = list_data[0].survey_mode;
             var filter = list_data[0].filter;
@@ -569,9 +569,9 @@
                 $('#filter_search_task').hide();
             }
 
-            //if (search_value == "true") {
-            //    $('#btn_Search').show();
-            //}
+            if (survey_mode == "offline" && search_value == "true") {
+                $('#btn_Search').show();
+            }
             if (task_value == "true") {
                 //$('#btn_Create_Task').show();
 
@@ -835,7 +835,7 @@
                                     <a href="#" id="filter_search_task" class="link" onclick="filter_search_task()" style="display:none;"><i class="fa fa-filter" style="font-size: 16px; margin-right: 5px; color: white;"></i></a>
 
                                     <!--removed normal search bcz of advanced search [20042022]-->
-                                    <!--<a id="btn_Search" onclick="show_search_bar()" class="link icon-only" style="display: none"><i class="fa fa-search" style="color: white"></i></a>-->
+                                    <a id="btn_Search" onclick="show_search_bar()" class="link icon-only" style="display: none"><i class="fa fa-search" style="color: white"></i></a>
                                     <!--<a id="btn_advanced_search" onclick="advance_column_search();return false;" class="link icon-only"><i class="fa fa fa-search-plus" style="color: white"></i></a>-->
                                     <a href="#" id="btn_advanced_search" class="link icon-only open-popup" data-popup=".popup-advance-search-online" onclick="advance_column_search('btn_click');return false;"><i class="fa fa fa-search-plus" style="color: white"></i></a>
 

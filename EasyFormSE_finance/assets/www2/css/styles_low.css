@@ -1903,6 +1903,7 @@ div[id^=div_step_Col_] .list-block ul:before, div[id^=div_step_Col_] .list-block
     background: white;
     border-radius: 50px;
     padding: 2px;
+    margin-top: -10px;
 }
 
 .cloud-absolute {

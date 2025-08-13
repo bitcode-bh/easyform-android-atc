@@ -222,7 +222,9 @@ function select_survey_type_tab(selection_type, tab_index) {
 
             var task_value = list_data[tab_index].task;
             var search_value = list_data[tab_index].search;
-            if (search_value == "true") { $('#btn_Search').show(); }
+            if (search_value == "true") {
+                //$('#btn_Search').show();
+            }
             else { $('#btn_Search').hide(); }
             //if (task_value == "true") { $('#btn_Create_Task').show(); }
             //else { $('#btn_Create_Task').hide(); }
