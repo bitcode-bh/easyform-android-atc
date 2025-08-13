@@ -12,7 +12,9 @@ class DownloadConstant {
     static final String DOWNLOAD_URL = sqlitewraper.context.getResources().getString(R.string.TASKDOWNLOADURL);
     static final String WCFURL = sqlitewraper.context.getResources().getString(R.string.DOWNLOADWCFURL);
     static final String METHOD_COUNTER = "Offline_Download_Totalcounter_For_Multi_Role";
-    static final String METHOD_COUNTER_TASK = "Wcf_NewDownloadStreamming_Service_TaskCount";
+//    static final String METHOD_COUNTER_TASK = "Wcf_NewDownloadStreamming_Service_TaskCount";
+
+    static final String METHOD_COUNTER_TASK = "Wcf_NewDownloadStreamming_Service_TaskCount_FlowidList";
     static final String METHOD_USERDEFINE_FLOWMASTER = "Wcf_offline_download_User_Define_Flow_Master_with_multi_role";
     // NEW URL FOR USERDEFINE FLOWMASTER   new url  replace for download time remove space in databse 04-04-2024
     static final String METHOD_USERDEFINE_FLOWMASTER_NEW = "Wcf_offline_download_User_Define_Flow_Master_with_multi_role_new";
