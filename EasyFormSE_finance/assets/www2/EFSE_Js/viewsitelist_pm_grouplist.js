@@ -780,11 +780,17 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                                         if (dependent == "assign") {
                                             // assign date
 
-                                            // convert to fixed format as it is dyanmic now - mk - 08072025
-                                            let t_assign_date = convert_fix_format_date_on_submit(assign_date, "date");
+                                            var d2 = new Date(assign_date);
+                                            var d3 = new Date(assign_date);
 
-                                            var d2 = new Date(t_assign_date);
-                                            var d3 = new Date(t_assign_date);
+                                            // in case online task click + dateformat is dd/mm/yyyy
+                                            if (d2 == "Invalid Date") {
+                                                // convert to fixed format as it is dyanmic now - mk - 08072025
+                                                assign_date = convert_fix_format_date_on_submit(assign_date, "date");
+                                                d2 = new Date(assign_date);
+                                                d3 = new Date(assign_date);
+                                            }
+
                                             d2.setDate(d2.getDate() - before_days);
                                             d3.setDate(d3.getDate() + gap_days);
                                             var tat_date = getFormattedDate(d2);
