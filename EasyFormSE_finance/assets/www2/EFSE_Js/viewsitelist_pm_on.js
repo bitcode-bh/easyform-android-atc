@@ -3627,6 +3627,9 @@ function update_online_task(e) {
         var columndata = $("#lst_sys_var_" + server_task_id + "").val();
         columndata = decodeURIComponent(columndata);
 
+        // in case any answer inside columndata consist single quotes from string - mk - 26082025
+        columndata = columndata.replace(/'/g, "");
+
         if (status != loc_status) {
             // for fresh rejected task
             var sr_nmbr = 1;
