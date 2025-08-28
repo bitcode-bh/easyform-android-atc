@@ -2588,3 +2588,7 @@ div[id^='div_weather_'] .readmore-link {
     top: 10px;
     left: 65px;
 }
+
+video::-webkit-media-controls-timeline {
+    display: none !important;
+}

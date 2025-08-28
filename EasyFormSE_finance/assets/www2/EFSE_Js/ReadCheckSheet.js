@@ -237,6 +237,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
         var weather_cntrl_found = 0;
         var Type7_upload_Array = [];
         var Type7_old_photo_class_Array = [];
+        var Type40_ll_Array = [];
 
         var Car_que_id_Array = [];
 
@@ -3292,6 +3293,35 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         newdiv += '</div>';
                     }
 
+                    // Live link
+                    else if (jsonObj[i].type == 40) {
+
+                        var misc_Array = jsonObj[i].prop[0].misc_data;
+
+                        newdiv += '<div id="div_livelink_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >' + mendatory_img + '';
+                        newdiv += label_str;
+
+                        var obj = {
+                            new_id: new_id,
+                            value: jsonObj[i].value,
+                            misc_Array: misc_Array,
+                            prop_name: prop_name,
+                            que_id: jsonObj[i].que_id,
+                            mendatory_img: mendatory_img,
+                            disp_cntrl: disp_cntrl,
+                            ele_class: ele_class,
+                            common_str: common_str
+                        }
+
+                        Type40_ll_Array.push(new_id);
+
+                        var control = new MkControls(obj);
+                        newdiv += control.build_type_40_livelink();
+                        weather_cntrl_found++;
+
+                        newdiv += '</div>';
+                    }
+
                     ////added comment icon for every control on swipe right [FT - 12022025]
                     if (form_flag == 0 || form_flag == 2 || form_flag == 3) {
                         if (cnrl_type != 0) {
@@ -4337,7 +4367,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
         } else {
             loading_hide();
         }
-
+    
         // open popup for type30 dropdown 19012022
         $("select[id^='dynddl_']").on('mousedown', function (e) {
             e.preventDefault();
@@ -4575,6 +4605,11 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
             var user_long = user_track_array[0].user_long;
 
             get_weather_detail(user_lat, user_long);
+        }
+
+        for (let l = 0; l < Type40_ll_Array.length; l++) {
+            let ll_new_id = Type40_ll_Array[l];
+            init_livelink(ll_new_id);
         }
 
         //====new devlopment for control wise comments for filled form - web app only [FT - 29042024]

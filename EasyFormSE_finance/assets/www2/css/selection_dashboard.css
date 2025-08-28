@@ -135,7 +135,7 @@
             font-size: 12px;
         }
 
-        #div_new_tabbar .tab-link i {
+        #div_new_tabbar .tab-link i, #div_new_tabbar .tab-link img {
             width: 25px;
             height: 25px;
             font-size: 20px;
@@ -144,9 +144,14 @@
             text-align: center;
         }
 
-            #div_new_tabbar .tab-link i.fa-refresh {
-                font-size: 18px;
-            }
+        #div_new_tabbar .tab-link img {
+            padding: 0;
+            background: inherit;
+        }
+
+        #div_new_tabbar .tab-link i.fa-refresh {
+            font-size: 18px;
+        }
 
     #div_new_tabbar .tab-link-highlight {
         display: none;

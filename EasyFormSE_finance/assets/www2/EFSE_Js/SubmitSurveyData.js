@@ -3800,6 +3800,53 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var answer = weather_data;
                 }
 
+                // Live link
+                else if (jsonObj[i].type == 40) {
+
+                    var is_valid = $('#div_livelink_' + new_id + '').attr('valid');
+                    if (is_valid == 'false') {
+                        var dep_res = "invalid";
+                        $('#div_livelink_' + new_id + '').css({ "border": "none" });
+                    }
+                    else {
+                        var dep_res = "valid";
+                    }
+
+                    var answer = [];
+                    if (dep_res == "valid") {
+                        var ll_answer = $("#livelink_video_" + new_id + "").attr("watched");
+                        if (ll_answer == "" || ll_answer == null || ll_answer == undefined || ll_answer == "0") {
+                            answer.push("");
+                        } else {
+                           let ll_src = $("#livelink_video_" + new_id + "").find("source").attr("src");
+                            answer = ll_src;
+                        }
+                        if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
+                            if (answer == '' || answer == null || answer == undefined) {
+                                mk_animate_border('#div_livelink_' + new_id + '', 0, 500, mand_border_color);
+                                if (validation < 1) {
+                                    autoscroll_form_on_submit("#div_livelink_" + new_id + "");
+                                }
+                                validation++;
+                            } else {
+                                filled_mand_count++;
+                                $('#div_livelink_' + new_id + '').css({
+                                    "border": "none"
+                                });
+                            }
+                        }
+                        else {
+                            if (answer == '' || answer == null || answer == undefined) { }
+                            else { filled_non_mand_count++; }
+                        }
+                    }
+                }
+
+
+
+
+
+
                 //---common json for all controls-------- [16062021]
                 if (control_type == 500) { }
                 else {

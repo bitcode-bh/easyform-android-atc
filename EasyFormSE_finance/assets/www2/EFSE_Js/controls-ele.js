@@ -1441,6 +1441,33 @@ MkControls.prototype.build_type_39_weather = function () {
 };
 
 
+MkControls.prototype.build_type_40_livelink = function () {
+    try {
+
+        // video tag supports only .mp4, .webm, or .ogg file format
+
+        let value = this.misc_Array[0].value;
+        value = itemObj._checkStrObj(value);  // check_item
+        let doc_type = value[0].doc_type;
+        let doc_url = value[0].doc_url;
+
+        var str = '';
+        str += '<div class="video-container" onload="init_livelink("livelink_video_' + this.new_id + '")">';
+        str += '<video id="livelink_video_' + this.new_id + '" onclick="videoclick()" watched="0" width="100%" preload="auto" crossorigin="anonymous" controlslist="nodownload nofullscreen noremoteplayback"';
+        str += 'controls playsinline disablepictureinpicture>';
+        //str += 'controls muted autoplay loop playsinline disablepictureinpicture>';
+        //str += '<source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4">';
+        str += '<source src="' + doc_url + '" type="video/mp4">';
+        str += '</video>';
+        str += '<p id="livelink_status_' + this.new_id + '">Status: Not Watched</p>';
+        str += '</div>';
+        return str;
+    }
+    catch (e) {
+        alert1(e + '_build_type_40_livelink()');
+    }
+};
+
 
 var session_ms = 0;
 var MkDocInits = function () { };
