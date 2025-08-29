@@ -2593,8 +2593,3 @@ div[id^='div_weather_'] .readmore-link {
 video::-webkit-media-controls-timeline {
     display: none !important;
 }
-
-.list-block li {
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2) !important;
-    border: none;
-}
