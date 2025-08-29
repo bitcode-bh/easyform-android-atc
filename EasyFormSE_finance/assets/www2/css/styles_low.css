@@ -1912,6 +1912,7 @@ div[id^=div_step_Col_] .list-block ul:before, div[id^=div_step_Col_] .list-block
     right: -1px;
     height: 100%;
     z-index: 0;
+    opacity: 0.5;
 }
 
 .blink_me {
@@ -2591,4 +2592,9 @@ div[id^='div_weather_'] .readmore-link {
 
 video::-webkit-media-controls-timeline {
     display: none !important;
+}
+
+.list-block li {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2) !important;
+    border: none;
 }

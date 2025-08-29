@@ -44,6 +44,12 @@
     <script src="EFSE_Js/viewsitelist_adv_filter.js"></script>
     <script src="EFSE_Js/get_search_control.js"></script>
 
+    <!--Google Map-->
+    <link href="css/selection_map.css" rel="stylesheet" />
+    <script src="EFSE_Js/selection_map.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&key=AIzaSyA2yyGZO5JhzJGBtJ1YdouXUCKbFzHr2So&libraries=visualization,geometry"></script>
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
     <script type="text/javascript">
         var username = JSON.parse(storage.getItem('username'));
         var imeino = JSON.parse(storage.getItem('imeino'));
@@ -65,7 +71,8 @@
         var limit_range = 20;
         var increment_range = 20;
         var form_flag;
-        var ischart_enabled = 'true';
+        var ischart_enabled = 'false';
+        var ismap_enabled = 'true';
 
         // mobile view (F7 View/old View)
         var F7_view = JSON.parse(storage.getItem('F7_view'));
@@ -117,7 +124,7 @@
         $(document).ready(function () {
 
             var menu_smallImage = document.getElementById("menu_img_profile");
-            var pro_pic_path = get_profile_pic_path_android_ios();
+            var pro_pic_path = get_profile_pic_path_android_ios('selection');
             if (pro_pic_path == '' || pro_pic_path == null || pro_pic_path == undefined) { }
             else {
                 menu_smallImage.src = pro_pic_path;
@@ -146,12 +153,25 @@
                 }
             });
 
+            var ptrContent = $('.pull-to-refresh-content');
+            ptrContent.on('refresh', function (e) {
+                check_table_availabililty();
+
+                setTimeout(function () {
+                    myApp.pullToRefreshDone();
+                }, 1000);
+            });
+
         });
 
         function pageload_main() {
             if (typeof (myApp) != "undefined") {
                 if (ischart_enabled == 'true') {
                     get_dashboard();
+                }
+
+                if (ismap_enabled == 'true') {
+                    get_user_latlong_for_map();
                 }
 
                 // Give background color of module list 16122024 PG
@@ -288,7 +308,7 @@
             margin: 0px 5px;
         }
 
-       /* .views .navbar .right {
+        /* .views .navbar .right {
             width: 10%;
             text-align: center;
             margin: 0px 5px;
@@ -444,12 +464,16 @@
                                     <!--<a id="refresh_btn" onclick="check_table_availabililty()" class="link icon-only"><i class="fa fa-refresh" style="color: white"></i></a>
                                     <a href="#" onclick="get_user_notifications();" class="link icon-only"><i class="fa fa-bell-o" style="color: white"><span class="badge notification-badge color-red" style="opacity:0"></span></i></a>-->
                                     <!--<a href="#" class="open-panel link icon-only"><i class="icon icon-bars"></i></a>-->
-                                    <a href="#" class="open-panel link icon-only"><img id="menu_img_profile" src="images/profile_pic.png" /></a>
+                                    <!--<a href="#" class="open-panel link icon-only"><img id="menu_img_profile" src="images/profile_pic.png" /></a>-->
                                 </div>
                             </div>
                         </div>
 
                         <div id="div_page_content" class="page-content" style="width: 100%; height: 92%; line-height: 1;">
+
+                            <div id="div_map" class="list-block">
+                                <div id="map-canvas"></div>
+                            </div>
 
                             <!-- New dashboard container 06082024 PG -->
                             <div id="div_new_dashboard" class="list-block">
@@ -475,7 +499,13 @@
                             </div>
 
 
-                            <div id="div_old_dashboard" class="list-block" style="width: 100%;overflow:auto;">
+                            <div id="div_old_dashboard" class="list-block  pull-to-refresh-content" style="width: 100%;overflow:auto;">
+
+                                <!-- Default pull to refresh layer-->
+                                <div class="pull-to-refresh-layer">
+                                    <div class="preloader"></div>
+                                    <div class="pull-to-refresh-arrow"></div>
+                                </div>
 
                                 <div id="glob_noti_container"></div>
 
@@ -626,6 +656,9 @@
                                 <a href="#" class="tab-link" onclick="get_vertical_dashboard('report');" style="display:none">
                                     <i class="icon fa fa-tachometer"></i>
                                     <span class="tabbar-label">Report</span>
+                                </a>
+                                <a href="#" class="tab-link">
+                                    <img id="menu_img_profile" src="images/profile_pic.png" />
                                 </a>
                             </div>
                         </div>
