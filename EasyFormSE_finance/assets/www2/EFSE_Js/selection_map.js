@@ -108,7 +108,7 @@ function get_customer_data(u_lat, u_long) {
 
             let cust_len = customer_json.length;
 
-            mk_notify(cust_len + " sites found.");
+            //mk_notify(cust_len + " sites found.");
 
             const locations = [];
             for (let s = 0; s < cust_len; s++) {

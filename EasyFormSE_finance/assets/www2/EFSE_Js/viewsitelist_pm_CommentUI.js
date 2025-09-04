@@ -1810,6 +1810,8 @@ function onfail_plugin_call_for_jitsi_meeting(e) {
 }
 
 var glob_statusName_ary = [];
+var glob_statusColor_ary = [];
+var glob_textColor_ary = [];
 get_statusName_from_numericStatus = () => {
     try {
         var company_id = JSON.parse(storage.getItem('company_id'));
@@ -1833,13 +1835,25 @@ get_statusName_from_numericStatus = () => {
                 var FSM_Data = Data[0]["FSM_Data"];
 
                 var status_name_ary = [];
+                var status_color_ary = [];
+                var status_textColor_ary = [];
                 for (i = 0; i < FSM_Data.length; i++) {
                     var Status_Name = FSM_Data[i].Status_Name;
                     var Status = FSM_Data[i].Status;
+                    var status_color = FSM_Data[i].color;
+                    var status_textColor = FSM_Data[i].text_color;
+                    if (status_color == "" || status_color == null || status_color == undefined) {
+                        status_color = "gray";
+                    }
+
                     status_name_ary[Status] = Status_Name;
+                    status_color_ary[Status_Name] = status_color;
+                    status_textColor_ary[Status_Name] = status_textColor;
                 }
 
                 glob_statusName_ary = status_name_ary;
+                glob_statusColor_ary = status_color_ary;
+                glob_textColor_ary = status_textColor_ary;
             }
             else {
                 alert1(message);

@@ -2658,6 +2658,16 @@ function convertTo24Hour(time) {
     }
 }
 
+function convert_meter_to_km(t_distance) {
+    if (t_distance >= 1000) {
+        var distance_str = (t_distance / 1000).toFixed(2) + ' km';
+    }
+    else {
+        var distance_str = t_distance + ' m';
+    }
+    return distance_str;
+}
+
 var speech_id;
 function convert_speech_to_text(eld_id) {
     speech_id = eld_id;
@@ -2731,13 +2741,13 @@ function show_more_task_data(e) {
     //close all open cards
     $(".readmore.expand").removeClass("expand");
     $(".readmore-link.expand").removeClass("expand");
-    $(e).html('<div class="showmore-box">Show More <i class="fa fa-angle-down"></i></div>');
+    $(e).html('<div class="showmore-box"><i class="fa fa-angle-down"></i></div>');
 
     // if target wasn't expand, then expand it
     if (!isExpanded) {
         $(e).parent(".readmore").addClass("expand");
         $(e).addClass("expand");
-        $(e).html('<div class="showmore-box">Show Less <i class="fa fa-angle-up"></i></div>');
+        $(e).html('<div class="showmore-box"><i class="fa fa-angle-up"></i></div>');
     }
 }
 

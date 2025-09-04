@@ -1302,6 +1302,7 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                 }
             }
 
+            var udf_id = JSON.parse(storage.getItem('udf_id'));
 
             for (i = 0; i < myArray_main.length; i++) {
                 //alert1('myArray_main: ' + JSON.stringify(myArray_main[i]));
@@ -1644,10 +1645,13 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                                 var param = "get_distance_confirmation_pm('" + siteid + "', '','" + module_id + "', '" + module_name + "', '" + ser_task_id + "', '" + site_name + "','" + user_lat + "','" + user_long + "','" + user_accuracy + "','" + geofanceradius + "','" + site_lat + "','" + site_long + "', '" + t_new_column_obj + "')";
                             }
 
+                            let distance_str = convert_meter_to_km(distance);
                             if (near_site == 1) {
-                                icon_str += '<i class="fa fa-check-circle cls_task_ico" style="font-size: 30px; color: #4caf50 !important" onclick="' + alert_param + '"></i>';
+                                icon_str += '<span class="distance_badge" style="background-color: #4caf50" onclick="' + alert_param + '">' + distance_str + ' </span>';
+                                /*icon_str += '<i class="fa fa-check-circle cls_task_ico" style="font-size: 30px; color: #4caf50 !important" onclick="' + alert_param + '"></i>';*/
                             } else {
-                                icon_str += '<i class="fa fa-times-circle cls_task_ico" style="font-size: 30px; color: #f44336 !important" onclick="' + alert_param + '"></i>';
+                                icon_str += '<span class="distance_badge" style="background-color: #f44336" onclick="' + alert_param + '">' + distance_str + ' </span>';
+                                /*icon_str += '<i class="fa fa-times-circle cls_task_ico" style="font-size: 30px; color: #f44336 !important" onclick="' + alert_param + '"></i>';*/
                             }
                             distance_desplay = distance;
                         } else {
@@ -1665,6 +1669,11 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                                 else {
                                     var param = "redirect_on_transport_site_click('" + siteid + "','" + site_name + "', '" + ser_task_id + "', '" + task_status + "','" + module_id + "', '" + module_name + "','" + task_update + "', '" + site_lat + "', '" + site_long + "', '" + survey_date + "', '" + ser_milli + "')";
                                 }
+                            }
+
+                            if (geofance_distance == 'true') {
+                                let distance_str = convert_meter_to_km(distance);
+                                icon_str += '<span class="distance_badge" style="background-color: gray">' + distance_str + ' </span>';
                             }
                         }
                     }
@@ -1758,7 +1767,7 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                     //list_item += '<svg class="cloud-absolute" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 153 187" style="enable-background:new 0 0 153 187;" xml:space="preserve"><style type="text/css">.st0{opacity:0.2;fill:' + t_color_name + ';}</style><g><title>3</title><desc>CreatedwithSketch.</desc><g id="Mask-_x2B_-Mask-Mask" transform="translate(14.000000, 0.000000)"><g id="Mask"></g><g id="Mask_1_"><path class="st0" d="M138,141.2c-3.6,0.5-7.3,0.8-11,0.8c-29.6,0-55.4-16.5-68.6-40.9c-6-11-9.4-23.7-9.4-37.1 c0-26.5,13.2-49.9,33.4-64H138v129.5"/></g><g id="Mask_2_"><path class="st0" d="M138,141.2V187H-15c0.2-43.3,31.9-79.1,73.4-85.9c4.6-0.8,9.3-1.1,14.1-1.1c26.1,0,49.5,11.4,65.5,29.5"/></g></g></g></svg>';
 
                     var cloud_str = localStorage.getItem("cloud_str");
-                    list_item += cloud_str;
+                    //list_item += cloud_str;
 
                     if (navigation_type == "true") {
                         icon_str += '<i class="fa fa-street-view cls_task_ico" style="font-size: 32px; margin-bottom:6px" onclick="' + param2 + '"></i>';
@@ -1932,6 +1941,22 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                         }
                         else {
                             ans_lable = ans_lable.trim();
+
+                            // for perform sum,min,max particular inital rent (lanlord module > benchmark rent) DV14072023
+                            var qid = myArray[j].qid;
+                            if (qid == 41 && (udf_id == '2404' || udf_id == '2561')) {
+                                var number = parseFloat(ans_lable);
+                                aggregate_sum += number;
+
+                                if (number < aggregate_min || aggregate_min == 0) {
+                                    aggregate_min = number;
+                                }
+
+                                if (number > aggregate_max) {
+                                    aggregate_max = number;
+                                }
+
+                            }
                         }
 
                         if (taskview_label == '' || taskview_label == null || taskview_label == undefined) {
@@ -2138,7 +2163,7 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                     }
                     var showmore_back_color = back_color.replace(/['"]+/g, '');
 
-                    list_item += '<span class="readmore-link" onclick="show_more_task_data(this);event.cancelBubble=true;" style="background-image: linear-gradient(to bottom, transparent, ' + showmore_back_color + ');display:none;"><div class="showmore-box">Show More <i class="fa fa-angle-down"></i></div></span>';
+                    list_item += '<span class="readmore-link" onclick="show_more_task_data(this);event.cancelBubble=true;" style="background-image: linear-gradient(to bottom, transparent, ' + showmore_back_color + ');display:none;"><div class="showmore-box"><i class="fa fa-angle-down"></i></div></span>';
                     list_item += '</div>';
 
                     var trip_str = '';
@@ -2170,6 +2195,13 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                         icon_str += trip_str;
                     }
 
+
+                    let task_status_name = glob_statusName_ary[task_status];
+                    let task_status_bgcolor = glob_statusColor_ary[task_status_name];
+                    let task_status_text_color = glob_textColor_ary[task_status_name];
+
+                    icon_str += '<span class="distance_badge" style="background-color: ' + task_status_bgcolor + '; color: ' + task_status_text_color + ' !important ; float: right"> ' + task_status_name + '</span>';
+
                     if (icon_str == "" || icon_str == null || icon_str == undefined) {
                         list_item += '</div></div>';
                         list_item += '</label>';
@@ -2177,7 +2209,7 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                     else {
                         if (task_layout == "cardview") {
                             list_item += '</div></div>';
-                            list_item += '</label><div class="item-after" style="padding-top: 15px;width:95%;"><div class="item-icon task-icon" style="width:95%;text-align:center !important;">' + icon_str + '</div></div>';
+                            list_item += '</label><div class="item-after" style="padding-top: 15px;"><div class="item-icon task-icon">' + icon_str + '</div></div>';
                         }
                         else {
                             list_item += '</div><div class="item-after" style="padding-top: 6px;"><div class="item-icon">' + icon_str + '</div></div></div>';
@@ -2588,6 +2620,18 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                     //}
                 }
                 //}
+            }
+
+            if (udf_id == '2404' || udf_id == '2561') {
+                // display aggregrate table for benchmark rent DV-14072023
+                $(".card_Aggregate").show();
+                //$("#lbl_Sum").html(aggregate_sum);
+
+                var li_length = $("#site_list > li:not(:hidden)").length;
+                var aggregate_avg = aggregate_sum / li_length;
+                $("#lbl_Avg").html(aggregate_avg.toFixed(2));
+                $("#lbl_Min").html(aggregate_min);
+                $("#lbl_Max").html(aggregate_max);
             }
 
             var ul_length = $("#site_list > li").length;

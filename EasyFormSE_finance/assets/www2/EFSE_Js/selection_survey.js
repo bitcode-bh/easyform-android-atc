@@ -253,6 +253,9 @@ function select_survey_type_tab(selection_type, tab_index) {
         // default listing
         limit_range = default_range; // set default range limit
         query_type = 1; // regular site listing
+        aggregate_sum = 0;
+        aggregate_min = 0;
+        aggregate_max = 0;
         // //
 
         if (selection_type == 1) {

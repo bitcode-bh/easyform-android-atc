@@ -256,7 +256,7 @@ function get_active_trips() {
         } else {
             get_list_of_pm_sites();
         }
- 
+
     }, function () { alert1(e) }, 'SqlitePlugin', 'showValues', q_jsonobj);
 
 
@@ -488,7 +488,7 @@ function onsuccess_get_list_of_pm_sites(e) {
             old_filter_ddl_Array = JSON.parse(old_filter_ddl_Array);
             var filter_ddl_Array = old_filter_ddl_Array;
         }
-        
+
 
         //$("#site_list").empty();
 
@@ -858,6 +858,10 @@ function onsuccess_get_list_of_pm_sites(e) {
                                     }
                                 }
 
+                                if (back_color == "" || back_color == null || back_color == undefined) {
+                                    back_color = "white";
+                                }
+
                                 store_param.push({
                                     "lat": myArray[i].lat,
                                     "long": myArray[i].long,
@@ -1111,7 +1115,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                     //list_item += '<img src="images/multicircle.svg" class="cloud-absolute" style="filter: invert(25%);">';
 
                                     var cloud_str = localStorage.getItem("cloud_str");
-                                    list_item += cloud_str;
+                                    //list_item += cloud_str;
 
                                     // navigation map view
                                     if (navigation_type == "true") {
@@ -1655,10 +1659,10 @@ function onsuccess_get_list_of_pm_sites(e) {
                     }
                     var showmore_back_color = back_color.replace(/['"]+/g, '');
 
-                    list_item += '<span class="readmore-link" onclick="show_more_task_data(this);event.cancelBubble=true;" style="background-image: linear-gradient(to bottom, transparent, ' + showmore_back_color + ');display:none;"><div class="showmore-box">Show More <i class="fa fa-angle-down"></i></div></span>';
+                    list_item += '<span class="readmore-link" onclick="show_more_task_data(this);event.cancelBubble=true;" style="background-image: linear-gradient(to bottom, transparent, ' + showmore_back_color + ');display:none;"><div class="showmore-box"><i class="fa fa-angle-down"></i></div></span>';
 
                     var trip_str = '';
-                    
+
                     let trip_found = 0;
                     if (trip_New_Array.length > 0) {
                         for (let t = 0; trip_New_Array.length; t++) {
@@ -2995,6 +2999,9 @@ function onsuccess_refersh_pm_site_list(e) {
     if (survey_mode == "online") {
         limit_range = default_range; // set default range limit
         query_type = 1; // regular site listing
+        aggregate_sum = 0;
+        aggregate_min = 0;
+        aggregate_max = 0;
         $("#site_list").empty();
         $("#cust_list").empty();
         get_user_latlong_pm();
