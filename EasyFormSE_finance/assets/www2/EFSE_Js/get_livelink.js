@@ -74,7 +74,9 @@ function download_livelink_doc(t_new_id, t_live_url) {
     })
     cordova.exec(function (e) {
         // onsuccess
-        $("#livelink_video_" + t_new_id + "").attr("download_link", e);
+        let myArray = JSON.parse(e);
+        let video_path = myArray[0].video_path;
+        $("#livelink_video_" + t_new_id + "").attr("download_link", video_path);
     }, function (e) {
         // onfail
     }, 'VideoDownloadPlugin', 'anAction', q_jsonobj);
