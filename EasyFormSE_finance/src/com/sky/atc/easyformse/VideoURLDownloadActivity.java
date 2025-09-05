@@ -18,7 +18,6 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -34,19 +33,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 
 import com.bumptech.glide.Glide;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.ksoap2.SoapEnvelope;
-import org.ksoap2.serialization.PropertyInfo;
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapPrimitive;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
 
 import java.io.File;
 
@@ -65,7 +57,7 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
     int dl_progress;
     boolean downloading = true;
     int count = 0;
-    String apkname;
+    String filename;
     int bytes_total;
     int bytes_downloaded;
     public static final String MyPREFERENCES = "MyPrefs";
@@ -78,6 +70,7 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
     String Colorcode;
     private static final int PERMISSION_REQUEST_CODE = 201;
     String video_url;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,9 +93,8 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
 
     }
 
-    public void DownloadUrl()
-    {
-        try{
+    public void DownloadUrl() {
+        try {
 
             t = (TextView) findViewById(R.id.textView_downloading);
             Bundle b = getIntent().getExtras();
@@ -113,17 +105,15 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
             this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             Tryagain = (TextView) findViewById(R.id.TryAgain);
             pref = sqlitewraper.getSecureShared("MyPref");
-            Colorcode = pref.getString("themecolor","");
-            if(Colorcode.equalsIgnoreCase(""))
-            {
+            Colorcode = pref.getString("themecolor", "");
+            if (Colorcode.equalsIgnoreCase("")) {
                 Tryagain.setBackgroundColor(Color.parseColor("#e60000"));
-            }
-            else {
+            } else {
                 Tryagain.setBackgroundColor(Color.parseColor(Colorcode));
             }
 
 
-            mProgressBar  = findViewById(R.id.progressBar);
+            mProgressBar = findViewById(R.id.progressBar);
             percentageTextView = findViewById(R.id.percentageTextView);
 
             mImageView_downloading = findViewById(R.id.imageview_downloading);
@@ -135,75 +125,86 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
             manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 
 
-                if(video_url.equalsIgnoreCase(""))
-                {
-                    isGoBack = true;
-                    Toast.makeText(this, "Url not found", Toast.LENGTH_LONG).show();
-                    finish();
-                }
+            if (video_url.equalsIgnoreCase("")) {
+                isGoBack = true;
+                Toast.makeText(this, "Url not found", Toast.LENGTH_LONG).show();
+                finish();
+            }
 
-                url_new = video_url;
-                apkname = "Video_" + System.currentTimeMillis() + ".mp4";
+            url_new = video_url;
+            filename = url_new.substring(url_new.lastIndexOf("/") + 1);
 
-                sharedpreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                Long downloadId = sharedpreferences.getLong("downloadId", 0l);
-                Log.d("##DOWNLOADID1", downloadId.toString());
+            // ✅ Cancel previous download if any and delete partial files
+            resetOldDownload();
 
-                Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(downloadId));
+            // ✅ If file already exists, return it instead of downloading
+            if (checkIfFileExistsAndReturn()) {
+                return;
+            }
 
-                if (cursor != null && cursor.moveToNext()) {
-                    @SuppressLint("Range") int status1 = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
-                    Log.d("##DOWNLOADID2", String.valueOf(status1));
+            new DownloadFileFromURL().execute("kl");
+            pref = sqlitewraper.getSecureShared("UPDATEPREF");
+            pref.putString("UPDATEMILLI", String.valueOf(System.currentTimeMillis())); // Saving string
+            pref.commit();
+            Log.d("##newmainActivity", "");
 
-                    if (status1 == DownloadManager.STATUS_RUNNING) {
-                        Log.d("##DOWNLOADSTATUS", "PENDING_RUNNING");
-                        new DownloadFileFromURL1().execute(downloadId);
-                    } else if (status1 == DownloadManager.STATUS_PAUSED) {
-                        Log.d("##DOWNLOADSTATUS", "PENDING_PAUSED");
-                        new DownloadFileFromURL1().execute(downloadId);
-                    } else if (status1 == DownloadManager.STATUS_PENDING) {
-                        Log.d("##DOWNLOADSTATUS", "PENDING_PENDING");
-                        new DownloadFileFromURL1().execute(downloadId);
-                    } else if (status1 == DownloadManager.STATUS_FAILED) {
-                        Log.d("##DOWNLOADSTATUS", "PENDING_FAILED");
-                        data d = new data();
-                        if (d.getDownloadid().equals(downloadId)) {
-                            manager.remove(downloadId);
-                            data d_new = new data();
-                            d_new.setDownloadid("NA");
-                        }
-                        check = false;
-                        runOnUiThread(() -> Tryagain.setVisibility(View.VISIBLE));
-                    } else {
+            sharedpreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            Long downloadId = sharedpreferences.getLong("downloadId", 0l);
+            Log.d("##DOWNLOADID1", downloadId.toString());
 
-                        File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(downloadId));
 
-                        file = new File(sdcard, apkname);
+            if (cursor != null && cursor.moveToNext()) {
+                @SuppressLint("Range") int status1 = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+                Log.d("##DOWNLOADID2", String.valueOf(status1));
 
-                        if (file.exists()) {
-                            //file.delete();
-                        } else {
-                            new DownloadFileFromURL().execute("kl");
-                            pref = sqlitewraper.getSecureShared("UPDATEPREF");
-                            pref.putString("UPDATEMILLI", String.valueOf(System.currentTimeMillis())); // Saving string
-                            pref.commit();
-                            Log.d("##newmainActivity", "");
-                        }
+                if (status1 == DownloadManager.STATUS_RUNNING) {
+                    Log.d("##DOWNLOADSTATUS", "PENDING_RUNNING");
+                    new DownloadFileFromURL1().execute(downloadId);
+                } else if (status1 == DownloadManager.STATUS_PAUSED) {
+                    Log.d("##DOWNLOADSTATUS", "PENDING_PAUSED");
+                    new DownloadFileFromURL1().execute(downloadId);
+                } else if (status1 == DownloadManager.STATUS_PENDING) {
+                    Log.d("##DOWNLOADSTATUS", "PENDING_PENDING");
+                    new DownloadFileFromURL1().execute(downloadId);
+                } else if (status1 == DownloadManager.STATUS_FAILED) {
+                    Log.d("##DOWNLOADSTATUS", "PENDING_FAILED");
+                    data d = new data();
+                    if (d.getDownloadid().equals(downloadId)) {
+                        manager.remove(downloadId);
+                        data d_new = new data();
+                        d_new.setDownloadid("NA");
                     }
+                    check = false;
+                    runOnUiThread(() -> Tryagain.setVisibility(View.VISIBLE));
                 } else {
 
-                    new DownloadFileFromURL().execute("kl");
+                    File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
-                    pref = sqlitewraper.getSecureShared("UPDATEPREF");
-                    pref.putString("UPDATEMILLI", String.valueOf(System.currentTimeMillis())); // Saving string
-                    pref.commit();
-                    Log.d("##newmainActivity", "");
+                    file = new File(sdcard, filename);
 
+                    if (file.exists()) {
+                        //file.delete();
+                    } else {
+                        new DownloadFileFromURL().execute("kl");
+                        pref = sqlitewraper.getSecureShared("UPDATEPREF");
+                        pref.putString("UPDATEMILLI", String.valueOf(System.currentTimeMillis())); // Saving string
+                        pref.commit();
+                        Log.d("##newmainActivity", "");
+                    }
                 }
+            } else {
 
-        }
-        catch (Exception e)
-        {
+                new DownloadFileFromURL().execute("kl");
+
+                pref = sqlitewraper.getSecureShared("UPDATEPREF");
+                pref.putString("UPDATEMILLI", String.valueOf(System.currentTimeMillis())); // Saving string
+                pref.commit();
+                Log.d("##newmainActivity", "");
+
+            }
+
+        } catch (Exception e) {
             Log.e("Error:", e.toString());
         }
 
@@ -220,11 +221,9 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
             super.onPreExecute();
             mProgressBar.setVisibility(View.VISIBLE);
             percentageTextView.setVisibility(View.VISIBLE);
-            if(Colorcode.equalsIgnoreCase(""))
-            {
+            if (Colorcode.equalsIgnoreCase("")) {
                 mProgressBar.setProgressTintList(ColorStateList.valueOf(Color.parseColor("#e60000")));
-            }
-            else {
+            } else {
                 mProgressBar.setProgressTintList(ColorStateList.valueOf(Color.parseColor(Colorcode)));
             }
         }
@@ -240,31 +239,34 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
 
                 DownloadManager.Request request = new DownloadManager.Request(
                         Uri.parse(url_new));
-                request.setTitle(apkname);
+                request.setTitle(filename);
                 request.allowScanningByMediaScanner();
                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                request.setMimeType("application/vnd.android.package-archive");
-                request.setVisibleInDownloadsUi(true);
+                request.setMimeType("video/mp4");
+                request.setVisibleInDownloadsUi(false);
+
+
                 File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
-                file = new File(sdcard, apkname);
+                file = new File(sdcard, filename);
                 if (file.exists()) {
-                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkname);
+                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
                 }
 
                 if (!file.exists()) {
-                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkname);
+                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
                 }
 
                 final long downloadId = manager.enqueue(request);
                 Log.d("##DOWNLOADID3", String.valueOf(downloadId));
                 SharedPreferences.Editor editor = sharedpreferences.edit();
                 editor.putLong("downloadId", downloadId);
-                editor.commit();
+                editor.apply();
                 check = true;
                 while (downloading && check) {
 
                     down(url_new, downloadId, manager);
+                    Thread.sleep(500);
 
                 }
 
@@ -335,29 +337,34 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
     }
 
     boolean isGoBack = false;
+
     @Override
     public void onBackPressed() {
 
-        if(isGoBack)
-        {
+        if (isGoBack) {
             Bundle b = new Bundle();
             Intent intent = new Intent();
             intent.putExtras(b);
             setResult(RESULT_CANCELED, intent);
             this.finish();
-        }
-        else {
+        } else {
 
         }
 
     }
 
     private void setResultSucceededData(File Downloadpath) {
-        System.out.println("called: " + Downloadpath.getAbsolutePath());
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("video_path", Downloadpath.getAbsolutePath());
-        setResult(RESULT_OK, resultIntent);
-        finish();
+        try {
+            System.out.println("called: " + Downloadpath.getAbsolutePath());
+            Intent resultIntent = new Intent();
+            JSONObject mJsonObject = new JSONObject();
+            mJsonObject.put("video_path", Downloadpath.getAbsolutePath());
+            resultIntent.putExtra("success", mJsonObject.toString());
+            setResult(RESULT_OK, resultIntent);
+            finish();
+        } catch (Exception e) {
+
+        }
     }
 
 
@@ -379,7 +386,8 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
 
         runOnUiThread(new Runnable() {
             public void run() {
-                percentageTextView.setText(String.valueOf( dl_progress) +"%");
+                mProgressBar.setProgress(dl_progress);
+                percentageTextView.setText(String.valueOf(dl_progress) + "%");
             }
         });
         if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL) {
@@ -474,7 +482,7 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
         mProgressBar.setProgress((int) ((bytes_downloaded * 100l) / bytes_total));
         runOnUiThread(new Runnable() {
             public void run() {
-                percentageTextView.setText(String.valueOf( dl_progress) +"%");
+                percentageTextView.setText(String.valueOf(dl_progress) + "%");
             }
         });
 
@@ -525,7 +533,7 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
     private void requestPermission() {
 
         ActivityCompat.requestPermissions(VideoURLDownloadActivity.this,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                 PERMISSION_REQUEST_CODE);
     }
 
@@ -570,6 +578,64 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
                 .create()
                 .show();
     }
+
+    private boolean checkIfFileExistsAndReturn() {
+        File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        file = new File(sdcard, filename);
+
+        if (file.exists()) {
+            Log.d("##FILE", "File already exists, returning path.");
+            setResultSucceededData(file);
+            return true;
+        }
+        return false;
+    }
+
+    private void resetOldDownload() {
+        long downloadId = sharedpreferences.getLong("downloadId", -1);
+        if (downloadId != -1) {
+            try {
+                manager.remove(downloadId);
+            } catch (Exception e) {
+                Log.e("##DownloadReset", "Error removing old download: " + e.getMessage());
+            }
+
+            // Delete partial file (if it exists)
+            File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File partialFile = new File(sdcard, filename);
+            if (partialFile.exists()) {
+                partialFile.delete();
+            }
+
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            editor.remove("downloadId");
+            editor.apply();
+        }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Clean up download info when activity is destroyed
+        if (sharedpreferences != null && sharedpreferences.contains("downloadId")) {
+            long downloadId = sharedpreferences.getLong("downloadId", -1);
+            if (downloadId != -1) {
+                try {
+                    manager.remove(downloadId);
+                } catch (Exception e) {
+                    Log.e("##Destroy", "Failed to remove download: " + e.getMessage());
+                }
+            }
+
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            editor.remove("downloadId");
+            editor.apply();
+        }
+    }
+
+
 }
 
 // --------------------------------------------------------------------------------------

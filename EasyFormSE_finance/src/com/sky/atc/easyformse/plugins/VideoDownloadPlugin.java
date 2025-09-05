@@ -2,6 +2,8 @@ package com.sky.atc.easyformse.plugins;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.sky.atc.easyformse.AppDownloadActivity;
 import com.sky.atc.easyformse.DeviceEventsUtils;
@@ -48,8 +50,9 @@ public class VideoDownloadPlugin extends CordovaPlugin {
             if (intent.getExtras() != null) {
                 String status = null;
                 try {
-                    String video_path = intent.getExtras().getString("video_path");
-                    this.callbackContext.success(video_path);
+                    String success = intent.getExtras().getString("success");
+                    //Log.d("Videoplugin",success);
+                    this.callbackContext.success(success);
                 } catch (Exception e) {
                     LogUtils.writeAttendanceLogToFile("Exception :" + e.toString(), "onActivityResult GroupAttendancePlugin");
                     this.callbackContext.error("error:  " + e.toString());
