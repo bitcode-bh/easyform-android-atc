@@ -358,8 +358,10 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
             System.out.println("called: " + Downloadpath.getAbsolutePath());
             Intent resultIntent = new Intent();
             JSONObject mJsonObject = new JSONObject();
+            JSONArray mJsonArray = new JSONArray();
             mJsonObject.put("video_path", Downloadpath.getAbsolutePath());
-            resultIntent.putExtra("success", mJsonObject.toString());
+            mJsonArray.put(mJsonObject);
+            resultIntent.putExtra("success", mJsonArray.toString());
             setResult(RESULT_OK, resultIntent);
             finish();
         } catch (Exception e) {
