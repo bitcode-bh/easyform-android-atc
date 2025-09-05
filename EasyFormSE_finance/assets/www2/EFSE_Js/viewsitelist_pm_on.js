@@ -1944,7 +1944,7 @@ function onsuccess_get_list_of_pm_sites_online(e) {
 
                             // for perform sum,min,max particular inital rent (lanlord module > benchmark rent) DV14072023
                             var qid = myArray[j].qid;
-                            if (qid == 41 && (udf_id == '2404' || udf_id == '2561')) {
+                            if (qid == 41 && (udf_id == '2404' || udf_id == '2574')) {
                                 var number = parseFloat(ans_lable);
                                 aggregate_sum += number;
 
@@ -2622,7 +2622,7 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                 //}
             }
 
-            if (udf_id == '2404' || udf_id == '2561') {
+            if (udf_id == '2404' || udf_id == '2574') {
                 // display aggregrate table for benchmark rent DV-14072023
                 $(".card_Aggregate").show();
                 //$("#lbl_Sum").html(aggregate_sum);

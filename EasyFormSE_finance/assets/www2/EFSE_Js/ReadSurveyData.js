@@ -5018,6 +5018,8 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         newdiv += label_str;
 
                         var obj = {
+                            read_type: 'readsurvey',
+                            ans: jsonObj[i].ans,
                             new_id: new_id,
                             value: jsonObj[i].value,
                             misc_Array: misc_Array,

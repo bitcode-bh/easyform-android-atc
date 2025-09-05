@@ -1450,16 +1450,32 @@ MkControls.prototype.build_type_40_livelink = function () {
         value = itemObj._checkStrObj(value);  // check_item
         let doc_type = value[0].doc_type;
         let doc_url = value[0].doc_url;
+        let watched = 0;
+        let watch_status = "Status: Not Watched";
+
+        if (this.read_type == "readsurvey") {
+            if (this.ans == "" || this.ans == null || this.ans == undefined) {
+                doc_url = value[0].doc_url;
+            }
+            else {
+                doc_url = this.ans[1];                // local saved path
+                watched = 1;
+                watch_status = "Status: Watched";
+            }
+        }
 
         var str = '';
         str += '<div class="video-container" onload="init_livelink("livelink_video_' + this.new_id + '")">';
-        str += '<video id="livelink_video_' + this.new_id + '" onclick="videoclick()" watched="0" width="100%" preload="auto" crossorigin="anonymous" controlslist="nodownload nofullscreen noremoteplayback"';
+        str += '<video id="livelink_video_' + this.new_id + '" onclick="videoclick()" watched="' + watched + '" width="100%" preload="auto" crossorigin="anonymous" controlslist="nodownload nofullscreen noremoteplayback"';
         str += 'controls playsinline disablepictureinpicture>';
         //str += 'controls muted autoplay loop playsinline disablepictureinpicture>';
         //str += '<source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4">';
         str += '<source src="' + doc_url + '" type="video/mp4">';
         str += '</video>';
-        str += '<p id="livelink_status_' + this.new_id + '">Status: Not Watched</p>';
+        str += '<p id="livelink_status_' + this.new_id + '">' + watch_status + '</p>';
+
+        let download_str = "download_livelink_doc('" + this.new_id + "','" + doc_url + "')"
+        str += '<p id="livelink_download_' + this.new_id + '" onclick="' + download_str + '">Download This Video</p>';
         str += '</div>';
         return str;
     }

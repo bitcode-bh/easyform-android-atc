@@ -3302,6 +3302,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         newdiv += label_str;
 
                         var obj = {
+                            read_type: 'readchecksheet',
+                            ans: '',
                             new_id: new_id,
                             value: jsonObj[i].value,
                             misc_Array: misc_Array,

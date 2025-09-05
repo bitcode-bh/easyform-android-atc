@@ -3818,8 +3818,9 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         if (ll_answer == "" || ll_answer == null || ll_answer == undefined || ll_answer == "0") {
                             answer.push("");
                         } else {
-                           let ll_src = $("#livelink_video_" + new_id + "").find("source").attr("src");
-                            answer = ll_src;
+                            let ll_src = $("#livelink_video_" + new_id + "").find("source").attr("src");
+                            let ll_download_src = $("#livelink_video_" + new_id + "").attr("download_link");
+                            answer.push(ll_src, ll_download_src);
                         }
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {

@@ -49,7 +49,11 @@ function init_livelink(ll_new_id) {
     video.onloadedmetadata = function () {
         lastTime = 0;
         watchTime = 0;
-        statusDisplay.textContent = "Status: Ready to watch";
+
+        let is_watched = $(this).attr("watched");
+        if (is_watched != "1") {
+            statusDisplay.textContent = "Status: Ready to watch";
+        }
     };
 }
 
@@ -61,4 +65,17 @@ function videoclick() {
         video.pause();
         statusDisplay.textContent = `Status: Paused at ${Math.floor(video.currentTime)}s (Click to Play)`;
     }
+}
+
+function download_livelink_doc(t_new_id, t_live_url) {
+    var q_jsonobj = [];
+    q_jsonobj.push({
+        'video_url': t_live_url
+    })
+    cordova.exec(function (e) {
+        // onsuccess
+        $("#livelink_video_" + t_new_id + "").attr("download_link", e);
+    }, function (e) {
+        // onfail
+    }, 'VideoDownloadPlugin', 'anAction', q_jsonobj);
 }

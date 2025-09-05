@@ -7,8 +7,16 @@ function check_child_flow_for_parent() {
         var list_data = JSON.parse(data_json);
         var subflow_listview = list_data[0].subflow_listview;
 
-        // force listing with hybrid (same as web) - 05022024)
-        subflow_listview = "hybrid";
+        let t_udf_id = JSON.parse(storage.getItem('udf_id'));
+        if (t_udf_id == "2391" || t_udf_id == "2392" || t_udf_id == "2559" || t_udf_id == "2561") {
+            // required groupwise in landload module - mk - 05092025
+            // (rahul.ce role - 2391, 2392)
+            // (rahul.saq role - 2559, 2561)
+        }
+        else {
+            // force listing with hybrid (same as web) - 05022024)
+            subflow_listview = "hybrid";
+        }
 
         if (subflow_listview == 'hybrid') {
             // new structure [subflow + checksheet] (sublow listing base on flow_master mapping) (SO Details Multiflow)
