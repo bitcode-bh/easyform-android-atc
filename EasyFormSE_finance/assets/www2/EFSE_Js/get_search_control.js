@@ -3510,7 +3510,9 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
 
                                         var img_src = get_upload_media_live_link(img_que_id, type20_checksheet_id, t_checksheet_type_id);
 
+                                        let rebind_str = "rebind_autofill_photo_temp('#" + curr_box_id + "','" + img_src + "')";
                                         $("#" + curr_box_id + "").attr('src', img_src);
+                                        $("#" + curr_box_id + "").attr('onerror', rebind_str);
 
                                         let new_que_id = $("#div_cbtn_" + img_new_id).attr('que_id');
 

@@ -3753,6 +3753,12 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
     }
 }
 
+rebind_autofill_photo_temp = (t_cam_id, t_src) => {
+     setTimeout(function () {
+        $(t_cam_id).attr("src", t_src);
+    }, 2000, t_cam_id, t_src);
+}
+
 function get_common_localStorage(key_name) {
     try {
         //used this common localStorage for 3 later task listing (darshit.eng) [Ft-14052025]
