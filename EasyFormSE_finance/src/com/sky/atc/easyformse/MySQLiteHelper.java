@@ -25,7 +25,7 @@ import io.michaelrocks.paranoid.Obfuscate;
 public class MySQLiteHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "location.db";
-    private static final int DATABASE_VERSION = 72;
+    private static final int DATABASE_VERSION = 73;
     private static final String DATABASE_CREATE0 = " CREATE TABLE Login_Master (username TEXT,password TEXT, u_c TEXT, imei TEXT, company_id INTEGER,user_id INTEGER,appid TEXT,servermilli TEXT,devicetype TEXT,appversion TEXT,main_milli,sub_milli,main_id,sub_id) ;";
 
     // Database creation sql statement
@@ -72,6 +72,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_CREATE50 = " CREATE TABLE meterreading (id INTEGER PRIMARY KEY AUTOINCREMENT,detectedtext TEXT,sid TEXT,checksheetid TEXT,queid TEXT,detectiontype TEXT,imgpath TEXT,orpath TEXT,Unique_id TEXT,hasResponse INTEGER);";
     private static final String DATABASE_CREATE51 = "CREATE TABLE deleted_task (id INTEGER PRIMARY KEY AUTOINCREMENT,tid INTEGER,server_task_id INTEGER,dataTime TEXT);";
     private static final String DATABASE_CREATE52 = " CREATE TABLE Thresold_New(_id INTEGER PRIMARY KEY AUTOINCREMENT,threshold_id INTEGER,speed text,normal_acc text,normal_deacc TEXT,hard_acc TEXT,hard_deacc TEXT,gap_milli TEXT,speed_violation_time TEXT ,territory TEXT ,vehicle_type TEXT ,millisecond TEXT);"; // p_id,s_id,path,o_name,name
+
+    private static final String DATABASE_CREATE53 = " CREATE TABLE download_live_url(_id INTEGER PRIMARY KEY AUTOINCREMENT,video_url_id INTEGER,live_url text,download_url_path text);";
 
     //---------------Indexing-----------//
     private static final String DATABASE_INDEX_USER_DEFINE_FLOW_MASTER = "CREATE INDEX index_User_Define_Flow_Master_id ON User_Define_Flow_Master (id)";
@@ -145,6 +147,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         database.execSQL(DATABASE_CREATE50);
         database.execSQL(DATABASE_CREATE51);
         database.execSQL(DATABASE_CREATE52);
+        database.execSQL(DATABASE_CREATE53);
 
 
         //--------Indexing--------//
@@ -686,6 +689,10 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         }
         if (oldVersion < 72) {
             database.execSQL(DATABASE_CREATE52);
+        }
+
+        if(oldVersion < 73){
+            database.execSQL(DATABASE_CREATE53);
         }
 
 
