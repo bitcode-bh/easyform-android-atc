@@ -1,26 +1,38 @@
 package com.sky.atc.easyformse.download;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.sky.atc.easyformse.AddressApi;
 import com.sky.atc.easyformse.B_new;
 import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.R;
+import com.sky.atc.easyformse.TripService;
 import com.sky.atc.easyformse.geofencenew.GeofenceDownlodService;
 import com.sky.atc.easyformse.location_server;
 import com.sky.atc.easyformse.ph_s;
@@ -37,7 +49,7 @@ import io.michaelrocks.paranoid.Obfuscate;
 //Main Service to initiate download
 //Download Intent Service
 @Obfuscate
-public class DownloadListService extends WakefulIntentService {
+public class DownloadListService extends WakefulIntentService implements LocationListener{
 
     SQLiteDatabase database;
     Context context;
@@ -48,6 +60,10 @@ public class DownloadListService extends WakefulIntentService {
     String  mlat;
     String  mlon;
     String accuary;
+    int locentry = 0;
+    private FusedLocationProviderClient fusedLocationClient;
+    private LocationCallback locationCallback;
+    private LocationRequest locationRequest;
     public DownloadListService() {
         super("f_download");
     }
@@ -73,7 +89,25 @@ public class DownloadListService extends WakefulIntentService {
             DownloadMainStructure w = new DownloadMainStructure();
 
             context = sqlitewraper.context;
-            reqLocation();
+            if(locentry == 0) {
+                locentry = 1;
+                reqLocation();
+
+                // auto punch out code
+                if(tripStatus() > 0) {
+                    boolean check2 = isMyServiceRunning(sqlitewraper.context,
+                            TripService.class.getName());
+                    if (check2) {
+                    } else {
+                        //check trip service runing or not
+
+                        Intent tripservice = new Intent(sqlitewraper.context,
+                                TripService.class);
+                        WakefulIntentService.sendWakefulWork(sqlitewraper.context,
+                                tripservice);
+                    }
+                }
+            }
             //First time DeviceSatatusIMEI entry at server side //will  exicute only one time in case of multipal download request
             if (touchFlag == 0) {
                 boolean check2 = DeviceEventsUtils.isMyServiceRunning(context,
@@ -334,59 +368,218 @@ public class DownloadListService extends WakefulIntentService {
     }
 
 
+    public void Insert_current_location_track_master()
+    {
+        try{
+
+            Cursor a_t = database.rawQuery(
+                    "select value from APP_states where ITEAM ='nick'", null);
+            a_t.moveToFirst();
+            int j = a_t.getCount();
+            j++;
+            String username = null;
+            if (a_t.getCount() > 0) {
+
+                username = a_t.getString(0);
+            }
+
+            Date now = new Date();
+
+            Long time = now.getTime();
+            String Date = now.toLocaleString();
+//            String address = add(Double.valueOf(deviceLatw), Double.valueOf(deviceLngw));
+            String address = AddressApi.getCompleteAddress(Double.parseDouble(mlat), Double.parseDouble(mlon));
+            if (address == null) {
+                address = "na";
+            }
+
+            ContentValues args1 = new ContentValues();
+            args1.put("cellid",address );
+            args1.put("lat", String.valueOf(mlat));
+            args1.put("date", time);
+            args1.put("date_s", Date);
+            args1.put("lon", String.valueOf(mlon));
+            args1.put("provider", "");
+            args1.put("accuracy", accuary);
+            args1.put("IS_SEND", 0);
+            args1.put("IS_LOC", time);
+            args1.put("address", address);
+            args1.put("username", username);
+            args1.put("tripflag", "0");
+
+            // only insert into track_master
+            long temp_mast = database.insert("track_master", null, args1);
+        }catch (Exception e){
+
+            ////e.printStackTrace()();
+        }
+    }
+
+
+
     public void reqLocation() {
 
-        LocationListener locationListener = new MyLocationListner();
-        Location location1 = getLastKnownLocation();
-        if (location1 != null) {
-            locationListener.onLocationChanged(location1);
-        }else {
-            //Toast.makeText(sqlitewraper.context, "No Location Provider found", Toast.LENGTH_SHORT).show();
+//        LocationListener locationListener = new MyLocationListner();
+//        Location location1 = getLastKnownLocation();
+//        if (location1 != null) {
+//            locationListener.onLocationChanged(location1);
+//        }else {
+//            //Toast.makeText(sqlitewraper.context, "No Location Provider found", Toast.LENGTH_SHORT).show();
+//        }
+
+        try {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+            locationRequest = createLocationRequestNew();
+            onLocationChanged();
+            startLocationUpdatesFused();
+        } catch (SecurityException e) {
+            e.printStackTrace();
         }
     }
 
-    private Location getLastKnownLocation() {
-        locationManager = (LocationManager) sqlitewraper.context.getSystemService(LOCATION_SERVICE);
-        List<String> providers = locationManager.getProviders(true);
-        Location bestLocation = null;
-        for (String provider : providers) {
-            @SuppressLint("MissingPermission") Location l = locationManager.getLastKnownLocation(provider);
-            if (l == null) {
-                continue;
-            }
-            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-                // Found best last known location: %s", l);
-                bestLocation = l;
-            }
+    private void startLocationUpdatesFused() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
         }
-        return bestLocation;
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
     }
 
-    public class MyLocationListner implements LocationListener {
-        @Override
-        public void onLocationChanged(Location location) {
+    protected LocationRequest createLocationRequestNew() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(5000);
+        locationRequest.setFastestInterval(2000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        return locationRequest;
+    }
 
-            mlat = DeviceEventsUtils.LatlngRoundff(String.valueOf(location.getLatitude()));
-            mlon = DeviceEventsUtils.LatlngRoundff(String.valueOf(location.getLongitude()));
-            accuary =  String.format("%.2f",location.getAccuracy());
+    private void onLocationChanged() {
 
-            String address = AddressApi.getCompleteAddress(Double.parseDouble(mlat), Double.parseDouble(mlon));
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    try{
+                        mlat = DeviceEventsUtils.LatlngRoundff(String.valueOf(location.getLatitude()));
+                        mlon = DeviceEventsUtils.LatlngRoundff(String.valueOf(location.getLongitude()));
+                        accuary = String.format("%.2f", location.getAccuracy());
 
-            Log.d("##lat :", String.valueOf(mlat) + "##lng :" + mlon);
-            Insert_current_location();
+                        String address = AddressApi.getCompleteAddress(Double.parseDouble(mlat), Double.parseDouble(mlon));
+
+                        Log.d("##lat :", String.valueOf(mlat) + "##lng :" + mlon);
+                        Insert_current_location();
+                        Insert_current_location_track_master();
+
+                        if (fusedLocationClient != null) {
+                            fusedLocationClient.removeLocationUpdates(locationCallback);
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+    }
+    @Override
+    public void onLocationChanged(Location location) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(@NonNull String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(@NonNull String provider) {
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+//    private Location getLastKnownLocation() {
+//        locationManager = (LocationManager) sqlitewraper.context.getSystemService(LOCATION_SERVICE);
+//        List<String> providers = locationManager.getProviders(true);
+//        Location bestLocation = null;
+//        for (String provider : providers) {
+//            @SuppressLint("MissingPermission") Location l = locationManager.getLastKnownLocation(provider);
+//            if (l == null) {
+//                continue;
+//            }
+//            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+//                // Found best last known location: %s", l);
+//                bestLocation = l;
+//            }
+//        }
+//        return bestLocation;
+//    }
+//
+//    public class MyLocationListner implements LocationListener {
+//        @Override
+//        public void onLocationChanged(Location location) {
+//
+//            mlat = DeviceEventsUtils.LatlngRoundff(String.valueOf(location.getLatitude()));
+//            mlon = DeviceEventsUtils.LatlngRoundff(String.valueOf(location.getLongitude()));
+//            accuary =  String.format("%.2f",location.getAccuracy());
+//
+//            String address = AddressApi.getCompleteAddress(Double.parseDouble(mlat), Double.parseDouble(mlon));
+//
+//            Log.d("##lat :", String.valueOf(mlat) + "##lng :" + mlon);
+//            Insert_current_location();
+//        }
+//
+//        @Override
+//        public void onStatusChanged(String provider, int status, Bundle extras) {
+//        }
+//
+//        @Override
+//        public void onProviderEnabled(String provider) {
+//        }
+//
+//        @Override
+//        public void onProviderDisabled(String provider) {
+//
+//        }
+//    }
+
+    private int tripStatus(){
+
+        android.database.Cursor tripflag = database.rawQuery(
+                "select * from lat_plug where trip_status = 0", null);
+        tripflag.moveToFirst();
+        int tripflagCount = tripflag.getCount();
+        tripflag.close();
+        return tripflagCount;
+    }
+
+    //function for checking if service is running or not
+    private boolean isMyServiceRunning(Context context, String Myservice) {
+        ActivityManager manager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager
+                .getRunningServices(Integer.MAX_VALUE)) {
+            if (Myservice.equals(service.service.getClassName())) {
+
+                return true;
+            }
         }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
+        return false;
     }
 }

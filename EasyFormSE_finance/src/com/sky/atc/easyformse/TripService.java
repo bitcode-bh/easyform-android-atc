@@ -44,8 +44,10 @@ import org.apache.http.protocol.HttpContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import io.michaelrocks.paranoid.Obfuscate;
 
@@ -386,6 +388,30 @@ public class TripService extends WakefulIntentService implements LocationListene
             return false; // If the current time is before the input time
         } catch (NumberFormatException e) {
             return false; // If parsing fails, handle gracefully by returning false
+        }
+    }
+
+    private boolean shouldAutoStopTrip(long tripStartTimeMillis, String autoEndTime, long currentTimeMillis) {
+        try {
+            // Convert trip start time to yyyy-MM-dd
+            Date tripStartDate = new Date(tripStartTimeMillis);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            String tripDateStr = dateFormat.format(tripStartDate);
+
+            // Combine date + auto end time
+            String fullDateTime = tripDateStr + " " + autoEndTime;
+
+            // Parse full datetime
+            SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            Date tripAutoEndDateTime = dateTimeFormat.parse(fullDateTime);
+            long tripAutoEndMillis = tripAutoEndDateTime.getTime();
+
+            // Check time and location
+            return currentTimeMillis > tripAutoEndMillis;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -959,11 +985,32 @@ public class TripService extends WakefulIntentService implements LocationListene
                                 boolean shouldStopTrip = false;
                                 String Duration ;
                                 String SameLocation = "false";
+                                String duration_hour = "";
 
                                 if (mAttendanceData.getAllow_round_trip() != null) {
                                     SameLocation = mAttendanceData.getAllow_round_trip();
                                 }
 
+                                //  Condition 1: Trip start + duration time
+//
+                                if( mAttendanceData.getAuto_punchout_duration_hours() == null || mAttendanceData.getAuto_punchout_duration_hours().equalsIgnoreCase(""))
+                                {
+                                    // duration hours getting null use 24 hours
+                                    duration_hour = "24:00";
+                                    if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
+                                        stopTrip(location,punchoutstatus);
+                                    }
+                                }
+                                else {
+                                      duration_hour = mAttendanceData.getAuto_punchout_duration_hours();
+//                                    duration_hour = "5:00";
+                                    if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
+                                        stopTrip(location,punchoutstatus);
+                                    }
+                                }
+
+
+                                 //Condition 2: Use configured auto punch-out duration
                                 // Check duration or 24-hour time condition
                                 if (mAttendanceData.getAuto_punchout_duration() == null || mAttendanceData.getAuto_punchout_duration().equalsIgnoreCase("")) {
                                     if (is24HoursPassed(Long.parseLong(TripStartTime))) {
@@ -973,7 +1020,8 @@ public class TripService extends WakefulIntentService implements LocationListene
                                 else {
                                     try {
                                         Duration = mAttendanceData.getAuto_punchout_duration();
-                                        if (isAfterDuaration(Duration)) {
+                                        if(shouldAutoStopTrip(Long.parseLong(TripStartTime),Duration,System.currentTimeMillis()))
+                                        {
                                             shouldStopTrip = true;
                                         }
                                     } catch (Exception e) {
@@ -992,7 +1040,7 @@ public class TripService extends WakefulIntentService implements LocationListene
                                             if (!ISTripStartAfter6PM && distance < LOCATION_THRESHOLD) {
                                                 stopTrip(location,punchoutstatus);
                                             }
-                                            else if (ISTripStartAfter6PM &&  ISExitGeofence && distance < LOCATION_THRESHOLD ){
+                                            else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour)){
                                                 stopTrip(location,punchoutstatus);
 
                                                 pref1.putBoolean("ISTripStartAfter6PM",false);
@@ -1006,7 +1054,7 @@ public class TripService extends WakefulIntentService implements LocationListene
                                         if (!ISTripStartAfter6PM) {
                                             stopTrip(location,punchoutstatus);
                                         }
-                                        else if (ISTripStartAfter6PM &&  ISExitGeofence ){
+                                        else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour) ){
                                             stopTrip(location,punchoutstatus);
 
                                             pref1.putBoolean("ISTripStartAfter6PM",false);
@@ -1032,5 +1080,30 @@ public class TripService extends WakefulIntentService implements LocationListene
 
         long hoursPassed = diff / (1000 * 60 * 60); // convert to hours
         return hoursPassed >= 24;
+    }
+
+    public static boolean isTripFinished_hourbase(String startTimeStr,String duration) {
+        try {
+            long startMillis = Long.parseLong(startTimeStr);  // epoch millis
+            Date startDate = new Date(startMillis);
+
+            String[] separated = duration.split(":");
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(startDate);
+            calendar.add(Calendar.HOUR_OF_DAY, Integer.parseInt(separated[0]));
+            calendar.add(Calendar.MINUTE, Integer.parseInt(separated[1]));
+
+
+            Date stopTime = calendar.getTime();
+
+            // Get current time
+            Date currentTime = new Date();
+
+            return currentTime.after(stopTime);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

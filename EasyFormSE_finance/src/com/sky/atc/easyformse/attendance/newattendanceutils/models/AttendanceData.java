@@ -11,6 +11,10 @@ import com.google.gson.annotations.SerializedName;
 public class AttendanceData {
 
 	@Expose
+	@SerializedName("auto_punchout_duration_hours")
+	private String auto_punchout_duration_hours;
+
+	@Expose
 	@SerializedName("auto_punchout_duration")
 	private String auto_punchout_duration;
 
@@ -130,11 +134,20 @@ public class AttendanceData {
 		this.allow_round_trip = allow_round_trip;
 	}
 
+	public String getAuto_punchout_duration_hours() {
+		return auto_punchout_duration_hours;
+	}
+
+	public void setAuto_punchout_duration_hours(String auto_punchout_duration_hours) {
+		this.auto_punchout_duration_hours = auto_punchout_duration_hours;
+	}
+
 	@Override
  	public String toString(){
 		return 
 			"AttendanceDataItem{" +
-			"auto_punchout_duration = '" + auto_punchout_duration + '\'' +
+			"auto_punchout_duration_hours = '" + auto_punchout_duration_hours + '\'' +
+			",auto_punchout_duration = '" + auto_punchout_duration + '\'' +
 			",allow_round_trip = '" + allow_round_trip + '\'' +
 			",Punchin_Status = '" + Punchin_Status + '\'' +
 			",Punchout_Status = '" + Punchout_Status + '\'' +
