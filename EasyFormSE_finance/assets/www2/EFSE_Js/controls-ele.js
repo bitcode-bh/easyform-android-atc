@@ -202,13 +202,13 @@ MkControls.prototype.build_type_1_text = function () {
 
             if (this.speech_btn == 'true') {
                 var param_speech = "onclick=convert_speech_to_text('#txt_" + this.new_id + "');";
-                str += '<i class="fa fa-microphone form-ico" ' + this.enable_disable + ' ' + param_speech + '></i>';
+                str += '<i class="fa fa-microphone form-ico force_show" ' + this.enable_disable + ' ' + param_speech + '></i>';
             }
             else {
 
                 if (this.textbox_type == 'password') {
                     var param_pass = "onclick='show_pass1(this)'";
-                    str += '<i class="fa fa-eye-slash form-ico" ' + this.enable_disable + ' ' + param_pass + ' ' + param_focus + '></i>';
+                    str += '<i class="fa fa-eye-slash form-ico force_show" ' + this.enable_disable + ' ' + param_pass + ' ' + param_focus + '></i>';
                 }
                 else {
                     str += '<i class="fa ' + ico_str + ' form-ico" ' + this.enable_disable + ' ' + param_focus + '></i>';
@@ -378,12 +378,12 @@ MkControls.prototype.build_type_4_number = function () {
             else {
                 // ar_measurement_type = "in/cm/ft/m"
                 var param_click = "get_ar_measurement('txtno_" + this.new_id + "', '" + ar_measurement_type + "', '" + target_class + "');";
-                var ico_str = '<i class="fa fa-cube form-ico" ' + this.enable_disable + ' onclick="' + param_click + '" style="visibility: visible"></i>';
+                var ico_str = '<i class="fa fa-cube form-ico force_show" ' + this.enable_disable + ' onclick="' + param_click + '" style="visibility: visible"></i>';
             }
 
             if (whatsapp_call == "true") {
                 var param_click = "open_whatsapp('txtno_" + this.new_id + "');";
-                var ico_str = '<i class="fa fa-whatsapp form-ico" ' + this.enable_disable + ' onclick="' + param_click + '" style="font-size: 25px; margin-top: 5px"></i>';
+                var ico_str = '<i class="fa fa-whatsapp form-ico force_show" ' + this.enable_disable + ' onclick="' + param_click + '" style="font-size: 25px; margin-top: 5px"></i>';
             }
         }
 
@@ -540,7 +540,7 @@ MkControls.prototype.build_type_8_calendar = function () {
             str += '<div class="group_' + this.new_id + '" style="position:relative;">';
             str += '<input id="cal_' + this.new_id + '" class="form-ele-med ' + this.main_class + '" type="text" data-field="'
                 + this.mode + '" value="' + ans_str + '" dur_class="' + this.dur_class + '" ref_class="' + this.ref_class + '" duration_type="' + this.dur_type + '" duration="' + this.duration + '" disabled style="width:50% !important;" >';
-            str += '<button type="button" id="btn_curr_dateTime_' + this.new_id + '" class="button button-fill form-ico" onclick="' + param_datetime + '" style="width:3%;min-width:50px;height:25px;line-height:25px;margin-top:8px;margin-left:5px;font-size:11px;text-transform: capitalize;" ' + this.enable_disable + '>' + current_datetime_btn_text + '</button>';
+            str += '<button type="button" id="btn_curr_dateTime_' + this.new_id + '" class="button button-fill form-ico force_show" onclick="' + param_datetime + '" style="width:3%;min-width:50px;height:25px;line-height:25px;margin-top:8px;margin-left:5px;font-size:11px;text-transform: capitalize;" ' + this.enable_disable + '>' + current_datetime_btn_text + '</button>';
             str += '<i class="fa ' + ico_str + ' form-ico" ' + this.enable_disable + '></i>';
         }
         else {
@@ -755,10 +755,10 @@ MkControls.prototype.build_type_20_search = function () {
 
         if (qr_code == 'true') {
             if (is_barcode == true) {
-                var qr_ico_str = '<i id="btn20_QR_' + this.new_id + '" class="fa form-ico fa-barcode" ' + this.enable_disable + ' style="margin-left:6px" onclick="' + this.param_qr + '" ></i>';
+                var qr_ico_str = '<i id="btn20_QR_' + this.new_id + '" class="fa form-ico fa-barcode force_show" ' + this.enable_disable + ' style="margin-left:6px" onclick="' + this.param_qr + '" ></i>';
             }
             else {
-                var qr_ico_str = '<i id="btn20_QR_' + this.new_id + '" class="fa form-ico fa-qrcode" ' + this.enable_disable + ' style="margin-left:6px" onclick="' + this.param_qr + '" ></i>';
+                var qr_ico_str = '<i id="btn20_QR_' + this.new_id + '" class="fa form-ico fa-qrcode force_show" ' + this.enable_disable + ' style="margin-left:6px" onclick="' + this.param_qr + '" ></i>';
             }
         }
         else {
@@ -769,7 +769,7 @@ MkControls.prototype.build_type_20_search = function () {
         if (this.view_style == 'tableview' || this.view_style == 'listview') {
             if (this.customer_checksheetid == '' || this.customer_checksheetid == null || this.customer_checksheetid == undefined || this.customer_checksheetid == "0") { }
             else {
-                var add_customer_str = '<i class="fa ' + third_ico + ' form-ico" style="margin-top:10px; margin-left:5px" onclick="get_popup_to_add_item_online(' + this.customer_checksheetid + ')" ' + this.enable_disable + '></i>';
+                var add_customer_str = '<i class="fa ' + third_ico + ' form-ico force_show" style="margin-top:10px; margin-left:5px" onclick="get_popup_to_add_item_online(' + this.customer_checksheetid + ')" ' + this.enable_disable + '></i>';
             }
         }
 

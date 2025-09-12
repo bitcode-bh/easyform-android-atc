@@ -1661,6 +1661,10 @@ html.pixel-ratio-3 .timeline-month .timeline-item:before {
     display: none !important;
 }
 
+.force_show {
+    display: inline-block !important;
+}
+
 #myDynamicTable {
     margin: 5px;
 }

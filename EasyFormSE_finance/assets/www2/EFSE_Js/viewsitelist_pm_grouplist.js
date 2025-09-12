@@ -1398,9 +1398,10 @@ function check_old_task_for_checksheet(selected_check_type, selected_checksheet_
         var company_id = JSON.parse(storage.getItem('company_id'));
         if (company_id == "157") {
             // display icon for ATC company
-            c_is_icon_display = "true";
+            c_is_icon_display = "false";
         }
         else {
+            c_is_icon_display = "false";
             c_is_icon_display = "false";
         }
 

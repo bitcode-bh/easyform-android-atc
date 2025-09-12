@@ -117,7 +117,10 @@ function get_dynddl_data_onclick(t_new_id, t_own_id, dep_only, type20_id) {
                         }
                     );
 
-
+                    setTimeout(function () {
+                        // Change the modal title
+                        $$('.modal.modal-in .modal-title').text('Confirm');
+                    }, 10);
                 }
             }
 
@@ -452,6 +455,11 @@ MkDynDDL.prototype = {
                                             fire_T30_dependency(t_new_id, view_type, dependency, user_choice, confirm_text);
                                         }
                                     );
+
+                                    setTimeout(function () {
+                                        // Change the modal title
+                                        $$('.modal.modal-in .modal-title').text('Confirm');
+                                    }, 10);
                                 }
 
                             }
