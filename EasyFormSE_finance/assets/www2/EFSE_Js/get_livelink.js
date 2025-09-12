@@ -36,7 +36,26 @@ function init_livelink(ll_new_id) {
         watchTime = 0;
         statusDisplay.textContent = "Status: Watched";
         $(video).attr("watched", "1");
-        //let t_path = $(video).find("source").attr("src");
+        let curr_path = $(video).find("source").attr("src");
+
+        let livelink_watched_Array = localStorage.getItem('livelink_watched_Array');
+        if (livelink_watched_Array == "" || livelink_watched_Array == null || livelink_watched_Array == undefined || livelink_watched_Array == "[]") {
+            livelink_watched_Array = [];
+        }
+
+        let found = 0;
+        for (let l = 0; l < livelink_watched_Array.length; l++) {
+            let t_path = livelink_watched_Array[l];
+            if (t_path == curr_path) {
+                found++;
+                break;
+            }
+        }
+        if (found == 0) {
+            livelink_watched_Array.push(curr_path);
+        }
+        localStorage.setItem('livelink_watched_Array', JSON.stringify(livelink_watched_Array));
+
     };
 
     video.onplay = function () {
@@ -86,5 +105,5 @@ function download_livelink_doc(t_live_url) {
 
 reset_video_url_by_live_url = (t_video_ele) => {
     let live_url = $(t_video_ele).attr("live_url");
-    $(t_video_ele).attr("src", live_url); 
+    $(t_video_ele).attr("src", live_url);
 }

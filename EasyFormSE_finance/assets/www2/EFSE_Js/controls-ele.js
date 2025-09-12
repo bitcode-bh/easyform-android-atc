@@ -1467,20 +1467,39 @@ MkControls.prototype.build_type_40_livelink = function () {
 
                     // set video by local path if downloaded to local
                     video_path = download_url_path;
-
-                    watched = 1;
-                    watch_status = "Status: Watched";
                 }
             }
         }
 
+        let livelink_watched_Array = localStorage.getItem('livelink_watched_Array');
+        if (livelink_watched_Array == "" || livelink_watched_Array == null || livelink_watched_Array == undefined || livelink_watched_Array == "[]") {
+            livelink_watched_Array = [];
+        }
+        else {
+            livelink_watched_Array = JSON.parse(livelink_watched_Array);
+        }
+
+        let found = 0;
+        for (let l = 0; l < livelink_watched_Array.length; l++) {
+            let t_path = livelink_watched_Array[l];
+            if (t_path == doc_url || t_path == video_path) {
+                found++;
+                break;
+            }
+        }
+        if (found == 1) {
+            watched = 1;
+            watch_status = "Status: Watched";
+        }
+
         var str = '';
-        str += '<div class="video-container" onload="init_livelink("livelink_video_' + this.new_id + '")">';
+        let onload_str = "init_livelink('livelink_video_" + this.new_id + "')";
+        str += '<div class="video-container" onload="' + onload_str + '">';
         str += '<video id="livelink_video_' + this.new_id + '" onclick="videoclick()" watched="' + watched + '" width="100%" preload="auto" crossorigin="anonymous" controlslist="nodownload nofullscreen noremoteplayback"';
         str += 'controls playsinline disablepictureinpicture>';
         //str += 'controls muted autoplay loop playsinline disablepictureinpicture>';
         //str += '<source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4">';
-        str += '<source src="' + video_path + '" live_url="' + doc_url +'" type="video/mp4" onerror="reset_video_url_by_live_url(this)">';
+        str += '<source src="' + video_path + '" live_url="' + doc_url + '" type="video/mp4" onerror="reset_video_url_by_live_url(this)">';
         str += '</video>';
         str += '<p id="livelink_status_' + this.new_id + '">' + watch_status + '</p>';
 
