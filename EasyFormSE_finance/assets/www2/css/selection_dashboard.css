@@ -278,7 +278,7 @@ foreignObject {
 
 /* -----------------------  Apexchart css end --------------*/
 #div_page_content {
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 
 #div_vertical_dashboard {

@@ -2,7 +2,41 @@
 // default function on page load for initial check read
 var is_attendance_task = 0;
 var attendance_photo_url;
+
+var glob_livelink_Array = [];
 function data_to_read_task() {
+    var query = "select * from download_live_url";
+    var q_jsonobj = [];
+    q_jsonobj.push({
+        data: query,
+        p: "1"
+    });
+    cordova.exec(function (e) {
+        let myArray = JSON.parse(e);
+        if (myArray.length > 0) {
+
+            for (let l = 0; l < myArray.length; l++) {
+                let live_url = myArray[l].live_url;
+                let download_url_path = myArray[l].download_url_path;
+
+                glob_livelink_Array.push({
+                    "live_url": live_url,
+                    "download_url_path": download_url_path
+                });
+            }
+
+            data_to_read_task_post();
+        }
+        else {
+            data_to_read_task_post();
+        }
+    }, function (e) {
+        // fail
+        data_to_read_task_post();
+
+    }, 'SqlitePlugin', 'showValues', q_jsonobj);
+}
+function data_to_read_task_post() {
     var query = "select username from Login_master";
     var q_jsonobj = [];
     q_jsonobj.push({

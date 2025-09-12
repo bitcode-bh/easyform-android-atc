@@ -1449,18 +1449,28 @@ MkControls.prototype.build_type_40_livelink = function () {
         let value = this.misc_Array[0].value;
         value = itemObj._checkStrObj(value);  // check_item
         let doc_type = value[0].doc_type;
-        let doc_url = value[0].doc_url;
+        let doc_url = value[0].doc_url;      // configured live path
+
         let watched = 0;
         let watch_status = "Status: Not Watched";
 
-        if (this.read_type == "readsurvey") {
-            if (this.ans == "" || this.ans == null || this.ans == undefined) {
-                doc_url = value[0].doc_url;
-            }
-            else {
-                doc_url = this.ans[1];                // local saved path
-                watched = 1;
-                watch_status = "Status: Watched";
+        let video_path = value[0].doc_url;
+        for (let g = 0; g < glob_livelink_Array.length; g++) {
+            let live_url = glob_livelink_Array[g].live_url;     // configured live path
+            if (doc_url == live_url) {
+                let download_url_path = glob_livelink_Array[g].download_url_path;    // local download folder path
+                if (download_url_path == "" || download_url_path == null || download_url_path == undefined) {
+                    // downloading is in process
+                }
+                else {
+                    // download completed
+
+                    // set video by local path if downloaded to local
+                    video_path = download_url_path;
+
+                    watched = 1;
+                    watch_status = "Status: Watched";
+                }
             }
         }
 
@@ -1470,12 +1480,12 @@ MkControls.prototype.build_type_40_livelink = function () {
         str += 'controls playsinline disablepictureinpicture>';
         //str += 'controls muted autoplay loop playsinline disablepictureinpicture>';
         //str += '<source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4">';
-        str += '<source src="' + doc_url + '" type="video/mp4">';
+        str += '<source src="' + video_path + '" live_url="' + doc_url +'" type="video/mp4" onerror="reset_video_url_by_live_url(this)">';
         str += '</video>';
         str += '<p id="livelink_status_' + this.new_id + '">' + watch_status + '</p>';
 
-        let download_str = "download_livelink_doc('" + this.new_id + "','" + doc_url + "')"
-        str += '<p id="livelink_download_' + this.new_id + '" onclick="' + download_str + '">Download This Video</p>';
+        let download_str = "download_livelink_doc('" + doc_url + "')"
+        str += '<p id="livelink_download_' + this.new_id + '" onclick="' + download_str + '" style="float:right"><i class="fa fa-download"></i> Download</p>';
         str += '</div>';
         return str;
     }

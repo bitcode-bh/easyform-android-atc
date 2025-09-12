@@ -36,6 +36,7 @@ function init_livelink(ll_new_id) {
         watchTime = 0;
         statusDisplay.textContent = "Status: Watched";
         $(video).attr("watched", "1");
+        //let t_path = $(video).find("source").attr("src");
     };
 
     video.onplay = function () {
@@ -67,17 +68,23 @@ function videoclick() {
     }
 }
 
-function download_livelink_doc(t_new_id, t_live_url) {
+function download_livelink_doc(t_live_url) {
     var q_jsonobj = [];
     q_jsonobj.push({
         'video_url': t_live_url
     })
     cordova.exec(function (e) {
         // onsuccess
-        let myArray = JSON.parse(e);
-        let video_path = myArray[0].video_path;
-        $("#livelink_video_" + t_new_id + "").attr("download_link", video_path);
+
+        alert(e);
+
     }, function (e) {
         // onfail
+        alert(e);
     }, 'VideoDownloadPlugin', 'anAction', q_jsonobj);
+}
+
+reset_video_url_by_live_url = (t_video_ele) => {
+    let live_url = $(t_video_ele).attr("live_url");
+    $(t_video_ele).attr("src", live_url); 
 }
