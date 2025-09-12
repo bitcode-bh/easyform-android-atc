@@ -1801,12 +1801,12 @@ public class f_upload_new_structure extends WakefulIntentService {
                     //Need to change the logic from TID
                     if (!sidlat.equalsIgnoreCase("0")) {
                         boolean check2 = isMyServiceRunning(sqlitewraper.context,
-                                TripService.class.getName());
+                                AutoTripStopService.class.getName());
 
                         if (check2) {
-                            Intent tripservice = new Intent(sqlitewraper.context,
-                                    TripService.class);
-                            sqlitewraper.context.stopService(tripservice);
+                            Intent Autotripservice = new Intent(sqlitewraper.context,
+                                    AutoTripStopService.class);
+                            sqlitewraper.context.stopService(Autotripservice);
                         }
                     }
                 }

@@ -29,6 +29,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.sky.atc.easyformse.AddressApi;
+import com.sky.atc.easyformse.AutoTripStopService;
 import com.sky.atc.easyformse.B_new;
 import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.R;
@@ -96,15 +97,15 @@ public class DownloadListService extends WakefulIntentService implements Locatio
                 // auto punch out code
                 if(tripStatus() > 0) {
                     boolean check2 = isMyServiceRunning(sqlitewraper.context,
-                            TripService.class.getName());
+                            AutoTripStopService.class.getName());
                     if (check2) {
                     } else {
                         //check trip service runing or not
 
-                        Intent tripservice = new Intent(sqlitewraper.context,
-                                TripService.class);
+                        Intent Autotripservice = new Intent(sqlitewraper.context,
+                                AutoTripStopService.class);
                         WakefulIntentService.sendWakefulWork(sqlitewraper.context,
-                                tripservice);
+                                Autotripservice);
                     }
                 }
             }

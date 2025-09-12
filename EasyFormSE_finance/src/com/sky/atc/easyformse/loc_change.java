@@ -591,25 +591,23 @@ public class loc_change extends WakefulIntentService {
 				//to check if trip service is running or not
 				long nowmilliseconds = System.currentTimeMillis();
 
-				if (nowmilliseconds - last_upload_ms > 300000)
-				{
+
+				if (nowmilliseconds - last_upload_ms > 300000) {
 
 					boolean check2 = isMyServiceRunning(sqlitewraper.context,
 							TripService.class.getName());
-					//if (!check2) {
+					if (!check2) {
 						//temporary close for ETA
-						//if (etaflag.equalsIgnoreCase("true")) {
+						if (etaflag.equalsIgnoreCase("true")) {
 							Intent tripservice = new Intent(sqlitewraper.context,
 									TripService.class);
 							WakefulIntentService.sendWakefulWork(sqlitewraper.context,
 									tripservice);
-						//}
-//					} else {
-//
-//						Log.d("##TripserviceCall","service already running");
-//					}
+						}
+					} else {
 
-
+						Log.d("##TripserviceCall","service already running");
+					}
 				}
 			}
 			check_location12.close();

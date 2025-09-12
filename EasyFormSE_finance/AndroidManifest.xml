@@ -369,6 +369,7 @@
             </intent-filter>
         </service>
         <service android:name=".TripService" />
+        <service android:name=".AutoTripStopService" />
         <service android:name=".GpsReceiverService" />
         <service android:name=".geofencenew.GeofenceTrasitionService" />
         <service android:name=".geofencenew.GeofenceTrasitionServicenew"  android:exported="true" />

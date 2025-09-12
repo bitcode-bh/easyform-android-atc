@@ -596,6 +596,10 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 //for ETA
                 Intent i = new Intent(sqlitewraper.context, TripService.class);
                 WakefulIntentService.sendWakefulWork(sqlitewraper.context, i);
+
+            // for Auto Trip
+            Intent intent = new Intent(sqlitewraper.context, AutoTripStopService.class);
+            WakefulIntentService.sendWakefulWork(sqlitewraper.context, intent);
           //  }
             c4.close();
 
