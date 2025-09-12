@@ -1,19 +1,31 @@
 package com.sky.atc.easyformse.plugins;
 
+import static com.sky.atc.easyformse.sqlitewraper.context;
+import static com.sky.atc.easyformse.sqlitewraper.mainactivity;
+
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
 
 import com.sky.atc.easyformse.sqlitewraper;
 import com.sky.atc.easyformse.utils.LogUtils;
@@ -38,6 +50,7 @@ public class VideoDownloadPlugin extends CordovaPlugin {
     private Context context;
     private boolean isDownloading = false;
 
+    private static final int PERMISSION_REQUEST_CODE = 201;
     @Override
     protected void pluginInitialize() {
         context = cordova.getActivity().getApplicationContext();
@@ -54,46 +67,13 @@ public class VideoDownloadPlugin extends CordovaPlugin {
             this.callbackContext = callbackContext;
             video_url = args.getJSONObject(0).getString("video_url");
 
-//            Intent i = new Intent(sqlitewraper.context, VideoURLDownloadActivity.class);
-//            i.putExtra("video_url", video_url);
-//
-//            this.cordova.startActivityForResult(this, i, 101);
-            if (video_url == null || video_url.isEmpty()) {
-                Toast.makeText(this.cordova.getActivity(), "Url not found", Toast.LENGTH_LONG).show();
-                callbackContext.error("URL not found");
-                return true;
+            if(checkPermission())
+            {
+                downloadstart();
             }
-
-            String existingPath = getDownloadPathFromDB(video_url);
-            if (existingPath != null && !existingPath.isEmpty()) {
-                File file = new File(existingPath);
-                    if (!file.exists()) {
-                        // File doesn't exist, clear path in DB to allow re-download
-                        updateDownloadPathByUrl(video_url, "");
-                        existingPath = null;
-                        String filename = video_url.substring(video_url.lastIndexOf("/") + 1);
-                        long downloadId = startDownload(video_url, filename);
-
-                        SharedPreferences prefs = context.getSharedPreferences("VideoDownloadPrefs", Context.MODE_PRIVATE);
-                        prefs.edit()
-                                .putLong("downloadId", downloadId)
-                                .putString("videoUrl", video_url)
-                                .apply();
-                    }
-
-                return true;
-            } else {
-                // Insert url if not exists, start download
-                handleDownload(video_url);
+            else {
+                requestPermission();
             }
-
-
-
-
-//            Insert_video_url(video_url);
-//            filename = video_url.substring(video_url.lastIndexOf("/") + 1);
-//
-//            long downloadId = startDownload(video_url, filename);
 
             return true;
         }
@@ -104,14 +84,52 @@ public class VideoDownloadPlugin extends CordovaPlugin {
         }
     }
 
+
+     public void   downloadstart()
+     {
+         if (video_url == null || video_url.isEmpty()) {
+             Toast.makeText(this.cordova.getActivity(), "Url not found", Toast.LENGTH_LONG).show();
+             callbackContext.error("URL not found");
+         }
+
+         String existingPath = getDownloadPathFromDB(video_url);
+         if (existingPath != null && !existingPath.isEmpty()) {
+             File file = new File(existingPath);
+             if (!file.exists()) {
+                 // File doesn't exist, clear path in DB to allow re-download
+                 updateDownloadPathByUrl(video_url, "");
+                 existingPath = null;
+                 String filename = video_url.substring(video_url.lastIndexOf("/") + 1);
+                 long downloadId = startDownload(video_url, filename);
+
+                 SharedPreferences prefs = context.getSharedPreferences("VideoDownloadPrefs", Context.MODE_PRIVATE);
+                 prefs.edit()
+                         .putLong("downloadId", downloadId)
+                         .putString("videoUrl", video_url)
+                         .apply();
+
+                 callbackContext.success("File is being downloaded in the background.");
+             }
+             else {
+                 callbackContext.success("File is already downloaded.");
+             }
+
+         } else {
+             // Insert url if not exists, start download
+             new Handler(Looper.getMainLooper()).post(new Runnable() {
+                 public void run() {
+                     handleDownload(video_url);
+                 }
+             });
+         }
+     }
+
     private void handleDownload(String videoUrl) {
 
         if (isDownloading) {
             // Already downloading, notify JS or ignore
             if (callbackContext != null) {
-                PluginResult result = new PluginResult(PluginResult.Status.ERROR, "Another download is already in progress");
-                result.setKeepCallback(false);
-                callbackContext.sendPluginResult(result);
+                callbackContext.success("Another download is already in progress");
             }
             return; // Don't start new download
         }
@@ -130,7 +148,12 @@ public class VideoDownloadPlugin extends CordovaPlugin {
                 .putString("videoUrl", videoUrl)
                 .apply();
 
-        callbackContext.success("Download started");
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            public void run() {
+                callbackContext.success("File is being downloaded in the background.");
+            }
+        });
+
     }
 
     private long startDownload(String url, String filename) {
@@ -267,4 +290,56 @@ public class VideoDownloadPlugin extends CordovaPlugin {
             }
         }
     }
+
+
+    private boolean checkPermission() {
+        if (ContextCompat.checkSelfPermission(this.cordova.getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) +
+                ContextCompat.checkSelfPermission(this.cordova.getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            return false;
+        }
+        return true;
+    }
+
+    private void requestPermission() {
+
+        cordova.requestPermissions(this,PERMISSION_REQUEST_CODE,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE});
+    }
+    @Override
+    public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, handle accordingly
+                downloadstart();
+            } else {
+                if ( ContextCompat.checkSelfPermission(this.cordova.getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) +
+                        ContextCompat.checkSelfPermission(this.cordova.getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)  {
+
+                    showMessageOKCancel("You need to allow access file and media permissions",
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent();
+                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
+                                    mainactivity.startActivity(intent);
+                                    //finish();
+                                }
+                            });
+
+                }
+
+            }
+        }
+    }
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(this.cordova.getActivity())
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setCancelable(false)
+                .create()
+                .show();
+    }
+
 }
