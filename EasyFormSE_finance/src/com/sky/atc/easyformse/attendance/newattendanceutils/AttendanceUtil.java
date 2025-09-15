@@ -68,7 +68,13 @@ public class AttendanceUtil {
 
     public static void setAttendanceNotificationAlarm(AttendanceData attendanceData) {
         TaskData mTaskData = new TaskData();
-        mTaskData.setModuleId(Integer.parseInt(attendanceData.getFlowId()));
+        if(attendanceData.getFlowId().equalsIgnoreCase("Select"))
+        {
+            mTaskData.setModuleId(Integer.parseInt("0"));
+        }
+        else {
+            mTaskData.setModuleId(Integer.parseInt(attendanceData.getFlowId()));
+        }
         mTaskData.setCheckSheetId(attendanceData.getChecksheetId());
         SQLiteDatabase database = sqlitewraper.getDatabase();
 //        Cursor flowMasterCursor = database
