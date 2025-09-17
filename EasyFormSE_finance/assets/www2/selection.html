@@ -152,7 +152,7 @@
             });
 
             var ptrContent = $('.pull-to-refresh-content');
-            ptrContent.on('refresh', function (e) {
+            ptrContent.on('pullend', function (e) {
                 check_table_availabililty();
 
                 setTimeout(function () {
@@ -467,7 +467,7 @@
                             </div>
                         </div>
 
-                        <div id="div_page_content" class="page-content" style="width: 100%; height: 94%; line-height: 1;">
+                        <div id="div_page_content" class="page-content pull-to-refresh-content" style="width: 100%; height: 94%; line-height: 1;">
 
                             <!-- Default pull to refresh layer-->
                             <div class="pull-to-refresh-layer">
@@ -478,7 +478,6 @@
                             <!--<div id="div_map" class="list-block">
                                 <div id="map-canvas"></div>
                             </div>-->
-
                             <!-- New dashboard container 06082024 PG -->
                             <div id="div_new_dashboard" class="list-block">
                                 <div class="swiper-custom" id="dashboard_page_Content">
@@ -503,7 +502,7 @@
                             </div>
 
 
-                            <div id="div_old_dashboard" class="list-block  pull-to-refresh-content" style="width: 100%;overflow:auto;">
+                            <div id="div_old_dashboard" class="list-block" style="width: 100%;overflow:auto;">
 
 
                                 <div id="glob_noti_container"></div>
@@ -644,10 +643,10 @@
                                     <i class="icon fa fa-home"></i>
                                     <span class="tabbar-label">Home</span>
                                 </a>
-                                <a href="#" class="tab-link" onclick="check_table_availabililty();check_for_glob_notification();">
+                                <!--<a href="#" class="tab-link" onclick="check_table_availabililty();check_for_glob_notification();">
                                     <i class="icon fa fa-refresh"></i>
                                     <span class="tabbar-label">Refresh</span>
-                                </a>
+                                </a>-->
                                 <a href="#" class="tab-link" onclick="get_user_notifications();">
                                     <i class="icon fa fa-bell-o"></i>
                                     <span class="tabbar-label">Notification</span>

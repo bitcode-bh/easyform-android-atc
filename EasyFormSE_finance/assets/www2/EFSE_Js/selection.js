@@ -68,7 +68,8 @@ function onsuccess_get_counter_for_online_flow(e) {
             var responseText = e.responseText;
             var myArray = JSON.parse(responseText);
             var status = myArray[0].status;
-            var counter_bgcolor = $('.navbar').css('background-color');
+            //var counter_bgcolor = $('.navbar').css('background-color');
+            var counter_bgcolor = "red";
             if (status == 1) {
                 $(".offline_loader").hide();
                 $(".offline_counter").show();
@@ -633,7 +634,10 @@ function SuccessCallBack_get_modules(e) {
 
                 // Give background color of module list 16122024 PG
                 var t_color_name = JSON.parse(storage.getItem('viewsite_btn_color'));
-                var light_theme_color = t_color_name.replace(')', ', 0.15)').replace('rgb', 'rgba');
+                //var light_theme_color = t_color_name.replace(')', ', 0.15)').replace('rgb', 'rgba');
+
+                // static gray color
+                var light_theme_color = "#ecedef";
 
                 // /// sort flow end
                 var tbl_str = "";
@@ -854,7 +858,8 @@ function SuccessCallBack_get_modules(e) {
                                     }
 
                                     // put counter badge
-                                    var counter_bgcolor = $('.navbar').css('background-color');
+                                    //var counter_bgcolor = $('.navbar').css('background-color');
+                                    var counter_bgcolor = "red";
                                     if (udf_count_array.length > 0) {
                                         list_item += '<span id="circle_' + id_count + '" class="mkbadge button button-fill" style="background-color: ' + counter_bgcolor + '">' + count + '</span>';
                                     }
@@ -1740,7 +1745,10 @@ function get_list_of_modules_online() {
 
                         // Give background color of module list 16122024 PG
                         var t_color_name = JSON.parse(storage.getItem('viewsite_btn_color'));
-                        var light_theme_color = t_color_name.replace(')', ', 0.15)').replace('rgb', 'rgba');
+                        //var light_theme_color = t_color_name.replace(')', ', 0.15)').replace('rgb', 'rgba');
+
+                        // static gray color
+                        var light_theme_color = "#ecedef";
 
                         // /// sort flow end
                         var tbl_str = "";
@@ -1947,7 +1955,8 @@ function get_list_of_modules_online() {
                                             }
 
                                             // put counter badge
-                                            var counter_bgcolor = $('.navbar').css('background-color');
+                                            //var counter_bgcolor = $('.navbar').css('background-color');
+                                            var counter_bgcolor = "red";
                                             if (udf_count_array.length > 0) {
                                                 list_item += '<span id="circle_' + id_count + '" class="mkbadge button button-fill" style="background-color: ' + counter_bgcolor + '">' + count + '</span>';
                                             }

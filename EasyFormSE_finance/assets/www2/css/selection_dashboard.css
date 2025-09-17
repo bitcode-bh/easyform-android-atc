@@ -7,44 +7,56 @@
         margin-right: 0px !important;
     }*/
 
-    #module_list li {
-        margin: 1px 8px;
-        border-radius: 5px;
-        /*border-left: 10px solid;*/
-        font-size: 14px;
+.page {
+    background: #fcfcfc;
+}
+
+#module_list li {
+    margin: 0px 8px;
+    /*border-radius: 5px;*/
+    /*border-left: 10px solid;*/
+    font-size: 14px;
+    border-bottom: 1px solid #dedfe0;
+}
+
+    #module_list li:first-child {
+        margin-top: 8px;
+        border-radius: 10px 10px 0px 0px;
     }
 
-        #module_list li:first-child {
-            margin-top: 8px;
-            border-radius: 5px 5px 0px 0px;
-        }
-
-        #module_list li:last-child {
-            border-radius: 0px 0px 5px 5px;
-        }
-
-    #module_list .item-content {
-        padding-left: 15px !important;
-        align-items: start;
-        min-height: 50px;
+    #module_list li:last-child {
+        border-radius: 0px 0px 10px 10px;
     }
 
-    #module_list .item-title {
-        color: black;
-        display: inline;
-    }
+#module_list .item-content {
+    padding-left: 15px !important;
+    align-items: start;
+    min-height: 50px;
+}
 
-    #module_list li::before {
-        content: "";
-        position: absolute;
-        left: -5px;
-        top: 5px;
-        width: 5px;
-        height: 40px;
-        border-right: 5px solid #00b04f;
-        border-top-right-radius: 5px;
-        border-bottom-right-radius: 5px;
-    }
+#module_list .item-title {
+    color: black;
+    display: inline;
+}
+
+
+#module_list .cls_task_ico {
+    color: #0D1829 !important;
+}
+
+#module_list li::before {
+    content: "";
+    position: absolute;
+    left: -5px;
+    top: 5px;
+    width: 5px;
+    height: 40px;
+    /*border-right: 5px solid #00b04f;*/
+    border-right: none !important;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
 
 .list-block #module_list:before {
     height: 0;
@@ -52,6 +64,7 @@
 
 #module_list span[id^='circle_'], #module_list .offline_counter {
     background-color: initial !important;
+    color: red !important;
 }
 
 .list-block #module_list .item-inner {
@@ -1333,3 +1346,4 @@ foreignObject {
     z-index: 1100001;
 }
 /* Advance filter css end */
+
