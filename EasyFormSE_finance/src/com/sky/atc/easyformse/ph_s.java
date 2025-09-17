@@ -237,37 +237,39 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (!checkfirstattempt.equalsIgnoreCase("1")) {
 
-            //to ignore battery optimizATION In Background
-            if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true"))
-            {
-                activateDozemode();
-            }
-            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
-            showAlertDialogAutostartalldevices();
-
-        } else {
-
-            //Check if trip has outage is more than 15 minutes of total trip time than
-            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
-
-            String serviceoutage = ServiceOutage.getserviceoutage().get(0);
-            String tid = ServiceOutage.getserviceoutage().get(1);
-
-            if (serviceoutage != null && tid != null) {
-                if (!serviceoutage.equals("0") && !tid.equals("0")) {
-                    if (Float.parseFloat(serviceoutage) > 900000) {
-                        showAlertDialogAutostartalldevices();
-                    }
-                    String t4;
-                    t4 = "tid =" + tid;
-                    ContentValues cv4 = new ContentValues();
-                    cv4.put("serviceoutage_flag", "1");
-                    long temp4 = database.update("lat_plug", cv4, t4, null);
-                }
-            }
-        }
+        // code move when trip start only 17092025
+//        if (!checkfirstattempt.equalsIgnoreCase("1")) {
+//
+//            //to ignore battery optimizATION In Background
+//            if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true"))
+//            {
+//                activateDozemode();
+//            }
+//            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
+//            showAlertDialogAutostartalldevices();
+//
+//        } else {
+//
+//            //Check if trip has outage is more than 15 minutes of total trip time than
+//            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
+//
+//            String serviceoutage = ServiceOutage.getserviceoutage().get(0);
+//            String tid = ServiceOutage.getserviceoutage().get(1);
+//
+//            if (serviceoutage != null && tid != null) {
+//                if (!serviceoutage.equals("0") && !tid.equals("0")) {
+//                    if (Float.parseFloat(serviceoutage) > 900000) {
+//                        showAlertDialogAutostartalldevices();
+//                    }
+//                    String t4;
+//                    t4 = "tid =" + tid;
+//                    ContentValues cv4 = new ContentValues();
+//                    cv4.put("serviceoutage_flag", "1");
+//                    long temp4 = database.update("lat_plug", cv4, t4, null);
+//                }
+//            }
+//        }
 
         //If fake location detected one have to off/on gps or phone
         fakeLocationCheck();
@@ -1096,131 +1098,131 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
     }
 
     //alert dialog message for diiferent devices
-    public void showAlertDialogAutostartalldevices() {
-        String title = "Allow Permission";
-        String brand = Build.MANUFACTURER;
-        String message = "Please Enable Autostart Application from Setting";
-        if (brand.equalsIgnoreCase("xiaomi")) {
-            message = "- Go to your phone's Settings app\n" +
-                    "- Select Additional Settings\n" +
-                    "- Go to Battery & Performance\n" +
-                    "- Tap on Manage apps’ battery usage\n" +
-                    "- On this screen switch off Power Saving Mode\n" +
-                    "- Tap on Saving Power in The Background\n" +
-                    "- Select Choose Application\n" +
-                    "- Go to Background Settings and switch to No Restrictions";
-        }
-        if (brand.equalsIgnoreCase("vivo")) {
-
-            message = "- Go to Settings on your VIVO device\n" +
-                    "- Select Battery Option\n" +
-                    "- Setect Normal Mode";
-
-        }
-        if (brand.equalsIgnoreCase("oppo")) {
-
-            message = "- Go to Settings on your OPPO device\n" +
-                    "- Go to Security Centre\n" +
-                    "- Click Privacy Permissions\n" +
-                    "- Click Start up Manager\n" +
-                    "- Allow Our Application to run in background.\n" +
-                    "- Go back to Settings\n" +
-                    "- Go to Battery\n" +
-                    "- Select Our Application!\n" +
-                    "- Switch off Freeze in Background and Automatically Optimize When an Abnormality is Detected";
-
-        }
-        if (brand.equalsIgnoreCase("htc")) {
-            message = "- Open up Phone Settings\n" +
-                    "- Tap Power\n" +
-                    "- Tap Battery optimization\n" +
-                    "- Tap Not optimized\n" +
-                    "- Select All apps to see the complete list of apps.\n" +
-                    "- Select App, and select Don't optimize";
-        }
-        if (brand.equalsIgnoreCase("huawei")) {
-
-            message = "- Go to Settings on your Huawei device\n" +
-                    "- Select Apps\n" +
-                    "- Tap Settings at the bottom of the screen\n" +
-                    "- Select Special Access\n" +
-                    "- Select Ignore Optimizations\n" +
-                    "- Select App, from the list and tap Allow\n" +
-                    "- Go to Phone Settings\n" +
-                    "- Go to Apps\n" +
-                    "- Select Application\n" +
-                    "- Tap on Battery\n" +
-                    "- Disable the Power-intensive prompt\n" +
-                    "- On the same page, switch Launch from Automatic to Manage Manually\n" +
-                    "- Enable all the Manage Manually options - these should include things such as 'Run in background'";
-
-        }
-        if (brand.equalsIgnoreCase("ZTE")) {
-            message = "- Open the Battery menu in the Settings app\n" +
-                    "- Select the 3-dot menu\n" +
-                    "- Tap Battery Optimisation\n" +
-                    "- Select App, and tap Don't Optimise\n" +
-                    "- Open your overview/recents screen which displays all of your recently used apps\n" +
-                    "- Tap the padlock icon in the top right hand corner of the App";
-        }
-
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle(title);
-        alertDialog.setCancelable(false);
-        alertDialog.setMessage(message);
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        pref = sqlitewraper.getSecureShared("FIRSTTIME");
-                        pref.putString("FIRSTTIME", "1"); // Saving string
-                        pref.commit();
-                        if (Build.MANUFACTURER.equalsIgnoreCase("xiaomi")) {
-
-                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS), 0);
-
-                        }
-
-                        if (Build.MANUFACTURER.equalsIgnoreCase("oppo")) {
-                            Intent intent1 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                            Uri uri1 = Uri.fromParts("package", getPackageName(), null);
-                            intent1.setData(uri1);
-                            startActivity(intent1);
-                        }
-                        if (Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
-                            Intent intent1 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                            Uri uri1 = Uri.fromParts("package", getPackageName(), null);
-                            intent1.setData(uri1);
-                            startActivity(intent1);
-                            boolean check = AutoStartPermissionHelper.getInstance().getAutoStartPermission(context);
-                            boolean supported = AutoStartPermissionHelper.getInstance().isAutoStartPermissionAvailable(context);
-
-                            Log.d("##log", check + "/" + supported);
-//                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS), 0);
-
-                        }
-
-                        if (Build.MANUFACTURER.equalsIgnoreCase("oneplus")) {
-                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS), 0);
-                        }
-
-                        if (Build.MANUFACTURER.equalsIgnoreCase("huawei")) {
-                            Intent intent2 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                            Uri uri2 = Uri.fromParts("package", getPackageName(), null);
-                            intent2.setData(uri2);
-                            startActivity(intent2);
-                        }
-                        if (Build.MANUFACTURER.equalsIgnoreCase("htc")) {
-                            Intent intent3 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                            Uri uri3 = Uri.fromParts("package", getPackageName(), null);
-                            intent3.setData(uri3);
-                            startActivity(intent3);
-                        }
-                    }
-                });
-
-        alertDialog.show();
-    }
+//    public void showAlertDialogAutostartalldevices() {
+//        String title = "Allow Permission";
+//        String brand = Build.MANUFACTURER;
+//        String message = "Please Enable Autostart Application from Setting";
+//        if (brand.equalsIgnoreCase("xiaomi")) {
+//            message = "- Go to your phone's Settings app\n" +
+//                    "- Select Additional Settings\n" +
+//                    "- Go to Battery & Performance\n" +
+//                    "- Tap on Manage apps’ battery usage\n" +
+//                    "- On this screen switch off Power Saving Mode\n" +
+//                    "- Tap on Saving Power in The Background\n" +
+//                    "- Select Choose Application\n" +
+//                    "- Go to Background Settings and switch to No Restrictions";
+//        }
+//        if (brand.equalsIgnoreCase("vivo")) {
+//
+//            message = "- Go to Settings on your VIVO device\n" +
+//                    "- Select Battery Option\n" +
+//                    "- Setect Normal Mode";
+//
+//        }
+//        if (brand.equalsIgnoreCase("oppo")) {
+//
+//            message = "- Go to Settings on your OPPO device\n" +
+//                    "- Go to Security Centre\n" +
+//                    "- Click Privacy Permissions\n" +
+//                    "- Click Start up Manager\n" +
+//                    "- Allow Our Application to run in background.\n" +
+//                    "- Go back to Settings\n" +
+//                    "- Go to Battery\n" +
+//                    "- Select Our Application!\n" +
+//                    "- Switch off Freeze in Background and Automatically Optimize When an Abnormality is Detected";
+//
+//        }
+//        if (brand.equalsIgnoreCase("htc")) {
+//            message = "- Open up Phone Settings\n" +
+//                    "- Tap Power\n" +
+//                    "- Tap Battery optimization\n" +
+//                    "- Tap Not optimized\n" +
+//                    "- Select All apps to see the complete list of apps.\n" +
+//                    "- Select App, and select Don't optimize";
+//        }
+//        if (brand.equalsIgnoreCase("huawei")) {
+//
+//            message = "- Go to Settings on your Huawei device\n" +
+//                    "- Select Apps\n" +
+//                    "- Tap Settings at the bottom of the screen\n" +
+//                    "- Select Special Access\n" +
+//                    "- Select Ignore Optimizations\n" +
+//                    "- Select App, from the list and tap Allow\n" +
+//                    "- Go to Phone Settings\n" +
+//                    "- Go to Apps\n" +
+//                    "- Select Application\n" +
+//                    "- Tap on Battery\n" +
+//                    "- Disable the Power-intensive prompt\n" +
+//                    "- On the same page, switch Launch from Automatic to Manage Manually\n" +
+//                    "- Enable all the Manage Manually options - these should include things such as 'Run in background'";
+//
+//        }
+//        if (brand.equalsIgnoreCase("ZTE")) {
+//            message = "- Open the Battery menu in the Settings app\n" +
+//                    "- Select the 3-dot menu\n" +
+//                    "- Tap Battery Optimisation\n" +
+//                    "- Select App, and tap Don't Optimise\n" +
+//                    "- Open your overview/recents screen which displays all of your recently used apps\n" +
+//                    "- Tap the padlock icon in the top right hand corner of the App";
+//        }
+//
+//        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+//        alertDialog.setTitle(title);
+//        alertDialog.setCancelable(false);
+//        alertDialog.setMessage(message);
+//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+//                new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                        pref = sqlitewraper.getSecureShared("FIRSTTIME");
+//                        pref.putString("FIRSTTIME", "1"); // Saving string
+//                        pref.commit();
+//                        if (Build.MANUFACTURER.equalsIgnoreCase("xiaomi")) {
+//
+//                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS), 0);
+//
+//                        }
+//
+//                        if (Build.MANUFACTURER.equalsIgnoreCase("oppo")) {
+//                            Intent intent1 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                            Uri uri1 = Uri.fromParts("package", getPackageName(), null);
+//                            intent1.setData(uri1);
+//                            startActivity(intent1);
+//                        }
+//                        if (Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
+//                            Intent intent1 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                            Uri uri1 = Uri.fromParts("package", getPackageName(), null);
+//                            intent1.setData(uri1);
+//                            startActivity(intent1);
+//                            boolean check = AutoStartPermissionHelper.getInstance().getAutoStartPermission(context);
+//                            boolean supported = AutoStartPermissionHelper.getInstance().isAutoStartPermissionAvailable(context);
+//
+//                            Log.d("##log", check + "/" + supported);
+////                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS), 0);
+//
+//                        }
+//
+//                        if (Build.MANUFACTURER.equalsIgnoreCase("oneplus")) {
+//                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS), 0);
+//                        }
+//
+//                        if (Build.MANUFACTURER.equalsIgnoreCase("huawei")) {
+//                            Intent intent2 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                            Uri uri2 = Uri.fromParts("package", getPackageName(), null);
+//                            intent2.setData(uri2);
+//                            startActivity(intent2);
+//                        }
+//                        if (Build.MANUFACTURER.equalsIgnoreCase("htc")) {
+//                            Intent intent3 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                            Uri uri3 = Uri.fromParts("package", getPackageName(), null);
+//                            intent3.setData(uri3);
+//                            startActivity(intent3);
+//                        }
+//                    }
+//                });
+//
+//        alertDialog.show();
+//    }
     /*@Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
