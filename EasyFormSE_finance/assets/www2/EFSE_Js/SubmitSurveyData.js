@@ -3006,9 +3006,10 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                     if (dep_res == "valid") {
                         var collapse_Json1 = itemObj._checkStrObj(misc_Array[0].value);  		// check_item
-                        var inv_display_flag = collapse_Json1[0].view_type;
-
+                        
                         collapse_Json1[0].view_type = 1;               //default listview for mobile [22092021] ['0' means tableview & '1' means listview]
+
+                        var inv_display_flag = collapse_Json1[0].view_type;
 
                         var inv_calc_answer = jsonObj[i].ans;
                         if (Array.isArray(inv_calc_answer)) {
