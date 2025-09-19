@@ -1812,7 +1812,7 @@ function onfail_plugin_call_for_jitsi_meeting(e) {
 var glob_statusName_ary = [];
 var glob_statusColor_ary = [];
 var glob_textColor_ary = [];
-get_statusName_from_numericStatus = () => {
+get_statusName_from_numericStatus = (page_name) => {
     try {
         var company_id = JSON.parse(storage.getItem('company_id'));
         company_id = company_id.replace(/"/g, "");
@@ -1859,14 +1859,19 @@ get_statusName_from_numericStatus = () => {
                 alert1(message);
             }
 
-            create_tabs_by_status();
+            if (page_name == "select_survey") {
+                create_tabs_by_status();
+            }
 
             loading_hide();
 
         }, function (e) {
             // onfail
 
-            create_tabs_by_status();
+            if (page_name == "select_survey") {
+                create_tabs_by_status();
+            }
+
             loading_hide();
 
         });
