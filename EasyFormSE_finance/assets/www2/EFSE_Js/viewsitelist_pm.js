@@ -732,6 +732,8 @@ function onsuccess_get_list_of_pm_sites(e) {
             var approve_status = list_data[0].approval_status;
             var rejected_status = list_data[0].rejection_status;
             var upload_pending_display = list_data[0].upload_pending_display;
+            var geofance_flag = list_data[0].geofence[0].value;
+            var geofance_distance = list_data[0].geofence[0].show_distance;
 
             for (var t = 0; t < tid_Array.length; t++) {
                 if (staticdata == '' || staticdata == null || staticdata == undefined) {
@@ -1064,14 +1066,22 @@ function onsuccess_get_list_of_pm_sites(e) {
                                                         + "','" + user_lat + "','" + user_long + "','" + user_accuracy + "','" + geofanceradius + "','" + site_lat + "','" + site_long + "','" + t_new_column_obj + "')";
                                                 }
 
+                                                let distance_str = convert_meter_to_km(distance);
                                                 if (near_site == 1) {
-                                                    icon_str += '<i class="fa fa-check-circle cls_task_ico" style="font-size: 32px; color: #4caf50 !important" onclick="' + alert_param + '"></i>';
+                                                    icon_str += '<span class="distance_badge" style="background-color: #4caf50" onclick="' + alert_param + '">' + distance_str + ' </span>';
+                                                    //icon_str += '<i class="fa fa-check-circle cls_task_ico" style="font-size: 32px; color: #4caf50 !important" onclick="' + alert_param + '"></i>';
                                                 } else {
-                                                    icon_str += '<i class="fa fa-times-circle cls_task_ico" style="font-size: 32px; color: #f44336 !important" onclick="' + alert_param + '"></i>';
+                                                    icon_str += '<span class="distance_badge" style="background-color: #f44336" onclick="' + alert_param + '">' + distance_str + ' </span>';
+                                                    //icon_str += '<i class="fa fa-times-circle cls_task_ico" style="font-size: 32px; color: #f44336 !important" onclick="' + alert_param + '"></i>';
                                                 }
                                             }
                                             else {
                                                 var param = "redirect_on_pm_site_click('" + myArray[i].siteid + "', '" + myArray[i].tid + "', '" + task_status + "','" + myArray[i].moduleid + "', '" + myArray[i].module_name + "', '" + myArray[i].site_name + "', '" + myArray[i].lat + "', '" + myArray[i].long + "','" + i + "', '" + encodeURIComponent(is_delete_photo) + "', '" + myArray[i].p_tid + "')";
+
+                                                if (geofance_distance == 'true') {
+                                                    let distance_str = convert_meter_to_km(distance);
+                                                    icon_str += '<span class="distance_badge" style="background-color: gray">' + distance_str + ' </span>';
+                                                }
                                             }
                                         }
                                         else {
@@ -1600,8 +1610,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                     }
 
                     tbl_counter = 0;
-                    var geofance_flag = list_data[0].geofence[0].value;
-                    var geofance_distance = list_data[0].geofence[0].show_distance;
+                    
                     if (geofance_distance == 'true') {
                         //list_item += '<label style="font-size:10pt"><b>Distance</b> : ' + distance_desplay + ' m</label><br>';
                         if (taskview_label == "false" || taskview_label == "hybrid") {
@@ -1684,6 +1693,16 @@ function onsuccess_get_list_of_pm_sites(e) {
                         icon_str += trip_str;
                     }
 
+                    let task_status_name = glob_statusName_ary[task_status];
+                    let task_status_bgcolor = glob_statusColor_ary[task_status_name];
+                    let task_status_text_color = glob_textColor_ary[task_status_name];
+
+                    if (task_status_name == "" || task_status_name == null || task_status_name == undefined) {
+                        task_status_name = task_status;
+                    }
+
+                    icon_str += '<span class="distance_badge" style="background-color: ' + task_status_bgcolor + '; color: ' + task_status_text_color + ' !important ; float: right"> ' + task_status_name + '</span>';
+
                     if (icon_str == "" || icon_str == null || icon_str == undefined) {
                         list_item += '</div></div>';
                         list_item += '</label>';
@@ -1691,7 +1710,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                     else {
                         if (task_layout == "cardview") {
                             list_item += '</div></div>';
-                            list_item += '</label><div class="item-after" style="padding-top: 15px;width:95%;"><div class="item-icon task-icon" style="width:95%;text-align:center !important;">' + icon_str + '</div></div>';
+                            list_item += '</label><div class="item-after" style="padding-top: 15px"><div class="item-icon task-icon">' + icon_str + '</div></div>';
                         }
                         else {
                             list_item += '</div><div class="item-after" style="padding-top: 6px;"><div class="item-icon">' + icon_str + '</div></div></div>';

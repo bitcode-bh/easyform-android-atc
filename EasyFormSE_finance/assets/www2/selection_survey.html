@@ -135,7 +135,9 @@
             border: none;
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05) !important;
-            margin: 6px 10px;
+            margin: 8px 10px;
+            background-color: #ECEDEF !important;
+            border-bottom: 1px solid #dedfe0;
         }
 
         .task-icon i {
@@ -252,16 +254,28 @@
         }
 
         .tabs-static-wrap {
-            background-color: #efeff1;
+            background-color: #fcfcfc;
         }
 
-        .readmore-link .showmore-box{
+        .readmore {
+            max-height: 95px;
+        }
+
+        .readmore-link {
+            background-image: initial !important;
+        }
+
+        .readmore-link .showmore-box {
             /*display: none;*/
         }
 
         .readmore-link.expand .showmore-box {
             display: inline;
         }
+
+        .list-block .item-inner {
+            padding-top: 5px;
+        }     
 
     </style>
     <script type="text/javascript">
@@ -379,7 +393,8 @@
             pageload_main();
             function pageload_main() {
                 if (typeof (myApp) != "undefined") {
-                    create_tabs_by_status();
+                    //create_tabs_by_status();
+                    get_statusName_from_numericStatus();
                 }
                 else {
                     setTimeout(function () { pageload_main(); }, 500);
@@ -416,8 +431,6 @@
         }, true);
 
         $(document).ready(function () {
-
-            get_statusName_from_numericStatus();
 
             $('#btn_Create_Task').hide();
 

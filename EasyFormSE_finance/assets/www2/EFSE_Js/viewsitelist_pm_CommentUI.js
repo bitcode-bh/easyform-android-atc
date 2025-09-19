@@ -1859,11 +1859,16 @@ get_statusName_from_numericStatus = () => {
                 alert1(message);
             }
 
+            create_tabs_by_status();
 
             loading_hide();
 
         }, function (e) {
+            // onfail
+
+            create_tabs_by_status();
             loading_hide();
+
         });
         getdata.callOtherDomain();
     }
