@@ -4,6 +4,7 @@ buildscript {
         mavenCentral()
         jcenter()
         google()
+        maven { url "https://repo.grails.org/grails/core/"}
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.2.2'
@@ -16,6 +17,7 @@ buildscript {
         classpath 'io.michaelrocks:paranoid-gradle-plugin:0.3.5'
         classpath 'com.google.ar.sceneform:plugin:1.17.1'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.1'
+
     }
     allprojects {
         repositories {
@@ -26,6 +28,8 @@ buildscript {
             maven {
                 url "https://github.com/jitsi/jitsi-maven-repository/raw/master/releases"
             }
+
+ 	maven { url "https://repo.grails.org/grails/core/"}
         }
 
         project.ext {

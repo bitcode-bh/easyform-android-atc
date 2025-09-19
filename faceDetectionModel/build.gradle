@@ -57,12 +57,10 @@ dependencies {
 
 
     implementation('org.tensorflow:tensorflow-lite:2.16.1')
-    implementation('org.tensorflow:tensorflow-lite-support:0.0.0-nightly') {
+    implementation('org.tensorflow:tensorflow-lite-support:0.4.4') {
         exclude group: 'org.tensorflow', module: 'tensorflow-lite-support'
     }
-    implementation('org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly') {
+    implementation('org.tensorflow:tensorflow-lite-gpu:2.16.1') {
         exclude group: 'org.tensorflow', module: 'tensorflow-lite-gpu'
     }
-//    implementation('org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly')
-//    implementation('org.tensorflow:tensorflow-lite-support:0.0.0-nightly')
 }
