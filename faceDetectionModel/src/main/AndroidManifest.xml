@@ -21,6 +21,13 @@
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"
             android:hardwareAccelerated="true"/>
 
+        <activity
+            android:name=".ui.activitys.GroupFaceRecognizerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
     </application>
 
 </manifest>

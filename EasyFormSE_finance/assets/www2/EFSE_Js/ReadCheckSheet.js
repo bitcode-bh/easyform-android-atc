@@ -1297,7 +1297,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     // Camera Button
                     else if (jsonObj[i].type == 7) {
                         var misc_Array = jsonObj[i].prop[0].misc_data;
-                        var value, photo_type, latlong, quality, width, height, target_class, burstmode, old_photo_class, scan_mode, ref_class, max_file_size;
+                        var value, photo_type, latlong, quality, width, height, target_class, burstmode, old_photo_class, scan_mode, ref_class, max_file_size, model_name, prompt_text, group_photo_class;
                         for (h = 0; h < misc_Array.length; h++) {
                             var type = misc_Array[h].type;
                             if (type == 6) {
@@ -1313,11 +1313,15 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                                 scan_mode = value[0].scan_mode;
                                 ref_class = value[0].ref_class;
                                 max_file_size = value[0].max_file_size;
+                                model_name = value[0].model_name;
+                                prompt_text = value[0].prompt_text;
+                                group_photo_class = value[0].group_photo_class;
                             }
                         }
                         if (photo_type == '' || photo_type == null || photo_type == undefined) {
                             photo_type = "camera", latlong = "false";
                         }
+
                         if (quality == '' || quality == null || quality == undefined) {
                             quality = "50";
                         }
@@ -1355,6 +1359,18 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             scan_mode = "false";
                         }
 
+                        if (model_name == "" || model_name == null || model_name == undefined) {
+                            model_name = "";
+                        }
+
+                        if (prompt_text == "" || prompt_text == null || prompt_text == undefined) {
+                            prompt_text = "";
+                        }
+
+                        if (group_photo_class == "" || group_photo_class == null || group_photo_class == undefined) {
+                            group_photo_class = "";
+                        }
+
                         newdiv += "<div id='div_cbtn_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='color: #000; " + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
                         newdiv += label_str;
 
@@ -1378,7 +1394,13 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
 
                             if (ref_class == '' || ref_class == null || ref_class == undefined) {
-                                var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+
+                                if (photo_type == "GroupAttendance") {
+                                    var param = 'verify_group_photo_with_face_detection("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                }
+                                else {
+                                    var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                }
                             }
                             else {
                                 // compare attendance and print photo
@@ -1405,7 +1427,10 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         var hdn_cam_ary = [];
                         hdn_cam_ary.push({
                             'scan_mode': scan_mode,
-                            'max_file_size': max_file_size
+                            'max_file_size': max_file_size,
+                            'model_name': model_name,
+                            'prompt_text': prompt_text,
+                            'group_photo_class': group_photo_class
                         });
 
                         var hdn_cam_ary_str = JSON.stringify(hdn_cam_ary);
@@ -3319,8 +3344,6 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         var control = new MkControls(obj);
                         newdiv += control.build_type_40_livelink();
-                        weather_cntrl_found++;
-
                         newdiv += '</div>';
                     }
 
@@ -3563,7 +3586,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         //var year = date.getFullYear();
                         //var date_s = month + '/' + day + '/' + year;
 
-                        let  date_s = convert_datetime_by_format("", "date");
+                        let date_s = convert_datetime_by_format("", "date");
                         $('#cal_' + curr_clps_new_id + '_' + check_type + '_10').val(date_s);
                     }
                     //$('#cal_' + curr_clps_new_id + '_' + check_type + '_10').prop("disabled", true);
@@ -3933,7 +3956,6 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     //        get_value_from_other_step(encodeURIComponent(JSON.stringify(paramData)));
                     //    }, false);
                     //}
-
                     $('#' + number_box_id + '').on('input', { param: paramData }, function (event) {
                         let paramData = event.data.param;
                         get_value_from_other_step(encodeURIComponent(JSON.stringify(paramData)));
@@ -4369,7 +4391,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
         } else {
             loading_hide();
         }
-    
+
         // open popup for type30 dropdown 19012022
         $("select[id^='dynddl_']").on('mousedown', function (e) {
             e.preventDefault();

@@ -81,6 +81,11 @@
             android:hardwareAccelerated="false"
             android:exported="false" />
 
+        <activity
+            android:name=".GroupFaceDetactionActivity"
+            android:hardwareAccelerated="false"
+            android:exported="false" />
+
         <provider
             android:name=".LocalFileContentProvider"
             android:authorities="${applicationId}" />
@@ -353,6 +358,12 @@
             android:exported="true"
             android:theme="@style/AppTheme.NoActionBar"/>
 
+        <activity
+            android:name=".CameraAITextActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+
         <service android:name=".loc_change" />
         <service android:name=".newfused_accel" />
         <service android:name=".newfused_gps" />
@@ -454,15 +465,6 @@
             </intent-filter>
 
         </activity>
-
-        <activity
-            android:name=".CameraAITextActivity"
-            android:exported="true"
-            android:theme="@style/AppTheme.NoActionBar"/>
-        <activity
-            android:name=".GroupFaceDetactionActivity"
-            android:hardwareAccelerated="false"
-            android:exported="false" />
         <activity
             android:name=".trip.TripBackgroundMapActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"

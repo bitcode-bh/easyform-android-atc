@@ -1261,7 +1261,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     // Camera Button
                     else if (jsonObj[i].type == 7) {
                         var misc_Array = jsonObj[i].prop[0].misc_data;
-                        var value, photo_type, latlong, quality, width, height, target_class, burstmode, old_photo_class, scan_mode, ref_class;
+                        var value, photo_type, latlong, quality, width, height, target_class, burstmode, old_photo_class, scan_mode, ref_class, model_name, prompt_text, group_photo_class;
                         for (h = 0; h < misc_Array.length; h++) {
                             var type = misc_Array[h].type;
                             if (type == 6) {
@@ -1277,6 +1277,9 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                 scan_mode = value[0].scan_mode;
                                 ref_class = value[0].ref_class;
                                 max_file_size = value[0].max_file_size;
+                                model_name = value[0].model_name;
+                                prompt_text = value[0].prompt_text;
+                                group_photo_class = value[0].group_photo_class;
                             }
                         }
                         if (photo_type == '' || photo_type == null || photo_type == undefined) {
@@ -1326,6 +1329,18 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             scan_mode = "false";
                         }
 
+                        if (model_name == "" || model_name == null || model_name == undefined) {
+                            model_name = "";
+                        }
+
+                        if (prompt_text == "" || prompt_text == null || prompt_text == undefined) {
+                            prompt_text = "";
+                        }
+
+                        if (group_photo_class == "" || group_photo_class == null || group_photo_class == undefined) {
+                            group_photo_class = "";
+                        }
+
                         var img_Id = jsonObj[i].ans[0];
                         var p_name = jsonObj[i].ans[1];
                         var detected_text = jsonObj[i].ans[7];             // OCR
@@ -1360,7 +1375,13 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             else {
 
                                 if (ref_class == '' || ref_class == null || ref_class == undefined) {
-                                    var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+
+                                    if (photo_type == "GroupAttendance") {
+                                        var param = 'verify_group_photo_with_face_detection("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                    }
+                                    else {
+                                        var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                    }
                                 }
                                 else {
                                     // compare attendance and print photo
@@ -1372,6 +1393,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             var src_str = 'images/camera.png'
                         } else {
                             if (form_flag == 7 || form_flag == 8 || form_flag == 12 || (form_flag == 0 && c_is_online == 1) || (form_flag == 6 && survey_mode == "online") || (curr_page_flag == "viewsitedata_task" && survey_mode == "online")) {
+
                                 if (ref_class == '' || ref_class == null || ref_class == undefined) {
                                     var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + target_div + '")';
                                 }
@@ -1384,7 +1406,14 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             else {
 
                                 if (ref_class == '' || ref_class == null || ref_class == undefined) {
-                                    var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '")';
+
+                                    if (photo_type == "GroupAttendance") {
+                                        var param = 'verify_group_photo_with_face_detection("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                    }
+                                    else {
+                                        var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '")';
+                                    }
+
                                 }
                                 else {
                                     // compare attendance and print photo
@@ -1454,7 +1483,10 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         var hdn_cam_ary = [];
                         hdn_cam_ary.push({
                             'scan_mode': scan_mode,
-                            'max_file_size': max_file_size
+                            'max_file_size': max_file_size,
+                            'model_name': model_name,
+                            'prompt_text': prompt_text,
+                            'group_photo_class': group_photo_class
                         });
 
                         var hdn_cam_ary_str = JSON.stringify(hdn_cam_ary);
@@ -5035,8 +5067,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var control = new MkControls(obj);
                         newdiv += control.build_type_40_livelink();
-                        weather_cntrl_found++;
-
+                        
                         newdiv += '</div>';
                     }
 
@@ -5328,6 +5359,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                 setTimeout(function () {
                     $('input[type="password"]').attr("disabled", "disabled");
                     $("#txt_" + curr_clps_new_id + "_" + check_type + "_3").prop("disabled", true);
+                    $("#container_div_update_user").find("div[id^='div_Inv_Calculate_']").attr("disabled", "disabled");
                 }, 100);
             }
 

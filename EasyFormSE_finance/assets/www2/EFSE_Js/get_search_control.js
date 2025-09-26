@@ -1834,18 +1834,20 @@ function onsuccess_get_all_searched_list_New(e) {
                     if (value_type == "#") {
 
                         // check default value is avialable in dropdown or not (if not add new option) - mk - 15052025
-                        let sub_get_value = default_val.substring(2, default_val.length - 2);
-                        let t_value = curr_all_data_20[sub_get_value];
-                        if (t_value == "" || t_value == null || t_value == undefined) { }
-                        else {
-                            var val_exists = $("#ddl_search_type20_" + curr_btnSearch_Counter + " option").filter(function () { return $(this).text() == t_value; }).length;
-                            if (!val_exists) {
-                                let cell_value = t_value;
-                                var new_cell_value = encodeURIComponent(cell_value);
-                                single_opt_onchange_ary.push(curr_btnSearch_Counter);
-                                let cell_id = curr_all_data_20['user_id'];
-                                var option = "<option selected='selected' value=" + new_cell_value + " value1=" + cell_id + ">" + cell_value + "</option>";
-                                $("#ddl_search_type20_" + curr_btnSearch_Counter + "").append(option);
+                        if (self_assignment == "true") {
+                            let sub_get_value = default_val.substring(2, default_val.length - 2);
+                            let t_value = curr_all_data_20[sub_get_value];
+                            if (t_value == "" || t_value == null || t_value == undefined) { }
+                            else {
+                                var val_exists = $("#ddl_search_type20_" + curr_btnSearch_Counter + " option").filter(function () { return $(this).text() == t_value; }).length;
+                                if (!val_exists) {
+                                    let cell_value = t_value;
+                                    var new_cell_value = encodeURIComponent(cell_value);
+                                    single_opt_onchange_ary.push(curr_btnSearch_Counter);
+                                    let cell_id = curr_all_data_20['user_id'];
+                                    var option = "<option selected='selected' value=" + new_cell_value + " value1=" + cell_id + ">" + cell_value + "</option>";
+                                    $("#ddl_search_type20_" + curr_btnSearch_Counter + "").append(option);
+                                }
                             }
                         }
 
@@ -2044,6 +2046,13 @@ function check_and_call_next_single_option() {
                     else {
                         //commented on 12082025 as multiple call for autofill searchable with single option
                         //get_data_from_selected_option(s_curr_btnSearch_Counter);
+
+                        let default_value = value_new[0].default_value;
+                        if (default_value == "" || default_value == null || default_value == undefined) { }
+                        else {
+                            // call when searchble is single selected with default value - mk - 24092025
+                            get_data_from_selected_option(s_curr_btnSearch_Counter);
+                        }
                     }
 
                 }
@@ -2127,7 +2136,7 @@ function check_and_call_next_single_fill_data_option() {
     }
 }
 
-// immidiately auto fill child dropdown when getting only 1 item in parent dropdwon in load
+// immidiately auto fill child dropdown when getting only 1 item in parent dropdwon in page load
 function autofill_child_type20_dropdown_onload(t_ddl_counter) {
     $("#ddl_search_type20_" + t_ddl_counter + "").trigger("onchange");
 }
@@ -3485,6 +3494,13 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                 }
                                 else if ($("#" + curr_box_id + "").is("img")) {
                                     //img autofill [FT-18022025]
+
+                                    let img_onchange_str = $("#" + curr_box_id + "").attr("onchange");
+                                    if (img_onchange_str == "" || img_onchange_str == null || img_onchange_str == undefined) { }
+                                    else {
+                                        $("#" + curr_box_id + "").trigger("onchange");
+                                    }
+
                                     var img_new_id = curr_box_id.replace('cbtn_', '');
                                     var img_ary = myArray[fi].img_ary;
 
@@ -3582,6 +3598,18 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                 else {
                                     // textbox fill
                                     $("#" + curr_box_id + "").val(fieldvalue);
+
+                                    var oninput_str = $("#" + curr_box_id + "").attr("oninput");
+                                    if (oninput_str == '' || oninput_str == null || oninput_str == undefined) {
+                                        var onchange_str = $("#" + curr_box_id + "").attr("onchange");
+                                        if (onchange_str == '' || onchange_str == null || onchange_str == undefined) { }
+                                        else {
+                                            $("#" + curr_box_id + "").trigger('onchange');
+                                        }
+                                    }
+                                    else {
+                                        $("#" + curr_box_id + "").trigger('oninput');
+                                    }
                                 }
                             }
 
@@ -4488,6 +4516,12 @@ function autofill_type20_dropdown_onload(Type20_AutoFill_DDL_Array_t) {
                             }
                             else {
                                 var where_box_value = $('#' + where_box_id + '').val();
+
+                                // apply onchange event to textbox 07022025 - mk
+                                var existing_onchange = $('#' + where_box_id + '').attr("onchange");
+                                if (existing_onchange == '' || existing_onchange == null || existing_onchange == undefined) {
+                                    $('#' + where_box_id + '').attr("onchange", param);
+                                }
                             }
 
                             if (where_box_value == "" || where_box_value == null || where_box_value == undefined) {
@@ -4675,7 +4709,7 @@ function hide_current_type_loading(t_new_id) {
         $("#ddl_search_type20_" + t_new_id + "").prop("disabled", false);
     }
 
-    // enable searchable dropdown in after load (treated as normal dropdown so enable it)
+    // enable searchable dropdown in page load (treated as normal dropdown so enable it)
     if (glob_type20_cust_checksheetid == '' || glob_type20_cust_checksheetid == null || glob_type20_cust_checksheetid == undefined || glob_type20_cust_checksheetid == "0" || glob_type20_cust_checksheetid == "undefined") { }
     else {
         $("#ddl_search_type20_" + t_new_id + "").prop("disabled", false);
@@ -5568,6 +5602,7 @@ function add_new_item_by_type20(t_jsonObj) {
     var user_id = JSON.parse(storage.getItem('user_id'));
     var checksheet_id = localStorage.getItem('check_type_customer');
 
+    // remove duplicate photo ids
     var t_Photo_Id_Array = [];
     let type20_cust_add_popup = $('#popup_container_type20_add:visible').length;
     if (type20_cust_add_popup > 0) {
