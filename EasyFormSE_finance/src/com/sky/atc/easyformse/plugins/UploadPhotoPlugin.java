@@ -357,7 +357,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
 
     private boolean SafetyMeasure() {
         try {
-            Intent SafetyMeasure = new Intent(sqlitewraper.context, Class.forName("com.easyform.safetymeasure.SafetyMeasureActivity"));
+            Intent SafetyMeasure = new Intent(sqlitewraper.context, Class.forName("com.easyform.safetymeasure.automlvision.AutoMlVisonModelActivity"));
             this.cordova.startActivityForResult(this, SafetyMeasure, 101);
             return true;
         } catch (Exception e) {
