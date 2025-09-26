@@ -454,6 +454,15 @@
             </intent-filter>
 
         </activity>
+
+        <activity
+            android:name=".CameraAITextActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".GroupFaceDetactionActivity"
+            android:hardwareAccelerated="false"
+            android:exported="false" />
         <activity
             android:name=".trip.TripBackgroundMapActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"

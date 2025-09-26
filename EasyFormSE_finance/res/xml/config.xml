@@ -254,7 +254,13 @@
         <param name="android-package" value="com.sky.atc.easyformse.plugins.VideoDownloadPlugin"/>
     </feature>
 
+    <feature name="CameraAITextPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.CameraAITextPlugin"/>
+    </feature>
 
+    <feature name="GroupAttendancePlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.GroupAttendancePlugin" />
+    </feature>
 
     <allow-intent href="http://*/*"></allow-intent>
     <allow-intent href="https://*/*"></allow-intent>

@@ -10,10 +10,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.sky.atc.easyformse.CameraAITextActivity;
 import com.sky.atc.easyformse.CaptureSignature;
 import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.FaceDetactionActivity;
@@ -57,6 +60,12 @@ public class UploadPhotoPlugin extends CordovaPlugin {
     String max_file_size;
     String allow_multiple_image;
     SQLiteDatabase database;
+
+    String ModelName;
+    String PromtText;
+    public static UploadPhotoPlugin instance;
+    String document_type;
+
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
@@ -116,6 +125,18 @@ public class UploadPhotoPlugin extends CordovaPlugin {
             allow_multiple_image = "false";
         }
 
+        try {
+            ModelName = args.getJSONObject(0).getString("model_name");
+        } catch (Exception e) {
+            ModelName = "";
+        }
+
+        try {
+            PromtText = args.getJSONObject(0).getString("prompt_text");
+        } catch (Exception e) {
+            PromtText = "";
+        }
+
         if (photoType.equalsIgnoreCase("browse")) {
 
             //For Browse file
@@ -173,6 +194,15 @@ public class UploadPhotoPlugin extends CordovaPlugin {
         }
         if (photoType.equalsIgnoreCase("SafetyMeasure")) {
             isPluginValid = SafetyMeasure();
+        }
+        if (photoType.equalsIgnoreCase("AI")) {
+
+            b_write = args.getJSONObject(0).getString("flag");
+            width = args.getJSONObject(0).getString("width");
+            height = args.getJSONObject(0).getString("height");
+            quality = args.getJSONObject(0).getString("quality");
+
+            isPluginValid = CameraAITextPlugin(time, b_write, width, height, quality, action,ModelName,PromtText);
         }
         return isPluginValid;
     }
@@ -337,6 +367,31 @@ public class UploadPhotoPlugin extends CordovaPlugin {
         }
     }
 
+    private boolean CameraAITextPlugin(String time, String b_write, String width, String height, String quality, String action,String modelname,String prompttext) {
+//        pref.putString("b_write", b_write); // Saving string
+//        pref.putString("time", time); // Saving string
+//        pref.commit();
+
+        Intent intent = new Intent(this.cordova.getActivity(),
+                CameraAITextActivity.class);
+
+        intent.putExtra("width", width);
+        intent.putExtra("height", height);
+        intent.putExtra("quality", quality);
+        intent.putExtra("info", info);
+        intent.putExtra("max_file_size",max_file_size);
+        intent.putExtra("modelname",modelname);
+        intent.putExtra("prompttext",prompttext);
+        intent.putExtra("camera_type", photoType);
+        intent.putExtra("AI_type", "Camera");
+        if (this.cordova != null) {
+            this.cordova.startActivityForResult(this, intent, 104);
+            return true;
+        }
+
+        return false;
+    }
+
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) sqlitewraper.context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -407,7 +462,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
 //                            SharedPreferences sharedPreferences;
 //                            sharedPreferences = this.cordova.getActivity().getSharedPreferences("SafetyMeasure",0);
 //                            status = sharedPreferences.getString("photo_path", null);
-                                status = bundle.getString("value");
+                            status = bundle.getString("value");
                         }
 
                         if (isNetworkAvailable()) {
@@ -423,6 +478,35 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                         this.callbackContext.error("Fail");
                     }
                     break;
+
+                case 104:
+                {
+                    if (resultCode == android.app.Activity.RESULT_OK) {
+                        String status = null;
+                        String responsetxt = null;
+                        Bundle bundle = intent.getExtras();
+                        if (bundle != null) {
+//                            SharedPreferences sharedPreferences;
+//                            sharedPreferences = this.cordova.getActivity().getSharedPreferences("SafetyMeasure",0);
+//                            status = sharedPreferences.getString("photo_path", null);
+                            status = bundle.getString("response");
+
+                        }
+
+                        if (isNetworkAvailable()) {
+                            new uploadphoto().execute(status, "104");
+                        } else {
+                            showAlertDialogWithMessage(status, "104");
+
+                        }
+
+
+                    } else {
+//                    String message = intent.getStringExtra("result");
+                        this.callbackContext.error("Fail");
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -468,10 +552,13 @@ public class UploadPhotoPlugin extends CordovaPlugin {
             String videopath = "";
             String photopath = "";
             String WithHelmet ="";
-            String SafetyVest = "";
-            String Mask= "";
+            String reflective_jacket = "";
+            String Hand_glows= "";
+            String Safety_shoes ="";
+            String Harness_jacket="";
             String status = strings[0];
             String caseid = strings[1];
+            String responsetext = "";
 
             //In case of video status will contain json object so need to extract video path
             if (caseid.equalsIgnoreCase("103")) {
@@ -490,22 +577,46 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                     JSONArray jsonArray = new JSONArray(status);
                     JSONObject jsonObject = jsonArray.getJSONObject(0);
                     photopath = jsonObject.getString("photo_path");
-                    if(jsonObject.has("WithHelmet"))
+                    if(jsonObject.has("Helmet"))
                     {
-                        WithHelmet = jsonObject.getString("WithHelmet");
+                        WithHelmet = jsonObject.getString("Helmet");
                     }
-                    if(jsonObject.has("SafetyVest"))
+                    if(jsonObject.has("Harnessjacket"))
                     {
-                        SafetyVest = jsonObject.getString("SafetyVest");
+                        Harness_jacket = jsonObject.getString("Harnessjacket");
                     }
-                    if(jsonObject.has("Mask"))
+                    if(jsonObject.has("Handglows"))
                     {
-                        Mask = jsonObject.getString("Mask");
+                        Hand_glows = jsonObject.getString("Handglows");
                     }
+                    if(jsonObject.has("Reflectivejacket"))
+                    {
+                        reflective_jacket = jsonObject.getString("Reflectivejacket");
+                    }
+                    if(jsonObject.has("Safetyshoes"))
+                    {
+                        Safety_shoes = jsonObject.getString("Safetyshoes");
+                    }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
+            }
+
+            if (caseid.equalsIgnoreCase("104"))
+            {
+                try {
+                    JSONArray jsonArray = new JSONArray(status);
+                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                    photopath = jsonObject.getString("photo_path");
+                    if(jsonObject.has("responsetext"))
+                    {
+                        responsetext = jsonObject.getString("responsetext");
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             if (photoType.equalsIgnoreCase("video")) {
@@ -538,7 +649,10 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                 if (caseid.equalsIgnoreCase("103")) {
                     photoId = UploadUtils.uploadPhotoResumable(videopath, companyId, "0", checksheetid, queId, stepNo, type, phId, itId, thPath, sId);
                 }
-               else if (caseid.equalsIgnoreCase("101")) {
+                else if (caseid.equalsIgnoreCase("101")) {
+                    photoId = UploadUtils.uploadPhotoResumable(photopath, companyId, "0", checksheetid, queId, stepNo, type, phId, itId, thPath, sId);
+                }
+                else if (caseid.equalsIgnoreCase("104")) {
                     photoId = UploadUtils.uploadPhotoResumable(photopath, companyId, "0", checksheetid, queId, stepNo, type, phId, itId, thPath, sId);
                 }
                 else {
@@ -554,9 +668,25 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                         jsonObject1.put("photo_id", photoId);
                         jsonObject1.put("photo_path", photopath);
                         jsonObject1.put("photo_size", UploadUtils.sizeofFile);
-                        jsonObject1.put("WithHelmet", WithHelmet);
-                        jsonObject1.put("SafetyVest", SafetyVest);
-                        jsonObject1.put("Mask", Mask);
+                        jsonObject1.put("Helmet", WithHelmet);
+                        jsonObject1.put("Harness jacket", Harness_jacket);
+                        jsonObject1.put("Reflective jacket", reflective_jacket);
+                        jsonObject1.put("Safety shoes", Safety_shoes);
+                        jsonObject1.put("Hand glows", Hand_glows);
+                        jsonArray.put(jsonObject1);
+
+                        pref.putString("photo_path", status);
+                        pref.commit();
+                        callbackContext.success(jsonArray.toString());
+                    }
+                    else if(caseid.equalsIgnoreCase("104"))
+                    {
+                        JSONArray jsonArray = new JSONArray();
+                        JSONObject jsonObject1 = new JSONObject();
+                        jsonObject1.put("photo_id", photoId);
+                        jsonObject1.put("photo_path", photopath);
+                        jsonObject1.put("photo_size", UploadUtils.sizeofFile);
+                        jsonObject1.put("responsetext", responsetext);
                         jsonArray.put(jsonObject1);
 
                         pref.putString("photo_path", status);
@@ -577,7 +707,14 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                     }
 
                 } else {
+
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        public void run() {
+                            Toast.makeText(sqlitewraper.context, "Photo_id is 0 " , Toast.LENGTH_LONG).show();
+                        }
+                    });
                     callbackContext.error("Photo Not uploaded");
+
                 }
 
             } catch (IOException | JSONException e) {

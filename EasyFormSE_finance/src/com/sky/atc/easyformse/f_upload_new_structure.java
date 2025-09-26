@@ -513,7 +513,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                     if (!iseve.equalsIgnoreCase("1")) {
                         tripUploadNew.event(_id, min_milli, max_milli);
                     }
-                    // test commit
+
 
                     k = tripUploadNew.uploadTrip(tid);
 

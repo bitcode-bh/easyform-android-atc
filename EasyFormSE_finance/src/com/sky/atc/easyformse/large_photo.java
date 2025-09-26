@@ -13,6 +13,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 
@@ -43,6 +44,9 @@ public class large_photo extends CordovaPlugin {
 	String info;
 	String max_file_size;
 	String allow_multiple_image;
+	String document_type;
+	String ModelName;
+	String PromtText;
 	@Override
 	public boolean execute(String action, JSONArray args,
 			CallbackContext callbackContext) throws JSONException {
@@ -103,55 +107,134 @@ public class large_photo extends CordovaPlugin {
 			//e.printStackTrace();
 		}
 
+		try{
+			document_type = args.getJSONObject(0).getString("document_type");
+		}
+		catch (Exception e)
+		{
+			document_type = "";
+		}
+
+		try {
+			ModelName = args.getJSONObject(0).getString("model_name");
+		} catch (Exception e) {
+			ModelName = "";
+		}
+
+		try {
+			PromtText = args.getJSONObject(0).getString("prompt_text");
+		} catch (Exception e) {
+			PromtText = "";
+		}
+
 
 		this.callbackContext = callbackContext;
 
-		Intent intent = new Intent(this.cordova.getActivity(),
-				upload_large_file.class);
-		intent.putExtra("jason", query);
-		intent.putExtra("b_write", b_write);
-		intent.putExtra("width", width);
-		intent.putExtra("height", height);
-		intent.putExtra("quality", quality);
-		intent.putExtra("p",docpick);
-		intent.putExtra("mob_ext",mobExt);
-		intent.putExtra("info",info);
-		intent.putExtra("max_file_size",max_file_size);
-		intent.putExtra("allow_multiple_image",allow_multiple_image);
-		
-		if (this.cordova != null) {
-			this.cordova.startActivityForResult(this, intent, 0);
-			return true;
+		if(document_type.equalsIgnoreCase("AI"))
+		{
+			Intent mIntent = new Intent(this.cordova.getActivity(),
+					CameraAITextActivity.class);
+
+			mIntent.putExtra("width", width);
+			mIntent.putExtra("height", height);
+			mIntent.putExtra("quality", quality);
+			mIntent.putExtra("info", info);
+			mIntent.putExtra("max_file_size",max_file_size);
+			mIntent.putExtra("modelname",ModelName);
+			mIntent.putExtra("prompttext",PromtText);
+			mIntent.putExtra("AI_type", "document");
+			if (this.cordova != null) {
+				this.cordova.startActivityForResult(this, mIntent, 104);
+				return true;
+			}
 		}
+		else {
+			Intent intent = new Intent(this.cordova.getActivity(),
+					upload_large_file.class);
+			intent.putExtra("jason", query);
+			intent.putExtra("b_write", b_write);
+			intent.putExtra("width", width);
+			intent.putExtra("height", height);
+			intent.putExtra("quality", quality);
+			intent.putExtra("p",docpick);
+			intent.putExtra("mob_ext",mobExt);
+			intent.putExtra("info",info);
+			intent.putExtra("max_file_size",max_file_size);
+			intent.putExtra("allow_multiple_image",allow_multiple_image);
+
+			if (this.cordova != null) {
+				this.cordova.startActivityForResult(this, intent, 0);
+				return true;
+			}
+		}
+
 
 		return false;
 	}
 
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		switch (requestCode) {
-		case 0:
-			// retour de la version utilisant le sample de imense alpr
-			if (resultCode == android.app.Activity.RESULT_OK) { // 0:ok
-				Bundle bundle = intent.getExtras();
-				String status = bundle.getString("status");
+			case 0:
+				// retour de la version utilisant le sample de imense alpr
+				if (resultCode == android.app.Activity.RESULT_OK) { // 0:ok
+					Bundle bundle = intent.getExtras();
+					String status = bundle.getString("status");
 
-				pref.putString("photo_path", status); // Saving string
-				pref.commit(); // commit changes
-				// pref.getString("key_name5", null); // getting String
-				System.out.println("photo_path" + status);
-				this.callbackContext.success(status);
-			} else {
-				if(intent != null)
-				{
-					String message = intent.getStringExtra("result");
-					this.callbackContext.error(message);
+					pref.putString("photo_path", status); // Saving string
+					pref.commit(); // commit changes
+					// pref.getString("key_name5", null); // getting String
+					System.out.println("photo_path" + status);
+					this.callbackContext.success(status);
+				} else {
+					if(intent != null)
+					{
+						String message = intent.getStringExtra("result");
+						this.callbackContext.error(message);
+					}
+
 				}
 
-			}
+				break;
 
-			break;
-		default:
-			break;
+			case 104:
+			{
+				if (resultCode == android.app.Activity.RESULT_OK) {
+					String status = null;
+					String responsetext = null;
+					String photopath= null;
+					Bundle bundle = intent.getExtras();
+					if (bundle != null) {
+//                            SharedPreferences sharedPreferences;
+//                            sharedPreferences = this.cordova.getActivity().getSharedPreferences("SafetyMeasure",0);
+//                            status = sharedPreferences.getString("photo_path", null);
+						status = bundle.getString("response");
+						try {
+							JSONArray jsonArray = new JSONArray(status);
+							JSONObject jsonObject = jsonArray.getJSONObject(0);
+							photopath = jsonObject.getString("photo_path");
+
+							pref.putString("photo_path", photopath);
+							pref.commit();
+							callbackContext.success(status);
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+
+					}
+
+
+				} else {
+//                    String message = intent.getStringExtra("result");
+					if(intent != null)
+					{
+						String message = intent.getStringExtra("result");
+						this.callbackContext.error(message);
+					}
+				}
+				break;
+			}
+			default:
+				break;
 		}
 	}
 }
