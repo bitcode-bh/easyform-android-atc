@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.easyform.safetymeasure">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -15,6 +14,12 @@
     <application
         android:requestLegacyExternalStorage="true">
         <activity android:name="com.easyform.safetymeasure.SafetyMeasureActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="false"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"/>
+
+
+        <activity android:name="com.easyform.safetymeasure.automlvision.AutoMlVisonModelActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="false"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"/>

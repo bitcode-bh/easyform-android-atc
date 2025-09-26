@@ -1,0 +1,70 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context="com.easyform.safetymeasure.automlvision.AutoMlVisonModelActivity">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:scaleType="fitCenter"
+            app:implementationMode="performance"/>
+
+
+        <!-- Capture Button -->
+
+        <ImageView
+            android:id="@+id/captureFront"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center|bottom"
+            android:src="@drawable/cameraclick_foreground"
+            android:layout_marginBottom="20dp" />
+
+        <ImageView
+            android:id="@+id/switchcamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="camera_change"
+            android:layout_gravity="end"
+            android:src="@drawable/frontcamera_foreground" />
+
+        <ImageView
+            android:id="@+id/imageViewCaptured"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+
+
+        <TextView
+            android:id="@+id/textViewDetectionResults"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:gravity="bottom|left"
+            android:textSize="20sp"
+            android:padding="5dp"
+            android:visibility="gone"
+            android:layout_marginTop="3dp" />
+
+
+        <com.easyform.safetymeasure.automlvision.OverlayView
+            android:id="@+id/overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:background="@android:color/transparent" />
+    </FrameLayout>
+
+
+</RelativeLayout>

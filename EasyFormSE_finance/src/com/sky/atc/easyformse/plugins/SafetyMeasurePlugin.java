@@ -30,7 +30,7 @@ public class SafetyMeasurePlugin extends CordovaPlugin {
         try{
 
             try {
-                Intent SafetyMeasure = new Intent(sqlitewraper.context, Class.forName("com.easyform.safetymeasure.SafetyMeasureActivity"));
+                Intent SafetyMeasure = new Intent(sqlitewraper.context, Class.forName("com.easyform.safetymeasure.automlvision.AutoMlVisonModelActivity"));
                 this.cordova.startActivityForResult(this, SafetyMeasure, 101);
                 return true;
             } catch (Exception e) {
@@ -61,7 +61,7 @@ public class SafetyMeasurePlugin extends CordovaPlugin {
 //String photo_path = bundle.getString("photo_path");
 //                        JSONObject jsonObject = new JSONObject();
 //                        jsonObject.put("value", value);
-                      //  jsonObject.put("photo_path",photo_path);
+                        //  jsonObject.put("photo_path",photo_path);
 
                         Log.d("####Succces", value);
                         this.callbackContext.success(value);
