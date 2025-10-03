@@ -742,7 +742,24 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     ////added comment icon for every control on swipe right [FT - 12022025]
                     if (form_flag == 0 || form_flag == 2 || form_flag == 3) {
                         if (cnrl_type != 0) {
-                            newdiv += '<li class="swipeout ">';
+
+                            var width_layout = jsonObj[i].width_layout;
+                            if (width_layout == "" || width_layout == null || width_layout == undefined) {
+                                newdiv += '<li class="swipeout ">';
+                            }
+                            else {
+                                if (width_layout == "50-50") {
+                                    // 50% 1st control - 50% 2nd control
+                                    newdiv += '<li class="swipeout w-50-50 ">';
+                                }
+                                else if (width_layout == "75-25") {
+                                    // 75% 1st control label - 25% 1st control ui
+                                    newdiv += '<li class="swipeout w-75-25 ">';
+                                }
+                                else {
+                                    newdiv += '<li class="swipeout ">';
+                                }
+                            }
                         }
                     }
 

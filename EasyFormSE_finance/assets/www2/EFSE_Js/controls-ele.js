@@ -1451,61 +1451,72 @@ MkControls.prototype.build_type_40_livelink = function () {
         let doc_type = value[0].doc_type;
         let doc_url = value[0].doc_url;      // configured live path
 
-        let watched = 0;
-        let watch_status = "Status: Not Watched";
-
-        let video_path = value[0].doc_url;
-        for (let g = 0; g < glob_livelink_Array.length; g++) {
-            let live_url = glob_livelink_Array[g].live_url;     // configured live path
-            if (doc_url == live_url) {
-                let download_url_path = glob_livelink_Array[g].download_url_path;    // local download folder path
-                if (download_url_path == "" || download_url_path == null || download_url_path == undefined) {
-                    // downloading is in process
-                }
-                else {
-                    // download completed
-
-                    // set video by local path if downloaded to local
-                    video_path = download_url_path;
-                }
-            }
-        }
-
-        let livelink_watched_Array = localStorage.getItem('livelink_watched_Array');
-        if (livelink_watched_Array == "" || livelink_watched_Array == null || livelink_watched_Array == undefined || livelink_watched_Array == "[]") {
-            livelink_watched_Array = [];
+        if (doc_type == "image") {
+            var str = '';
+            str += '<div class="item-input item-input-field form-div" ' + this.enable_disable + '>';
+            str += '<img src="' + doc_url + '" id="livelink_image_' + this.new_id + '" style="height:50px; width:50px; margin-left: 5px; border-radius: 7px" que_id = "' + this.que_id + '" ' + this.enable_disable + '/>';
+            str += '</div>';
         }
         else {
-            livelink_watched_Array = JSON.parse(livelink_watched_Array);
-        }
+            // video
 
-        let found = 0;
-        for (let l = 0; l < livelink_watched_Array.length; l++) {
-            let t_path = livelink_watched_Array[l];
-            if (t_path == doc_url || t_path == video_path) {
-                found++;
-                break;
+            let watched = 0;
+            let watch_status = "Status: Not Watched";
+
+            let video_path = value[0].doc_url;
+            for (let g = 0; g < glob_livelink_Array.length; g++) {
+                let live_url = glob_livelink_Array[g].live_url;     // configured live path
+                if (doc_url == live_url) {
+                    let download_url_path = glob_livelink_Array[g].download_url_path;    // local download folder path
+                    if (download_url_path == "" || download_url_path == null || download_url_path == undefined) {
+                        // downloading is in process
+                    }
+                    else {
+                        // download completed
+
+                        // set video by local path if downloaded to local
+                        video_path = download_url_path;
+                    }
+                }
             }
-        }
-        if (found == 1) {
-            watched = 1;
-            watch_status = "Status: Watched";
+
+            let livelink_watched_Array = localStorage.getItem('livelink_watched_Array');
+            if (livelink_watched_Array == "" || livelink_watched_Array == null || livelink_watched_Array == undefined || livelink_watched_Array == "[]") {
+                livelink_watched_Array = [];
+            }
+            else {
+                livelink_watched_Array = JSON.parse(livelink_watched_Array);
+            }
+
+            let found = 0;
+            for (let l = 0; l < livelink_watched_Array.length; l++) {
+                let t_path = livelink_watched_Array[l];
+                if (t_path == doc_url || t_path == video_path) {
+                    found++;
+                    break;
+                }
+            }
+            if (found == 1) {
+                watched = 1;
+                watch_status = "Status: Watched";
+            }
+
+            var str = '';
+            let onload_str = "init_livelink('livelink_video_" + this.new_id + "')";
+            str += '<div class="video-container" onload="' + onload_str + '">';
+            str += '<video id="livelink_video_' + this.new_id + '" onclick="videoclick()" watched="' + watched + '" width="100%" preload="auto" crossorigin="anonymous" controlslist="nodownload nofullscreen noremoteplayback"';
+            str += 'controls playsinline disablepictureinpicture>';
+            //str += 'controls muted autoplay loop playsinline disablepictureinpicture>';
+            //str += '<source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4">';
+            str += '<source src="' + video_path + '" live_url="' + doc_url + '" type="video/mp4" onerror="reset_video_url_by_live_url(this)">';
+            str += '</video>';
+            str += '<p id="livelink_status_' + this.new_id + '">' + watch_status + '</p>';
+
+            let download_str = "download_livelink_doc('" + doc_url + "')"
+            str += '<p id="livelink_download_' + this.new_id + '" onclick="' + download_str + '" style="float:right"><i class="fa fa-download"></i> Download</p>';
+            str += '</div>';
         }
 
-        var str = '';
-        let onload_str = "init_livelink('livelink_video_" + this.new_id + "')";
-        str += '<div class="video-container" onload="' + onload_str + '">';
-        str += '<video id="livelink_video_' + this.new_id + '" onclick="videoclick()" watched="' + watched + '" width="100%" preload="auto" crossorigin="anonymous" controlslist="nodownload nofullscreen noremoteplayback"';
-        str += 'controls playsinline disablepictureinpicture>';
-        //str += 'controls muted autoplay loop playsinline disablepictureinpicture>';
-        //str += '<source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4">';
-        str += '<source src="' + video_path + '" live_url="' + doc_url + '" type="video/mp4" onerror="reset_video_url_by_live_url(this)">';
-        str += '</video>';
-        str += '<p id="livelink_status_' + this.new_id + '">' + watch_status + '</p>';
-
-        let download_str = "download_livelink_doc('" + doc_url + "')"
-        str += '<p id="livelink_download_' + this.new_id + '" onclick="' + download_str + '" style="float:right"><i class="fa fa-download"></i> Download</p>';
-        str += '</div>';
         return str;
     }
     catch (e) {

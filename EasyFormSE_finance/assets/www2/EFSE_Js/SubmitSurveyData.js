@@ -3815,14 +3815,30 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                     var answer = [];
                     if (dep_res == "valid") {
-                        var ll_answer = $("#livelink_video_" + new_id + "").attr("watched");
-                        if (ll_answer == "" || ll_answer == null || ll_answer == undefined || ll_answer == "0") {
-                            answer.push("");
-                        } else {
-                            let ll_src = $("#livelink_video_" + new_id + "").find("source").attr("src");
-                            let ll_download_src = $("#livelink_video_" + new_id + "").attr("download_link");
-                            answer.push(ll_src, ll_download_src);
+
+                        let value = misc_Array[0].value;
+                        value = itemObj._checkStrObj(value); 
+                        let doc_type = value[0].doc_type;
+                       
+                        if (doc_type == "image") {
+                            var ll_answer = $("#livelink_image_" + new_id + "").attr("src");
+                            if (ll_answer == "" || ll_answer == null || ll_answer == undefined || ll_answer == "0") {
+                                answer.push("");
+                            } else {
+                                answer.push(ll_answer);
+                            }
                         }
+                        else {
+                            var ll_answer = $("#livelink_video_" + new_id + "").attr("watched");
+                            if (ll_answer == "" || ll_answer == null || ll_answer == undefined || ll_answer == "0") {
+                                answer.push("");
+                            } else {
+                                let ll_src = $("#livelink_video_" + new_id + "").find("source").attr("src");
+                                let ll_download_src = $("#livelink_video_" + new_id + "").attr("download_link");
+                                answer.push(ll_src, ll_download_src);
+                            }
+                        }
+            
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
                                 mk_animate_border('#div_livelink_' + new_id + '', 0, 500, mand_border_color);

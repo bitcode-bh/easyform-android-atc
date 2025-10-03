@@ -1,0 +1,25 @@
+
+/*New template stying*/
+
+.w-50-50 {
+    width: 50%;
+    display: inline-block;
+}
+
+    .w-50-50 div[id^='div_livelink'] {
+        border-bottom: none;
+    }
+
+    .w-50-50 .item-input img {
+        width: 140px !important;
+        height: 140px !important;
+    }
+
+    .w-75-25 div[id^='div_lbl_'] {
+        width: 72%;
+        display: inline-block;
+    }
+.w-75-25 div.form-div {
+    width: 25% !important;
+    display: inline-block;
+}
