@@ -228,53 +228,122 @@ MkControls.prototype.build_type_2_radio = function () {
     try {
         var str = '';
 
-        if (this.view_type == "horizontal") {
-            str += '<div class="list-block form-div horizontal-rdo"><ul>';
-        }
-        else {
-            str += '<div class="list-block form-div"><ul>';
-        }
+        if (this.view_type == "toggle" || this.view_type == "toggle_hidden") {
 
-        for (var r = 0; r < this.rdo_Array.length; r++) {
-            if (this.weightage_Array == '' || this.weightage_Array == null
-                || this.weightage_Array == undefined) {
-                var weightage = 1;
-            } else {
-                var weightage = this.weightage_Array[r];
-            }
-
-            str += '<li ' + this.enable_disable + '><label class="label-radio item-content">';
-
-            var checked_str = '';
-            var val_str = new String(this.rdo_Array[r]);
-            val_str = val_str.trim().toLowerCase();
-            if (this.read_type == "readchecksheet") {
-                // readchecksheet
-                var str2 = new String(this.default_val);
-                str2 = str2.trim().toLowerCase();
+            // toggle switch
+            if (this.view_type == "toggle") {
+                str += '<div class="switch radio-count-' + this.rdo_Array.length + '">';
             }
             else {
-                // readsurvey
-                var str2 = new String(this.ans);
-                str2 = str2.trim().toLowerCase();
+                str += '<div class="switch radio-count-' + this.rdo_Array.length + ' switch-hidden">';
+            }
 
-                if (str2 == '' || str2 == null || str2 == undefined) {
-                    str2 = new String(this.default_val);
+            let switch_ans_str = '';
+            for (var r = 0; r < this.rdo_Array.length; r++) {
+                if (this.weightage_Array == '' || this.weightage_Array == null || this.weightage_Array == undefined) {
+                    var weightage = 1;
+                } else {
+                    var weightage = this.weightage_Array[r];
+                }
+
+                var checked_str = '';
+                var val_str = new String(this.rdo_Array[r]);
+                val_str = val_str.trim().toLowerCase();
+                if (this.read_type == "readchecksheet") {
+                    // readchecksheet
+                    var str2 = new String(this.default_val);
                     str2 = str2.trim().toLowerCase();
+                }
+                else {
+                    // readsurvey
+                    var str2 = new String(this.ans);
+                    str2 = str2.trim().toLowerCase();
+
+                    if (str2 == '' || str2 == null || str2 == undefined) {
+                        str2 = new String(this.default_val);
+                        str2 = str2.trim().toLowerCase();
+                    }
+                }
+
+                if (val_str == str2) {
+                    checked_str = 'checked="checked"';
+                    switch_ans_str = this.rdo_Array[r];
+                }
+
+                str += '<input type="radio" ' + checked_str + ' class="switch-input" name="rdogroup_' + this.new_id + '" id="rdo_' + this.new_id + '_' + r + '" value="'
+                    + this.rdo_Array[r] + '" ' + this.enable_disable + ' alt="' + weightage + '" onchange="' + this.param + '">';
+
+                if (this.view_type == "toggle") {
+                    str += '<label for="rdo_' + this.new_id + '_' + r + '" class="switch-label switch-label-' + r + '">' + this.rdo_Array[r] + '</label>';
+                }
+                else {
+                    // toggle hidden
+                    str += '<label for="rdo_' + this.new_id + '_' + r + '" class="switch-label switch-label-' + r + '" onclick="set_switch_hidden_ans(this)">' + this.rdo_Array[r] + '</label>';
                 }
             }
 
-            if (val_str == str2) {
-                checked_str = 'checked="checked"';
+            str += '<span class="switch-selector"></span>';
+
+            if (this.view_type == "toggle_hidden") {
+                str += '<span class="spn_hdn_switch">' + switch_ans_str + '</span>';
             }
-            str += '<input type="radio" ' + checked_str + ' name="rdogroup_' + this.new_id + '" id="rdo_' + this.new_id + '_' + r + '" value="'
-                + this.rdo_Array[r] + '" ' + this.enable_disable + ' alt="' + weightage + '" onchange="' + this.param + '">';
-            if (F7_device == 'android') {
-                str += '<div class="item-media"><i class="icon icon-form-radio"></i></div>';
-            }
-            str += '<div class="item-inner"><div class="item-title">' + this.rdo_Array[r] + '</div></div></label></li>';
+
+            str += '</div>';
         }
-        str += '</ul></div>';
+        else {
+            // normal radio
+            if (this.view_type == "horizontal") {
+                str += '<div class="list-block form-div horizontal-rdo"><ul>';
+            }
+            else {
+                str += '<div class="list-block form-div"><ul>';
+            }
+
+            for (var r = 0; r < this.rdo_Array.length; r++) {
+                if (this.weightage_Array == '' || this.weightage_Array == null
+                    || this.weightage_Array == undefined) {
+                    var weightage = 1;
+                } else {
+                    var weightage = this.weightage_Array[r];
+                }
+
+                str += '<li ' + this.enable_disable + '><label class="label-radio item-content">';
+
+                var checked_str = '';
+                var val_str = new String(this.rdo_Array[r]);
+                val_str = val_str.trim().toLowerCase();
+                if (this.read_type == "readchecksheet") {
+                    // readchecksheet
+                    var str2 = new String(this.default_val);
+                    str2 = str2.trim().toLowerCase();
+                }
+                else {
+                    // readsurvey
+                    var str2 = new String(this.ans);
+                    str2 = str2.trim().toLowerCase();
+
+                    if (str2 == '' || str2 == null || str2 == undefined) {
+                        str2 = new String(this.default_val);
+                        str2 = str2.trim().toLowerCase();
+                    }
+                }
+
+                if (val_str == str2) {
+                    checked_str = 'checked="checked"';
+                }
+                str += '<input type="radio" ' + checked_str + ' name="rdogroup_' + this.new_id + '" id="rdo_' + this.new_id + '_' + r + '" value="'
+                    + this.rdo_Array[r] + '" ' + this.enable_disable + ' alt="' + weightage + '" onchange="' + this.param + '">';
+
+                if (F7_device == 'android') {
+                    str += '<div class="item-media"><i class="icon icon-form-radio"></i></div>';
+                }
+
+                str += '<div class="item-inner"><div class="item-title">' + this.rdo_Array[r] + '</div></div></label></li>';
+            }
+            str += '</ul></div>';
+        }
+
+
         return str;
     }
     catch (e) {

@@ -2610,3 +2610,124 @@ video::-webkit-media-controls-timeline {
     .video-container p i.fa {
         margin: 0;
     }
+
+
+/* toggle radio button css start */
+.switch {
+    position: relative;
+    height: 32px;
+    width: 100%;
+    margin: 10px auto;
+    background: #ECEDEF;
+    border-radius: 32px;
+    border: 0.3mm solid #B4B6BA;
+}
+
+.w-75-25 div.switch {
+    width: 15% !important;
+    display: inline-block;
+    margin: 0;
+    right: 10px;
+}
+
+.w-75-25 .switch, .w-75-25 .switch-label, .w-75-25 .switch-selector {
+    height: 22px;
+    line-height: 22px;
+}
+
+.switch-label {
+    font-weight: bold;
+    position: relative;
+    z-index: 2;
+    float: left;
+    line-height: 32px;
+    font-size: 12px;
+    color: #676a6c;
+    text-align: center;
+    cursor: pointer;
+}
+
+.switch-input {
+    display: none;
+}
+
+    .switch-input:checked + .switch-label {
+        color: #FFF;
+        transition: 0.15s ease-out;
+        transition-property: color, text-shadow;
+    }
+
+    .switch-input:checked + .switch-label-0 ~ .switch-selector {
+        transform: translateX(0%);
+        background-color: #61c555;    /*green*/
+    }
+
+    .switch-input:checked + .switch-label-1 ~ .switch-selector {
+        transform: translateX(100%);
+        background-color: #ed6a5f;     /*red*/
+    }
+
+    .switch-input:checked + .switch-label-2 ~ .switch-selector {
+        transform: translateX(200%);
+        background-color: #f6be50;     /*orange*/
+    }
+
+    .switch-input:checked + .switch-label-3 ~ .switch-selector {
+        transform: translateX(300%);
+        background-color: #6e5ea6;      /*purple*/
+    }
+
+
+.switch-selector {
+    position: absolute;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+    display: block;
+    height: 32px;
+    border-radius: 32px;
+    /*background-color: #1ab394;*/
+    transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.radio-count-2 .switch-label, .radio-count-2 .switch-selector {
+    width: 50%;
+}
+
+.radio-count-3 .switch-label, .radio-count-3 .switch-selector {
+    width: 33.33%;
+}
+
+.radio-count-4 .switch-label, .radio-count-4 .switch-selector {
+    width: 25%;
+}
+
+/*hidden switch*/
+.switch-hidden {
+    width: 30%;
+    float: right;
+    background: #ECEDEF;
+    border: 0.5mm solid #B4B6BA;
+}
+
+    .switch-hidden .switch-label {
+        color: transparent !important;
+    }
+
+    .switch-hidden .spn_hdn_switch {
+        position: fixed;
+        left: 180px;
+        font-weight: bold;
+        margin-top: 8px;
+    }
+
+.w-75-25 .switch-hidden .spn_hdn_switch {
+    left: 220px;
+    margin-top: 0;
+}
+
+.switch-hidden.radio-count-3 .switch-hidden.switch-label, .switch-hidden.radio-count-3 .switch-selector {
+    width: 33.33%;
+}
+
+/* toggle radio button css end */

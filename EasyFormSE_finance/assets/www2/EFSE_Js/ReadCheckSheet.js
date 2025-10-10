@@ -961,6 +961,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         //    }
                         //}
 
+                       // view_type = "toggle"
+
                         var obj = {
                             read_type: 'readchecksheet',
                             ans: '',
@@ -5424,4 +5426,9 @@ function set_system_variable() {
     curr_all_data_20["role_name"] = role_name;
     curr_all_data_20["circle_id"] = circle_id;
     curr_all_data_20["circle_name"] = circle_name;
+}
+
+set_switch_hidden_ans = (t_obj) => {
+    let text = $(t_obj).html();
+    $(t_obj).parent(".switch-hidden").find(".spn_hdn_switch").text(text);
 }
