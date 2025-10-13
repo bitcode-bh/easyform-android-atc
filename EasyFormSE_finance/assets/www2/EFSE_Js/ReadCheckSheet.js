@@ -779,11 +779,11 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         }
 
                         newdiv += '<div id="div_que_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="padding:0; margin:0; font-size: 10pt;' + disp_cntrl + '">';
-                        newdiv += '<hr style="border-top: 2px solid #989696;margin-bottom: 0px !important;" />';
+                        newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
 
                         if (jsonObj[i].value == '' || jsonObj[i].value == null || jsonObj[i].value == undefined || jsonObj[i].value == ' ') { }
                         else {
-                            newdiv += '<label id="qh_' + new_id + '" style="display:block; text-align:justify; margin-bottom:10px; font-size: 15px; font-weight:bold; font-family: calibri; padding:10px; border-bottom:  2px solid #989696; background-color: #f5f5f5">' + jsonObj[i].value + '</label>';
+                            newdiv += '<label id="qh_' + new_id + '" style="display:block; text-align:justify; margin-bottom:10px; font-size: 15px; font-weight:bold; font-family: calibri; padding:10px; border-bottom:  1px solid #B4B6BA; background-color: #f5f5f5">' + jsonObj[i].value + '</label>';
                         }
 
                         if (type0_ele_class == "true") { }

@@ -645,7 +645,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         newdiv += '<div id="div_que_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="padding:0; margin:0; font-size: 10pt;' + disp_cntrl + '">';
 
                         if (curr_clps_new_id == 0) {
-                            newdiv += '<hr style="border-top: 2px solid #989696;margin-bottom: 0px !important;" />';
+                            newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
                             var t_padding = "padding:10px 10px 10px;";
                         }
                         else {
@@ -654,7 +654,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         if (jsonObj[i].value == '' || jsonObj[i].value == null || jsonObj[i].value == undefined || jsonObj[i].value == ' ') { }
                         else {
-                            newdiv += '<label style="display:block; text-align:justify; margin-bottom:5px; font-size: 15px; font-weight:bold; font-family: calibri; border-bottom: 2px solid #989696; background-color: #f6f6f6;' + t_padding + min_height + ' " id="qh_'
+                            newdiv += '<label style="display:block; text-align:justify; margin-bottom:5px; font-size: 15px; font-weight:bold; font-family: calibri; border-bottom: 1px solid #B4B6BA; background-color: #f6f6f6;' + t_padding + min_height + ' " id="qh_'
                                 + new_id + '">' + jsonObj[i].value + '</label>';
                         }
 

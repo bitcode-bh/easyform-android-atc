@@ -107,3 +107,22 @@ reset_video_url_by_live_url = (t_video_ele) => {
     let live_url = $(t_video_ele).attr("live_url");
     $(t_video_ele).attr("src", live_url);
 }
+
+function get_full_view_image_type40_F7(t_obj) {
+
+    let t_src = $(t_obj).attr("src");
+
+    myPhotoBrowser = myApp.photoBrowser({
+        // navbar: false,
+        zoom: false,
+        toolbar: false,
+        photos: [{
+            url: t_src
+        }],
+        type: 'popup',
+        theme: 'dark',
+        captionsTheme: 'dark'
+    });
+
+    myPhotoBrowser.open();
+}

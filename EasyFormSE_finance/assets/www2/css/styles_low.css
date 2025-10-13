@@ -1611,6 +1611,7 @@ html.pixel-ratio-3 .timeline-month .timeline-item:before {
 }
 
 .photo-browser-slide img {
+    margin-top: 56px;
     height: auto !important;
     max-height: auto !important;
 }
@@ -2276,9 +2277,6 @@ div[id^=new_item_] input:focus, div[id^=new_item_] button:focus {
     display: none !important;
 }
 
-.lbl_type5 {
-    font-weight: bold;
-}
 
 
 
@@ -2366,7 +2364,11 @@ div[id^=new_item_] input:focus, div[id^=new_item_] button:focus {
     }
 
 .lbl_type5, label[id^='qh_0_'] {
-    color: #3b5dce;
+    /*color: #3b5dce;*/
+}
+
+.lbl_type5 {
+    font-weight: bold;
 }
 
 .horizontal-rdo ul li {
@@ -2374,8 +2376,12 @@ div[id^=new_item_] input:focus, div[id^=new_item_] button:focus {
 }
 
 
-div[id^='div_rdo_'] ul:before, div[id^='div_rdo_'] ul:after {
+div[id^='div_rdo_'] ul:before {
     background-color: transparent;
+}
+
+div[id^='div_rdo_'] ul:after {
+    height: 1px;
 }
 
 div[id^='div_chk_'] ul:before, div[id^='div_chk_'] ul:after {
@@ -2624,15 +2630,22 @@ video::-webkit-media-controls-timeline {
 }
 
 .w-75-25 div.switch {
-    width: 15% !important;
+    width: 13% !important;
     display: inline-block;
-    margin: 0;
+    margin: 0px 0px 10px 0;
     right: 10px;
 }
 
-.w-75-25 .switch, .w-75-25 .switch-label, .w-75-25 .switch-selector {
+.w-75-25 .switch, .w-75-25 .switch-label {
     height: 22px;
     line-height: 22px;
+}
+
+.w-75-25 .switch-selector {
+    height: 18px;
+    line-height: 18px;
+    left: 2px;
+    top: 2px;
 }
 
 .switch-label {
@@ -2659,22 +2672,22 @@ video::-webkit-media-controls-timeline {
 
     .switch-input:checked + .switch-label-0 ~ .switch-selector {
         transform: translateX(0%);
-        background-color: #61c555;    /*green*/
+        background-color: #61c555; /*green*/
     }
 
     .switch-input:checked + .switch-label-1 ~ .switch-selector {
         transform: translateX(100%);
-        background-color: #ed6a5f;     /*red*/
+        background-color: #ed6a5f; /*red*/
     }
 
     .switch-input:checked + .switch-label-2 ~ .switch-selector {
         transform: translateX(200%);
-        background-color: #f6be50;     /*orange*/
+        background-color: #f6be50; /*orange*/
     }
 
     .switch-input:checked + .switch-label-3 ~ .switch-selector {
         transform: translateX(300%);
-        background-color: #6e5ea6;      /*purple*/
+        background-color: #6e5ea6; /*purple*/
     }
 
 
@@ -2690,16 +2703,20 @@ video::-webkit-media-controls-timeline {
     transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
+.w-75-25 .radio-count-2 .switch-label, .w-75-25 .radio-count-2 .switch-selector {
+    width: 45%;
+}
+
 .radio-count-2 .switch-label, .radio-count-2 .switch-selector {
-    width: 50%;
+    width: 49.4%;
 }
 
 .radio-count-3 .switch-label, .radio-count-3 .switch-selector {
-    width: 33.33%;
+    width: 32.9%;
 }
 
 .radio-count-4 .switch-label, .radio-count-4 .switch-selector {
-    width: 25%;
+    width: 24.7%;
 }
 
 /*hidden switch*/
@@ -2719,15 +2736,16 @@ video::-webkit-media-controls-timeline {
         left: 180px;
         font-weight: bold;
         margin-top: 8px;
+        color: gray;
     }
 
 .w-75-25 .switch-hidden .spn_hdn_switch {
-    left: 220px;
+    left: 245px;
     margin-top: 0;
 }
 
 .switch-hidden.radio-count-3 .switch-hidden.switch-label, .switch-hidden.radio-count-3 .switch-selector {
-    width: 33.33%;
+    width: 31.07%;
 }
 
 /* toggle radio button css end */

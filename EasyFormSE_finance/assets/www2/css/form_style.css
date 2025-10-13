@@ -6,8 +6,18 @@
     display: inline-block;
 }
 
+    .w-50-50 div[id^='div_livelink_'] .lbl_type5, .w-50-50 div[id^='div_cbtn_'] .lbl_type5 {
+        color: black;
+        margin-left: 5px;
+        font-weight: normal;
+    }
+
     .w-50-50 div[id^='div_livelink'] {
-        border-bottom: none;
+        border-bottom: none !important;
+    }
+    .w-50-50 .input-field:after, .w-50-50 .item-input-field:after {
+        content: '';
+        height: 0;
     }
 
     .w-50-50 .item-input img {
@@ -15,10 +25,17 @@
         height: 140px !important;
     }
 
-    .w-75-25 div[id^='div_lbl_'] {
-        width: 72%;
-        display: inline-block;
-    }
+        .w-50-50 .item-input img[src='images/camera.png'] {
+            width: 60px !important;
+            height: 60px !important;
+            padding: 40px;
+        }
+
+.w-75-25 div[id^='div_lbl_'] {
+    width: 72%;
+    display: inline-block;
+}
+
 .w-75-25 div.form-div {
     width: 25% !important;
     display: inline-block;

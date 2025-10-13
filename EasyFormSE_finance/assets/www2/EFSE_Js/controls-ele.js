@@ -1523,7 +1523,7 @@ MkControls.prototype.build_type_40_livelink = function () {
         if (doc_type == "image") {
             var str = '';
             str += '<div class="item-input item-input-field form-div" ' + this.enable_disable + '>';
-            str += '<img src="' + doc_url + '" id="livelink_image_' + this.new_id + '" style="height:50px; width:50px; margin-left: 5px; border-radius: 7px" que_id = "' + this.que_id + '" ' + this.enable_disable + '/>';
+            str += '<img src="' + doc_url + '" onclick="get_full_view_image_type40_F7(this)" id="livelink_image_' + this.new_id + '" style="height:50px; width:50px; margin-left: 5px; border-radius: 7px" que_id = "' + this.que_id + '" ' + this.enable_disable + '/>';
             str += '</div>';
         }
         else {

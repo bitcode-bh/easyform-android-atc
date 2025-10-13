@@ -10,7 +10,7 @@ get_type37_udf_data_from_query = (udf_id_ary, t_new_id, listing_udf_id) => {
 
     var role_id_array = localStorage.getItem('role_id_array');
 
-    var query = "SELECT * FROM User_Define_Flow_Master WHERE id = " + udf_id + " and rollid in (" + role_id_array + ") and (is_delete != 1 or is_delete IS NULL)";
+    var query = "SELECT * FROM User_Define_Flow_Master WHERE id = " + udf_id + " and rollid in (" + role_id_array + ") and (is_delete != 1 or is_delete IS NULL) order by rollid";
 
     var q_jsonobj = [];
     q_jsonobj.push({
