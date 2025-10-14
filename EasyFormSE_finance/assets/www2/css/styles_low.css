@@ -2364,11 +2364,11 @@ div[id^=new_item_] input:focus, div[id^=new_item_] button:focus {
     }
 
 .lbl_type5, label[id^='qh_0_'] {
-    /*color: #3b5dce;*/
+    color: #3b5dce;
 }
 
 .lbl_type5 {
-    font-weight: bold;
+    /*font-weight: bold;*/
 }
 
 .horizontal-rdo ul li {

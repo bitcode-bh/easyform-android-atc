@@ -7,9 +7,13 @@
 }
 
     .w-50-50 div[id^='div_livelink_'] .lbl_type5, .w-50-50 div[id^='div_cbtn_'] .lbl_type5 {
+        display: block !important;
         color: black;
+        margin-top: 5px;
         margin-left: 5px;
         font-weight: normal;
+        font-size: 13px !important;
+        text-align: center;
     }
 
     .w-50-50 div[id^='div_livelink'] {
@@ -21,15 +25,15 @@
     }
 
     .w-50-50 .item-input img {
-        width: 140px !important;
+        width: 100% !important;
         height: 140px !important;
     }
 
         .w-50-50 .item-input img[src='images/camera.png'] {
-            width: 60px !important;
-            height: 60px !important;
-            padding: 40px;
-        }
+            width: initial !important;
+            height: initial !important;
+            padding: initial;
+        }   
 
 .w-75-25 div[id^='div_lbl_'] {
     width: 72%;
