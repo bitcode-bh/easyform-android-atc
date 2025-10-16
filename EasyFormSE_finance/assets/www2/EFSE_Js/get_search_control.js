@@ -3502,42 +3502,29 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                     }
 
                                     var img_new_id = curr_box_id.replace('cbtn_', '');
+                                    let new_que_id = $("#div_cbtn_" + img_new_id).attr('que_id'); 
                                     var img_ary = myArray[fi].img_ary;
+                                    
+                                    if (img_ary == "" || img_ary == null || img_ary == undefined) {
+                                        // livelinkg with image type 40
+                                        $("#" + curr_box_id + "").attr("src", fieldvalue);
+                                        $("#" + curr_box_id + "").attr('autofill', "true");
 
-                                    var img_src = img_ary[0];
-                                    if (img_src == "" || img_src == null || img_src == undefined) {
-                                        // photo is not exist in original entity - mk - 10072025
-                                        $("#" + curr_box_id + "").attr("src", "images/camera.png");
-                                    }
-                                    else {
-                                        var p_name = img_ary[1];
-                                        var photo_id = img_ary[4];
-                                        var curr_file_size_mb = img_ary[5];
-                                        var img_que_id = myArray[fi].queid;
-
-                                        var Condition_Data_Str = $('#hdn_condition_data_' + temp_btnSearch_Counter + '').val();
-
-                                        var t_Condition_Data_Str = decodeURIComponent(Condition_Data_Str)
-                                        var Condition_Data = JSON.parse(t_Condition_Data_Str);
-                                        var value_new = Condition_Data[0].value_new;
-                                        var type20_checksheet_id = value_new[0].Checksheet_id;
-
-                                        localStorage.setItem('ID_useType22', obj_id);
-
-                                        var img_src = get_upload_media_live_link(img_que_id, type20_checksheet_id, t_checksheet_type_id);
-
-                                        let rebind_str = "rebind_autofill_photo_temp('#" + curr_box_id + "','" + img_src + "')";
-                                        $("#" + curr_box_id + "").attr('src', img_src);
-                                        $("#" + curr_box_id + "").attr('onerror', rebind_str);
-
-                                        let new_que_id = $("#div_cbtn_" + img_new_id).attr('que_id');
+                                        img_ary = [fieldvalue,'','','',''];
 
                                         if (autofill_form_flag == 0 || autofill_form_flag == 6) {
                                             for (var j = 0; j < jsonObj_old.length; j++) {
                                                 var json_que_id = jsonObj_old[j].que_id;
                                                 if (new_que_id == json_que_id) {
 
-                                                    img_ary[4] = "";
+                                                    if (autofill_form_flag == 0) {
+                                                        // set dummy photo_id for images those are autofilled from mobile log checksheet - no need to call clone api in such case
+                                                        img_ary[4] = "0";
+                                                    }
+                                                    else {
+                                                        img_ary[4] = "";
+                                                    }
+
                                                     img_ary[5] = "";
 
                                                     let task_create_popup = $('.popup-new-task-create.modal-in:visible');
@@ -3552,46 +3539,104 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                                 }
                                             }
                                         }
-
-                                        let old_primary_id = obj_id;
-                                        let old_checksheet_id = type20_checksheet_id;
-                                        let old_que_id = JSON.stringify(img_que_id);
-                                        let new_checksheet_id = value_new[0].Current_Checksheet_id;
-
-                                        if (autofill_form_flag == 6) {
-                                            // Task checksheet
-                                            var new_checksheet_type = "5";
-                                        }
-                                        else if (autofill_form_flag == 7) {
-                                            // Customer checksheet
-                                            var new_checksheet_type = "3";
+                                    }
+                                    else {
+                                        var img_src = img_ary[0];
+                                        if (img_src == "" || img_src == null || img_src == undefined) {
+                                            // photo is not exist in original entity - mk - 10072025
+                                            $("#" + curr_box_id + "").attr("src", "images/camera.png");
                                         }
                                         else {
-                                            // Mobile Log checksheet
-                                            var new_checksheet_type = "1";
-                                        }
+                                            var p_name = img_ary[1];
+                                            var photo_id = img_ary[4];
+                                            var curr_file_size_mb = img_ary[5];
+                                            var img_que_id = myArray[fi].queid;
 
-                                        let param_obj = [];
-                                        param_obj.push({
-                                            "old_id": old_primary_id,
-                                            "old_cid": old_checksheet_id,
-                                            "old_qd": old_que_id,
-                                            "old_t22id": "0",
-                                            "old_t22i": "0",
-                                            "new_id": "",
-                                            "new_ctype": new_checksheet_type,
-                                            "new_cid": new_checksheet_id,
-                                            "new_qd": new_que_id,
-                                            "new_t22id": "0",
-                                            "new_t22i": "0"
-                                        });
+                                            var Condition_Data_Str = $('#hdn_condition_data_' + temp_btnSearch_Counter + '').val();
 
-                                        $("#" + curr_box_id + "").attr('autofill', "true");
-                                        $("#" + curr_box_id + "").attr('autofill_obj', JSON.stringify(param_obj));
+                                            var t_Condition_Data_Str = decodeURIComponent(Condition_Data_Str)
+                                            var Condition_Data = JSON.parse(t_Condition_Data_Str);
+                                            var value_new = Condition_Data[0].value_new;
+                                            var type20_checksheet_id = value_new[0].Checksheet_id;
 
-                                        if (new_checksheet_type != 1) {
-                                            // task/customer/user
-                                            upload_autofill_photo_temp(old_primary_id, old_checksheet_id, old_que_id, new_checksheet_type, new_checksheet_id, new_que_id, autofill_form_flag, curr_box_id);
+                                            if (autofill_form_flag == 6) {
+                                                // Task checksheet
+                                                var new_checksheet_type = "5";
+                                            }
+                                            else if (autofill_form_flag == 7) {
+                                                // Customer checksheet
+                                                var new_checksheet_type = "3";
+                                            }
+                                            else {
+                                                // Mobile Log checksheet
+                                                var new_checksheet_type = "1";
+                                                obj_id = curr_all_data_20["task_id"];
+                                            }
+
+                                            localStorage.setItem('ID_useType22', obj_id);
+
+                                            var img_src = get_upload_media_live_link(img_que_id, type20_checksheet_id, t_checksheet_type_id);
+
+                                            let rebind_str = "rebind_autofill_photo_temp('#" + curr_box_id + "','" + img_src + "')";
+                                            $("#" + curr_box_id + "").attr('src', img_src);
+                                            $("#" + curr_box_id + "").attr('onerror', rebind_str);
+
+                                     
+                                            if (autofill_form_flag == 0 || autofill_form_flag == 6) {
+                                                for (var j = 0; j < jsonObj_old.length; j++) {
+                                                    var json_que_id = jsonObj_old[j].que_id;
+                                                    if (new_que_id == json_que_id) {
+
+                                                        if (autofill_form_flag == 0) {
+                                                            // set dummy photo_id for images those are autofilled from mobile log checksheet - no need to call clone api in such case
+                                                            img_ary[4] = "0";
+                                                        }
+                                                        else {
+                                                            img_ary[4] = "";
+                                                        }
+
+                                                        img_ary[5] = "";
+
+                                                        let task_create_popup = $('.popup-new-task-create.modal-in:visible');
+                                                        if (task_create_popup.length > 0) {
+                                                            //new task create popup [FT-08052025]
+                                                            jsonObj_task_add[j].ans = img_ary;
+                                                        }
+                                                        else {
+                                                            jsonObj_old[j].ans = img_ary;
+                                                        }
+                                                        break;
+                                                    }
+                                                }
+                                            }
+
+                                            let old_primary_id = obj_id;
+                                            let old_checksheet_id = type20_checksheet_id;
+                                            let old_que_id = JSON.stringify(img_que_id);
+                                            let new_checksheet_id = value_new[0].Current_Checksheet_id;
+
+                                            let param_obj = [];
+                                            param_obj.push({
+                                                "old_id": old_primary_id,
+                                                "old_cid": old_checksheet_id,
+                                                "old_qd": old_que_id,
+                                                "old_t22id": "0",
+                                                "old_t22i": "0",
+                                                "new_id": "",
+                                                "new_ctype": new_checksheet_type,
+                                                "new_cid": new_checksheet_id,
+                                                "new_qd": new_que_id,
+                                                "new_t22id": "0",
+                                                "new_t22i": "0"
+                                            });
+
+                                            $("#" + curr_box_id + "").attr('autofill', "true");
+                                            $("#" + curr_box_id + "").attr('autofill_obj', JSON.stringify(param_obj));
+
+                                            if (new_checksheet_type != 1) {
+                                                // task/customer/user
+                                                upload_autofill_photo_temp(old_primary_id, old_checksheet_id, old_que_id, new_checksheet_type, new_checksheet_id, new_que_id, autofill_form_flag, curr_box_id);
+                                            }
                                         }
                                     }
                                 }

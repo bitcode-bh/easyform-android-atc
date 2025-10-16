@@ -18,12 +18,9 @@
 
     .w-50-50 div[id^='div_livelink'] {
         border-bottom: none !important;
+        padding: 0;
     }
-    .w-50-50 .input-field:after, .w-50-50 .item-input-field:after {
-        content: '';
-        height: 0;
-    }
-
+    
     .w-50-50 .item-input img {
         width: 100% !important;
         height: 140px !important;
@@ -43,4 +40,20 @@
 .w-75-25 div.form-div {
     width: 25% !important;
     display: inline-block;
+}
+
+.w-50-50 .input-field:after, .w-50-50 .item-input-field:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: auto;
+    top: auto;
+    height: 1px;
+    width: 100%;
+    background-color: rgba(0, 0, 0, .12);
+    display: block;
+    z-index: 15;
+    -webkit-transform-origin: 50% 100%;
+    transform-origin: 50% 100%;
 }

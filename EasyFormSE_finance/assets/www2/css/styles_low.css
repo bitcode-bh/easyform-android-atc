@@ -2384,7 +2384,7 @@ div[id^='div_rdo_'] ul:after {
     height: 1px;
 }
 
-div[id^='div_chk_'] ul:before, div[id^='div_chk_'] ul:after {
+div[id^='div_chk_'] ul:before {
     background-color: transparent;
 }
 
@@ -2398,9 +2398,9 @@ div[id^='div_chk_'] .list-block .item-inner, div[id^='div_chk_'] .list-block .it
 }
 
 
-div[id^='div_ddl_'] .item-input-field:after {
+/*div[id^='div_ddl_'] .item-input-field:after {
     height: 0;
-}
+}*/
 
 .horizontal-rdo.list-block .item-media {
     min-width: 25px;
