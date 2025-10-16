@@ -723,7 +723,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             if (prop_name == "" || prop_name == null || prop_name == undefined) { }
                             else {
                                 label_str += '<div id="div_lbl_' + new_id + '">';
-                                label_str += '<label class="lbl_type5" style="display:inline;word-break: break-word; font-size: 15px; font-family: calibri">' + prop_name + '</label>' + mendatory_img;
+                                label_str += '<label class="lbl_type5" style="display:inline;word-break: break-word; font-size: 15px; font-family: calibri">' + prop_name + '</label>';
                                 label_str += '</div>';
 
                                 //////added comment icon for every control on hover [FT - 15072024]
