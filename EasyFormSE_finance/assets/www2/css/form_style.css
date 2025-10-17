@@ -62,3 +62,10 @@
     width: 10px;
     height: 10px;
 }
+
+.cntrl_main_div .form-div {
+    width: 100% !important;
+}
+    .cntrl_main_div .form-div .form-ico {
+        margin-right: 0;
+    }
