@@ -2319,9 +2319,9 @@ div[id^=new_item_] input:focus, div[id^=new_item_] button:focus {
     height: 60px;
 }
 
-.list-block ul:after {
+/*.list-block ul:after {
     height: 0px;
-}
+}*/
 
 /* ------- New login page css end -------------------*/
 
@@ -2740,8 +2740,9 @@ video::-webkit-media-controls-timeline {
     }
 
 .w-75-25 .switch-hidden .spn_hdn_switch {
-    left: 245px;
+    left: auto;
     margin-top: 0;
+    right: 80px;
 }
 
 .switch-hidden.radio-count-3 .switch-hidden.switch-label, .switch-hidden.radio-count-3 .switch-selector {

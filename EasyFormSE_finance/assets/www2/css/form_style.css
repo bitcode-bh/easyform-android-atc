@@ -57,3 +57,8 @@
     -webkit-transform-origin: 50% 100%;
     transform-origin: 50% 100%;
 }
+
+.lbl_type5 img[src='images/mendatory.gif'] {
+    width: 10px;
+    height: 10px;
+}

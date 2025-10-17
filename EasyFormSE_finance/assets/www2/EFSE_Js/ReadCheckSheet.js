@@ -618,10 +618,10 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                     var valid = jsonObj[i].prop[0].valid;
                     if (valid == "true") {
-                        var mendatory_img = '<img src="images/mendatory.gif" style="float:right; width:10px; height:10px">';
+                        var mendatory_img = '<img src="images/mendatory.gif">';
                     } else {
                         // var mendatory_img = '';
-                        var mendatory_img = '<img src="images/mendatory.gif" style="float:right; width:10px; height:10px; visibility: hidden">';
+                        var mendatory_img = '<img src="images/mendatory.gif" style="visibility: hidden">';
                     }
 
                     //***********remove label control changes start************
@@ -723,7 +723,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             if (prop_name == "" || prop_name == null || prop_name == undefined) { }
                             else {
                                 label_str += '<div id="div_lbl_' + new_id + '">';
-                                label_str += '<label class="lbl_type5" style="display:inline;word-break: break-word; font-size: 15px; font-family: calibri">' + prop_name + '</label>';
+                                label_str += '<label class="lbl_type5" style="display:inline;word-break: break-word; font-size: 15px; font-family: calibri">' + prop_name + mendatory_img + ' </label>';
                                 label_str += '</div>';
 
                                 //////added comment icon for every control on hover [FT - 15072024]
@@ -844,7 +844,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             var param_limit = 'onkeyup="mk_limitText(this,' + limit + ');"';
                         }
 
-                        newdiv += '<div id="div_txt_' + new_id + '" class="cntrl_main_div ' + ele_class + '" que_id="' + jsonObj[i].que_id + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_txt_' + new_id + '" class="cntrl_main_div ' + ele_class + '" que_id="' + jsonObj[i].que_id + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var obj = {
@@ -938,7 +938,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             }
                         }
 
-                        newdiv += '<div id="div_rdo_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="height:100%; ' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_rdo_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="height:100%; ' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var rdo_Array = jsonObj[i].value;
@@ -961,7 +961,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         //    }
                         //}
 
-                       // view_type = "toggle"
+                        // view_type = "toggle"
 
                         var obj = {
                             read_type: 'readchecksheet',
@@ -1101,7 +1101,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             param = param + param3;
                         }
 
-                        newdiv += '<div id="div_ddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_ddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var ddl_Array = jsonObj[i].value;
@@ -1163,7 +1163,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             var param_limit = 'onkeyup="mk_limitText(this,' + limit + ');"';
                         }
 
-                        newdiv += '<div id="div_txtno_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_txtno_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
                         var cntrl_is_hide = jsonObj[i].prop[0].is_hide;
 
@@ -1273,7 +1273,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             }
                         }
 
-                        newdiv += '<div id="div_chk_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_chk_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var chk_Array = jsonObj[i].value;
@@ -1390,7 +1390,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             group_photo_class = "";
                         }
 
-                        newdiv += "<div id='div_cbtn_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='color: #000; " + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_cbtn_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='color: #000; " + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         if (ref_class == '' || ref_class == null || ref_class == undefined) {
@@ -1644,7 +1644,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             }
                         }
 
-                        newdiv += '<div id="div_cal_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_cal_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var obj = {
@@ -1679,7 +1679,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             var param = 'CaptureClick_sign("' + i + '", "' + jsonObj[i].que_id + '", "sign_' + new_id + '","' + form_flag_temp + '", "0")';
                         }
 
-                        newdiv += "<div id='div_sign_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_sign_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         var obj = {
@@ -1708,7 +1708,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         newdiv += '<div id="div_cbtnLL_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
-                        newdiv += '' + mendatory_img + '<img src="images/camera_latlong.png" id="cbtnLL_' + new_id + '" onclick = "' + param + '" style="height:50px; width:50px; margin-left: 5px; border-radius:7px" '
+                        newdiv += '<img src="images/camera_latlong.png" id="cbtnLL_' + new_id + '" onclick = "' + param + '" style="height:50px; width:50px; margin-left: 5px; border-radius:7px" '
                             + cls_enable + '/></div>';
                     }
 
@@ -1741,7 +1741,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         // end_range = 99;
                         // textbox_type = 'range';
 
-                        newdiv += '<div id="div_txtrange_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_txtrange_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var obj = {
@@ -1794,7 +1794,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         var param = 'get_latlong_box_classes("' + i + '", "' + lat_box_class + '", "' + long_box_class + '", "' + map_view + '", "' + form_flag + '")';
 
-                        newdiv += "<div id='div_LatLong_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_LatLong_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         var obj = {
@@ -1834,7 +1834,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         var param = 'get_latlong_from_numericbox_MSL("' + i + '", "' + lat_box_class + '", "' + long_box_class + '", "' + MSL_box_class + '")';
 
-                        newdiv += "<div id='div_MSL_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_MSL_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         var obj = {
@@ -1859,7 +1859,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         var param = 'get_latlong_from_numericbox_distance("' + i + '", "' + lat_box_class + '", "' + long_box_class + '", "' + distance_box_class + '")';
 
-                        newdiv += "<div id='div_Dist_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_Dist_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         var obj = {
@@ -2003,10 +2003,10 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         }
 
                         if (jsonObj[i].prop[0].is_hide == "true") {
-                            newdiv += '<div id="div_Calc_' + new_id + '" class="cntrl_main_div st_hdn ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                            newdiv += '<div id="div_Calc_' + new_id + '" class="cntrl_main_div st_hdn ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         }
                         else {
-                            newdiv += '<div id="div_Calc_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                            newdiv += '<div id="div_Calc_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         }
                         newdiv += label_str;
 
@@ -2043,7 +2043,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         var length = Array[0].len;
                         inv_item_Array = Array[0].inv_item_Array[0];
 
-                        newdiv += '<div id="div_Inv_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_Inv_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         // creating dropdown dynamically
@@ -2066,7 +2066,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     else if (jsonObj[i].type == 19) {
                         curr_search_type = 1; // default search type = prod_name
 
-                        newdiv += '<div id="div_Inv_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="padding:5px; margin-left:5px;' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_Inv_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="padding:5px; margin-left:5px;' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var param = "popup_items_show('" + new_id + "','#div_item_Bucket_" + new_id + "')";
@@ -2219,7 +2219,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         FETCH_TYPE20 = DEFAULT_TYPE20;
 
                         var type20_is_hide = jsonObj[i].prop[0].is_hide;
-                        newdiv += '<div id="div_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" is_hide="' + type20_is_hide + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" is_hide="' + type20_is_hide + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         if (add_cust_from_search == "true") {
@@ -2517,7 +2517,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         }
                         var value = itemObj._checkStrObj(misc_Array[0].value);  // check_item
 
-                        newdiv += '<div id="div_S_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_S_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         if (value == '' || value == null || value == undefined) { }
@@ -2634,7 +2634,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             }
                         }
 
-                        newdiv += '<div id="div_Inv_Calculate_' + new_id + '" class="cntrl_main_div ' + ele_class + '" form_mode="readchecksheet" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_Inv_Calculate_' + new_id + '" class="cntrl_main_div ' + ele_class + '" form_mode="readchecksheet" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         newdiv += "<div id='div_singleInvoice_cntrl_" + new_id + "'></div>";
@@ -2756,7 +2756,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             type24_Array = itemObj._checkStrObj(misc_Array[0].value);  // check_item
                         }
 
-                        newdiv += '<div id="div_print_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_print_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var param = "get_data_for_print('" + check_type + "','" + new_id + "')";
@@ -2821,7 +2821,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             newdiv += '<div id="div_scn_' + new_id + '" style="height:0px" ' + cls_enable + ' ' + common_str + '>';
                         }
                         else {
-                            newdiv += '<div id="div_scn_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + height_str + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                            newdiv += '<div id="div_scn_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + height_str + '" ' + cls_enable + ' ' + common_str + '>';
                         }
 
                         newdiv += label_str;
@@ -2887,7 +2887,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         }
 
-                        newdiv += '<div id="div_upload_doc_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" name="' + prop_name + '" ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_upload_doc_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" name="' + prop_name + '" ' + common_str + '>';
                         newdiv += label_str;
 
                         var btn_str = jsonObj[i].value;
@@ -2925,7 +2925,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         var value = itemObj._checkStrObj(misc_Array[0].value);  // check_item
                         var pdf_type = value[0].report_type;
 
-                        newdiv += '<div id="div_pdfviewer_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_pdfviewer_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var btn_str = jsonObj[i].value;
@@ -2949,7 +2949,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                     // Video Capture
                     else if (jsonObj[i].type == 28) {
-                        newdiv += "<div id='div_video_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_video_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         if (enable_disable == "disabled") {
@@ -2978,7 +2978,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                     //Trip Info
                     else if (jsonObj[i].type == 29) {
-                        newdiv += "<div id='div_trip_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_trip_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + common_str + ">";
                         newdiv += label_str;
 
                         newdiv += '<table id="trip_info_tbl" style="width: 100%; margin-bottom: 0;font-size:12px;" border=1><thead><tr><th style="padding: 2px 4px !important; background: #f1f1f1 !important; font-weight: bold !important;">Actual Distance <sub>(km)</sub></th><th style="padding: 2px 4px; background: #f1f1f1; font-weight: bold;">Suggested Distance <sub>(km)</sub></th><th style="padding: 2px 4px; background: #f1f1f1; font-weight: bold;">Start Point</th><th style="padding: 2px 4px; background: #f1f1f1; font-weight: bold;">Destination Point</th></tr></thead></table>';
@@ -3016,7 +3016,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         else {
                             var onclick_str = "";
                         }
-                        newdiv += '<div id="div_dynddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' ' + onclick_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_dynddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' ' + onclick_str + '>';
                         newdiv += label_str;
 
                         var value = misc_Array[0].value;
@@ -3123,7 +3123,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                     // Email SMS
                     else if (jsonObj[i].type == 32) {
-                        newdiv += "<div id='div_email_sms_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_email_sms_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         newdiv += '<div style="padding:5px;">';
@@ -3236,7 +3236,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             var param = 'pre_get_RF_Tracking("' + mode_class + '", "' + new_id + '")';
                         }
 
-                        newdiv += "<div id='div_RF_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_RF_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         var obj = {
@@ -3259,7 +3259,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         var misc_Array = jsonObj[i].prop[0].misc_data;
                         var weightage_Array = jsonObj[i].prop[0].weightage;
 
-                        newdiv += '<div id="div_chklst_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_chklst_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
                         newdiv += '</div>';
 
@@ -3285,7 +3285,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         var misc_Array = jsonObj[i].prop[0].misc_data;
 
-                        newdiv += '<div id="div_subtask_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >' + mendatory_img + '';
+                        newdiv += '<div id="div_subtask_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >';
                         newdiv += label_str;
 
                         var obj = {
@@ -3315,7 +3315,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         var misc_Array = jsonObj[i].prop[0].misc_data;
 
-                        newdiv += '<div id="div_weather_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >' + mendatory_img + '';
+                        newdiv += '<div id="div_weather_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >';
                         newdiv += label_str;
 
                         var obj = {
@@ -3342,7 +3342,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         var misc_Array = jsonObj[i].prop[0].misc_data;
 
-                        newdiv += '<div id="div_livelink_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >' + mendatory_img + '';
+                        newdiv += '<div id="div_livelink_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >';
                         newdiv += label_str;
 
                         var obj = {

@@ -469,11 +469,11 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     }
                     else {
                         if (valid == "true") {
-                            var mendatory_img = '<img src="images/mendatory.gif" style="float:right; width:10px; height:10px">';
+                            var mendatory_img = '<img src="images/mendatory.gif">';
                         }
                         else {
                             // var mendatory_img = '';
-                            var mendatory_img = '<img src="images/mendatory.gif" style="float:right; width:10px; height:10px; visibility: hidden">';
+                            var mendatory_img = '<img src="images/mendatory.gif" style="visibility: hidden">';
                         }
                     }
 
@@ -579,7 +579,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             if (prop_name == "" || prop_name == null || prop_name == undefined) { }
                             else {
                                 label_str += '<div id="div_lbl_' + new_id + '">';
-                                label_str += '<label class="lbl_type5" style="display:inline;word-break: break-word; font-size: 15px; font-family: calibri">' + prop_name + '</label>';
+                                label_str += '<label class="lbl_type5" style="display:inline;word-break: break-word; font-size: 15px; font-family: calibri">' + prop_name + mendatory_img + '</label>';
                                 label_str += '</div>';
 
                                 //////added comment icon for every control on hover [FT - 15072024]
@@ -697,7 +697,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             var param_limit = 'onkeyup="mk_limitText(this,' + limit + ');"';
                         }
 
-                        newdiv += '<div id="div_txt_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_txt_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         var default_value = misc_Array[0].default_value;
                         if (jsonObj[i].prop[0].is_reset == 'true' && read_only == false) {
@@ -837,7 +837,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             }
                         }
 
-                        newdiv += '<div id="div_rdo_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="height:100%; ' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_rdo_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="height:100%; ' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         //var selected_Value = jsonObj[i].ans;
                         var rdo_Array = jsonObj[i].value;
@@ -1013,7 +1013,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             param = param + param3;
                         }
 
-                        newdiv += '<div id="div_ddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_ddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         var selected_Value = jsonObj[i].ans;
                         var ddl_Array = jsonObj[i].value;
@@ -1103,7 +1103,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             var param_limit = 'onkeyup="mk_limitText(this,' + limit + ');"';
                         }
 
-                        newdiv += '<div id="div_txtno_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_txtno_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         if (jsonObj[i].prop[0].is_reset == 'true' && read_only == false) {
                             var ans_str = default_val;
@@ -1222,7 +1222,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             }
                         }
 
-                        newdiv += '<div id="div_chk_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_chk_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         //var selected_Array = jsonObj[i].ans;
                         var chk_Array = jsonObj[i].value;
@@ -1462,7 +1462,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             var src_str = img_Id;
                         }
 
-                        newdiv += '<div id="div_cbtn_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_cbtn_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         if (enable_disable == "disabled") {
                             param = '';
@@ -1686,7 +1686,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             }
                         }
 
-                        newdiv += '<div id="div_cal_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_cal_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         if (jsonObj[i].prop[0].is_reset == 'true' && read_only == false) {
                             if (default_value == '' || default_value == null || default_value == undefined) {
@@ -1790,7 +1790,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             var src_str = img_Id;
                         }
 
-                        newdiv += '<div id="div_sign_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_sign_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         if (enable_disable == "disabled") {
                             param = '';
@@ -1848,7 +1848,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         }
                         else {
                             if (img_Id == "" || img_Id == undefined) {
-                                newdiv += '' + mendatory_img + '<img src="images/camera_latlong.png" id="cbtnLL_' + new_id + '" onclick = "' + param
+                                newdiv += '<img src="images/camera_latlong.png" id="cbtnLL_' + new_id + '" onclick = "' + param
                                     + '" style="height:50px; width:50px; margin-left: 5px; border-radius:7px" ' + enable_disable + '/></div>';
                             } else {
                                 var type22_popup = $('.popup-type22:visible');
@@ -1873,7 +1873,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                 //var param_unavail = "bind_unavailable_images('cbtnLL_" + new_id + "', '" + p_name + "')";
                                 var param_unavail = 'bind_unavailable_images("cbtnLL_' + new_id + '", "' + p_name + '","' + step + '", "' + check_type + '", "' + jsonObj[i].que_id + '", "' + type22_img_que_id + '", "' + t_row_index_no + '")';
 
-                                newdiv += '' + mendatory_img + '<img src="' + img_Id + '" id="cbtnLL_' + new_id + '" ' + enable_disable + ' onclick = "'
+                                newdiv += '<img src="' + img_Id + '" id="cbtnLL_' + new_id + '" ' + enable_disable + ' onclick = "'
                                     + param + '" onerror="' + param_unavail + '" style="height:50px; width:50px; margin-left: 5px; border-radius:7px"/>';
                             }
                         }
@@ -1896,7 +1896,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         }
                         var type12_is_hide = jsonObj[i].prop[0].is_hide;
 
-                        newdiv += '<div id="div_txtrange_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_txtrange_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         var default_value = misc_Array[0].default_value;
                         if (jsonObj[i].prop[0].is_reset == 'true' && read_only == false) {
@@ -1968,7 +1968,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var param = 'get_latlong_box_classes("' + i + '", "' + lat_box_class + '", "' + long_box_class + '", "' + map_view + '", "' + form_flag + '")';
 
-                        newdiv += "<div id='div_LatLong_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_LatLong_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
 
                         var obj = {
                             new_id: new_id,
@@ -2014,7 +2014,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var param = 'get_latlong_from_numericbox_MSL("' + i + '", "' + lat_box_class + '", "' + long_box_class + '", "' + MSL_box_class + '")';
 
-                        newdiv += "<div id='div_MSL_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_MSL_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
 
                         var obj = {
                             new_id: new_id,
@@ -2045,7 +2045,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var param = 'get_latlong_from_numericbox_distance("' + i + '", "' + lat_box_class + '", "' + long_box_class + '", "' + distance_box_class + '")';
 
-                        newdiv += "<div id='div_Dist_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_Dist_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
 
                         var obj = {
                             new_id: new_id,
@@ -2193,18 +2193,18 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         }
 
                         //if (jsonObj[i].prop[0].is_hide == "true") {
-                        //    newdiv += '<div id="div_Calc_' + new_id + '" style="display:none; padding:10px" class="st_hdn ' + ele_class + '">' + mendatory_img + '';
+                        //    newdiv += '<div id="div_Calc_' + new_id + '" style="display:none; padding:10px" class="st_hdn ' + ele_class + '">';
                         //} else if (ele_class == "" || form_flag == 2) {
-                        //    newdiv += '<div id="div_Calc_' + new_id + '" style="padding:10px">' + mendatory_img + '';
+                        //    newdiv += '<div id="div_Calc_' + new_id + '" style="padding:10px">';
                         //} else {
-                        //    newdiv += '<div id="div_Calc_' + new_id + '" class="' + ele_class + '" style="display:none; padding:10px">' + mendatory_img + '';
+                        //    newdiv += '<div id="div_Calc_' + new_id + '" class="' + ele_class + '" style="display:none; padding:10px">';
                         //}
 
                         if (jsonObj[i].prop[0].is_hide == "true") {
-                            newdiv += '<div id="div_Calc_' + new_id + '" class="cntrl_main_div st_hdn ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                            newdiv += '<div id="div_Calc_' + new_id + '" class="cntrl_main_div st_hdn ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         }
                         else {
-                            newdiv += '<div id="div_Calc_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                            newdiv += '<div id="div_Calc_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         }
 
                         var is_disabled = jsonObj[i].prop[0].is_disabled;
@@ -2254,7 +2254,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     // Get Invoice Button - Native Product Control (print it to numeric
                     // box)
                     else if (jsonObj[i].type == 19) {
-                        newdiv += '<div id="div_Inv_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_Inv_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         var answer = jsonObj[i].ans;
                         if (answer == '' || answer == null || answer == undefined) {
@@ -2495,11 +2495,11 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
 
                         //if (jsonObj[i].prop[0].is_hide == "true") {
-                        //    newdiv += '<div id="div_Search_' + new_id + '" style="display:none; padding:10px" class="li_no_chk ' + ele_class + '">' + mendatory_img + '';
+                        //    newdiv += '<div id="div_Search_' + new_id + '" style="display:none; padding:10px" class="li_no_chk ' + ele_class + '">';
                         //} else if (ele_class == "" || form_flag == 2) {
-                        //    newdiv += '<div id="div_Search_' + new_id + '" style="padding:10px">' + mendatory_img + '';
+                        //    newdiv += '<div id="div_Search_' + new_id + '" style="padding:10px">';
                         //} else {
-                        //    newdiv += '<div id="div_Search_' + new_id + '" class="' + ele_class + '" style="display:none; padding:10px">' + mendatory_img + '';
+                        //    newdiv += '<div id="div_Search_' + new_id + '" class="' + ele_class + '" style="display:none; padding:10px">';
                         //}
 
                         var add_cust_from_search = push_data[0].add_cust_from_search;                       //added this key for ATC (add new customer from search string) [atc.bb - 03052021]
@@ -2508,7 +2508,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         }
 
                         var type20_is_hide = jsonObj[i].prop[0].is_hide;
-                        newdiv += '<div id="div_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" is_hide="' + type20_is_hide + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" is_hide="' + type20_is_hide + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         if (add_cust_from_search == "true") {
@@ -2892,7 +2892,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         }
                         var value = itemObj._checkStrObj(misc_Array[0].value);  // check_item
 
-                        newdiv += '<div id="div_S_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" form_mode="readsurvey" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_S_Search_' + new_id + '" class="cntrl_main_div ' + ele_class + '" form_mode="readsurvey" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         if (value == '' || value == null || value == undefined) {
                         }
@@ -3023,7 +3023,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             type22_snglCntrl_type = json_inv[0].type[1].type;
                         }
 
-                        newdiv += '<div id="div_Inv_Calculate_' + new_id + '" class="cntrl_main_div ' + ele_class + '" form_mode="readsurvey" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_Inv_Calculate_' + new_id + '" class="cntrl_main_div ' + ele_class + '" form_mode="readsurvey" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
 
                         var ans = jsonObj[i].ans[0];
@@ -4307,7 +4307,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             type24_Array = itemObj._checkStrObj(misc_Array[0].value);  		// check_item
                         }
 
-                        newdiv += '<div id="div_print_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_print_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         var param = "get_data_for_print('" + check_type + "','" + new_id + "')";
                         if (enable_disable == "disabled") {
@@ -4345,7 +4345,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             remember_me = "false";
                         }
 
-                        newdiv += '<div id="div_scn_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_scn_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         var answer = jsonObj[i].ans;
                         var Fill_class = value[0].classname;
@@ -4442,7 +4442,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             enable_disable = '';
                         }
 
-                        newdiv += '<div id="div_upload_doc_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' name="' + prop_name + '">' + mendatory_img + '';
+                        newdiv += '<div id="div_upload_doc_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' name="' + prop_name + '">';
 
                         var type23_popup = $('.popup-type23:visible');
                         if (type23_popup.length > 0) {
@@ -4555,14 +4555,14 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         var pdf_type = value[0].report_type;
 
                         //if (jsonObj[i].prop[0].is_hide == "true") {
-                        //    newdiv += '<div id="div_pdfviewer_' + new_id + '" style="display:none; padding:10px; text-align:right" class="' + ele_class + '">' + mendatory_img + '';
+                        //    newdiv += '<div id="div_pdfviewer_' + new_id + '" style="display:none; padding:10px; text-align:right" class="' + ele_class + '">';
                         //} else if (ele_class == "" || form_flag == 2) {
-                        //    newdiv += '<div id="div_pdfviewer_' + new_id + '" style="padding:10px; text-align:right">' + mendatory_img + '';
+                        //    newdiv += '<div id="div_pdfviewer_' + new_id + '" style="padding:10px; text-align:right">';
                         //} else {
-                        //    newdiv += '<div id="div_pdfviewer_' + new_id + '" class="' + ele_class + '" style="display:none; padding:10px; text-align:right">' + mendatory_img + '';
+                        //    newdiv += '<div id="div_pdfviewer_' + new_id + '" class="' + ele_class + '" style="display:none; padding:10px; text-align:right">';
                         //}
 
-                        newdiv += '<div id="div_pdfviewer_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_pdfviewer_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
 
                         var btn_str = jsonObj[i].value;
                         if (btn_str == '' || btn_str == null || btn_str == undefined) {
@@ -4594,7 +4594,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                     // Video Capture
                     else if (jsonObj[i].type == 28) {
-                        newdiv += "<div id='div_video_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_video_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
 
                         var video_path = jsonObj[i].ans[0];
                         var thumb_path = jsonObj[i].ans[1];
@@ -4747,21 +4747,21 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             var old_ans = '';
                             var dependency_str = '';
 
-                            newdiv += '<div id="div_dynddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' ' + onclick_str + '>' + mendatory_img + '';
+                            newdiv += '<div id="div_dynddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' ' + onclick_str + '>';
                         }
                         else {
                             var old_ans = answer_str;
 
                             var dependency_str = jsonObj[i].ans[1];
                             if (dependency_str == '' || dependency_str == null || dependency_str == undefined || dependency_str == "[{") {
-                                newdiv += '<div id="div_dynddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' ' + onclick_str + '>' + mendatory_img + '';
+                                newdiv += '<div id="div_dynddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' ' + onclick_str + '>';
                             }
                             else {
                                 var dep_array = JSON.parse(dependency_str);
                                 dependency_Array.push(dep_array);
 
                                 var name_str = "name='" + dependency_str + "'";
-                                newdiv += '<div id="div_dynddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' ' + name_str + ' ' + onclick_str + '>' + mendatory_img + '';
+                                newdiv += '<div id="div_dynddl_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + ' ' + name_str + ' ' + onclick_str + '>';
                             }
                         }
 
@@ -4840,7 +4840,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                     // Email SMS
                     else if (jsonObj[i].type == 32) {
-                        newdiv += "<div id='div_email_sms_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_email_sms_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         newdiv += '<div style="padding:5px;">';
@@ -4891,7 +4891,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                     // Auto Incremental ID
                     else if (jsonObj[i].type == 33) {
-                        newdiv += "<div id='div_AutoInc_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='overflow:auto; " + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_AutoInc_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='overflow:auto; " + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
 
                         if (read_only == true) {
                             let summary_str = get_summary_str(new_id, prop_name, jsonObj[i].ans[0], check_type, que_id);
@@ -4959,7 +4959,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var param = 'pre_get_RF_Tracking("' + mode_class + '", "' + new_id + '")';
 
-                        newdiv += "<div id='div_RF_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">" + mendatory_img + "";
+                        newdiv += "<div id='div_RF_" + new_id + "' class='cntrl_main_div " + ele_class + "' style='" + disp_cntrl + "' " + cls_enable + " " + common_str + ">";
                         newdiv += label_str;
 
                         var obj = {
@@ -4979,7 +4979,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         var param = "";
                         var data = [];
 
-                        newdiv += '<div id="div_chklst_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>' + mendatory_img + '';
+                        newdiv += '<div id="div_chklst_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
                         newdiv += label_str;
                         newdiv += '</div>';
 
@@ -5005,7 +5005,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         if (form_flag != 2) {
                             var misc_Array = jsonObj[i].prop[0].misc_data;
 
-                            newdiv += '<div id="div_subtask_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >' + mendatory_img + '';
+                            newdiv += '<div id="div_subtask_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >';
                             newdiv += label_str;
 
                             var obj = {
@@ -5036,7 +5036,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var misc_Array = jsonObj[i].prop[0].misc_data;
 
-                        newdiv += '<div id="div_weather_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >' + mendatory_img + '';
+                        newdiv += '<div id="div_weather_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >';
                         newdiv += label_str;
 
                         var obj = {
@@ -5063,7 +5063,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var misc_Array = jsonObj[i].prop[0].misc_data;
 
-                        newdiv += '<div id="div_livelink_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >' + mendatory_img + '';
+                        newdiv += '<div id="div_livelink_' + new_id + '" class="cntrl_main_div ' + ele_class + '" ' + cls_enable + ' ' + common_str + ' style="border-bottom: 1px solid #ccc; ' + disp_cntrl + '" >';
                         newdiv += label_str;
 
                         var obj = {
@@ -5084,7 +5084,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var control = new MkControls(obj);
                         newdiv += control.build_type_40_livelink();
-                        
+
                         newdiv += '</div>';
                     }
 
