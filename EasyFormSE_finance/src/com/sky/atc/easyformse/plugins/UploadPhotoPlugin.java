@@ -669,10 +669,10 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                         jsonObject1.put("photo_path", photopath);
                         jsonObject1.put("photo_size", UploadUtils.sizeofFile);
                         jsonObject1.put("Helmet", WithHelmet);
-                        jsonObject1.put("Harness jacket", Harness_jacket);
-                        jsonObject1.put("Reflective jacket", reflective_jacket);
-                        jsonObject1.put("Safety shoes", Safety_shoes);
-                        jsonObject1.put("Hand glows", Hand_glows);
+                        jsonObject1.put("Harnessjacket", Harness_jacket);
+                        jsonObject1.put("Reflectivejacket", reflective_jacket);
+                        jsonObject1.put("Safetyshoes", Safety_shoes);
+                        jsonObject1.put("Handglows", Hand_glows);
                         jsonArray.put(jsonObject1);
 
                         pref.putString("photo_path", status);
