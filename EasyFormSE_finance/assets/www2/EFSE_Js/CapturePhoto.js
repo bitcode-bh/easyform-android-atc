@@ -388,35 +388,35 @@ function reset_SafetyMeasure_summary(e) {
             Handglows = parseFloat(Handglows);
         }
 
-        if (Helmet >= 0.5) {
+        if (Helmet >= 0.35) {
             safety_str += "<b>Helmet:</b> <span style='color:green'>Detected</span><br>";
         }
         else {
             safety_str += "<b>Helmet:</b> <span style='color:red'>Not Detected</span><br>";
         }
 
-        if (Harnessjacket >= 0.5) {
+        if (Harnessjacket >= 0.35) {
             safety_str += "<b>Harness Jacket:</b> <span style='color:green'>Detected</span><br>";
         }
         else {
             safety_str += "<b>Harness Jacket:</b> <span style='color:red'>Not Detected</span><br>";
         }  
 
-        if (Reflectivejacket >= 0.5) {
+        if (Reflectivejacket >= 0.35) {
             safety_str += "<b>Reflective Jacket:</b> <span style='color:green'>Detected</span><br>";
         }
         else {
             safety_str += "<b>Reflective Jacket:</b> <span style='color:red'>Not Detected</span><br>";
         }  
       
-        if (Safetyshoes >= 0.5) {
+        if (Safetyshoes >= 0.35) {
             safety_str += "<b>Safety Shoes:</b> <span style='color:green'>Detected</span><br>";
         }
         else {
             safety_str += "<b>Safety Shoes:</b> <span style='color:red'>Not Detected</span><br>";
         }
 
-        if (Handglows >= 0.5) {
+        if (Handglows >= 0.35) {
             safety_str += "<b>Hand Glows:</b> <span style='color:green'>Detected</span><br>";
         }
         else {
