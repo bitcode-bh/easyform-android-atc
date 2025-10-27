@@ -1278,7 +1278,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     // Camera Button
                     else if (jsonObj[i].type == 7) {
                         var misc_Array = jsonObj[i].prop[0].misc_data;
-                        var value, photo_type, latlong, quality, width, height, target_class, burstmode, old_photo_class, scan_mode, ref_class, model_name, prompt_text, group_photo_class;
+                        var value, photo_type, latlong, quality, width, height, target_class, burstmode, old_photo_class, scan_mode, ref_class, model_name, prompt_text, prompt_text_array, group_photo_class;
                         for (h = 0; h < misc_Array.length; h++) {
                             var type = misc_Array[h].type;
                             if (type == 6) {
@@ -1296,6 +1296,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                 max_file_size = value[0].max_file_size;
                                 model_name = value[0].model_name;
                                 prompt_text = value[0].prompt_text;
+                                prompt_text_array = value[0].prompt_text_array;
                                 group_photo_class = value[0].group_photo_class;
                             }
                         }
@@ -1352,6 +1353,10 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         if (prompt_text == "" || prompt_text == null || prompt_text == undefined) {
                             prompt_text = "";
+                        }
+
+                        if (prompt_text_array == "" || prompt_text_array == null || prompt_text_array == undefined) {
+                            prompt_text_array = [];
                         }
 
                         if (group_photo_class == "" || group_photo_class == null || group_photo_class == undefined) {
@@ -1503,6 +1508,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             'max_file_size': max_file_size,
                             'model_name': model_name,
                             'prompt_text': prompt_text,
+                            'prompt_text_array': prompt_text_array,
                             'group_photo_class': group_photo_class
                         });
 
