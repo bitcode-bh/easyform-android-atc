@@ -166,6 +166,30 @@ function capture_Photo() {
         var max_file_size = hdn_cam_ary[0].max_file_size;
         var model_name = hdn_cam_ary[0].model_name;
         var prompt_text = hdn_cam_ary[0].prompt_text;
+        var prompt_text_array = hdn_cam_ary[0].prompt_text_array;
+        if (prompt_text_array.length > 0) {
+            let combined_prompt_text = '';
+            let combined_ans_text = ''
+            for (let p = 0; p < prompt_text_array.length; p++) {
+                let classname = prompt_text_array[p].classname;         // it combination of Q + que_id e.g. Q13
+                let prompt = prompt_text_array[p].prompt;
+
+                combined_prompt_text += classname + ' : ' + prompt + ' ';
+
+                if (p == prompt_text_array.length) {
+                    combined_ans_text += classname + ' : "Your Answer"';
+                }
+                else {
+                    combined_ans_text += classname + ' : "Your Answer,"';
+                }
+            }
+
+            combined_prompt_text += 'Give Response in Json : ' + combined_ans_text;
+
+            prompt_text = combined_prompt_text;
+        }
+
+
 
         // var photo_type = "browse";
         // var img_latlong = "true";
@@ -400,15 +424,15 @@ function reset_SafetyMeasure_summary(e) {
         }
         else {
             safety_str += "<b>Harness Jacket:</b> <span style='color:red'>Not Detected</span><br>";
-        }  
+        }
 
         if (Reflectivejacket >= 0.35) {
             safety_str += "<b>Reflective Jacket:</b> <span style='color:green'>Detected</span><br>";
         }
         else {
             safety_str += "<b>Reflective Jacket:</b> <span style='color:red'>Not Detected</span><br>";
-        }  
-      
+        }
+
         if (Safetyshoes >= 0.35) {
             safety_str += "<b>Safety Shoes:</b> <span style='color:green'>Detected</span><br>";
         }
@@ -1072,7 +1096,8 @@ function get_full_view_image_type7_F7(src) {
 
 var glob_curr_form_flag;
 ///customer camera click
-function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div) {
+
+function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, network_type) {
     try {
         $("#img_full_type7").attr("src", "");
         $("#div_bottom_div_type7").empty();
@@ -1105,6 +1130,28 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
         var max_file_size = hdn_cam_ary[0].max_file_size;
         var model_name = hdn_cam_ary[0].model_name;
         var prompt_text = hdn_cam_ary[0].prompt_text;
+        var prompt_text_array = hdn_cam_ary[0].prompt_text_array;
+        if (prompt_text_array.length > 0) {
+            let combined_prompt_text = '';
+            let combined_ans_text = ''
+            for (let p = 0; p < prompt_text_array.length; p++) {
+                let classname = prompt_text_array[p].classname;         // it combination of Q + que_id e.g. Q13
+                let prompt = prompt_text_array[p].prompt;
+
+                combined_prompt_text += classname + ' : ' + prompt + ' ';
+
+                if (p == (prompt_text_array.length - 1)) {
+                    combined_ans_text += classname + ' : "Your Answer"';
+                }
+                else {
+                    combined_ans_text += classname + ' : "Your Answer", ';
+                }
+            }
+
+            combined_prompt_text += '. Give Response in JSON object : {' + combined_ans_text + '}';
+
+            prompt_text = combined_prompt_text;
+        }
 
         if (form_flag_temp == 6) {
             var check_type = JSON.parse(storage.getItem('check_type_task'));
@@ -1168,7 +1215,7 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
             $("#popup_inner_div_type7").show();
 
             var param = "CaptureClick_Customer('" + item_id + "', '" + que_id + "', '" + img_div + "','" + form_flag_temp + "','" + photo_type
-                + "','" + img_latlong + "','" + width + "','" + height + "','" + quality + "','3','" + burstmode + "', '" + target_div + "')";
+                + "','" + img_latlong + "','" + width + "','" + height + "','" + quality + "','3','" + burstmode + "', '" + target_div + "', '" + network_type +"')";
 
             var clickedLink = $("#" + img_div + "");
             myApp.popover('.popover-type7', clickedLink);
@@ -1263,7 +1310,7 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
             });
             //alert1('q_jsonobj: ' + JSON.stringify(q_jsonobj));
 
-            if (photo_type == "camera" || photo_type == "browse" || photo_type == "Attendance") {
+            if (photo_type == "camera" || photo_type == "browse" || photo_type == "AI" || photo_type == "Attendance") {
                 loading();
                 cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
             }
@@ -1271,9 +1318,8 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                 loading();
                 cordova.exec(onsuccess_CaptureClick_Customer, onfail_SafetyMeasure, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
             }
-            else if (photo_type == "AI") {
-                loading();
-                cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
+            else if (photo_type == "GroupAttendance") {
+                verify_group_photo_with_face_detection(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, network_type);
             }
             else {
 
@@ -1452,10 +1498,45 @@ function onsuccess_CaptureClick_Customer(e) {
         $("#hdn_cbtn_ans_" + hdn_ans_id + "").val(hdn_ans_str);
     }
 
+
     // autofill AI text to below textbox derived from image response - mk - 28072025
     var img_div = JSON.parse(storage.getItem('img_div_id'));
     var target_class = $("#" + img_div + "").attr('target_class');
-    if (target_class == "" || target_class == null || target_class == undefined) { }
+    if (target_class == "" || target_class == null || target_class == undefined) {
+        if (photo_type == "AI") {
+            let responsetext = response[0].responsetext;
+            responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
+            alert(responsetext);
+            try {
+                let responsetext_new = responsetext.replaceAll('\n', '');
+                responsetext_new = responsetext_new.match(/\{(.*?)\}/);     // extract inner string { }
+                responsetext_new = responsetext_new[0];
+                let responseJSON = JSON.parse(responsetext_new);
+
+                // response is in JSON
+                $.each(responseJSON, function (key, value) {
+                    let qid_class = key;
+                    let where_box_id = $("." + qid_class + " :input").attr("id");
+                    let tagName = $("#" + where_box_id + "").prop("tagName");
+                    if (tagName == "TEXTAREA") {
+                        $("#" + where_box_id + "").val(value);
+                    }
+                    else {
+                       let $input = $("#" + where_box_id + "");
+                        let $textarea = '<textarea cols="20" rows="2" class="form-ele" id="' + where_box_id + '" onkeydown="ResizeBox(event)" value=\'' + value + '\' style="resize:vertical !important; width: 100% !important;" disabled="disabled">' + value + '</textarea>';
+                        $input.replaceWith($textarea);
+
+                        let t_textarea = document.getElementById(where_box_id);
+                        t_textarea.style.height = t_textarea.scrollHeight + "px";
+                    }
+                });
+
+            }
+            catch (e) {
+                alert("Response is not in JSON structure!" + responsetext);
+            }
+        }
+    }
     else {
         let responsetext = response[0].responsetext;
         responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
@@ -1906,7 +1987,7 @@ function verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, ab
 }
 
 
-function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode) {
+function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, network_type) {
     try {
 
         var hdn_cam_ary = $("#hdn_" + img_div + "").val();
@@ -1982,7 +2063,12 @@ function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_f
                     alert1("Group photo has been verified successfully!");
                     loading_hide();
 
-                    check_photo_entry(imageData);
+                    if (network_type == "online") {
+
+                    }
+                    else {
+                        check_photo_entry(imageData);
+                    }
 
                     loading_hide();
                 }, function (e) {
