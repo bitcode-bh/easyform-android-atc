@@ -2080,10 +2080,14 @@ function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_f
                 else {
                     // online checksheet
 
-                    let merged_q_jsonobj = [...old_q_jsonobj, ...q_jsonobj];
+                    old_q_jsonobj[0]["attendanceData"] = q_jsonobj[0].attendanceData;
+                    old_q_jsonobj[0]["photoUrl"] = q_jsonobj[0].photoUrl;;
+                    old_q_jsonobj[0]["photoName"] = q_jsonobj[0].photoName;;
+                    old_q_jsonobj[0]["WithoutTaskAttendance"] = q_jsonobj[0].WithoutTaskAttendance;
+                    old_q_jsonobj[0]["attendanceData"] = q_jsonobj[0].group_photoUrl;
 
                     loading();
-                    cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', merged_q_jsonobj);
+                    cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', old_q_jsonobj);
 
                 }
 
