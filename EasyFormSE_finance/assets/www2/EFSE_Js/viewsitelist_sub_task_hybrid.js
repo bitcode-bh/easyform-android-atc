@@ -78,7 +78,7 @@ function onfail_get_checklist_data_for_subtask_hybrid(e) {
 function get_list_of_pm_subflow_hybrid() {
     try {
         var tid = JSON.parse(storage.getItem('tid'));
-        var query = "SELECT status, global_var FROM task_master WHERE tid = " + tid + "";
+        var query = "SELECT status, global_var, survey_date, upload_date FROM task_master WHERE tid = " + tid + "";
         var q_jsonobj = [];
         q_jsonobj.push({
             data: query,
@@ -171,10 +171,15 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                     "udf_name": checksheet_list[j].udf_name,
                     "id": checksheet_list[j].id,
                     "type": checksheet_list[j].type,
-                    "Group_Name": checksheet_list[j].Group_Name
+                    "Group_Name": checksheet_list[j].Group_Name,
+                    "tat_type": checksheet_list[j].tat_type,
+                    "dependent": checksheet_list[j].dependent,
+                    "before_days": checksheet_list[j].before_days,
+                    "gap_days": checksheet_list[j].gap_days
                 });
             }
-        } else {
+        }
+        else {
             var myArray1 = JSON.parse(global_var_obj);
             var new_checklist_obj = myArray1[0].new_checklist;
             if (new_checklist_obj == null || new_checklist_obj == undefined || new_checklist_obj == "" || new_checklist_obj == "Unknown") {
@@ -221,7 +226,11 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                         "udf_name": checksheet_list[j].udf_name,
                         "id": checksheet_list[j].id,
                         "type": checksheet_list[j].type,
-                        "Group_Name": checksheet_list[j].Group_Name
+                        "Group_Name": checksheet_list[j].Group_Name,
+                        "tat_type": checksheet_list[j].tat_type,
+                        "dependent": checksheet_list[j].dependent,
+                        "before_days": checksheet_list[j].before_days,
+                        "gap_days": checksheet_list[j].gap_days
                     });
                 }
             } else {
@@ -263,6 +272,10 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                             old_checksheet_list[m].is_disabled = checksheet_list[k].is_disabled;
                             old_checksheet_list[m].c_name = checksheet_list[k].c_name;
                             old_checksheet_list[m].Group_Name = checksheet_list[k].Group_Name;
+                            old_checksheet_list[m].tat_type = checksheet_list[k].tat_type;
+                            old_checksheet_list[m].dependent = checksheet_list[k].dependent;
+                            old_checksheet_list[m].before_days = checksheet_list[k].before_days;
+                            old_checksheet_list[m].gap_days = checksheet_list[k].gap_days;
                             loc_chk_found++;
                             break;
                         }
@@ -315,7 +328,11 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                             "udf_name": checksheet_list[k].udf_name,
                             "id": checksheet_list[k].id,
                             "type": checksheet_list[k].type,
-                            "Group_Name": checksheet_list[k].Group_Name
+                            "Group_Name": checksheet_list[k].Group_Name,
+                            "tat_type": checksheet_list[k].tat_type,
+                            "dependent": checksheet_list[k].dependent,
+                            "before_days": checksheet_list[kj].before_days,
+                            "gap_days": checksheet_list[k].gap_days
                         });
                     }
                 }
@@ -331,7 +348,10 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
         storage.setItem('list_json_Array', JSON.stringify(data_count));
 
         storage.setItem('flow_Array', JSON.stringify(flow_Array));
-        append_child_flows_to_list_hybrid(new_checksheet_list, start_status);
+
+        var survey_date = myArray[0].survey_date;
+        var assign_date = myArray[0].upload_date;
+        append_child_flows_to_list_hybrid(new_checksheet_list, start_status, survey_date, assign_date);
     } catch (e) {
         alert1(e + '_onsuccess_get_list_of_pm_subflow_hybrid()');
     }
@@ -341,7 +361,7 @@ function onfail_get_list_of_pm_subflow_hybrid(e) {
     alert1(e + '_onfail_get_list_of_pm_subflow_hybrid()');
 }
 
-function append_child_flows_to_list_hybrid(new_checksheet_list, start_status) {
+function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, survey_date, assign_date) {
     try {
         $("#tbl_chk_details").hide();
         $("#checksheet_list").empty();
@@ -465,8 +485,8 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status) {
 
                             var server_task_id = JSON.parse(storage.getItem('server_task_id'));
                             var start_status = JSON.parse(storage.getItem('start_status'));
-                            var survey_date = '';
-                            var assign_date = '';
+                            //var survey_date = '';
+                            //var assign_date = '';
                             var d1 = new Date();
                             var curr_date = getFormattedDate(d1);
 

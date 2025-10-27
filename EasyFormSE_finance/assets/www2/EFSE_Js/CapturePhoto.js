@@ -1097,7 +1097,7 @@ function get_full_view_image_type7_F7(src) {
 var glob_curr_form_flag;
 ///customer camera click
 
-function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, network_type) {
+function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div) {
     try {
         $("#img_full_type7").attr("src", "");
         $("#div_bottom_div_type7").empty();
@@ -1215,7 +1215,7 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
             $("#popup_inner_div_type7").show();
 
             var param = "CaptureClick_Customer('" + item_id + "', '" + que_id + "', '" + img_div + "','" + form_flag_temp + "','" + photo_type
-                + "','" + img_latlong + "','" + width + "','" + height + "','" + quality + "','3','" + burstmode + "', '" + target_div + "', '" + network_type +"')";
+                + "','" + img_latlong + "','" + width + "','" + height + "','" + quality + "','3','" + burstmode + "', '" + target_div + "')";
 
             var clickedLink = $("#" + img_div + "");
             myApp.popover('.popover-type7', clickedLink);
@@ -1319,7 +1319,7 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                 cordova.exec(onsuccess_CaptureClick_Customer, onfail_SafetyMeasure, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
             }
             else if (photo_type == "GroupAttendance") {
-                verify_group_photo_with_face_detection(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, network_type);
+                verify_group_photo_with_face_detection(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, q_jsonobj);
             }
             else {
 
@@ -1522,7 +1522,7 @@ function onsuccess_CaptureClick_Customer(e) {
                         $("#" + where_box_id + "").val(value);
                     }
                     else {
-                       let $input = $("#" + where_box_id + "");
+                        let $input = $("#" + where_box_id + "");
                         let $textarea = '<textarea cols="20" rows="2" class="form-ele" id="' + where_box_id + '" onkeydown="ResizeBox(event)" value=\'' + value + '\' style="resize:vertical !important; width: 100% !important;" disabled="disabled">' + value + '</textarea>';
                         $input.replaceWith($textarea);
 
@@ -1987,7 +1987,7 @@ function verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, ab
 }
 
 
-function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, network_type) {
+function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, old_q_jsonobj) {
     try {
 
         var hdn_cam_ary = $("#hdn_" + img_div + "").val();
@@ -2058,25 +2058,35 @@ function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_f
                     "group_photoUrl": group_photo_url_Array,
                 });
 
-                loading();
-                cordova.exec(function (imageData) {
-                    alert1("Group photo has been verified successfully!");
-                    loading_hide();
+        
+                if (old_q_jsonobj == "" || old_q_jsonobj == null || old_q_jsonobj == undefined) {
+                    // offline checksheet
+                    loading();
+                    cordova.exec(function (imageData) {
+                        alert1("Group photo has been verified successfully!");
+                        loading_hide();
 
-                    if (network_type == "online") {
-
-                    }
-                    else {
                         check_photo_entry(imageData);
-                    }
 
-                    loading_hide();
-                }, function (e) {
-                    // back from attendance camera back
-                    if (e == "" || e == null || e == undefined) { }
-                    else { alert1("Device: " + e); }
-                    loading_hide();
-                }, 'GroupAttendancePlugin', 'anAction', q_jsonobj);
+                        loading_hide();
+                    }, function (e) {
+                        // back from attendance camera back
+                        if (e == "" || e == null || e == undefined) { }
+                        else { alert1("Device: " + e); }
+                        loading_hide();
+                    }, 'GroupAttendancePlugin', 'anAction', q_jsonobj);
+
+                }
+                else {
+                    // online checksheet
+
+                    let merged_q_jsonobj = [...old_q_jsonobj, ...q_jsonobj];
+
+                    loading();
+                    cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', merged_q_jsonobj);
+
+                }
+
             }
         }
     }
@@ -2085,3 +2095,4 @@ function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_f
         loading_hide();
     }
 }
+
