@@ -1062,20 +1062,21 @@ function get_full_view_image_type7_F7(src) {
             }, 500);
         }
 
-        myPhotoBrowser = myApp.photoBrowser({
-            // navbar: false,
-            zoom: false,
-            toolbar: false,
-            photos: [{
-                url: src,
-                caption: 'Photo Captured'
-            }],
-            type: 'popup',
-            theme: 'dark',
-            captionsTheme: 'dark'
-        });
+        //myPhotoBrowser = myApp.photoBrowser({
+        //    // navbar: false,
+        //    zoom: false,
+        //    toolbar: false,
+        //    photos: [{
+        //        url: src,
+        //        caption: 'Photo Captured'
+        //    }],
+        //    type: 'popup',
+        //    theme: 'dark',
+        //    captionsTheme: 'dark'
+        //});
 
-        myPhotoBrowser.open();
+        //myPhotoBrowser.open();
+        open_pinch_zoom_div(src);
 
         var type22_popup = $('.popup-type22:visible');
         if (type22_popup.length > 0) {

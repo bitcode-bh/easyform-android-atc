@@ -112,17 +112,39 @@ function get_full_view_image_type40_F7(t_obj) {
 
     let t_src = $(t_obj).attr("src");
 
-    myPhotoBrowser = myApp.photoBrowser({
-        // navbar: false,
-        zoom: false,
-        toolbar: false,
-        photos: [{
-            url: t_src
-        }],
-        type: 'popup',
-        theme: 'dark',
-        captionsTheme: 'dark'
-    });
+    //myPhotoBrowser = myApp.photoBrowser({
+    //    // navbar: false,
 
-    myPhotoBrowser.open();
+    //    // 👇 Key part for pinch zoom
+    //    zoom: true,          // enable zoom gestures (double-tap + pinch)
+    //    maxZoom: 3,          // maximum zoom scale
+    //    minZoom: 1,          // minimum zoom scale
+
+    //    toolbar: false,
+    //    photos: [{
+    //        url: t_src
+    //    }],
+    //    type: 'popup',
+    //    theme: 'dark',
+    //    captionsTheme: 'dark'
+    //});
+
+   /* myPhotoBrowser.open();*/
+    open_pinch_zoom_div(t_src);
+
+}
+
+function open_pinch_zoom_div(t_src) {
+    $(".pinch-zoom-container").remove();
+    let zoom_str = '<div class="pinch-zoom"><img src = "' + t_src + '" /><i class="fa fa-times-circle" onclick="close_zoom()"></i></div>';
+    $("body").prepend(zoom_str);
+
+    new PinchZoom.default(document.querySelector('.pinch-zoom'), {
+        minZoom: 1,
+        maxZoom: 4
+    });
+}
+
+function close_zoom() {
+    $(".pinch-zoom-container").remove();
 }
