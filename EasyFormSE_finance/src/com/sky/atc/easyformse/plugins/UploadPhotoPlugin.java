@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse.plugins;
 
+import static com.sky.atc.easyformse.sqlitewraper.context;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -8,8 +10,10 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -42,6 +46,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.michaelrocks.paranoid.Obfuscate;
@@ -65,7 +71,9 @@ public class UploadPhotoPlugin extends CordovaPlugin {
     String PromtText;
     public static UploadPhotoPlugin instance;
     String document_type;
-
+    String GroupUrl ;
+    List<String> downloadedPaths ;
+    String url;
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
@@ -203,6 +211,37 @@ public class UploadPhotoPlugin extends CordovaPlugin {
             quality = args.getJSONObject(0).getString("quality");
 
             isPluginValid = CameraAITextPlugin(time, b_write, width, height, quality, action,ModelName,PromtText);
+        }
+
+        if (photoType.equalsIgnoreCase("GroupAttendance")) {
+
+            String photoUrl = args.getJSONObject(0).getString("photoUrl");
+
+            if (photoUrl.equalsIgnoreCase(""))
+            {
+                GroupUrl = args.getJSONObject(0).getString("group_photoUrl");
+
+                try {
+                    JSONArray photoArray = new JSONArray(GroupUrl);
+                    downloadedPaths = new ArrayList<>();
+                    String realpath;
+                    for (int i = 0; i < photoArray.length(); i++) {
+                        url  = photoArray.getString(i);
+
+                        Uri uri = Uri.parse(url);
+                        realpath = uri.getPath();
+                        realpath = realpath.replace("external_files", Environment.getExternalStorageDirectory().toString());
+
+                        downloadedPaths.add(realpath);
+                    }
+
+                    openFaceRecognizerActivity(context,downloadedPaths);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
         }
         return isPluginValid;
     }
@@ -392,6 +431,21 @@ public class UploadPhotoPlugin extends CordovaPlugin {
         return false;
     }
 
+    public boolean openFaceRecognizerActivity(Context context, List<String> filePaths) {
+
+        try {
+            Intent intent = new Intent(context, Class.forName("com.nareshchocha.facerecognition.ui.activitys.GroupFaceRecognizerActivity"));
+            intent.putStringArrayListExtra("imageFilePathList", new ArrayList<>(filePaths));
+            this.cordova.startActivityForResult(this, intent, 105);
+            return true;
+        } catch (Exception e) {
+            LogUtils.writeAttendanceLogToFile("Exception : " + e.toString(), "openFaceRecognizerActivity GroupAttendancePlugin");
+            this.callbackContext.error("error: " + e.toString());
+            return false;
+        }
+
+    }
+
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) sqlitewraper.context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -503,6 +557,29 @@ public class UploadPhotoPlugin extends CordovaPlugin {
 
                     } else {
 //                    String message = intent.getStringExtra("result");
+                        this.callbackContext.error("Fail");
+                    }
+                    break;
+                }
+                // for Group Attendance
+                case 105:
+                {
+                    if (resultCode == android.app.Activity.RESULT_OK) {
+                        String status = null;
+                        Bundle bundle = intent.getExtras();
+                        if (bundle != null) {
+                            status = bundle.getString("detectionFilePath");
+                        }
+
+                        if (isNetworkAvailable()) {
+                            new uploadphoto().execute(status, "105");
+                        } else {
+                            showAlertDialogWithMessage(status, "105");
+
+                        }
+
+
+                    } else {
                         this.callbackContext.error("Fail");
                     }
                     break;
