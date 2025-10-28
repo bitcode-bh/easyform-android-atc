@@ -331,7 +331,7 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                             "Group_Name": checksheet_list[k].Group_Name,
                             "tat_type": checksheet_list[k].tat_type,
                             "dependent": checksheet_list[k].dependent,
-                            "before_days": checksheet_list[kj].before_days,
+                            "before_days": checksheet_list[k].before_days,
                             "gap_days": checksheet_list[k].gap_days
                         });
                     }
