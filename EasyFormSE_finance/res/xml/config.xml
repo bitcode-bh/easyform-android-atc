@@ -261,6 +261,10 @@
     <feature name="GroupAttendancePlugin">
         <param name="android-package" value="com.sky.atc.easyformse.plugins.GroupAttendancePlugin" />
     </feature>
+    <feature name="EditPhotoplugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.EditPhotoplugin" />
+    </feature>
+
 
     <allow-intent href="http://*/*"></allow-intent>
     <allow-intent href="https://*/*"></allow-intent>

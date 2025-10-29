@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.sky.atc.easyformse.CameraAITextActivity;
 import com.sky.atc.easyformse.CaptureSignature;
 import com.sky.atc.easyformse.DeviceEventsUtils;
+import com.sky.atc.easyformse.EditPhotoActivity;
 import com.sky.atc.easyformse.FaceDetactionActivity;
 import com.sky.atc.easyformse.MakePhotoActivity;
 import com.sky.atc.easyformse.VideoActivity;
@@ -243,6 +244,12 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                 }
             }
         }
+
+        if(photoType.equalsIgnoreCase("PhotoEdit"))
+        {
+            String photoUrl = args.getJSONObject(0).getString("photo_path");
+            EditphotoActivity(photoUrl);
+        }
         return isPluginValid;
     }
 
@@ -446,6 +453,19 @@ public class UploadPhotoPlugin extends CordovaPlugin {
 
     }
 
+    public boolean EditphotoActivity(String photo_path)
+    {
+        try {
+            Intent intent = new Intent(cordova.getActivity(), EditPhotoActivity.class);
+            intent.putExtra("photo_path", photo_path);
+            this.cordova.startActivityForResult(this, intent, 106);
+            return true;
+        } catch (Exception e) {
+            this.callbackContext.error("error: " + e.toString());
+            return false;
+        }
+    }
+
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) sqlitewraper.context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -575,6 +595,29 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                             new uploadphoto().execute(status, "105");
                         } else {
                             showAlertDialogWithMessage(status, "105");
+
+                        }
+
+
+                    } else {
+                        this.callbackContext.error("Fail");
+                    }
+                    break;
+                }
+
+                case 106:
+                {
+                    if (resultCode == android.app.Activity.RESULT_OK) {
+                        String status = null;
+                        Bundle bundle = intent.getExtras();
+                        if (bundle != null) {
+                            status = bundle.getString("status");
+                        }
+
+                        if (isNetworkAvailable()) {
+                            new uploadphoto().execute(status, "106");
+                        } else {
+                            showAlertDialogWithMessage(status, "106");
 
                         }
 
