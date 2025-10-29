@@ -1094,6 +1094,51 @@ function get_full_view_image_type7_F7(src) {
     }
 }
 
+function edit_photo(src) {
+    try {
+        myApp.closeModal('.popover-type7');
+
+        if (glob_curr_form_flag == 7 || glob_curr_form_flag == 8) {
+            setTimeout(function () {
+                $('.photo-browser-popup').find('a').removeAttr('class');
+                $('.photo-browser-popup').find('a').addClass('link');
+                $('.photo-browser-popup').find('a').on('click', function () {
+                    myApp.closeModal('.photo-browser-popup');
+                    $('.photo-browser-popup').hide();
+                });
+            }, 500);
+        }
+
+        //native back functionality
+        var type22_popup = $('.popup-type22:visible');
+        if (type22_popup.length > 0) {
+            setTimeout(function () {
+                $('.photo-browser-popup').find('a').removeAttr('class');
+                $('.photo-browser-popup').find('a').addClass('link');
+                $('.photo-browser-popup').find('a').on('click', function () {
+                    back_button('viewsitedata');
+                });
+            }, 500);
+        }
+
+        var type22_popup = $('.popup-type22:visible');
+        if (type22_popup.length > 0) {
+            setTimeout(function () {
+                $('.photo-browser-popup').find('a').removeAttr('class');
+                $('.photo-browser-popup').find('a').addClass('link');
+                $('.photo-browser-popup').find('a').on('click', function () {
+                    back_button('viewsitedata');
+                });
+            }, 500);
+        }
+
+
+    }
+    catch (e) {
+        //alert1(e + '_get_full_view_image_type7_F7');
+    }
+}
+
 
 var glob_curr_form_flag;
 ///customer camera click
@@ -1218,9 +1263,12 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
             var param = "CaptureClick_Customer('" + item_id + "', '" + que_id + "', '" + img_div + "','" + form_flag_temp + "','" + photo_type
                 + "','" + img_latlong + "','" + width + "','" + height + "','" + quality + "','3','" + burstmode + "', '" + target_div + "')";
 
+            var param_edit = "CaptureClick_Customer('" + item_id + "', '" + que_id + "', '" + img_div + "','" + form_flag_temp + "','PhotoEdit','" + img_latlong + "','" + width + "','" + height + "','" + quality + "','3','" + burstmode + "', '" + target_div + "')";
+
             var clickedLink = $("#" + img_div + "");
             myApp.popover('.popover-type7', clickedLink);
             $("#popover_viewphoto").attr("onclick", "get_full_view_image_type7_F7('" + src + "')");
+            $("#popover_editphoto").attr("onclick", param_edit);
             $("#popover_re_capture").attr("onclick", param);
 
             if (null_img == 2) {
@@ -1307,11 +1355,12 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                 info: info_arry,
                 max_file_size: max_file_size,
                 model_name: model_name,
-                prompt_text: prompt_text
+                prompt_text: prompt_text,
+                photo_path: src
             });
             //alert1('q_jsonobj: ' + JSON.stringify(q_jsonobj));
 
-            if (photo_type == "camera" || photo_type == "browse" || photo_type == "AI" || photo_type == "Attendance") {
+            if (photo_type == "camera" || photo_type == "browse" || photo_type == "AI" || photo_type == "Attendance" || photo_type == "PhotoEdit") {
                 loading();
                 cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
             }
@@ -2059,7 +2108,7 @@ function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_f
                     "group_photoUrl": group_photo_url_Array,
                 });
 
-        
+
                 if (old_q_jsonobj == "" || old_q_jsonobj == null || old_q_jsonobj == undefined) {
                     // offline checksheet
                     loading();

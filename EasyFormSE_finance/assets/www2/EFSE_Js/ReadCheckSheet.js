@@ -3365,8 +3365,14 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             common_str: common_str
                         }
 
-                        Type40_ll_Array.push(new_id);
+                        let value = misc_Array[0].value;
+                        value = itemObj._checkStrObj(value);  // check_item
+                        let doc_type = value[0].doc_type;
 
+                        if (doc_type == "video") {
+                            Type40_ll_Array.push(new_id);
+                        }
+                        
                         var control = new MkControls(obj);
                         newdiv += control.build_type_40_livelink();
                         newdiv += '</div>';

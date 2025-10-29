@@ -94,11 +94,12 @@
         display: block;
     }
 
-    .pinch-zoom .fa.fa-times-circle {
-        position: absolute;
-        top: 0;
-        right: 0;
-        font-size: 40px;
-        margin: 5px;
-    }
+#pinch_close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 40px;
+    margin: 5px;
+    color: white;
+    z-index: 1;
 }

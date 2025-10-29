@@ -190,6 +190,7 @@ function back_button(page) {
     var inv_popup = $('.popup-type22.modal-in:visible');
     var notification_popup = $('.popup-notifications.modal-in:visible');
     var task_create_popup = $('.popup-new-task-create.modal-in:visible');
+    var pinch_zoom_popup = $('.pinch-zoom-container:visible');
 
     if (popups.length > 0) {
         // profile photo from profile menu popup is open
@@ -223,6 +224,11 @@ function back_button(page) {
         // task create popup is open
         myApp.closeModal('.popup-new-task-create.modal-in');
         $('.popup-new-task-create').hide();
+        return false;
+    }
+    else if (pinch_zoom_popup.length > 0) {
+        // pinch zoom popup is open
+        close_zoom();
         return false;
     }
     else {
