@@ -42,8 +42,9 @@ import java.net.URL;
 public class EditPhotoActivity extends Activity {
 
     private ImageView imageView;
-    Button mButtonSave, mButtonEdit;
+    ImageButton mButtonSave;
     private LinearLayout layColor, layBrush, layErase;
+    ImageView mImageView_edit;
     ImageButton btnColor, btnBrush, btnErase;
     LinearLayout mLinearLayoutBtn;
     Bundle Extras;
@@ -80,9 +81,8 @@ public class EditPhotoActivity extends Activity {
         pref = sqlitewraper.getSecureShared("MyPref");
         b = new B_new();
         imageView = findViewById(R.id.imageView);
-        mButtonSave = findViewById(R.id.save_draw);
-        mButtonEdit = findViewById(R.id.edit_image);
-        mLinearLayoutBtn = findViewById(R.id.Layoutbtn);
+        mButtonSave = findViewById(R.id.btnSave);
+        mLinearLayoutBtn = findViewById(R.id.liner_savebtn);
         layColor = findViewById(R.id.layColor);
         layBrush = findViewById(R.id.layBrush);
         layErase = findViewById(R.id.layErase);
@@ -91,13 +91,12 @@ public class EditPhotoActivity extends Activity {
         btnBrush = findViewById(R.id.btnBrush);
         btnErase = findViewById(R.id.btnErase);
         seekBar = findViewById(R.id.seekBar1);
+        mImageView_edit = findViewById(R.id.img_edit);
 
         themecolor = pref.getString("themecolor", "");
         if (themecolor.equalsIgnoreCase("")) {
         } else {
-            mButtonSave.setBackgroundColor(Color.parseColor(themecolor));
-            mButtonEdit.setBackgroundColor(Color.parseColor(themecolor));
-            mLinearLayoutBtn.setBackgroundColor(Color.parseColor(themecolor));
+            mLinearLayoutBtn.setBackgroundColor(Color.parseColor("#000000"));
         }
 
         Extras = getIntent().getExtras();
@@ -177,6 +176,8 @@ public class EditPhotoActivity extends Activity {
             return true; // consume event
         });
 
+
+
         mButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -184,7 +185,7 @@ public class EditPhotoActivity extends Activity {
             }
         });
 
-        mButtonEdit.setOnClickListener(new View.OnClickListener() {
+        mImageView_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mLinearLayoutBtn.setVisibility(View.VISIBLE);
@@ -197,8 +198,6 @@ public class EditPhotoActivity extends Activity {
                 b.setB(mutableBitmap);
 
                 mLayoutpaint.addView(mydrawingView);
-//                matrix.setScale(scale, scale);
-//                mydrawingView.setMatrix(matrix);
             }
         });
 
@@ -219,24 +218,14 @@ public class EditPhotoActivity extends Activity {
                                                 int which) {
                                 // System.out.println("eraseAll() Method Call");
                                 mLayoutpaint.removeView(mydrawingView);
-                                alteredBitmap = Bitmap.createBitmap(
-                                        bmp.getWidth(), bmp.getHeight(),
-                                        bmp.getConfig());
-                                Bitmap mutableBitmap = bmp.copy(
-                                        Bitmap.Config.ARGB_8888, true);
                                 GetColor.setStrockWidth(5);
-                                GetColor.setDefaultBrushSize(GetColor
-                                        .getStrockWidth());
-                                DrawingView mDrawingView1 = new DrawingView(
-                                        EditPhotoActivity.this, mutableBitmap);
-                                mDrawingView1.eraseAll();
-                                mLayoutpaint.addView(mDrawingView1);
-                                mydrawingView = mDrawingView1;
-                                b.setB(mutableBitmap);
-                                dialog.dismiss();
-                                Toast.makeText(getApplicationContext(),
-                                        "Drawing Erase Successfully",
-                                        Toast.LENGTH_SHORT).show();
+                                GetColor.setDefaultBrushSize(GetColor.getStrockWidth());
+
+                                mydrawingView = new DrawingView(EditPhotoActivity.this, mutableBitmap);
+                                mydrawingView.setBackgroundColor(Color.TRANSPARENT);
+
+                                mLayoutpaint.addView(mydrawingView);
+
                             }
                         });
                 eraseDialog.setNegativeButton("Cancel",
