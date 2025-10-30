@@ -236,7 +236,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                         downloadedPaths.add(realpath);
                     }
 
-                    openFaceRecognizerActivity(context,downloadedPaths);
+                    isPluginValid = openFaceRecognizerActivity(context,downloadedPaths);
                 }
                 catch (Exception e)
                 {
@@ -248,7 +248,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
         if(photoType.equalsIgnoreCase("PhotoEdit"))
         {
             String photoUrl = args.getJSONObject(0).getString("photo_path");
-            EditphotoActivity(photoUrl);
+            isPluginValid = EditphotoActivity(photoUrl);
         }
         return isPluginValid;
     }
