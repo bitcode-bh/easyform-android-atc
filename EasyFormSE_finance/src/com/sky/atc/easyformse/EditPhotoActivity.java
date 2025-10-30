@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -27,24 +28,23 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import androidx.exifinterface.media.ExifInterface;
-
-import com.sky.atc.easyformse.azurevision.ComputerVisionDetection;
-import com.sky.atc.easyformse.azurevision.TextRecognizationUtils;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class EditPhotoActivity extends Activity {
 
     private ImageView imageView;
     Button mButtonSave, mButtonEdit;
-    private LinearLayout  layColor, layBrush, layErase;
-    ImageButton btnColor,btnBrush,btnErase;
+    private LinearLayout layColor, layBrush, layErase;
+    ImageButton btnColor, btnBrush, btnErase;
     LinearLayout mLinearLayoutBtn;
     Bundle Extras;
     String photo_path;
@@ -67,6 +67,9 @@ public class EditPhotoActivity extends Activity {
     Runnable mRunnable;
     Handler mHandler = new Handler();
     int size = 1;
+    float lastX = 0f, lastY = 0f;
+    int mode = 0;
+    private float minScale = 0.8f, maxScale = 5f;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -89,48 +92,89 @@ public class EditPhotoActivity extends Activity {
         btnErase = findViewById(R.id.btnErase);
         seekBar = findViewById(R.id.seekBar1);
 
-        themecolor = pref.getString("themecolor","");
-        if(themecolor.equalsIgnoreCase(""))
-        { }
-        else {
+        themecolor = pref.getString("themecolor", "");
+        if (themecolor.equalsIgnoreCase("")) {
+        } else {
             mButtonSave.setBackgroundColor(Color.parseColor(themecolor));
             mButtonEdit.setBackgroundColor(Color.parseColor(themecolor));
             mLinearLayoutBtn.setBackgroundColor(Color.parseColor(themecolor));
         }
 
         Extras = getIntent().getExtras();
-        if(Extras != null)
-        {
+        if (Extras != null) {
+
             photo_path = Extras.getString("photo_path");
+//            photo_path = "https://atcmwfm.americantower.com/UploadFile_After_05222019/ReferencePhotos/Correcr%20ODC%20Earthing.png";
+            try {
+                if (photo_path.startsWith("https://")) {
+                    new Thread(() -> {
+                        try {
+                            URL url = new URL(photo_path);
+                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                            connection.setDoInput(true);
+                            connection.connect();
+                            InputStream input = connection.getInputStream();
+                            bmp = BitmapFactory.decodeStream(input);
 
-            try{
-                File imgFile = new File(photo_path);
-                if (imgFile.exists()) {
-                    image_file = Uri.fromFile(imgFile);
+                            alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
+                            mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                            lastBitmap = mutableBitmap;
+                            runOnUiThread(() -> imageView.setImageBitmap(mutableBitmap));
 
-                    bmp =  BitmapFactory.decodeFile(photo_path);
-
-                    ExifInterface ei = new ExifInterface(imgFile.getAbsolutePath());
-                    bmp = imageOreintationValidator(bmp, imgFile.getAbsolutePath());
-
-                    alteredBitmap =  Bitmap.createScaledBitmap(bmp, 720, 1080, true);
-                    mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
-                    lastBitmap = mutableBitmap;
-                    imageView.setImageBitmap(mutableBitmap);
-
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                } else {
+                    showImage(photo_path);
                 }
-            }
-            catch (Exception e)
-            {
+
+            } catch (Exception e) {
 
             }
 
         }
 
         scaleDetector = new ScaleGestureDetector(this, new ScaleListener());
+
         imageView.setOnTouchListener((v, event) -> {
             scaleDetector.onTouchEvent(event);
-            return true;
+
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    lastX = event.getX();
+                    lastY = event.getY();
+                    mode = 1; // DRAG
+                    break;
+
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    mode = 2; // ZOOM
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    if (mode == 1) {
+                        float dx = event.getX() - lastX;
+                        float dy = event.getY() - lastY;
+
+                        // Adjust for current scale
+                        dx /= scale;
+                        dy /= scale;
+
+                        matrix.postTranslate(dx, dy);
+                        fixTranslation();
+                        imageView.setImageMatrix(matrix);
+
+                        lastX = event.getX();
+                        lastY = event.getY();
+                    }
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_POINTER_UP:
+                    mode = 0;
+                    break;
+            }
+            return true; // consume event
         });
 
         mButtonSave.setOnClickListener(new View.OnClickListener() {
@@ -287,7 +331,72 @@ public class EditPhotoActivity extends Activity {
         });
     }
 
+    private void fixTranslation() {
+        float[] values = new float[9];
+        matrix.getValues(values);
+
+        float transX = values[Matrix.MTRANS_X];
+        float transY = values[Matrix.MTRANS_Y];
+        float currentScale = values[Matrix.MSCALE_X];
+
+        Drawable d = imageView.getDrawable();
+        if (d == null) return;
+
+        int imgWidth = (int) (d.getIntrinsicWidth() * currentScale);
+        int imgHeight = (int) (d.getIntrinsicHeight() * currentScale);
+
+        int viewWidth = imageView.getWidth();
+        int viewHeight = imageView.getHeight();
+
+        float minTransX, maxTransX, minTransY, maxTransY;
+
+        if (imgWidth > viewWidth) {
+            minTransX = viewWidth - imgWidth;
+            maxTransX = 0;
+        } else {
+            // Center horizontally if image smaller than view
+            minTransX = maxTransX = (viewWidth - imgWidth) / 2f;
+        }
+
+        if (imgHeight > viewHeight) {
+            minTransY = viewHeight - imgHeight;
+            maxTransY = 0;
+        } else {
+            // Center vertically if image smaller than view
+            minTransY = maxTransY = (viewHeight - imgHeight) / 2f;
+        }
+
+        float newTransX = Math.min(Math.max(transX, minTransX), maxTransX);
+        float newTransY = Math.min(Math.max(transY, minTransY), maxTransY);
+
+        matrix.postTranslate(newTransX - transX, newTransY - transY);
+    }
+
+
+    public void showImage(String photo_path) {
+        try {
+            File imgFile = new File(photo_path);
+            if (imgFile.exists()) {
+                image_file = Uri.fromFile(imgFile);
+
+                bmp = BitmapFactory.decodeFile(photo_path);
+
+                ExifInterface ei = new ExifInterface(imgFile.getAbsolutePath());
+                bmp = imageOreintationValidator(bmp, imgFile.getAbsolutePath());
+
+                alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
+                mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                lastBitmap = mutableBitmap;
+                imageView.setImageBitmap(mutableBitmap);
+
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
     int rot = 0;
+
     private Bitmap imageOreintationValidator(Bitmap bitmap, String path) {
 
         if (!camera_new.isCropMode) {
@@ -317,6 +426,7 @@ public class EditPhotoActivity extends Activity {
         }
         return bitmap;
     }
+
     public static Bitmap rotateImage(Bitmap source, float angle) {
 
         Bitmap retVal = source;
@@ -343,15 +453,29 @@ public class EditPhotoActivity extends Activity {
         return retVal;
 
     }
+
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
+        //        @Override
+//        public boolean onScale(ScaleGestureDetector detector) {
+//            scale *= detector.getScaleFactor();
+//            scale = Math.max(0.8f, Math.min(scale, 8.0f));
+//            matrix.setScale(scale, scale);
+//            imageView.setImageMatrix(matrix);
+//
+//
+//            return true;
+//        }
         public boolean onScale(ScaleGestureDetector detector) {
-            scale *= detector.getScaleFactor();
-            scale = Math.max(0.8f, Math.min(scale, 8.0f));
-            matrix.setScale(scale, scale);
+            float scaleFactor = detector.getScaleFactor();
+            float newScale = scale * scaleFactor;
+
+            if (newScale < minScale) scaleFactor = minScale / scale;
+            if (newScale > maxScale) scaleFactor = maxScale / scale;
+
+            scale *= scaleFactor;
+            matrix.postScale(scaleFactor, scaleFactor, detector.getFocusX(), detector.getFocusY());
+            fixTranslation();
             imageView.setImageMatrix(matrix);
-
-
             return true;
         }
     }
@@ -378,10 +502,9 @@ public class EditPhotoActivity extends Activity {
                 file = new File(dir, name);
             }
             b_n = Bitmap.createScaledBitmap(b_n, bmp.getWidth(),
-                   bmp.getHeight(), true);
+                    bmp.getHeight(), true);
 
             FileOutputStream out = new FileOutputStream(file.getAbsolutePath());
-
 
 
             b_n.compress(Bitmap.CompressFormat.JPEG, Integer.valueOf(100), out);
@@ -411,20 +534,17 @@ public class EditPhotoActivity extends Activity {
                 pref.putString("photo_path", file.getAbsolutePath());
                 pref.commit();
                 finish();
-            }
-            else {
+            } else {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(EditPhotoActivity.this, "File size is too big ! \n File size must be less than "+5+"MB!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(EditPhotoActivity.this, "File size is too big ! \n File size must be less than " + 5 + "MB!", Toast.LENGTH_LONG).show();
                     }
                 });
 
             }
 
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Bundle b = new Bundle();
             b.putString("result", e.toString());
             Intent intent = new Intent();
