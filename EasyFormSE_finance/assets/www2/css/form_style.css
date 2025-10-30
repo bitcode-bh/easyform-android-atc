@@ -103,3 +103,13 @@
     color: white;
     z-index: 1;
 }
+
+.popover {
+    width: auto;
+}
+
+    .popover .list-block .item-link.list-button {
+        line-height: 30px;
+        text-align: center;
+        border-bottom: 1px solid rgba(0, 0, 0, .12);
+    }
