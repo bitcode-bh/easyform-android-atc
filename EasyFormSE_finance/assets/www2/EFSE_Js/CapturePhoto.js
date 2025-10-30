@@ -422,15 +422,12 @@ function reset_SafetyMeasure_summary(e) {
         if (Harnessjacket >= 0.35) {
             safety_str += "<b>Harness Jacket:</b> <span style='color:green'>Detected</span><br>";
         }
-        else {
-            safety_str += "<b>Harness Jacket:</b> <span style='color:red'>Not Detected</span><br>";
-        }
-
-        if (Reflectivejacket >= 0.35) {
+        else if (Reflectivejacket >= 0.35) {
             safety_str += "<b>Reflective Jacket:</b> <span style='color:green'>Detected</span><br>";
         }
         else {
-            safety_str += "<b>Reflective Jacket:</b> <span style='color:red'>Not Detected</span><br>";
+            //safety_str += "<b>Harness Jacket:</b> <span style='color:red'>Not Detected</span><br>";
+            //safety_str += "<b>Reflective Jacket:</b> <span style='color:red'>Not Detected</span><br>";
         }
 
         if (Safetyshoes >= 0.35) {

@@ -694,7 +694,7 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
                             list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-check-square-o"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
                         }
                         else {
-                            list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:7px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                            list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
                         }
 
                             var Background_Image = new_checksheet_list[i].Background_Image;
@@ -778,7 +778,7 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
                             display_str = 'display: none;';
                         }
 
-                        var list_item = '<li id=' + t_id + ' onclick =' + param + ' style="border-right: 8px solid ' + back_color + ';' + display_str + '"><a href="#" class="item-content button" style="padding-left:7px"><div class="item-media">' + list_ico + '</div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + name + '</div>';
+                        var list_item = '<li id=' + t_id + ' onclick =' + param + ' style="border-right: 8px solid ' + back_color + ';' + display_str + '"><a href="#" class="item-content button" style="padding-left:20px"><div class="item-media">' + list_ico + '</div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + name + '</div>';
                         list_item += '</div></a>';
                         list_item += '</li>';
                     }
