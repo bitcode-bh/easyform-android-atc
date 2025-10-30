@@ -65,6 +65,16 @@
     transform-origin: 50% 100%;
 }
 
+/* for task/customer/user checksheets */
+.w-50-50.cntrl_main_div {
+    width: 44%;
+    display: inline-block !important;
+}
+.w-75-25.cntrl_main_div div[id^='div_lbl_'] {
+    width: 74%;
+    display: inline-block;
+}
+
 .lbl_type5 img[src='images/mendatory.gif'] {
     width: 10px;
     height: 10px;

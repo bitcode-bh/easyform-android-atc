@@ -595,9 +595,9 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     }
                     //***********remove label control changes end************
                     ////added comment icon for every control on swipe right [FT - 12022025]
+                    var width_layout = jsonObj[i].width_layout;
                     if (form_flag == 0 || form_flag == 2 || form_flag == 3) {
                         if (cnrl_type != 0) {
-                            var width_layout = jsonObj[i].width_layout;
                             if (width_layout == "" || width_layout == null || width_layout == undefined) {
                                 newdiv += '<li class="swipeout ">';
                             }
@@ -615,6 +615,20 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                 }
                             }
 
+                        }
+                    }
+                    else {
+                        // for task/customer/user checksheets
+                        if (width_layout == "" || width_layout == null || width_layout == undefined) { }
+                        else {
+                            if (width_layout == "50-50") {
+                                // 50% 1st control - 50% 2nd control
+                                ele_class += ' w-50-50 ';
+                            }
+                            else if (width_layout == "75-25") {
+                                // 75% 1st control label - 25% 1st control ui
+                                ele_class += ' w-75-25 ';
+                            }
                         }
                     }
 
