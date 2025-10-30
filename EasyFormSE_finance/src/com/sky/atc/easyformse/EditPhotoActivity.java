@@ -1,10 +1,14 @@
 package com.sky.atc.easyformse;
 
+import static com.sky.atc.easyformse.sqlitewraper.mainactivity;
+
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -15,6 +19,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.text.Html;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -27,6 +32,8 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.exifinterface.media.ExifInterface;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import java.io.File;
@@ -41,6 +48,7 @@ import java.net.URL;
 
 public class EditPhotoActivity extends Activity {
 
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private ImageView imageView;
     ImageButton mButtonSave;
     private LinearLayout layColor, layBrush, layErase;
@@ -99,41 +107,22 @@ public class EditPhotoActivity extends Activity {
             mLinearLayoutBtn.setBackgroundColor(Color.parseColor("#000000"));
         }
 
+
+
         Extras = getIntent().getExtras();
         if (Extras != null) {
 
             photo_path = Extras.getString("photo_path");
 //            photo_path = "https://atcmwfm.americantower.com/UploadFile_After_05222019/ReferencePhotos/Correcr%20ODC%20Earthing.png";
-            try {
-                if (photo_path.startsWith("https://")) {
-                    new Thread(() -> {
-                        try {
-                            URL url = new URL(photo_path);
-                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                            connection.setDoInput(true);
-                            connection.connect();
-                            InputStream input = connection.getInputStream();
-                            bmp = BitmapFactory.decodeStream(input);
 
-                            alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
-                            mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
-                            lastBitmap = mutableBitmap;
-                            runOnUiThread(() -> imageView.setImageBitmap(mutableBitmap));
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
-                } else {
-                    showImage(photo_path);
-                }
-
-            } catch (Exception e) {
-
-            }
 
         }
+        if (checkCameraPermission()) {
 
+        } else {
+            requestCameraPermission();
+        }
+        init();
         scaleDetector = new ScaleGestureDetector(this, new ScaleListener());
 
         imageView.setOnTouchListener((v, event) -> {
@@ -319,7 +308,36 @@ public class EditPhotoActivity extends Activity {
             }
         });
     }
+    public void init()
+    {
+        try {
+            if (photo_path.startsWith("https://")) {
+                new Thread(() -> {
+                    try {
+                        URL url = new URL(photo_path);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setDoInput(true);
+                        connection.connect();
+                        InputStream input = connection.getInputStream();
+                        bmp = BitmapFactory.decodeStream(input);
 
+                        alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
+                        mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                        lastBitmap = mutableBitmap;
+                        runOnUiThread(() -> imageView.setImageBitmap(mutableBitmap));
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            } else {
+                showImage(photo_path);
+            }
+
+        } catch (Exception e) {
+
+        }
+    }
     private void fixTranslation() {
         float[] values = new float[9];
         matrix.getValues(values);
@@ -549,5 +567,53 @@ public class EditPhotoActivity extends Activity {
         Intent intent = new Intent();
         setResult(RESULT_CANCELED, intent);
         finish();
+    }
+
+    void requestCameraPermission () {
+        ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, CAMERA_PERMISSION_REQUEST_CODE);
+    }
+
+    boolean checkCameraPermission () {
+        return (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) +
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) == PackageManager.PERMISSION_GRANTED;
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+
+               // init();
+            } else {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) +
+                        ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)  {
+
+                    showMessageOKCancel("You need to allow access file and media permissions",
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent();
+                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
+                                    mainactivity.startActivity(intent);
+                                    finish();
+                                }
+                            });
+
+                }
+            }
+        }
+    }
+
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(EditPhotoActivity.this)
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setCancelable(false)
+                .create()
+                .show();
     }
 }
