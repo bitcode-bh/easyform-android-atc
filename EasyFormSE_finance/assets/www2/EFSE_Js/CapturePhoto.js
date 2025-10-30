@@ -71,9 +71,12 @@ function CaptureClick(item_id, que_id, img_div, form_flag_temp, photo_type, img_
             var param = "CaptureClick('" + item_id + "', '" + que_id + "', '" + img_div + "','" + form_flag_temp + "','" + photo_type
                 + "','" + img_latlong + "','" + width + "','" + height + "','" + quality + "','3','" + burstmode + "')";
 
+            var param_edit = "CaptureClick('" + item_id + "', '" + que_id + "', '" + img_div + "','" + form_flag_temp + "','PhotoEdit','" + img_latlong + "','" + width + "','" + height + "','" + quality + "','3','" + burstmode + "')";
+
             var clickedLink = $("#" + img_div + "");
             myApp.popover('.popover-type7', clickedLink);
             $("#popover_viewphoto").attr("onclick", "get_full_view_image_type7_F7('" + src + "')");
+            $("#popover_editphoto").attr("onclick", param_edit);
             $("#popover_re_capture").attr("onclick", param);
 
             var old_photo_type = $("#" + img_div + "").attr('old_photo_type');
@@ -228,6 +231,8 @@ function capture_Photo() {
             }
         }
 
+        let src = $("#" + img_div + "").attr("src");
+
         var query = "select imei from Login_Master";
         var q_jsonobj = [];
         if (photo_type == "camera" || photo_type == "metercrop") {
@@ -250,7 +255,8 @@ function capture_Photo() {
                 info: info_arry,
                 max_file_size: max_file_size,
                 model_name: model_name,
-                prompt_text: prompt_text
+                prompt_text: prompt_text,
+                photo_path: src
             });
         }
         else {
@@ -270,7 +276,8 @@ function capture_Photo() {
                 info: info_arry,
                 max_file_size: max_file_size,
                 model_name: model_name,
-                prompt_text: prompt_text
+                prompt_text: prompt_text,
+                photo_path: src
             });
         }
 
@@ -297,6 +304,10 @@ function capture_Photo() {
         else if (photo_type == "AI") {
             loading();
             cordova.exec(check_photo_entry_with_reading, onfail_cam, 'CameraAITextPlugin', 'anAction', q_jsonobj);
+        }
+        else if (photo_type == "PhotoEdit") {
+            loading();
+            cordova.exec(check_photo_entry, onfail_cam, 'EditPhotoplugin', 'anAction', q_jsonobj);
         }
         else {
             // both (user select)
