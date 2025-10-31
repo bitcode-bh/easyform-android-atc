@@ -378,9 +378,7 @@ function reset_SafetyMeasure_summary(e) {
     try {
 
         var myArray = JSON.parse(e);
-        let imageData = myArray[0].photo_path;
-        check_photo_entry(imageData);
-
+      
         let safety_str = "<div class='safety_summary' style='font-size: 14px; padding: 5px'>";
 
         let Helmet = myArray[0].Helmet;
