@@ -1419,19 +1419,19 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         }
 
                         if (form_flag == 7 || form_flag == 8 || form_flag == 12 || (form_flag == 0 && c_is_online == 1) || (form_flag == 1 && c_is_online == 1) || (form_flag == 6 && survey_mode == "online" && redirect == "task") || (curr_page_flag == "viewsitedata_task" && survey_mode == "online" && redirect == "task")) {
-                            //upload photos online for customer/user and task form
+                            //upload photos online for customer/user/form/ online mobile checksheet
+
                             if (ref_class == '' || ref_class == null || ref_class == undefined) {
                                 var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + target_div + '")';
                             }
                             else {
                                 photo_type = "Attendance";                      //for profile photo face detection camera plugin [FT - 01122023]
 
-                                // compare attendance and print photo
-                                var param = 'verify_user_profile_photo("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + ref_class + '")';
+                                // attendance offline plugin will call via online photo plugin - mk - 31102025
+                                var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + target_div + '", "' + ref_class + '")';
                             }
                         }
                         else {
-
 
                             if (ref_class == '' || ref_class == null || ref_class == undefined) {
 

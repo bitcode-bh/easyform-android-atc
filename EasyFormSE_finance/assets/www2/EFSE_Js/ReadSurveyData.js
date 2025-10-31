@@ -1401,14 +1401,21 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         if (img_Id == "" || img_Id == null || img_Id == undefined) {
                             if (form_flag == 7 || form_flag == 8 || form_flag == 12 || (form_flag == 0 && c_is_online == 1) || (form_flag == 1 && c_is_online == 1) || (form_flag == 6 && survey_mode == "online") || (curr_page_flag == "viewsitedata_task" && survey_mode == "online")) {
-                                if (ref_class == '' || ref_class == null || ref_class == undefined) { }
+                                //upload photos online for customer/user/form/ online mobile checksheet
+
+                                if (ref_class == '' || ref_class == null || ref_class == undefined) {
+                                    var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + target_div + '")';
+                                }
                                 else {
                                     photo_type = "Attendance";                      //for profile photo face detection camera plugin [FT - 01122023]
+
+                                    // attendance offline plugin will call via online photo plugin - mk - 31102025
+                                    var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + target_div + '", "' + ref_class + '")';
                                 }
 
-                                var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + target_div + '")';
                             }
                             else {
+                                // offline checksheet
 
                                 if (ref_class == '' || ref_class == null || ref_class == undefined) {
 
@@ -1429,17 +1436,21 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             var src_str = 'images/camera.png'
                         } else {
                             if (form_flag == 7 || form_flag == 8 || form_flag == 12 || (form_flag == 0 && c_is_online == 1) || (form_flag == 6 && survey_mode == "online") || (curr_page_flag == "viewsitedata_task" && survey_mode == "online")) {
+                                //upload photos online for customer/user/form/ online mobile checksheet
 
                                 if (ref_class == '' || ref_class == null || ref_class == undefined) {
                                     var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + target_div + '")';
                                 }
                                 else {
                                     photo_type = "Attendance";                      //for profile photo face detection camera plugin [FT - 01122023]
-                                    var param = 'verify_user_profile_photo("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + ref_class + '")';
+
+                                    // attendance offline plugin will call via online photo plugin - mk - 31102025
+                                    var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + target_div + '", "' + ref_class + '")';
                                 }
 
                             }
                             else {
+                                // offline checksheet
 
                                 if (ref_class == '' || ref_class == null || ref_class == undefined) {
 

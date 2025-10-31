@@ -1149,7 +1149,7 @@ function edit_photo(src) {
 var glob_curr_form_flag;
 ///customer camera click
 
-function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div) {
+function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, ref_class) {
     try {
         $("#img_full_type7").attr("src", "");
         $("#div_bottom_div_type7").empty();
@@ -1366,9 +1366,12 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
             });
             //alert1('q_jsonobj: ' + JSON.stringify(q_jsonobj));
 
-            if (photo_type == "camera" || photo_type == "browse" || photo_type == "AI" || photo_type == "Attendance" || photo_type == "PhotoEdit") {
+            if (photo_type == "camera" || photo_type == "browse" || photo_type == "AI" || photo_type == "PhotoEdit") {
                 loading();
                 cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
+            }
+            else if (photo_type == "Attendance") {
+                verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, ref_class, q_jsonobj)
             }
             else if (photo_type == "SafetyMeasure") {
                 loading();
@@ -1877,7 +1880,7 @@ function reset_profle_photo_on_dropdown_change(item_id, img_div) {
 }
 
 var is_attendance_photo = 0;
-function verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, ref_class) {
+function verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, ref_class, old_q_jsonobj) {
 
     var src = $("#" + img_div + "").attr("src");
     if (src != 'images/camera.png') {
@@ -1914,7 +1917,7 @@ function verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, pho
         let t_username = JSON.parse(storage.getItem('user_name'));
         let above_img_id = $("." + ref_class + " img[id^=cbtn]").attr("id");
         let t_photo_url = $("." + ref_class + " img[id^=cbtn]").attr("src");
-        verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, above_img_id, item_id, img_div);
+        verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, above_img_id, item_id, img_div, old_q_jsonobj);
     }
     else {
         // above searchable control + below face detection photo
@@ -1994,7 +1997,7 @@ function verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, pho
                     var t_photo_url = "" + global_resumable_url + "GetFile/Select_File_Details?cid="
                         + user_checksheet_id + "&t22id=0&t22i=0&id=" + t_user_id + "&qd=4008&ctype=7&ud=" + user_id + "&uc=" + uniqcode + random_str + "";
 
-                    verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, above_ddl_id, item_id, img_div);
+                    verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, above_ddl_id, item_id, img_div, old_q_jsonobj);
 
                 } else {
                     alert1(Data_Json[0].message);
@@ -2007,7 +2010,7 @@ function verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, pho
 }
 
 // face detection in offline checksheet
-function verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, above_ddl_id, item_id, img_div) {
+function verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, above_ddl_id, item_id, img_div, old_q_jsonobj) {
     var q_jsonobj = [];
     q_jsonobj.push({
         "attendanceData": {
@@ -2022,24 +2025,38 @@ function verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, ab
         "WithoutTaskAttendance": "true"
     });
 
-    loading();
-    cordova.exec(function (imageData) {
-        alert1("Profile photo has been verified successfully!");
-        loading_hide();
+    if (old_q_jsonobj == "" || old_q_jsonobj == null || old_q_jsonobj == undefined) {
+        // offline checksheet
+        loading();
+        cordova.exec(function (imageData) {
+            alert1("Profile photo has been verified successfully!");
+            loading_hide();
 
-        $("#" + above_ddl_id + "").attr("onchange", "reset_profle_photo_on_dropdown_change(" + item_id + ",'" + img_div + "')");
+            $("#" + above_ddl_id + "").attr("onchange", "reset_profle_photo_on_dropdown_change(" + item_id + ",'" + img_div + "')");
 
-        is_attendance_photo = 1;
+            is_attendance_photo = 1;
 
-        check_photo_entry(imageData);
+            check_photo_entry(imageData);
 
-        loading_hide();
-    }, function (e) {
-        // back from attendance camera back
-        if (e == "" || e == null || e == undefined) { }
-        else { alert1("Device: " + e); }
-        loading_hide();
-    }, 'AttendancePlugin', 'anAction', q_jsonobj);
+            loading_hide();
+        }, function (e) {
+            // back from attendance camera back
+            if (e == "" || e == null || e == undefined) { }
+            else { alert1("Device: " + e); }
+            loading_hide();
+        }, 'AttendancePlugin', 'anAction', q_jsonobj);
+    }
+    else {
+        // online checksheet
+
+        old_q_jsonobj[0]["attendanceData"] = q_jsonobj[0].attendanceData;
+        old_q_jsonobj[0]["photoUrl"] = q_jsonobj[0].photoUrl;;
+        old_q_jsonobj[0]["photoName"] = q_jsonobj[0].photoName;;
+        old_q_jsonobj[0]["WithoutTaskAttendance"] = q_jsonobj[0].WithoutTaskAttendance;
+    
+        loading();
+        cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', old_q_jsonobj);
+    }
 }
 
 
