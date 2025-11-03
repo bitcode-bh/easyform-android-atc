@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.view.Surface;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -188,6 +189,7 @@ public class AutoMlVisonModelActivity extends AppCompatActivity {
                 // ImageCapture use case
                 imageCapture = new ImageCapture.Builder()
 //                        .setTargetResolution(new Size(1280, 720))
+                        .setTargetRotation(Surface.ROTATION_0)
                         .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                         .build();
 
@@ -245,7 +247,7 @@ public class AutoMlVisonModelActivity extends AppCompatActivity {
                                 imageViewCaptured.setImageBitmap(finalBitmap);
 
                                 if (detector != null) {
-                                    List<DetectionResult> results = detector.runDetection(finalBitmap, 0.50f);
+                                    List<DetectionResult> results = detector.runDetection(finalBitmap, 0.65f);
                                     overlayView.setDetections(results, finalBitmap.getWidth(), finalBitmap.getHeight());
 
                                     if(results != null) {
