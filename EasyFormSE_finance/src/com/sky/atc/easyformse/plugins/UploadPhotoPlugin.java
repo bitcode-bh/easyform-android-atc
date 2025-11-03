@@ -75,6 +75,13 @@ public class UploadPhotoPlugin extends CordovaPlugin {
     String GroupUrl ;
     List<String> downloadedPaths ;
     String url;
+    String Photo_url;
+    String attendanceData;
+    String WithoutTaskAttendance;
+    public static final String photoUrlKey = "photoUrlKey";
+    public static final String photoNameKey = "photoNameKey";
+    public static final String resultDataKey = "resultDataKey";
+    public static final String WithoutTaskAttendanceKey = "WithoutTaskAttendanceKey";
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
@@ -187,7 +194,29 @@ public class UploadPhotoPlugin extends CordovaPlugin {
 //        photoType="video";
 
         if (photoType.equalsIgnoreCase("Attendance")) {
-            isPluginValid = Facedetectioncmera();
+            try{
+                Photo_url = args.getJSONObject(0).getString("photoUrl");
+            }
+            catch (Exception e)
+            {
+                Photo_url = "";
+            }
+            try{
+//                    get key without task create attendance
+                WithoutTaskAttendance = args.getJSONObject(0).getString("WithoutTaskAttendance");
+            }
+            catch (Exception e)
+            {
+                WithoutTaskAttendance = "true";
+            }
+            try{
+                attendanceData = args.getJSONObject(0).getString("attendanceData");
+            }
+            catch (Exception e)
+            {
+                attendanceData = "";
+            }
+            isPluginValid = Facedetectioncmera(Photo_url,WithoutTaskAttendance,attendanceData);
         }
         if (photoType.equalsIgnoreCase("camera")) {
             isPluginValid = easydrawCamera(time, b_write, width, height, quality, action);
@@ -254,7 +283,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
     }
 
     //online task listing camera with attendance (profile photo)
-    public boolean Facedetectioncmera()
+    public boolean Facedetectioncmera(String photoUrl,String withoutTaskAttendance,String attendanceData)
     {
         String Attendance = pref.getString("Attendance","false");
         if(Attendance.equalsIgnoreCase("false") || Attendance.equalsIgnoreCase("null"))
@@ -262,36 +291,65 @@ public class UploadPhotoPlugin extends CordovaPlugin {
             Toast.makeText(cordova.getActivity(), "Attendance Feature is not assign", Toast.LENGTH_SHORT).show();
         }
         else {
-            AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
-            TaskData mTaskData = new TaskData();
-            mTaskData.setCheckSheetId(mAttendanceData.getChecksheetId());
-            mTaskData.setModuleName(mAttendanceData.getKey());
-            mTaskData.setModuleId(Integer.parseInt(mAttendanceData.getFlowId()));
-            mTaskData.setUserId(DeviceEventsUtils.getLoginDetails().get(0));
-            mTaskData.setUsername(DeviceEventsUtils.getLoginDetails().get(3));
-            mTaskData.setCheckOutBtn(mAttendanceData.getChekOutBtn());
-            mTaskData.setCheckInBtn(mAttendanceData.getChekInBtn());
-            mTaskData.setPunchin_Status(mAttendanceData.getPunchin_Status());
-            mTaskData.setPunchout_Status(mAttendanceData.getPunchout_Status());
 
-            mTaskData.getCheckSheetId();
-            mTaskData.getModuleId();
-            mTaskData.getModuleName();
-            mTaskData.getUsername();
-            mTaskData.getUserId();
-            mTaskData.getCheckOutBtn();
-            mTaskData.getCheckInBtn();
-            mTaskData.getPunchin_Status();
-            mTaskData.getPunchout_Status();
+            if(photoUrl.equalsIgnoreCase(""))
+            {
+                AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
+                TaskData mTaskData = new TaskData();
+                mTaskData.setCheckSheetId(mAttendanceData.getChecksheetId());
+                mTaskData.setModuleName(mAttendanceData.getKey());
+                mTaskData.setModuleId(Integer.parseInt(mAttendanceData.getFlowId()));
+                mTaskData.setUserId(DeviceEventsUtils.getLoginDetails().get(0));
+                mTaskData.setUsername(DeviceEventsUtils.getLoginDetails().get(3));
+                mTaskData.setCheckOutBtn(mAttendanceData.getChekOutBtn());
+                mTaskData.setCheckInBtn(mAttendanceData.getChekInBtn());
+                mTaskData.setPunchin_Status(mAttendanceData.getPunchin_Status());
+                mTaskData.setPunchout_Status(mAttendanceData.getPunchout_Status());
 
+                mTaskData.getCheckSheetId();
+                mTaskData.getModuleId();
+                mTaskData.getModuleName();
+                mTaskData.getUsername();
+                mTaskData.getUserId();
+                mTaskData.getCheckOutBtn();
+                mTaskData.getCheckInBtn();
+                mTaskData.getPunchin_Status();
+                mTaskData.getPunchout_Status();
 
-            Intent faceRecognizerActivityIntent = new Intent(this.cordova.getActivity(), FaceDetactionActivity.class);
-            faceRecognizerActivityIntent.putExtra(AttendancePlugin.WithoutTaskAttendanceKey, "true");
-            faceRecognizerActivityIntent.putExtra(AttendanceNotificationShow.taskDataKey, mTaskData);
-            if (this.cordova != null) {
-                this.cordova.startActivityForResult(this, faceRecognizerActivityIntent, 102);
-                return true;
+                Intent faceRecognizerActivityIntent = new Intent(this.cordova.getActivity(), FaceDetactionActivity.class);
+                faceRecognizerActivityIntent.putExtra(AttendancePlugin.WithoutTaskAttendanceKey, "true");
+                faceRecognizerActivityIntent.putExtra(AttendanceNotificationShow.taskDataKey, mTaskData);
+                if (this.cordova != null) {
+                    this.cordova.startActivityForResult(this, faceRecognizerActivityIntent, 102);
+                    return true;
+                }
             }
+            else {
+
+                TaskData mTaskData = new Gson().fromJson(attendanceData, TaskData.class);
+
+
+                String photoName = mTaskData.getUserId() + System.currentTimeMillis() + ".jpeg";
+
+                Intent faceRecognizerActivityIntent = new Intent(context, FaceDetactionActivity.class);
+                faceRecognizerActivityIntent.putExtra(photoUrlKey, photoUrl);
+                faceRecognizerActivityIntent.putExtra(photoNameKey, photoName);
+                faceRecognizerActivityIntent.putExtra(WithoutTaskAttendanceKey,withoutTaskAttendance);
+                faceRecognizerActivityIntent.putExtra(AttendanceNotificationShow.taskDataKey,
+                        mTaskData);
+                try {
+                    this.cordova.startActivityForResult(this, faceRecognizerActivityIntent, 102);//null pointer check in case package name was not found
+                    return true;
+                } catch (Exception e) {
+                    LogUtils.writeAttendanceLogToFile("Exception : " + e.toString(), "openFaceRecognizerActivity AttendancePlugin");
+                    this.callbackContext.error("error: " + e.toString());
+                    return false;
+                }
+            }
+
+
+
+
 
         }
         return false;
