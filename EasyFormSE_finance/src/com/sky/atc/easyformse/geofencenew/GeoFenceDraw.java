@@ -112,7 +112,7 @@ public class GeoFenceDraw implements
 
                 }
             }
-
+            c2.close();
             if (!placeidString.equalsIgnoreCase("")) {
                 placeidString = placeidString.substring(1);
             }
