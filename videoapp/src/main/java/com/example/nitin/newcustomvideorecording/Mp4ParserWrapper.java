@@ -3,13 +3,14 @@ package com.example.nitin.newcustomvideorecording;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
+
+import org.mp4parser.Container;
+import org.mp4parser.muxer.FileDataSourceImpl;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.AppendTrack;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -102,13 +103,13 @@ public final class Mp4ParserWrapper {
             final String newFile) throws IOException {
 
 //        final Movie movieA = MovieCreator.build(new FileDataSourceImpl(secondFile));
-        final Movie movieB = MovieCreator.build(new FileDataSourceImpl(firstFile));
+        final Movie movieB = MovieCreator.build(String.valueOf(new FileDataSourceImpl(firstFile)));
 
         final ArrayList<Movie> m = new ArrayList<>();
         final List<Track>[] movieOneTracks = new List[videoList.size()];
 
         for (int i = 0; i < videoList.size(); i++) {
-            final Movie movie = MovieCreator.build(new FileDataSourceImpl(videoList.get(i)));
+            final Movie movie = MovieCreator.build(String.valueOf(new FileDataSourceImpl(videoList.get(i))));
             m.add(movie);
             movieOneTracks[i] = movie.getTracks();
         }

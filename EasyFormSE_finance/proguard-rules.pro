@@ -239,3 +239,8 @@
 
 # This app
 -keep class com.easyform.jitsi.** { *; }
+
+-keep class com.coremedia.iso.** { *; }
+-keep class com.googlecode.mp4parser.** { *; }
+-dontwarn com.coremedia.iso.**
+-dontwarn com.googlecode.mp4parser.**

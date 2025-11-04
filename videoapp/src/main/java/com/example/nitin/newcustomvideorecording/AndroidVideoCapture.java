@@ -1,9 +1,5 @@
 package com.example.nitin.newcustomvideorecording;
 
-/**
- * Created by Divyang on 2/17/2017.
- */
-
 import static com.example.nitin.newcustomvideorecording.Mp4ParserWrapper.TAG;
 
 import android.app.Activity;
@@ -18,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -36,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInfoListener {
@@ -330,7 +329,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
     private void releaseMediaRecorder() {
 
         if (mediaRecorder != null) {
-            mediaRecorder.reset();      // clear recorder configuration
+            mediaRecorder.stop();      // clear recorder configuration
             mediaRecorder.release();   // release the recorder object
             mediaRecorder = null;
             myCamera.lock();           // lock camera for later use
@@ -393,7 +392,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
                     pausepath.add(compress_path);
                 }
 
-                new MergeVideo().execute();
+                mergevideo();
 
             }
         }
@@ -407,7 +406,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
                 if (pcnt != 1) {
 
                     //stop recording and release camera
-                    mediaRecorder.stop();  // stop the recording
+                    // mediaRecorder.stop();  // stop the recording
                     releaseMediaRecorder(); // release the MediaRecorder object
 
                     //Exit after saved
@@ -484,7 +483,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
 
                 //stop recording and release camera
 
-                mediaRecorder.stop();  // stop the recording
+                // mediaRecorder.stop();  // stop the recording
                 releaseMediaRecorder();// release the MediaRecorder object
                 pauseButton.setText("RESUME");
                 recording = false;
@@ -703,7 +702,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
                                 pausepath.add(compress_path);
                             }
 
-                            new MergeVideo().execute();
+                            mergevideo();
                         }
                     }
                 });
@@ -732,59 +731,136 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
     }
 
 
-    public class MergeVideo extends AsyncTask<String, Integer, String> {
+//    public class MergeVideo extends AsyncTask<String, Integer, String> {
+//
+//        ProgressDialog progressDialog;
+//
+//
+//        @Override
+//        protected void onPreExecute() {
+//            progressDialog = ProgressDialog.show(AndroidVideoCapture.this,
+//                    "Preparing Video", "Please wait...", true);
+//
+//            //do initialization of required objects objects here
+//        }
+//
+//        @Override
+//        protected String doInBackground(String... params) {
+//
+//
+//            String mergedPath = "";
+//
+//            try {
+//                mergedPath = Mp4ParserWrapper.append(pausepath);
+//                Log.d("MergeVideo", "Merged Path: " + mergedPath);
+//            } catch (Exception e) {
+//                Log.e("MergeVideo", "Error merging video", e);
+//            }
+//
+//
+//            return mergedPath;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String value) {
+//            super.onPostExecute(value);
+//            progressDialog.dismiss();
+//
+//            File file = new File(value);
+//            long fileSizeInBytes = file.length();
+//            float fileSizeInMB = fileSizeInBytes / (float) (1024 * 1024);
+//
+//            if (fileSizeInMB > 4.8) {
+//
+//                trimcnt = 1;
+//
+//                Toast.makeText(AndroidVideoCapture.this, "Your File size is more than 5MB !!", Toast.LENGTH_LONG).show();
+//
+//                Intent intent = new Intent(AndroidVideoCapture.this, trim.class);
+//                intent.putExtra("PATH", value);
+    ////              intent.putExtra("imei", newimei);
+//                startActivityForResult(intent, 101);
+//
+//            } else {
+//
+//                onpcnt = 1;
+//                Bundle b = new Bundle();
+//                Intent intent = new Intent();
+//                intent.putExtra("video_path", value);
+//                intent.putExtras(b);
+//                setResult(RESULT_OK, intent);
+//                finish();
+//            }
+//        }
+//    }
 
-        ProgressDialog progressDialog;
+    public void mergevideo()
+    {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
 
+        ProgressDialog progressDialog = ProgressDialog.show(AndroidVideoCapture.this,
+                "Preparing Video", "Please wait...", true);
 
-        @Override
-        protected void onPreExecute() {
-            progressDialog = ProgressDialog.show(AndroidVideoCapture.this,
-                    "Preparing Video", "Please wait...", true);
+        executor.execute(() -> {
+            String mergedPath = "";
 
-            //do initialization of required objects objects here
-        }
+            try {
+                mergedPath = Mp4ParserWrapper.append(pausepath);
+                Log.d("MergeVideo", "Merged Path: " + mergedPath);
+            } catch (Exception e) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    Toast.makeText(AndroidVideoCapture.this, e.toString(), Toast.LENGTH_SHORT).show();
+                });
 
-        @Override
-        protected String doInBackground(String... params) {
-
-
-            String mergedPath = Mp4ParserWrapper.append(pausepath);
-
-            return mergedPath;
-        }
-
-        @Override
-        protected void onPostExecute(String value) {
-            super.onPostExecute(value);
-            progressDialog.dismiss();
-
-            File file = new File(value);
-            long fileSizeInBytes = file.length();
-            float fileSizeInMB = fileSizeInBytes / (float) (1024 * 1024);
-
-            if (fileSizeInMB > 4.8) {
-
-                trimcnt = 1;
-
-                Toast.makeText(AndroidVideoCapture.this, "Your File size is more than 5MB !!", Toast.LENGTH_LONG).show();
-
-                Intent intent = new Intent(AndroidVideoCapture.this, trim.class);
-                intent.putExtra("PATH", value);
-//              intent.putExtra("imei", newimei);
-                startActivityForResult(intent, 101);
-
-            } else {
-
-                onpcnt = 1;
-                Bundle b = new Bundle();
-                Intent intent = new Intent();
-                intent.putExtra("video_path", value);
-                intent.putExtras(b);
-                setResult(RESULT_OK, intent);
-                finish();
+                Log.e("MergeVideo", "Error merging video", e);
             }
-        }
+
+            String finalMergedPath = mergedPath;
+
+            handler.post(() -> {
+                progressDialog.dismiss();
+
+                if (finalMergedPath == null || finalMergedPath.isEmpty()) {
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        Toast.makeText(AndroidVideoCapture.this, "Failed to merge video!", Toast.LENGTH_SHORT).show();
+                    });
+
+                    return;
+                }
+
+                File file = new File(finalMergedPath);
+                if (!file.exists()) {
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        Toast.makeText(AndroidVideoCapture.this, "Merged file not found!", Toast.LENGTH_SHORT).show();
+                    });
+
+                    return;
+                }
+
+                long fileSizeInBytes = file.length();
+                float fileSizeInMB = fileSizeInBytes / (float) (1024 * 1024);
+
+                if (fileSizeInMB > 4.8f) {
+                    trimcnt = 1;
+
+                    Toast.makeText(AndroidVideoCapture.this, "Your file size is more than 5MB!", Toast.LENGTH_LONG).show();
+
+                    Intent intent = new Intent(AndroidVideoCapture.this, trim.class);
+                    intent.putExtra("PATH", finalMergedPath);
+                    startActivityForResult(intent, 101);
+
+                } else {
+                    onpcnt = 1;
+
+                    Intent intent = new Intent();
+                    intent.putExtra("video_path", finalMergedPath);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
+            });
+        });
+
     }
 
     @Override

@@ -23,6 +23,7 @@
  */
 package life.knowledge4.videotrimmer.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -33,14 +34,15 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import android.util.Log;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.FileDataSourceViaHeapImpl;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
-import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
+
+import org.mp4parser.Container;
+import org.mp4parser.muxer.FileDataSourceViaHeapImpl;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.AppendTrack;
+import org.mp4parser.muxer.tracks.ClippedTrack;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -97,13 +99,13 @@ public class TrimVideoUtils extends Activity {
         Log.d(TAG, "Generated file path " + filePath);
         genVideoUsingMp4Parser(src, file, startMs, endMs, callback);
     }
-
+    @SuppressLint("SuspiciousIndentation")
     private static void genVideoUsingMp4Parser(@NonNull File src, @NonNull File dst, long startMs, long endMs, @NonNull OnTrimVideoListener callback) throws IOException {
         // NOTE: Switched to using FileDataSourceViaHeapImpl since it does not use memory mapping (VM).
         // Otherwise we get OOM with large movie files.
 
 
-        Movie movie = MovieCreator.build(new FileDataSourceViaHeapImpl(src.getAbsolutePath()));
+        Movie movie = MovieCreator.build(String.valueOf(new FileDataSourceViaHeapImpl(src.getAbsolutePath())));
 
         List<Track> tracks = movie.getTracks();
         movie.setTracks(new LinkedList<Track>());
@@ -155,7 +157,7 @@ public class TrimVideoUtils extends Activity {
                 currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
                 currentSample++;
             }
-            movie.addTrack(new AppendTrack(new CroppedTrack(track, startSample1, endSample1)));
+            movie.addTrack(new AppendTrack(new ClippedTrack(track, startSample1, endSample1)));
         }
 
         dst.getParentFile().mkdirs();
