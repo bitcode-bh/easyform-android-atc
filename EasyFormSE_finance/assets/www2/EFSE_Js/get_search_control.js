@@ -3336,6 +3336,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
         $('#search_item_name_Search_' + temp_btnSearch_Counter + '').attr('name', '1');
         $("#product_list_" + temp_btnSearch_Counter + "").empty();
 
+        mobile_log_clone_Array = [];
         var Fill_Data = itemObj._checkStrObj(decodeURIComponent(Fill_Data_Str));  		// check_item
         for (fj = 0; fj < Fill_Data.length; fj++) {
             var old_fieldname = Fill_Data[fj].fieldname;
@@ -3637,6 +3638,16 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                                 // task/customer/user
                                                 upload_autofill_photo_temp(old_primary_id, old_checksheet_id, old_que_id, new_checksheet_type, new_checksheet_id, new_que_id, autofill_form_flag, curr_box_id);
                                             }
+                                            else {
+                                                //upload_autofill_photo_temp_mobile_checksheet(new_que_id, img_src);
+                                                if (jsonObj_old[j].type == 7) {
+                                                    mobile_log_clone_Array.push({
+                                                        que_id: new_que_id,
+                                                        src: img_src,
+                                                        index: j
+                                                    });
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -3750,6 +3761,10 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
         // in case when 2 single option searchable dropdown remains - 1st searchable is not parent but it autofills some data only in this case 2nd single option searchable is not called- 19032021
         if (Type20_AutoFill_DDL_Array.length == 0) {
             check_and_call_next_single_option();
+        }
+
+        if (mobile_log_clone_Array.length > 0) {
+            check_n_upload_mobile_checksheet_clone_photo(mobile_log_clone_Array);
         }
 
         loading_hide();

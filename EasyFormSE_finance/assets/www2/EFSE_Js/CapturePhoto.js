@@ -378,7 +378,7 @@ function reset_SafetyMeasure_summary(e) {
     try {
 
         var myArray = JSON.parse(e);
-      
+
         let safety_str = "<div class='safety_summary' style='font-size: 14px; padding: 5px'>";
 
         let Helmet = myArray[0].Helmet;
@@ -2009,7 +2009,7 @@ function verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, pho
     }
 }
 
-// face detection in offline checksheet
+// face detection in offline / online checksheet
 function verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, above_ddl_id, item_id, img_div, old_q_jsonobj) {
     var q_jsonobj = [];
     q_jsonobj.push({
@@ -2053,13 +2053,13 @@ function verify_photo_with_face_detection(t_photo_url, t_username, t_user_id, ab
         old_q_jsonobj[0]["photoUrl"] = q_jsonobj[0].photoUrl;;
         old_q_jsonobj[0]["photoName"] = q_jsonobj[0].photoName;;
         old_q_jsonobj[0]["WithoutTaskAttendance"] = q_jsonobj[0].WithoutTaskAttendance;
-    
+
         loading();
         cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', old_q_jsonobj);
     }
 }
 
-
+// group detection in offline / online checksheet
 function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, old_q_jsonobj) {
     try {
 
@@ -2173,3 +2173,127 @@ function verify_group_photo_with_face_detection(item_id, que_id, img_div, form_f
     }
 }
 
+var mobile_log_clone_Array = [];
+
+function upload_autofill_photo_temp_mobile_checksheet(auto_fill_que_id, auto_fill_src) {
+
+    let company_id = JSON.parse(storage.getItem('company_id'));
+    let check_type = JSON.parse(storage.getItem('check_type'));
+    let siteid = JSON.parse(storage.getItem('siteid'));
+    let sid = JSON.parse(storage.getItem('server_task_id'));
+
+    let step = curr_survey_data["step"];
+    if (step == '' || step == null || step == undefined) {
+        step = '1';
+    }
+
+    var type22_popup = $('.popup-type22:visible');
+    if (type22_popup.length > 0) {
+        var type22_img_que_id = storage.getItem('img_id_type22');
+        if (type22_edit_flag == '1') {
+            // edit mode
+            var t_row_index_no = row_index_no;
+        }
+        else {
+            //  insert mode
+            var row_counter = $("#hdn_inv_row_counter_" + type22_new_id + "").val();
+            row_counter = parseInt(row_counter);
+            var t_row_index_no = row_counter + 1;
+        }
+    }
+    else {
+        var type22_img_que_id = 0;
+        var t_row_index_no = 0;
+    }
+
+    var flowParamData = [];
+    flowParamData.push({
+        company_id: company_id,
+        site_id: siteid,
+        sid: sid,
+        que_id: auto_fill_que_id,
+        checksheetid: check_type,
+        step_No: step,
+        Ph_id: type22_img_que_id,
+        th_path: '',
+        size: '',
+        type: '',
+        it_id: t_row_index_no
+    });
+
+    var q_jsonobj = [];
+    q_jsonobj.push({
+        photo_type: "DirectUpload",
+        flowParamData: flowParamData,
+        photo_path: auto_fill_src
+    });
+
+    loading();
+    cordova.exec(onsuccess_CaptureClick_Customer_photo_clone, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', q_jsonobj)
+}
+
+function check_n_upload_mobile_checksheet_clone_photo(mobile_log_clone_Array) {
+    if (mobile_log_clone_Array.length > 0) {
+        let auto_fill_que_id = mobile_log_clone_Array[0].que_id;
+        let auto_fill_src = mobile_log_clone_Array[0].src;
+        upload_autofill_photo_temp_mobile_checksheet(auto_fill_que_id, auto_fill_src)
+    }
+}
+
+function onsuccess_CaptureClick_Customer_photo_clone(e) {
+
+    setTimeout(function () {
+        // loading hide after 1 min in case of any exception
+        loading_hide();
+    },60000)
+
+    var response = JSON.parse(e);
+    var photo_id = response[0].photo_id;
+    var curr_file_size_mb = response[0].photo_size;
+    var photo_path = response[0].photo_path;
+
+
+    /* new logic */
+    var date_s = new Date();
+    var time = date_s.getTime();
+    var company_id = JSON.parse(storage.getItem('company_id'));
+    var user_id = JSON.parse(storage.getItem('user_id'));
+    var siteid = JSON.parse(storage.getItem('siteid'));
+
+    var type22_popup = $('.popup-type22:visible');
+    if (type22_popup.length > 0) {
+        if (type22_current_mode == 'edit') {
+            // edit mode
+            var t_row_index_no = row_index_no;
+        }
+        else {
+            //  insert mode
+            var last_index = $('#row_index_' + type22_new_id + '').val();
+            last_index = parseInt(last_index);
+            var t_row_index_no = last_index + 1;
+        }
+    }
+    else {
+        var t_row_index_no = 0;
+    }
+
+    var p_name = company_id + "_" + user_id + "_" + siteid + "_" + time + '_' + t_row_index_no + '.jpeg';
+
+    var answer = [];
+    answer.push(photo_path, p_name, '', '', photo_id, curr_file_size_mb);
+
+    let img_id = mobile_log_clone_Array[0].index;
+
+    // normal form
+    jsonObj_old[img_id].ans = answer;
+
+    mobile_log_clone_Array.shift();
+    if (mobile_log_clone_Array.length > 0) {
+        let auto_fill_que_id = mobile_log_clone_Array[0].que_id;
+        let auto_fill_src = mobile_log_clone_Array[0].src;
+        upload_autofill_photo_temp_mobile_checksheet(auto_fill_que_id, auto_fill_src)
+    }
+    else {
+        loading_hide();
+    }
+}

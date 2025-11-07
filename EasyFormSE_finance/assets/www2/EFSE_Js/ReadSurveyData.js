@@ -225,6 +225,11 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
         // --- check target container div start ---//////
         if (form_flag == 0) {
+
+            setTimeout(function () {
+                form_has_changed = "false";
+            }, 1000);
+            
             // normal form
             jsonObj_old = [];
             collapse_Json = []; // type23 inner data array
