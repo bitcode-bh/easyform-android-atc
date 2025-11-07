@@ -26,6 +26,7 @@ import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.EditPhotoActivity;
 import com.sky.atc.easyformse.FaceDetactionActivity;
 import com.sky.atc.easyformse.MakePhotoActivity;
+import com.sky.atc.easyformse.OnlySavPhotoAcivity;
 import com.sky.atc.easyformse.VideoActivity;
 import com.sky.atc.easyformse.attendance.newattendanceutils.AttendanceUtil;
 import com.sky.atc.easyformse.attendance.newattendanceutils.broadcasts.AttendanceNotificationShow;
@@ -279,6 +280,11 @@ public class UploadPhotoPlugin extends CordovaPlugin {
             String photoUrl = args.getJSONObject(0).getString("photo_path");
             isPluginValid = EditphotoActivity(photoUrl);
         }
+        if (photoType.equalsIgnoreCase("DirectUpload")) {
+            String photoUrl = args.getJSONObject(0).getString("photo_path");
+            isPluginValid = DirectUpload(photoUrl);
+
+        }
         return isPluginValid;
     }
 
@@ -515,6 +521,19 @@ public class UploadPhotoPlugin extends CordovaPlugin {
     {
         try {
             Intent intent = new Intent(cordova.getActivity(), EditPhotoActivity.class);
+            intent.putExtra("photo_path", photo_path);
+            this.cordova.startActivityForResult(this, intent, 106);
+            return true;
+        } catch (Exception e) {
+            this.callbackContext.error("error: " + e.toString());
+            return false;
+        }
+    }
+
+    public boolean DirectUpload(String photo_path)
+    {
+        try {
+            Intent intent = new Intent(cordova.getActivity(), OnlySavPhotoAcivity.class);
             intent.putExtra("photo_path", photo_path);
             this.cordova.startActivityForResult(this, intent, 106);
             return true;
