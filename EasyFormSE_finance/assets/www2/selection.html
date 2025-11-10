@@ -311,6 +311,18 @@
             text-align: center;
             margin: 0px 5px;
         }*/
+
+        .navbar, .subnavbar, .toolbar {
+            background: #ecedef;
+        }
+
+        .tabbar i.icon {
+            color: black;
+        }
+
+        .navbar i.icon, .subnavbar i.icon, .toolbar i.icon, #div_new_tabbar .tab-link .tabbar-label {
+            color: black;
+        }
     </style>
 </head>
 <body>
@@ -438,7 +450,8 @@
                         <div class="navbar">
                             <div class="navbar-inner">
                                 <div class="left">
-                                    <a onclick='back_button("selection")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="icon icon-back"></i></a>
+                                    <!--<a onclick='back_button("selection")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="icon icon-back"></i></a>-->
+                                    <a onclick='back_button("selection")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="icon fa fa-arrow-left"></i></a>
                                 </div>
                                 <div class="center">
                                     <label id="lbl_theme_header"></label>

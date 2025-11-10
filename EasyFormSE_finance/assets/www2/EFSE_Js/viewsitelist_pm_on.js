@@ -218,8 +218,8 @@ function get_list_of_pm_sites_online() {
             var flow_Array = JSON.parse(storage.getItem('flow_Array'));
             if (flow_Array.length == 1) {
                 var p_server_task_id = 0;
-                //$("#btn_advanced_search").show();
-                $("#btn_advanced_search").hide();
+                $("#btn_advanced_search").show();
+                //$("#btn_advanced_search").hide();
                 $(".advancedSearch-list").show();
             }
             else {
