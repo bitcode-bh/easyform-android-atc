@@ -44,6 +44,9 @@ public class OnlySavPhotoAcivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        overridePendingTransition(0, 0);
+
         Extras = getIntent().getExtras();
 
 
@@ -67,6 +70,11 @@ public class OnlySavPhotoAcivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(0, 0); // remove exit animation
+    }
     public void photosave(String photo_path)
     {
         try {
