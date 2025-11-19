@@ -3537,7 +3537,7 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                 var dynddl_answer = '0';
                             }
                         }
-                        if (dynddl_answer == '0' && view_type == 'dropdownview') {
+                        if (dynddl_answer == '--- Choose Value ---' && view_type == 'dropdownview') {
                             dynddl_answer = '';
                         }
 
@@ -3547,7 +3547,7 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                             dynddl_answer = "";
                         }
 
-                        if (dynddl_answer == '' || dynddl_answer == null || dynddl_answer == undefined || dynddl_answer == ' ' || (dynddl_answer == '"--- Choose Value ---"' && view_type == 'dropdownview') || (dynddl_answer_val == '0' && view_type == 'dropdownview') || (dynddl_answer == '0' && view_type == 'dropdownview')) {
+                        if (dynddl_answer == '' || dynddl_answer == null || dynddl_answer == undefined || dynddl_answer == ' ' || (dynddl_answer == '"--- Choose Value ---"' && view_type == 'dropdownview') || (dynddl_answer_val == '--- Choose Value ---' && view_type == 'dropdownview') || (dynddl_answer == '--- Choose Value ---' && view_type == 'dropdownview')) {
                             answer.push("");
                         }
                         else {
