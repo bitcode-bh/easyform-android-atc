@@ -3381,6 +3381,15 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                     fieldname = "";
                 }
 
+                if (fieldvalue == "" || fieldvalue == null || fieldvalue == undefined) {
+                    if ("img_ary" in myArray[fi]) {
+                        // possible blacnk image object
+                        fieldvalue = "test_image"
+                        myArray[fi].img_ary[0] = "test_image_name";
+                        myArray[fi].fieldvalue = "test_image";
+                    }
+                }
+
                 //if (fieldname.toLowerCase() == old_fieldname.toLowerCase()) {
                 if ((fieldname.toLowerCase() == old_fieldname.toLowerCase()) || (curr_field == old_field)) {
                     col_found++;
