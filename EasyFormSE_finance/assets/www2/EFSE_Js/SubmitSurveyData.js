@@ -1093,8 +1093,17 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     // check for validation changed by dep_type = 0
                     var is_valid = $('#div_cbtn_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
-                        var dep_res = "invalid";
-                        $('#div_cbtn_' + new_id + '').css({ "border": "none" });
+
+                        let autofill = $("#cbtn_" + new_id + "").attr('autofill');
+                        if (autofill == "true") {
+                            // make non mandatory photo to mandatory photo in case photo is autofilled via searchable
+                            jsonObj[i].prop[0].valid = "true";
+                            var dep_res = "valid";
+                        }
+                        else {
+                            var dep_res = "invalid";
+                            $('#div_cbtn_' + new_id + '').css({ "border": "none" });
+                        }
                     }
                     else {
                         var dep_res = "valid";

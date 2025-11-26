@@ -3597,14 +3597,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                                     var json_que_id = jsonObj_old[j].que_id;
                                                     if (new_que_id == json_que_id) {
 
-                                                        if (autofill_form_flag == 0) {
-                                                            // set dummy photo_id for images those are autofilled from mobile log checksheet - no need to call clone api in such case
-                                                            img_ary[4] = "0";
-                                                        }
-                                                        else {
-                                                            img_ary[4] = "";
-                                                        }
-
+                                                        img_ary[4] = "";        // make photo id blank - mk - 26112025
                                                         img_ary[5] = "";
 
                                                         let task_create_popup = $('.popup-new-task-create.modal-in:visible');
