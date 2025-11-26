@@ -15,7 +15,7 @@ function get_list_of_task_for_compare_online() {
         var list_data = JSON.parse(data_json);
         var search_value = list_data[0].search;
         if (search_value == "true") {
-            //$('#btn_Search').show();
+            $('#btn_Search').show();
         }
 
         var selected_module_id = JSON.parse(storage.getItem('wayflow'));
@@ -464,6 +464,9 @@ function get_list_of_pm_sites_online() {
                 var udf_id = JSON.parse(storage.getItem('udf_id'));
                 var tab_index = JSON.parse(storage.getItem('tab_index'));
 
+                $("#ddl_maintask_columns").empty();
+                let ddl_col_str = "";
+
                 // set order by dropdown as per columndata
                 $("#ddl_OrderBy").empty();
                 var orderby_str = '';
@@ -495,9 +498,16 @@ function get_list_of_pm_sites_online() {
                     }
                     if (ctrl_type != 22) {
                         orderby_str += '<option value="' + header + '" name="' + coldata_obj + '">' + header + '</option>';
+
+                        // main task columnwise search
+                        ddl_col_str += "<option value=" + encodeURIComponent(JSON.stringify(columndata_Array[k])) + ">" + header + "</option>";
                     }
                 }
                 $("#ddl_OrderBy").append(orderby_str);
+
+                $("#ddl_maintask_columns").append(ddl_col_str);
+                let first_col_header = columndata_Array[0].header;
+                $("#txt_maintask_search").attr("placeholder", "Enter " + first_col_header + "");
 
                 ddl_orderby = list_data[0].orderby;
                 ddl_order_type = list_data[0].order_type;
@@ -1140,6 +1150,181 @@ function get_list_of_pm_sites_by_search_online(t_adv_search_obj, t_saved_filter_
         }
     } catch (e) {
         alert1(e + '_get_list_of_pm_sites_by_search_online()');
+        loading_hide();
+    }
+}
+
+
+get_list_of_pm_sites_by_searchbox_pre = () => {
+    limit_range = default_range;
+
+    get_list_of_pm_sites_by_searchbox();
+}
+
+function get_list_of_pm_sites_by_searchbox() {
+    try {
+        let search_value = $("#txt_maintask_search").val();
+        if (search_value == "" || search_value == null || search_value == undefined) {
+            search_value = "";
+        }
+
+        glob_task_list_flag = "maintask_filter_searchbox";
+
+        disable_back_button();
+        $("#btn_Clear_Filter").hide();
+        $("#site_list").empty();
+
+        var selected_module_id = JSON.parse(storage.getItem('wayflow'));
+
+        var data_json = JSON.parse(storage.getItem('list_json'));
+        var list_data = JSON.parse(data_json);
+
+        var status_array = list_data[0].status;
+        var include_parent_task = list_data[0].include_parent_task;
+
+        var flow_Array = JSON.parse(storage.getItem('flow_Array'));
+        if (flow_Array.length == 1) {
+            var p_server_task_id = 0;
+            $("#btn_advanced_search").show();
+            //$("#btn_advanced_search").hide();
+            $(".advancedSearch-list").show();
+        }
+        else {
+            if (flow_Array.length > 2) {
+                ///for  3 layer subtask listing issue [FT-16052025]
+                var p_server_task_id = flow_Array[flow_Array.length - 2].server_task_id;
+            }
+            else {
+                var p_server_task_id = JSON.parse(storage.getItem('p_server_task_id'));
+            }
+        }
+
+        if (include_parent_task == "false") {
+            p_server_task_id = "0";
+        }
+
+        // after removing condition json
+        var Push_array = list_data[0].Push_array;
+        if (Push_array == "" || Push_array == null || Push_array == undefined) {
+            var t_push_data = "";
+        }
+        else {
+            var t_push_data = [];
+            t_push_data.push({
+                'push_array': Push_array
+            });
+        }
+
+        var qs_array = pass_required_values_to_push_array(JSON.stringify(t_push_data));
+        var t_push_array = JSON.parse(qs_array[0]);
+        var ref_valid = qs_array[1];
+
+        if (ref_valid > 0) { }
+        else {
+            var udf_id = JSON.parse(storage.getItem('udf_id'));
+            var tab_index = JSON.parse(storage.getItem('tab_index'));
+
+            var col_data = list_data[0].columndata;
+
+            var searchCol_obj = [];
+            searchCol_obj = get_maintask_column_seach_obj_single(search_value);
+
+            if (searchCol_obj == false) {
+                loading_hide();
+                return false;
+            }
+
+            var list_order_by = list_data[0].orderby;
+            var list_order_type = list_data[0].order_type;
+
+            // order by array key check   02022023
+            var order_by_array = list_data[0].order_by_array;
+            if (order_by_array == "" || order_by_array == null || order_by_array == undefined) {
+                var order_by_obj = [];
+                order_by_obj.push({
+                    "checksheet_type": 0,
+                    "checksheet_id": 0,
+                    "que_id": 0,
+                    "data_type": "ValueString",
+                    "order_by": list_order_by,
+                    "order_type": list_order_type
+                });
+            }
+            else {
+                //Default filter column & value show in span
+                for (var a = 0; a < order_by_array.length; a++) {
+                    var order_by_val = order_by_array[a].column_name;
+                    if (order_by_val == null || order_by_val == '' || order_by_val == undefined) {
+                        order_by_val = order_by_array[a].order_by;
+                    }
+
+                    var order_by_chktype = order_by_array[a].checksheet_type;
+                    if (order_by_chktype == null || order_by_chktype == '' || order_by_chktype == undefined) {
+                        order_by_array[a].checksheet_type = "0";
+                    }
+
+                    for (c = 0; c < col_data.length; c++) {
+                        if (col_data[c].header == order_by_val) {
+                            var col_system_var = col_data[c].system_var;
+                            if (col_system_var == "" || col_system_var == null || col_system_var == undefined) { }
+                            else {
+                                order_by_array[a].column_name = col_system_var;
+                                break;
+                            }
+                        }
+                    }
+                }
+                var order_by_obj = order_by_array;
+            }
+
+            // check and add default filter by object 
+            var columndata_Array = list_data[0].columndata;
+            for (k = 0; k < columndata_Array.length; k++) {
+                var header = columndata_Array[k].header;
+                var ctrl_type = columndata_Array[k].ctrl_type;
+                var default_listing_filter_by = columndata_Array[k].default_listing_filter_by;
+                let def_fltr_start_val = columndata_Array[k].def_fltr_start_val;
+                let def_fltr_end_val = columndata_Array[k].def_fltr_end_val;
+                if (default_listing_filter_by == "" || default_listing_filter_by == null || default_listing_filter_by == undefined || default_listing_filter_by == "0") { }
+                else {
+                    searchCol_obj = get_default_param(default_listing_filter_by, def_fltr_start_val, def_fltr_end_val, header, searchCol_obj, ctrl_type)
+                }
+            }
+
+            loading();
+            var param_obj = [];
+            param_obj.push({
+                'Flow_Id': selected_module_id,
+                'lat': user_lat,
+                'long': user_long,
+                'search': "",
+                'limit': limit_range,
+                'condition': [],
+                'system_var': t_push_array,
+                'searchValue': '',
+                'searchParticularColumn': searchCol_obj,
+                'offset': limit_range - default_range,
+                'fetch': increment_range,
+                'status': status_array,
+                'udf_id': udf_id,
+                'tab_index': tab_index,
+                'Parent_Task_Id': p_server_task_id,
+                'order_by': order_by_obj
+            });
+              
+            var task_listing_url = list_data[0].task_listing_url;
+            if (task_listing_url == "" || task_listing_url == null || task_listing_url == undefined) {
+                var getdata = new Webservicecall_REST(global_wcf_url + 'OnlineTaskListing', JSON.stringify(param_obj), onsuccess_get_list_of_pm_sites_online, onfail_get_list_of_pm_sites_online);
+                getdata.callOtherDomain();
+            }
+            else {
+                var getdata = new Webservicecall_REST(global_wcf_url + task_listing_url, JSON.stringify(param_obj), onsuccess_get_list_of_pm_sites_online, onfail_get_list_of_pm_sites_online);
+                getdata.callOtherDomain();
+            }
+        }
+
+    } catch (e) {
+        alert1(e + '_get_list_of_pm_sites_by_searchbox()');
         loading_hide();
     }
 }
@@ -5529,4 +5714,134 @@ function checkDate(dateString) {
     } else {
         return 'Today';
     }
+}
+
+get_maintask_column_seach_obj_single = (search_str) => {
+
+    let selected_column = $("#ddl_maintask_columns option:selected").val();
+    selected_column = decodeURIComponent(selected_column);
+    let coldata_obj = JSON.parse(selected_column);
+
+    var search_obj = [];
+
+    var eqn_str = "LIKE";
+
+    var header = coldata_obj.header;
+
+    var cntrl_type = coldata_obj.ctrl_type;
+    var cntrl_qid = coldata_obj.qid;
+    var checksheetID = coldata_obj.checksheetID;
+    var checksheet_type = coldata_obj.checksheet_type;
+    if (checksheet_type == "" || checksheet_type == null || checksheet_type == undefined) {
+        checksheet_type = "0";
+    }
+
+    var system_var = coldata_obj.system_var;
+    if (system_var == "Status_Name") {
+        var value_Array = coldata_obj.value;
+        if (value_Array == "" || value_Array == null || value_Array == undefined) {
+            value_Array = [];
+        }
+    }
+
+    if (cntrl_type == 2 || cntrl_type == 3 || cntrl_type == 6) {
+        var Con_Array = coldata_obj.value;
+        if (Con_Array == "" || Con_Array == null || Con_Array == undefined) {
+            Con_Array = [];
+            cntrl_type = 1;             //if value key is blank in columndara then consider it as textbox
+        }
+    }
+    else if (cntrl_type == 20) {
+        var Con_Array = coldata_obj.value_new;
+        if (Con_Array == "" || Con_Array == null || Con_Array == undefined) {
+            Con_Array = [];
+            cntrl_type = 1;             //if value_new key is blank in columndara then consider it as textbox
+        }
+    }
+
+    if (cntrl_type == 8) {
+        var date_temp_str = search_str;
+        let date_val = convert_fix_format_date_on_submit(date_temp_str, 'date');
+
+        if (date_val == "NaN/NaN/NaN") {
+            alert("You have entered invalid date string, please enter valid date!");
+            return false;
+        }
+        else {
+            let d = new Date(date_val);
+            if (d == "Invalid Date") {
+                alert("You have entered invalid date string, please enter valid date!");
+                return false;
+            }
+        }
+
+        var search_str = [date_val + ' 00:00', date_val + ' 23:59'];
+
+        eqn_str = "BETWEEN";
+    }
+
+    if (Array.isArray(search_str)) { }
+    else {
+        search_str = [search_str];
+    }
+
+    ////added this logic for static system variable (user/cust/task_id, createDTTM, updateDTTM) [FT - 26042024]
+    var sys_var = "";
+    if (cntrl_qid == 0 & cntrl_type == 1) {
+        if (checksheettype == '5') {
+            sys_var = 'task_id';
+        }
+        else if (checksheettype == '3') {
+            sys_var = 'customer_id';
+        }
+        else if (checksheettype == '7') {
+            sys_var = 'user_id';
+        }
+        else {
+            // in case of udf with view
+            sys_var = header;
+        }
+    }
+    else if (cntrl_qid == 0 & cntrl_type == 8) {
+        sys_var = header;
+    }
+    else if (cntrl_qid == 0 & cntrl_type == 0 && checksheetID == 0) {
+        // sys_var = header;
+        if (system_var == "" || system_var == null || system_var == undefined) {
+            sys_var = header;
+        }
+        else {
+            sys_var = system_var;
+        }
+    }
+
+    //////////////////////
+
+    var col_name = header;
+    search_obj.push({
+        "columnName": col_name,
+        'id': "",
+        "queId": cntrl_qid,
+        "value": search_str,
+        "Equation": eqn_str,
+        "calendar_type": "is_between",
+        "system_var": sys_var,
+        "checksheetID": checksheetID,
+        "checksheet_type": checksheet_type,
+        "que_id": cntrl_qid,
+        "ctrl_type": cntrl_type,
+        "qid": cntrl_qid
+    });
+
+    return search_obj;
+}
+
+reset_watermark_of_columnwise_search_box = () => {
+    let selected_column = $("#ddl_maintask_columns option:selected").val();
+    selected_column = decodeURIComponent(selected_column);
+    let coldata_obj = JSON.parse(selected_column);
+    var header = coldata_obj.header;
+
+    $("#txt_maintask_search").attr("placeholder", "Enter " + header + "");
+    $("#txt_maintask_search").val("");
 }

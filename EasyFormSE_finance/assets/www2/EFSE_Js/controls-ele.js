@@ -1197,7 +1197,7 @@ MkControls.prototype.build_type_30_dynddl = function () {
                 var dep_str = "dependency='" + this.param1[1] + "'";
             }
 
-            str += '<select id="dynddl_' + this.new_id + '" ' + this.enable_disable + ' ' + onchange_str + ' default_value="' + this.default_val + '" style="display:inline-block; padding-right:26px" ' + dep_str + '><option value="0">--- Choose Value ---</option>';
+            str += '<select id="dynddl_' + this.new_id + '" ' + this.enable_disable + ' ' + onchange_str + ' default_value="' + this.default_val + '" style="display:inline-block; padding-right:26px" ' + dep_str + '><option value="--- Choose Value ---">--- Choose Value ---</option>';
 
             if (this.ans == '' || this.ans == null || this.ans == undefined) {
                 if (this.default_val == "" || this.default_val == null || this.default_val == undefined) { }

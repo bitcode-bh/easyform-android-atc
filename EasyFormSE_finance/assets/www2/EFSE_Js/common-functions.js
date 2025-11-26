@@ -335,8 +335,9 @@ function back_button(page) {
             storage.setItem('level_Array', JSON.stringify(level_Array));
 
             var flow_Array = JSON.parse(storage.getItem('flow_Array'));
+            var columnwise_search_bar_dis = $('.columnwise-head-search').css('display');
             var search_bar_dis = $('.head-search').css('display');
-            if (search_bar_dis != "none" && F7_view == 'true') {
+            if (search_bar_dis != "none") {
                 $('.head-search').hide();
                 $('.head-title').show();
                 $('.head-menu').show();
@@ -349,6 +350,20 @@ function back_button(page) {
                     //$('#tab1').css('padding-top', '104px');
                     //$('#tab2').css('padding-top', '104px');
                     //$('#tab3').css('padding-top', '104px');
+                }
+                loading_hide();
+            }
+            else if (columnwise_search_bar_dis != "none") {
+                $("#txt_maintask_search").val("");
+                $('.columnwise-head-search').hide();
+                $('.head-title').show();
+                $('.head-menu').show();
+                var loc_flow_update = JSON.parse(storage.getItem('loc_flow_update'));
+                if (flow_Array.length > 1 && loc_flow_update == "false") {
+                    $("#btn_Submit").show();
+                }
+                if (F7_device == 'android') {
+                    $('.tabbar').slideDown(100);
                 }
                 loading_hide();
             }

@@ -265,18 +265,17 @@
             background-image: initial !important;
         }
 
-        .readmore-link .showmore-box {
-            /*display: none;*/
-        }
+            .readmore-link .showmore-box {
+                /*display: none;*/
+            }
 
-        .readmore-link.expand .showmore-box {
-            display: inline;
-        }
+            .readmore-link.expand .showmore-box {
+                display: inline;
+            }
 
         .list-block .item-inner {
             padding-top: 5px;
-        }     
-
+        }
     </style>
     <script type="text/javascript">
         var username = JSON.parse(storage.getItem('username'));
@@ -899,6 +898,16 @@
                                     </form>
                                 </div>
 
+                                <div class="center columnwise-head-search" style="display: none; width: 96%; margin: 0">
+                                    <table style="width: 95%;">
+                                        <tr>
+                                            <td><select id="ddl_maintask_columns" onchange="reset_watermark_of_columnwise_search_box()" style="width: 100px;"></select></td>
+                                            <td><input id="txt_maintask_search" placeholder="Search" style="white-space: pre; word-break: break-word" class="form-ele" type="text"></td>
+                                            <td><i class="fa fa-search" onclick="get_list_of_pm_sites_by_searchbox_pre()" style="border: none;"></i></td>
+                                        </tr>
+                                    </table>
+                                </div>
+
                                 <div class="center head-title" style="margin-left: -30px; margin-right: 10px">
                                     <label id="lbl_filter_name" style="font-size: 12px;"></label>
                                 </div>
@@ -909,7 +918,7 @@
                                     <a href="#" id="filter_search_task" class="link" onclick="filter_search_task()" style="display:none;"><i class="fa fa-filter" style="font-size: 16px; margin-right: 5px; color: white;"></i></a>
 
                                     <!--removed normal search bcz of advanced search [20042022]-->
-                                    <a id="btn_Search" onclick="show_search_bar()" class="link icon-only" style="display: none"><i class="fa fa-search" style="color: white"></i></a>
+                                    <a id="btn_Search" onclick="show_columnwise_search_bar()" class="link icon-only" style="display:none;"><i class="fa fa-search" style="color: white"></i></a>
                                     <!--<a id="btn_advanced_search" onclick="advance_column_search();return false;" class="link icon-only"><i class="fa fa fa-search-plus" style="color: white"></i></a>-->
                                     <a href="#" id="btn_advanced_search" class="link icon-only open-popup" data-popup=".popup-advance-search-online" onclick="advance_column_search('btn_click');return false;"><i class="fa fa fa-search-plus" style="color: white"></i></a>
 
@@ -968,111 +977,111 @@
 
                                         <ul class="lst_pen" id="site_list" style="margin-top: 2px; margin-bottom: 56px">
                                             <!-- <li>
-            <a style="width:97%"><details class="cls_remove">
-            <summary>Some media are missing - Tap to view</summary><ul class="media_ui">
-            <li class="media_li">
-                <span class="mk_rounded_number theme_login_info_div_content">1</span>
-                abc</li>
-            <li class="media_li">
-                <span class="mk_rounded_number theme_login_info_div_content">2</span>
-                abc2</li>
-            <li class="media_li">
-                <span class="mk_rounded_number theme_login_info_div_content">3</span>
-                abc3</li>
+                                                <a style="width:97%"><details class="cls_remove">
+                                                <summary>Some media are missing - Tap to view</summary><ul class="media_ui">
+                                                <li class="media_li">
+                                                    <span class="mk_rounded_number theme_login_info_div_content">1</span>
+                                                    abc</li>
+                                                <li class="media_li">
+                                                    <span class="mk_rounded_number theme_login_info_div_content">2</span>
+                                                    abc2</li>
+                                                <li class="media_li">
+                                                    <span class="mk_rounded_number theme_login_info_div_content">3</span>
+                                                    abc3</li>
 
-            </ul></details></a>
-            <a href="#" class="item-link item-content">
-                <div class="item-inner item-no-pad">
-                    <div class="item-title">
-                        <label style="font-weight:bold" >Site Id : </label><label>S001</label><br />
-                        <label style="font-weight:bold" >Site Id : </label><label>S001</label><br />
-                        Ivan Petrovsdf sdf sdf sdf sd fsd fs df sdfs df<br />
-                        hellooooo<br />
-                        hellooooo<br />
-                        hellooooo<br />
-                        hellooooo
-                    </div>
-                    <div class="item-after">
-                        <div class="item-icon">
-                            <img class="cls_fence" src="images/circle_red.png"
-                                style="width: 27px; height: 27px" /><img class="cls_fence" src="images/circle_red.png" style="float: right; width: 27px; height: 27px; margin-top: 30px" />
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </li>-->
+                                                </ul></details></a>
+                                                <a href="#" class="item-link item-content">
+                                                    <div class="item-inner item-no-pad">
+                                                        <div class="item-title">
+                                                            <label style="font-weight:bold" >Site Id : </label><label>S001</label><br />
+                                                            <label style="font-weight:bold" >Site Id : </label><label>S001</label><br />
+                                                            Ivan Petrovsdf sdf sdf sdf sd fsd fs df sdfs df<br />
+                                                            hellooooo<br />
+                                                            hellooooo<br />
+                                                            hellooooo<br />
+                                                            hellooooo
+                                                        </div>
+                                                        <div class="item-after">
+                                                            <div class="item-icon">
+                                                                <img class="cls_fence" src="images/circle_red.png"
+                                                                    style="width: 27px; height: 27px" /><img class="cls_fence" src="images/circle_red.png" style="float: right; width: 27px; height: 27px; margin-top: 30px" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </li>-->
                                             <!--<li class="accordion-item" onclick="toggle_accordian_in_tabs(this)">
-            <a href="#" class="item-link item-content">
-                <div class="item-inner" style="margin-left: 0">
-                    <div class="item-title">WO 123456</div>
-                </div>
-            </a>
-            <div class="accordion-item-content">
-                <div class="content-block">
-                    <a href="#" class="item-link item-content">
-                        <div class="item-inner item-no-pad" style="padding-bottom:0; padding-right: 15px!important; padding-top: 0">
-                            <div class="item-title" style="width: 100%">
-                                <table class="nokia_task_list">
-                                    <tr>
-                                        <td>TSS Type</td>
-                                        <td>Radio Site</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Latitude</td>
-                                        <td>41.926881</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Longitude</td>
-                                        <td>25.557607</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Work Description</td>
-                                        <td>This is sample task</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Country</td>
-                                        <td>Finland</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Region</td>
-                                        <td>Central Ostrobothnia</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Zone</td>
-                                        <td>Zone 1</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                        <center style="margin-bottom:-5px"><p class="buttons-row" style="margin-top: -46px; width: 92%; margin-bottom: 0"><a class="button button-fill button-raised cls_fence" style="margin-left: 0; background: grey!important" disabled>ACCEPT</a><a class="button button-fill button-raised cls_fence" style="background: grey!important" disabled>REJECT</a></p></center>
-                    </a>
-                </div>
-            </div>
-        </li>
-        <li class="accordion-item" onclick="toggle_accordian_in_tabs(this)">
-            <a href="#" class="item-link item-content">
-                <div class="item-inner" style="margin-left: 0">
-                    <div class="item-title">WO 6612AB2</div>
-                </div>
-            </a>
-            <div class="accordion-item-content">
-                <div class="content-block">
-                    <p style="text-align: justify">Demo 1</p>
-                </div>
-            </div>
-        </li>
-        <li class="accordion-item" onclick="toggle_accordian_in_tabs(this)">
-            <a href="#" class="item-link item-content">
-                <div class="item-inner" style="margin-left: 0">
-                    <div class="item-title">WO 1244GHJ</div>
-                </div>
-            </a>
-            <div class="accordion-item-content">
-                <div class="content-block">
-                    <p style="text-align: justify">Demo 2</p>
-                </div>
-            </div>
-        </li>-->
+                                                <a href="#" class="item-link item-content">
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">WO 123456</div>
+                                                    </div>
+                                                </a>
+                                                <div class="accordion-item-content">
+                                                    <div class="content-block">
+                                                        <a href="#" class="item-link item-content">
+                                                            <div class="item-inner item-no-pad" style="padding-bottom:0; padding-right: 15px!important; padding-top: 0">
+                                                                <div class="item-title" style="width: 100%">
+                                                                    <table class="nokia_task_list">
+                                                                        <tr>
+                                                                            <td>TSS Type</td>
+                                                                            <td>Radio Site</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Latitude</td>
+                                                                            <td>41.926881</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Longitude</td>
+                                                                            <td>25.557607</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Work Description</td>
+                                                                            <td>This is sample task</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Country</td>
+                                                                            <td>Finland</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Region</td>
+                                                                            <td>Central Ostrobothnia</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Zone</td>
+                                                                            <td>Zone 1</td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            <center style="margin-bottom:-5px"><p class="buttons-row" style="margin-top: -46px; width: 92%; margin-bottom: 0"><a class="button button-fill button-raised cls_fence" style="margin-left: 0; background: grey!important" disabled>ACCEPT</a><a class="button button-fill button-raised cls_fence" style="background: grey!important" disabled>REJECT</a></p></center>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="accordion-item" onclick="toggle_accordian_in_tabs(this)">
+                                                <a href="#" class="item-link item-content">
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">WO 6612AB2</div>
+                                                    </div>
+                                                </a>
+                                                <div class="accordion-item-content">
+                                                    <div class="content-block">
+                                                        <p style="text-align: justify">Demo 1</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="accordion-item" onclick="toggle_accordian_in_tabs(this)">
+                                                <a href="#" class="item-link item-content">
+                                                    <div class="item-inner" style="margin-left: 0">
+                                                        <div class="item-title">WO 1244GHJ</div>
+                                                    </div>
+                                                </a>
+                                                <div class="accordion-item-content">
+                                                    <div class="content-block">
+                                                        <p style="text-align: justify">Demo 2</p>
+                                                    </div>
+                                                </div>
+                                            </li>-->
                                         </ul>
 
                                         <!--task listing pre-loader-->

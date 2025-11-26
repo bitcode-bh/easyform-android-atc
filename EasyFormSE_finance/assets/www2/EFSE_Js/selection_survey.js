@@ -223,7 +223,7 @@ function select_survey_type_tab(selection_type, tab_index) {
             var task_value = list_data[tab_index].task;
             var search_value = list_data[tab_index].search;
             if (search_value == "true") {
-                //$('#btn_Search').show();
+                $('#btn_Search').show();
             }
             else { $('#btn_Search').hide(); }
             //if (task_value == "true") { $('#btn_Create_Task').show(); }
@@ -651,6 +651,18 @@ function show_search_bar() {
     $('.head-title').hide();
     $('.head-menu').hide();
     $('.head-search').show();
+    if (F7_device == 'android') {
+        $('.tabbar').slideUp(100);
+        $('#tab1').css('padding-top', '57px');
+        $('#tab2').css('padding-top', '57px');
+        $('#tab3').css('padding-top', '57px');
+    }
+}
+
+function show_columnwise_search_bar() {
+    $('.head-title').hide();
+    $('.head-menu').hide();
+    $('.columnwise-head-search').show();
     if (F7_device == 'android') {
         $('.tabbar').slideUp(100);
         $('#tab1').css('padding-top', '57px');

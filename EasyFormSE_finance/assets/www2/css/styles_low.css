@@ -2434,6 +2434,34 @@ ul[id^='tbl_subtask_selected']:before, ul[id^='tbl_subtask_selected']:after {
     background-color: transparent !important;
 }
 
+div[id^='div_subtask_'] select[id^='ddl_subtask_columns_'], #ddl_maintask_columns {
+    appearance: auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 14px;
+    min-width: 100px;
+}
+
+div[id^='div_subtask_'] input[id^='txt_subtask_search_'], #txt_maintask_search {
+    white-space: pre;
+    word-break: break-word;
+    margin: 0px 5px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    width: 94%;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+div[id^='div_subtask_'] i.fa-search, .columnwise-head-search i.fa-search {
+    font-size: 22px;
+    border: 1px solid #ccc;
+    padding: 6px;
+    border-radius: 5px;
+    margin: 0;
+}
+
 div[id^='div_Search_'] #tbl_type20_listpopup {
     border-bottom: 1px solid #ebebeb;
 }
