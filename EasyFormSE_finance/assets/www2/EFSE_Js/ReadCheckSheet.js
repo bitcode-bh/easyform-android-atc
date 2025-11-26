@@ -2405,13 +2405,13 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                             if (QR_Code == 'true') {
                                 var param_qr = "get_qr_and_search_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "')";
-                                var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-qrcode" ' + enable_disable + ' style="margin-left:0px;margin-top:-10%; visibility: visible" onclick="' + param_qr + '" ></i>';
-                                var ddl_width = "width:95% !important;"
+                                var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-qrcode" ' + enable_disable + ' style="margin-right:25px;margin-top:-11%; visibility: visible" onclick="' + param_qr + '" ></i>';
+                                var ddl_width = ""
                             }
                             else if (Barcode == 'true') {
                                 var param_qr = "get_barcode_and_search_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "')";
-                                var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-barcode" ' + enable_disable + ' style="margin-left:0px;margin-top:-10%; visibility: visible" onclick="' + param_qr + '" ></i>';
-                                var ddl_width = "width:95% !important;"
+                                var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-barcode" ' + enable_disable + ' style="margin-right:25px;margin-top:-11%; visibility: visible" onclick="' + param_qr + '" ></i>';
+                                var ddl_width = ""
                             }
                             else {
                                 var param_qr = '';
