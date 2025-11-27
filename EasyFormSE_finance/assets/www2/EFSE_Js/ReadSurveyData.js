@@ -229,7 +229,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
             setTimeout(function () {
                 form_has_changed = "false";
             }, 1000);
-            
+
             // normal form
             jsonObj_old = [];
             collapse_Json = []; // type23 inner data array
@@ -425,14 +425,13 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     }
                 }
 
-                var valid = jsonObj[i].prop[0].valid;
 
                 var cntrl_is_hide = jsonObj[i].prop[0].is_hide;
                 if (objectclass == "" || objectclass == null || objectclass == undefined) {
-                    var common_str = ' que_id="' + que_id + '" reference_class="' + reference_class + '" is_hide="' + cntrl_is_hide + '" valid="' + valid + '"';
+                    var common_str = ' que_id="' + que_id + '" reference_class="' + reference_class + '" is_hide="' + cntrl_is_hide + '"';
                 }
                 else {
-                    var common_str = ' objectclass="' + objectclass + '" objectname="' + objectname + '" que_id="' + que_id + '" reference_class="' + reference_class + '" is_hide="' + cntrl_is_hide + '" valid="' + valid + '"';
+                    var common_str = ' objectclass="' + objectclass + '" objectname="' + objectname + '" que_id="' + que_id + '" reference_class="' + reference_class + '" is_hide="' + cntrl_is_hide + '"';
                 }
 
                 if (cnrl_type == 5) {                                   //replaced with type 500 to match with webapp functionality [16062021]
@@ -468,6 +467,8 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     else {
                         var new_id = curr_clps_new_id + '_' + check_type + '_' + jsonObj[i].que_id + '_' + target_div;
                     }
+
+                    var valid = jsonObj[i].prop[0].valid;
 
                     if (read_only == true) {
                         var mendatory_img = '';

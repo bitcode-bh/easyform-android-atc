@@ -1093,17 +1093,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     // check for validation changed by dep_type = 0
                     var is_valid = $('#div_cbtn_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
-
-                        let autofill = $("#cbtn_" + new_id + "").attr('autofill');
-                        if (autofill == "true") {
-                            // make non mandatory photo to mandatory photo in case photo is autofilled via searchable
-                            jsonObj[i].prop[0].valid = "true";
-                            var dep_res = "valid";
-                        }
-                        else {
-                            var dep_res = "invalid";
-                            $('#div_cbtn_' + new_id + '').css({ "border": "none" });
-                        }
+                        var dep_res = "invalid";
+                        $('#div_cbtn_' + new_id + '').css({ "border": "none" });
                     }
                     else {
                         var dep_res = "valid";
@@ -1168,7 +1159,7 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                             let autofill = $("#cbtn_" + new_id + "").attr('autofill');
                             if (autofill == "true") {
                                 let photo_id_avail = jsonObj[i].ans[4];
-                                if (photo_id_avail == "" || photo_id_avail == null || photo_id_avail == undefined) {
+                                if (photo_id_avail == "" || photo_id_avail == null || photo_id_avail == undefined || photo_id_avail == "0") {
                                     cam_answer = "";
                                 }
                             }
@@ -3015,7 +3006,7 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                     if (dep_res == "valid") {
                         var collapse_Json1 = itemObj._checkStrObj(misc_Array[0].value);  		// check_item
-                        
+
                         collapse_Json1[0].view_type = 1;               //default listview for mobile [22092021] ['0' means tableview & '1' means listview]
 
                         var inv_display_flag = collapse_Json1[0].view_type;
@@ -3826,9 +3817,9 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     if (dep_res == "valid") {
 
                         let value = misc_Array[0].value;
-                        value = itemObj._checkStrObj(value); 
+                        value = itemObj._checkStrObj(value);
                         let doc_type = value[0].doc_type;
-                       
+
                         if (doc_type == "image") {
                             var ll_answer = $("#livelink_image_" + new_id + "").attr("src");
                             if (ll_answer == "" || ll_answer == null || ll_answer == undefined || ll_answer == "0") {
@@ -3847,7 +3838,7 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                 answer.push(ll_src, ll_download_src);
                             }
                         }
-            
+
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
                                 mk_animate_border('#div_livelink_' + new_id + '', 0, 500, mand_border_color);
@@ -4319,7 +4310,7 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                                     let t_ans = json[vt].ans[0];
                                                     if (t_ans == "" || t_ans == null || t_ans == undefined) { }
                                                     else {
-                                                        vehicle_type = t_ans; 
+                                                        vehicle_type = t_ans;
                                                     }
                                                     break;
                                                 }
