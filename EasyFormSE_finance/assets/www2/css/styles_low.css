@@ -2778,3 +2778,26 @@ video::-webkit-media-controls-timeline {
 }
 
 /* toggle radio button css end */
+
+
+
+/*my profile popup*/
+.popup-profile .card {
+    background: #ecedef;
+    padding: 5px;
+}
+
+#profile_user_detail {
+    word-break: break-word;
+    font-size: 12px;
+    background: #ecedef;
+}
+
+    .popup-profile .list-block ul:before, .popup-profile .list-block ulafter {
+        height: 0px;
+    }
+
+#profile_user_detail tr td:nth-child(2) {
+    text-align: right;
+    color: gray;
+}

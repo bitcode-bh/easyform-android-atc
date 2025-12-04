@@ -1809,6 +1809,10 @@ MkDocInits.prototype = {
             }
             else if (cls == 'panel-pro') {
                 $('#lblusername_my').html(username);
+
+                let role_name = JSON.parse(storage.getItem('role_name')); 
+                $('#lbluserrole_my').html(role_name);
+
                 var smallImage = document.getElementById("img_my_profile");
                 if (F7_device == 'ios') {
                     //set profile pic for ios [FT -30052024]

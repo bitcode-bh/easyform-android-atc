@@ -821,7 +821,7 @@ function onsuccess_get_my_profile_details_F7(e) {
 
         $("#lbl_pro_latlong").html(user_lat_long_str);
         $("#pro_address").html(address);
-        $("#pro_imei").html('IMEI: ' + imei_no);
+        $("#pro_imei").html('<b>IMEI:</b> ' + imei_no);
 
         var request = $.get({
             url: global_wcf_url + `LocationApi/aws/${lat}/${long}`, success(data) {
@@ -839,11 +839,11 @@ function onsuccess_get_my_profile_details_F7(e) {
             $("#pro_img_gprs").css("color", "gray");
         }
 
-        if (gps == "1") {
-            $("#pro_img_gps").css("color", "lightgreen");
-        } else {
-            $("#pro_img_gps").css("color", "gray");
-        }
+        //if (gps == "1") {
+        //    $("#pro_img_gps").css("color", "lightgreen");
+        //} else {
+        //    $("#pro_img_gps").css("color", "gray");
+        //}
 
         //var company_id = JSON.parse(storage.getItem('company_id'));
         //if (company_id != '157') {
@@ -1009,7 +1009,7 @@ function build_user_table(user_data) {
                 else {
                     if (type == 22) {
 
-                        var type22_table_str = "<table class='tbl-type22' border='1'>";
+                        var type22_table_str = "<table class='tbl-type22' border='0'>";
 
                         var row_final_json = user_data[i].ans[0];
                         if (row_final_json == "" || row_final_json == null || row_final_json == undefined || row_final_json == '""') {
