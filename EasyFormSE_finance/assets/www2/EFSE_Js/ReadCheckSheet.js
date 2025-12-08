@@ -198,7 +198,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
         set_system_variable();
 
         curr_all_data_20["current_checksheet_id"] = check_type;
-
+     
         var c_is_online = JSON.parse(storage.getItem('c_is_online'));            // 1 = online checksheet, 0 = offline checksheet
         var c_is_disabled = JSON.parse(storage.getItem('c_is_disabled'));
         if (c_is_disabled == 1) { disabled_flag = 1 }
@@ -4706,7 +4706,7 @@ function auto_create_task_after_type20_bind() {
 }
 
 var btnNAS_counter = 0; // NoAuto Save 
-function read_dynamic_checksheet_buttons(buttons, Show_class_Array, LL_class_Array, dependency_Array, btn_check_type) {
+function read_dynamic_checksheet_buttons(buttons, Show_class_Array, LL_class_Array, dependency_Array, btn_check_type, read_type) {
     try {
         enable_back = 0; // disable back button
         btnJsonObj = [];
@@ -5063,16 +5063,14 @@ function read_dynamic_checksheet_buttons(buttons, Show_class_Array, LL_class_Arr
             $('#lbl_prg_tot_step').text(chk_progress_data[0].tot_step);
         } catch (e) { }
 
-        read_dynamic_checksheet_checks(Show_class_Array, LL_class_Array,
-            dependency_Array);
+        read_dynamic_checksheet_checks(Show_class_Array, LL_class_Array, dependency_Array, read_type);
     } catch (e) {
         // TODO: handle exception
         alert1(e + "_read_dynamic_checksheet_buttons()");
     }
 }
 
-function read_dynamic_checksheet_checks(Show_class_Array, LL_class_Array,
-    dependency_Array) {
+function read_dynamic_checksheet_checks(Show_class_Array, LL_class_Array, dependency_Array, read_type) {
     try {// retrieve last photo when crash in camera 7,9,11
         var crash_status = JSON.parse(storage.getItem('crash_status'));
         if (crash_status == null || crash_status == undefined
@@ -5108,7 +5106,7 @@ function read_dynamic_checksheet_checks(Show_class_Array, LL_class_Array,
                 var t_dep_type = dependency_Array[d][0].dep_type;
                 var paramData = JSON.stringify(dependency_Array[d]);
                 if (t_dep_type == 1) {
-                    show_hide_Element(encodeURIComponent(paramData));
+                    show_hide_Element(encodeURIComponent(paramData), "", read_type);
                 }
                 else if (t_dep_type == 2) {
                     set_global_show_hide_class(encodeURIComponent(paramData));

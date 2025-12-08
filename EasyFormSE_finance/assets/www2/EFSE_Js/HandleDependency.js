@@ -70,26 +70,28 @@ function change_validation_by_dep_type_0(paramData) {
 
 // (dep_Type=1)function triggered on element event like onclick, onchange, onselect
 var type17_flag = false;
-function show_hide_Element(paramData, target_div) {
+function show_hide_Element(paramData, target_div, read_type) {
     try {
         // var parsed_paramData = JSON.parse(paramData);
         var parsed_paramData = JSON.parse(decodeURIComponent(paramData));
         // hide all element with number of class assigned to particular
         // (dependent) element
 
-        for (i = 0; i < parsed_paramData.length; i++) {
-            var ele_id = parsed_paramData[i].ele_id;
-            var ele_type = parsed_paramData[i].ele_type;
-            var dep_ans = parsed_paramData[i].dep_ans;
-            var dep_class = parsed_paramData[i].dep_class;
-            $("." + dep_class + "").css("display", "none");
-            $('div .' + dep_class + ' *').removeClass('st_depen_hide'); // for_calculator
+        if (read_type != "readsurvey") {
+            for (i = 0; i < parsed_paramData.length; i++) {
+                var ele_id = parsed_paramData[i].ele_id;
+                var ele_type = parsed_paramData[i].ele_type;
+                var dep_ans = parsed_paramData[i].dep_ans;
+                var dep_class = parsed_paramData[i].dep_class;
+                $("." + dep_class + "").css("display", "none");
+                $('div .' + dep_class + ' *').removeClass('st_depen_hide'); // for_calculator
 
-            if (ele_type == "task") {
-                $('.' + dep_class + '').addClass('force_hide');
+                if (ele_type == "task") {
+                    $('.' + dep_class + '').addClass('force_hide');
+                }
             }
         }
-
+    
         // show all element on the basis of dependent answer
         for (i = 0; i < parsed_paramData.length; i++) {
             var ele_id = parsed_paramData[i].ele_id;

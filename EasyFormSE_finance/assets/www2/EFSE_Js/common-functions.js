@@ -1128,10 +1128,10 @@ function build_user_table(user_data) {
                 }
 
                 if (type == 22) {
-                    detail_str += '<tr><td style="font-weight:bold;padding: 3px 3px;widht: 50%;">' + header + '</td><td style="width: 50%;padding: 3px 5px;">' + value + '</td></tr>';
+                    detail_str += '<tr><td style="color:blue; widht: 50%;">' + header + '</td><td style="width: 50%">' + value + '</td></tr>';
                 }
                 else {
-                    detail_str += '<tr><td style="font-weight:bold;padding: 3px 5px;widht: 50%;">' + header + '</td><td style="width: 50%;padding: 3px 5px;">' + value + '</td></tr>';
+                    detail_str += '<tr><td style="color:blue; widht: 50%;">' + header + '</td><td style="width: 50%">' + value + '</td></tr>';
                 }
             }
         }

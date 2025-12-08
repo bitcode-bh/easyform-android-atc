@@ -143,7 +143,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
         set_system_variable();
 
         curr_all_data_20["current_checksheet_id"] = check_type;
-
+    
         var c_is_online = JSON.parse(storage.getItem('c_is_online'));           // 1 = online checksheet, 0 = offline checksheet
         var c_is_disabled = JSON.parse(storage.getItem('c_is_disabled'));
         if (c_is_disabled == 1) { disabled_flag = 1 }
@@ -843,7 +843,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                         dependency_Array.push(data); // fill_array_for_show/hide_question
                                     }
                                 }
-
+                 
                                 var paramData = JSON.stringify(data);
                                 if (jsonObj[i].dependency[0].dep_type == 0) {
                                     param = "change_validation_by_dep_type_0('" + encodeURIComponent(paramData) + "'); ";
@@ -5200,7 +5200,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
             }
 
             //read_dynamic_surveydata_buttons(buttons, Show_class_Array, LL_class_Array, dependency_Array);
-            read_dynamic_checksheet_buttons(buttons, Show_class_Array, LL_class_Array, dependency_Array, check_type);
+            read_dynamic_checksheet_buttons(buttons, Show_class_Array, LL_class_Array, dependency_Array, check_type, "readsurvey");
         }
         else if (form_flag == 1) {
             var new_json = JSON.stringify(jsonObj);
