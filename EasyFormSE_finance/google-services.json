@@ -2525,6 +2525,42 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:888205988954:android:f1accd745a2e0b37f97463",
+        "android_client_info": {
+          "package_name": "com.easyfrom.altiusinfra"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "888205988954-gh5n7o2jqk9ainrvp38k9kfvutp077pq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnHlyBY37veDJyBC8x8kzI7lL0L7Xok2c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "888205988954-gh5n7o2jqk9ainrvp38k9kfvutp077pq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "888205988954-1pj5ujol0igmbknpl5r8p6qnlg5bk22l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.sky.skyzoom"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"
