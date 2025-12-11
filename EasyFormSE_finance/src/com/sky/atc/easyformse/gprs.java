@@ -224,6 +224,7 @@ public class gprs extends BroadcastReceiver {
 					}
 				}
 			}
+			c.close();
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

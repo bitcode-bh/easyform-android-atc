@@ -585,10 +585,10 @@ public class newfused extends Service implements LocationListener {
                     }
 
                     //to check if trip service is running or not
-                    Intent Autotripservice = new Intent(sqlitewraper.context,
-                            AutoTripStopService.class);
-                    WakefulIntentService.sendWakefulWork(sqlitewraper.context,
-                            Autotripservice);
+//                    Intent Autotripservice = new Intent(sqlitewraper.context,
+//                            AutoTripStopService.class);
+//                    WakefulIntentService.sendWakefulWork(sqlitewraper.context,
+//                            Autotripservice);
                 }
             }
         }catch (Exception e){

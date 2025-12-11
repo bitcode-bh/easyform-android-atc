@@ -368,7 +368,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                     f_upload_new_structure.class);
             WakefulIntentService.sendWakefulWork(sqlitewraper.context,
                     i_ch2);
-            Toast.makeText(this, "trip stoped", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(this, "trip stoped", Toast.LENGTH_SHORT).show();
             MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
             String ismapcheck;
             ismapcheck = pref.getString("IsMapcheck","false");
@@ -526,7 +526,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
             c.put("p_udf_id", p_udf_id);
             c.put("match_temp_id", match_temp_id);
             c.put("local_milli", System.currentTimeMillis());
-            c.put("entry_type", "and_plugin");
+            c.put("entry_type", "and_autotrip");
             c.put("old_status", oldstatus);
 
             c1_n.close();
@@ -731,6 +731,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                     duration_hour = "24:00";
                                     if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
                                         stopTrip(location,punchoutstatus);
+                                        return;
                                     }
                                 }
                                 else {
@@ -738,6 +739,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
 //                                    duration_hour = "5:00";
                                     if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
                                         stopTrip(location,punchoutstatus);
+                                        return;
                                     }
                                 }
 
@@ -747,6 +749,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                 if (mAttendanceData.getAuto_punchout_duration() == null || mAttendanceData.getAuto_punchout_duration().equalsIgnoreCase("")) {
                                     if (is24HoursPassed(Long.parseLong(TripStartTime))) {
                                         stopTrip(location,punchoutstatus);
+                                        return;
                                     }
                                 }
                                 else {
@@ -771,6 +774,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                     {
                                         if (!ISTripStartAfter6PM && distance < LOCATION_THRESHOLD) {
                                             stopTrip(location,punchoutstatus);
+                                            return;
                                         }
                                         else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour)){
                                             stopTrip(location,punchoutstatus);
@@ -778,6 +782,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                             pref1.putBoolean("ISTripStartAfter6PM",false);
                                             pref1.putBoolean("ISExitGeofence",false);
                                             pref1.commit();
+                                            return;
 
                                         }
 
@@ -785,6 +790,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                     else {
                                         if (!ISTripStartAfter6PM) {
                                             stopTrip(location,punchoutstatus);
+                                            return;
                                         }
                                         else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour) ){
                                             stopTrip(location,punchoutstatus);
@@ -792,6 +798,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                             pref1.putBoolean("ISTripStartAfter6PM",false);
                                             pref1.putBoolean("ISExitGeofence",false);
                                             pref1.commit();
+                                            return;
 
                                         }
                                     }

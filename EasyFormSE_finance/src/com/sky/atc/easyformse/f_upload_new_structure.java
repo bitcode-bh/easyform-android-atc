@@ -1669,10 +1669,16 @@ public class f_upload_new_structure extends WakefulIntentService {
         int k = -1;
 
         int comp_count;
+//        Cursor c1 = database
+//                .rawQuery(
+//                        "select tid,siteid,checksheetid,height,tower_type,server_task_id,status,step,moduledef,global_var,tid_n,moduleid,millisecond,punch_flag,in_ms,out_ms,duration,match_temp_id,role_id,old_status from task_master_history where flag='1' and tid="
+//                                + tid , null);
+
         Cursor c1 = database
                 .rawQuery(
                         "select tid,siteid,checksheetid,height,tower_type,server_task_id,status,step,moduledef,global_var,tid_n,moduleid,millisecond,punch_flag,in_ms,out_ms,duration,match_temp_id,role_id,old_status from task_master_history where flag='1' and tid="
-                                + tid, null);
+                                + tid + " " +
+                                "GROUP BY millisecond", null);
         c1.moveToFirst();
         comp_count = c1.getCount();
 
