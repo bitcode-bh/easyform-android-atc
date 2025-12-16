@@ -3784,7 +3784,7 @@ rebind_autofill_photo_temp = (t_cam_id, t_src) => {
          }
          else {
              attempt_count = parseInt(attempt_count);
-             if (attempt_count > 3) {
+             if (attempt_count > 2) {
                  $(t_cam_id).removeAttr("onerror");
              }
              else {

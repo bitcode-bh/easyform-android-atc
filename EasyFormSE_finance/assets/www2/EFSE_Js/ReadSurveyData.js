@@ -3057,7 +3057,12 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         var type22_snglCntrl_type = 0;
                         var type22_json_len = json_inv.length;
                         if (type22_json_len == 1 && control_type == '20') {
-                            type22_snglCntrl_type = json_inv[0].type[1].type;
+                            if (json_inv[0].type.length == 1) {
+                                type22_snglCntrl_type = json_inv[0].type[0].type;
+                            }
+                            else {
+                                type22_snglCntrl_type = json_inv[0].type[1].type;
+                            }
                         }
 
                         newdiv += '<div id="div_Inv_Calculate_' + new_id + '" class="cntrl_main_div ' + ele_class + '" form_mode="readsurvey" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';
