@@ -83,9 +83,11 @@ function CaptureClick(item_id, que_id, img_div, form_flag_temp, photo_type, img_
             if (null_img == 2 || old_photo_type == "original_photo") {
                 // readonly image (in collapsible step)
                 $("#popover_re_capture").parent().hide();
+                $("#popover_editphoto").parent().hide();
             }
             else {
                 $("#popover_re_capture").parent().show();
+                $("#popover_editphoto").parent().show();
             }
         } else {
             // re-captured/ image not exist
@@ -1280,12 +1282,20 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
             if (null_img == 2) {
                 // readonly image (in collapsible step)
                 $("#popover_re_capture").parent().hide();
+                $("#popover_editphoto").parent().hide();
             }
         }
         else {
             if ((form_flag_temp == 0 || form_flag_temp == 1) && c_is_online == 1) {
                 // normal online form
                 var sid = JSON.parse(storage.getItem('server_task_id'));
+
+                if (form_flag_temp == 1) {
+                    if (sid == "" || sid == null || sid == undefined) {
+                        // photo in invoice control in task form - mk - 02122025
+                        sid = '0';
+                    }
+                }
             }
             else if (form_flag_temp == 12) {
                 // group task
@@ -1699,6 +1709,7 @@ function onPhotoDataSuccess_old_photo() {
 
         // readonly image (in collapsible step)
         $("#popover_re_capture").parent().hide();
+        $("#popover_editphoto").parent().hide();
 
         var click_action = $("#" + old_photo_id + "").attr('click_action');
         $("#" + old_photo_id + "").attr('onclick', click_action);
@@ -1888,6 +1899,7 @@ function verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, pho
         myApp.popover('.popover-type7', clickedLink);
         $("#popover_viewphoto").attr("onclick", "get_full_view_image_type7_F7('" + src + "')");
         $("#popover_re_capture").parent().hide();
+        $("#popover_editphoto").parent().hide();
         return false;
     }
 

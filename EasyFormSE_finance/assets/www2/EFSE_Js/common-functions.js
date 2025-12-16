@@ -821,7 +821,7 @@ function onsuccess_get_my_profile_details_F7(e) {
 
         $("#lbl_pro_latlong").html(user_lat_long_str);
         $("#pro_address").html(address);
-        $("#pro_imei").html('<b>IMEI:</b> ' + imei_no);
+        /*$("#pro_imei").html('<b>IMEI:</b> ' + imei_no);*/
 
         var request = $.get({
             url: global_wcf_url + `LocationApi/aws/${lat}/${long}`, success(data) {
@@ -3776,7 +3776,21 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
 
 rebind_autofill_photo_temp = (t_cam_id, t_src) => {
      setTimeout(function () {
-        $(t_cam_id).attr("src", t_src);
+         $(t_cam_id).attr("src", t_src);
+
+         let attempt_count = $(t_cam_id).attr("attempt");
+         if (attempt_count == "" || attempt_count == null || attempt_count == undefined) {
+             $(t_cam_id).attr("attempt", 0);
+         }
+         else {
+             attempt_count = parseInt(attempt_count);
+             if (attempt_count > 3) {
+                 $(t_cam_id).removeAttr("onerror");
+             }
+             else {
+                 $(t_cam_id).attr("attempt", attempt_count + 1);
+             }
+         }
     }, 2000, t_cam_id, t_src);
 }
 

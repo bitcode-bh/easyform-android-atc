@@ -2791,7 +2791,7 @@ video::-webkit-media-controls-timeline {
     padding: 5px;
 }
 
-#profile-user-details {
+.profile-user-details {
     max-height: 215px;
     overflow: auto;
 }
