@@ -27,15 +27,13 @@ import io.michaelrocks.paranoid.Obfuscate;
 
 //Job schedulers to start the location  service
 @Obfuscate
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class TestJobService extends JobService {
 
     SQLiteDatabase database;
 
     @Override
     public boolean onStartJob(JobParameters params) {
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+
         database=sqlitewraper.getDatabase();
 
         Log.d("###onStartJob", "that");

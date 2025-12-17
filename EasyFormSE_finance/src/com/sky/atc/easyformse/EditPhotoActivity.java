@@ -1,5 +1,6 @@
 package com.sky.atc.easyformse;
 
+import static com.sky.atc.easyformse.DrawingViewEditphoto.originalBitmap;
 import static com.sky.atc.easyformse.sqlitewraper.mainactivity;
 
 import android.Manifest;
@@ -11,8 +12,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -63,12 +66,12 @@ public class EditPhotoActivity extends Activity {
     String themecolor;
 
     MySharedPreferences pref;
-    DrawingView mydrawingView;
+    DrawingViewEditphoto mydrawingView;
     Uri image_file;
     Bitmap bmp;
     int ret;
     Bitmap alteredBitmap;
-    Bitmap mutableBitmap;
+   static Bitmap mutableBitmap;
     private Bitmap lastBitmap;
     B_new b;
     FrameLayout mLayoutpaint;
@@ -100,7 +103,7 @@ public class EditPhotoActivity extends Activity {
         btnErase = findViewById(R.id.btnErase);
         seekBar = findViewById(R.id.seekBar1);
         mImageView_edit = findViewById(R.id.img_edit);
-
+        mImageView_edit.setVisibility(View.GONE);
         themecolor = pref.getString("themecolor", "");
         if (themecolor.equalsIgnoreCase("")) {
         } else {
@@ -125,45 +128,51 @@ public class EditPhotoActivity extends Activity {
         init();
         scaleDetector = new ScaleGestureDetector(this, new ScaleListener());
 
-        imageView.setOnTouchListener((v, event) -> {
-            scaleDetector.onTouchEvent(event);
+//        imageView.setOnTouchListener((v, event) -> {
+//
+//            // Always pass event to scale detector
+//            scaleDetector.onTouchEvent(event);
+//
+//            if (event.getPointerCount() > 1) {
+//
+//                switch (event.getActionMasked()) {
+//
+//                    case MotionEvent.ACTION_POINTER_DOWN:
+//                        lastX = event.getX(0);
+//                        lastY = event.getY(0);
+//                        mode = 2; // ZOOM MODE
+//                        break;
+//
+//                    case MotionEvent.ACTION_MOVE:
+//                        if (mode == 2) {
+//                            float dx = event.getX(0) - lastX;
+//                            float dy = event.getY(0) - lastY;
+//
+//                            dx /= scale;
+//                            dy /= scale;
+//
+//                            matrix.postTranslate(dx, dy);
+//                            fixTranslation();
+//                            imageView.setImageMatrix(matrix);
+//
+//                            lastX = event.getX(0);
+//                            lastY = event.getY(0);
+//                        }
+//                        break;
+//
+//                    case MotionEvent.ACTION_POINTER_UP:
+//                    case MotionEvent.ACTION_UP:
+//                        mode = 0;
+//                        break;
+//                }
+//
+//                return true; // 👈 consume ONLY 2 finger gestures
+//            }
+//
+//            // 🟢 ONE FINGER → allow DrawingView to handle
+//            return false;
+//        });
 
-            switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                case MotionEvent.ACTION_DOWN:
-                    lastX = event.getX();
-                    lastY = event.getY();
-                    mode = 1; // DRAG
-                    break;
-
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    mode = 2; // ZOOM
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-                    if (mode == 1) {
-                        float dx = event.getX() - lastX;
-                        float dy = event.getY() - lastY;
-
-                        // Adjust for current scale
-                        dx /= scale;
-                        dy /= scale;
-
-                        matrix.postTranslate(dx, dy);
-                        fixTranslation();
-                        imageView.setImageMatrix(matrix);
-
-                        lastX = event.getX();
-                        lastY = event.getY();
-                    }
-                    break;
-
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_POINTER_UP:
-                    mode = 0;
-                    break;
-            }
-            return true; // consume event
-        });
 
 
 
@@ -173,22 +182,22 @@ public class EditPhotoActivity extends Activity {
                 save_bitmap();
             }
         });
-
-        mImageView_edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mLinearLayoutBtn.setVisibility(View.VISIBLE);
-                GetColor color2 = new GetColor();
-                color2.setColorValue(-54784);
-
-                mydrawingView = new DrawingView(EditPhotoActivity.this, mutableBitmap);
-                mydrawingView.setBackgroundColor(Color.TRANSPARENT);
-                b.setMutableBitmap(mutableBitmap);
-                b.setB(mutableBitmap);
-
-                mLayoutpaint.addView(mydrawingView);
-            }
-        });
+        mLinearLayoutBtn.setVisibility(View.VISIBLE);
+//        mImageView_edit.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                GetColor color2 = new GetColor();
+//                color2.setColorValue(-54784);
+//
+//                mydrawingView = new DrawingViewEditphoto(EditPhotoActivity.this, mutableBitmap);
+//                mydrawingView.setBackgroundColor(Color.TRANSPARENT);
+//                b.setMutableBitmap(mutableBitmap);
+//                b.setB(mutableBitmap);
+//
+//                mLayoutpaint.addView(mydrawingView);
+//            }
+//        });
 
         btnErase.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -206,14 +215,10 @@ public class EditPhotoActivity extends Activity {
                             public void onClick(DialogInterface dialog,
                                                 int which) {
                                 // System.out.println("eraseAll() Method Call");
-                                mLayoutpaint.removeView(mydrawingView);
-                                GetColor.setStrockWidth(5);
-                                GetColor.setDefaultBrushSize(GetColor.getStrockWidth());
-
-                                mydrawingView = new DrawingView(EditPhotoActivity.this, mutableBitmap);
-                                mydrawingView.setBackgroundColor(Color.TRANSPARENT);
-
-                                mLayoutpaint.addView(mydrawingView);
+                                alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
+                                mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                                mydrawingView.eraseAll();
+                                mydrawingView.resetZoom();
 
                             }
                         });
@@ -324,7 +329,17 @@ public class EditPhotoActivity extends Activity {
                         alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
                         mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
                         lastBitmap = mutableBitmap;
-                        runOnUiThread(() -> imageView.setImageBitmap(mutableBitmap));
+
+
+                        runOnUiThread(() -> {
+                            //imageView.setImageBitmap(alteredBitmap);
+
+                            if (mydrawingView == null) {
+                                mydrawingView = new DrawingViewEditphoto(EditPhotoActivity.this, mutableBitmap);
+                                mydrawingView.setBackgroundColor(Color.TRANSPARENT);
+                                mLayoutpaint.addView(mydrawingView);
+                            }
+                        });
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -394,7 +409,15 @@ public class EditPhotoActivity extends Activity {
                 alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
                 mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
                 lastBitmap = mutableBitmap;
-                imageView.setImageBitmap(mutableBitmap);
+                runOnUiThread(() -> {
+                  //  imageView.setImageBitmap(mutableBitmap);
+
+                    if (mydrawingView == null) {
+                        mydrawingView = new DrawingViewEditphoto(EditPhotoActivity.this, mutableBitmap);
+                        mydrawingView.setBackgroundColor(Color.TRANSPARENT);
+                        mLayoutpaint.addView(mydrawingView);
+                    }
+                });
 
             }
         } catch (Exception e) {
@@ -488,7 +511,7 @@ public class EditPhotoActivity extends Activity {
     }
 
     void save_bitmap() {
-        Bitmap b_n = b.getB();
+        Bitmap b_n = mydrawingView.getFinalBitmap();
         try {
             File file = null;
             if (!Environment.getExternalStorageState().equals(
@@ -508,8 +531,8 @@ public class EditPhotoActivity extends Activity {
                 String name = "IMG" + System.currentTimeMillis() + ".jpeg";
                 file = new File(dir, name);
             }
-            b_n = Bitmap.createScaledBitmap(b_n, bmp.getWidth(),
-                    bmp.getHeight(), true);
+            b_n = Bitmap.createScaledBitmap(b_n, mutableBitmap.getWidth(),
+                    mutableBitmap.getHeight(), true);
 
             FileOutputStream out = new FileOutputStream(file.getAbsolutePath());
 

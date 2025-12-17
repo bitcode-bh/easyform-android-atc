@@ -490,11 +490,13 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             {
             }
             else {
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
-                    Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
-                    AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
-                }, 1000);
+                if( AttendanceUtil.getAttendanceDataList() != null) {
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
+                        Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
+                        AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
+                    }, 1000);
+                }
             }
         }
         catch (Exception e)
