@@ -1604,6 +1604,7 @@ MkDocInits.prototype = {
         doc._loadFile('panel-nav', 'f7_navbar.html');
         doc._loadFile('panel-pro', 'f7_myprofile.html');
         doc._loadFile('panel-faq', 'f7_faq.html');
+        doc._loadFile('panel-sp', 'f7_safety_passport.html');
         $('body').click(function () {
             session_ms = 0;
             $('[id^=product_list]').empty();

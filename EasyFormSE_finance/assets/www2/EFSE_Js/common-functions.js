@@ -917,7 +917,7 @@ function onfail_get_my_profile_details_F7(e) {
 }
 
 var Approvalflag = "NO";
-function get_blank_checksheet_profile(user_data) {
+function get_blank_checksheet_profile(user_data, safety_passport) {
     try {
 
         var company_id = JSON.parse(storage.getItem('company_id'));
@@ -967,7 +967,16 @@ function get_blank_checksheet_profile(user_data) {
                             }
                         }
                     }
-                    build_user_table(blank_data);
+
+                    if (safety_passport == "safety_passport") {
+                        // safety passport card
+                        build_user_safety_passport(blank_data);
+                    }
+                    else {
+                        // My profile
+                        build_user_table(blank_data);
+                    }
+
                 }
             }
             else {
@@ -983,7 +992,7 @@ function get_blank_checksheet_profile(user_data) {
     }
 }
 
-function build_user_table(user_data) {
+function build_user_table(user_data, safety_passport) {
 
     var detail_str = '';
     var itemObj = new MKCheckItem();
@@ -3775,22 +3784,22 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
 }
 
 rebind_autofill_photo_temp = (t_cam_id, t_src) => {
-     setTimeout(function () {
-         $(t_cam_id).attr("src", t_src);
+    setTimeout(function () {
+        $(t_cam_id).attr("src", t_src);
 
-         let attempt_count = $(t_cam_id).attr("attempt");
-         if (attempt_count == "" || attempt_count == null || attempt_count == undefined) {
-             $(t_cam_id).attr("attempt", 0);
-         }
-         else {
-             attempt_count = parseInt(attempt_count);
-             if (attempt_count > 2) {
-                 $(t_cam_id).removeAttr("onerror");
-             }
-             else {
-                 $(t_cam_id).attr("attempt", attempt_count + 1);
-             }
-         }
+        let attempt_count = $(t_cam_id).attr("attempt");
+        if (attempt_count == "" || attempt_count == null || attempt_count == undefined) {
+            $(t_cam_id).attr("attempt", 0);
+        }
+        else {
+            attempt_count = parseInt(attempt_count);
+            if (attempt_count > 2) {
+                $(t_cam_id).removeAttr("onerror");
+            }
+            else {
+                $(t_cam_id).attr("attempt", attempt_count + 1);
+            }
+        }
     }, 2000, t_cam_id, t_src);
 }
 
@@ -3815,4 +3824,239 @@ function set_common_localStorage(key_name, key_value) {
     catch (e) {
         alert(e + '_set_common_localStorage')
     }
+}
+
+function get_safety_passport() {
+    myApp.popup('.popup-safety-passport');
+
+    loading();
+
+    let user_id = JSON.parse(storage.getItem('user_id'));
+    let company_id = JSON.parse(storage.getItem('company_id'));
+
+    var Param_obj = [];
+    Param_obj.push({
+        'User_Id': user_id,
+        'Company_id': company_id,
+    });
+
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'User_Data', JSON.stringify(Param_obj), function (e) {
+        var Search_data = e.responseText;
+        Search_data = eval('(' + Search_data + ')');
+        var message = Search_data[0].message;
+        var status = Search_data[0].status;
+        if (status == 1) {
+            message = message.replace('[[', '[');
+            message = message.replace(']]', ']');
+            message = eval('(' + Search_data[0].data + ')');
+            var user_data = message;
+        }
+        else {
+            var user_data = localStorage.getItem('profile_user_data');
+            user_data = JSON.parse(user_data);
+        }
+        loading_hide();
+
+        if (user_data == "" || user_data == null || user_data == undefined) {
+            alert("User data is not available!");
+        }
+        else {
+
+            var prop = user_data[0].prop;
+            if (prop == "" || prop == null || prop == undefined) {
+                // 3 key json
+                get_blank_checksheet_profile(user_data, "safety_passport");
+            }
+            else {
+                // full json
+                build_user_safety_passport(user_data);
+            }
+        }
+    }, onfail);
+    getdata1.callOtherDomain();
+}
+
+function build_user_safety_passport(user_data) {
+
+    var itemObj = new MKCheckItem();
+
+    let emp_id = JSON.parse(storage.getItem('user_id'));;
+    let name = role_name = circle_name = partner_name = contact_numner = blood_group = '';
+
+    for (var i = 0; i < user_data.length; i++) {
+        var type = user_data[i].type;
+        var que_id = user_data[i].que_id;
+        if (type == 0 || type == 5 || type == 10 || que_id == 5 || que_id == 10018 || que_id == 4008) { }
+        else {
+
+            var header = user_data[i].prop[0].name;
+            var value = user_data[i].ans[0];
+
+            if (que_id == 3) {
+                // make username in small case in case of user created in Camel or Uppar case 16012023
+                value = value.toLowerCase();
+            }
+
+            if (value == "" || value == null || value == undefined) {
+                value = "";
+            }
+            else {
+                if (type == 22) {
+
+                    var type22_table_str = "<table class='tbl-type22' border='0'>";
+
+                    var row_final_json = user_data[i].ans[0];
+                    if (row_final_json == "" || row_final_json == null || row_final_json == undefined || row_final_json == '""') {
+
+                    }
+                    else {
+                        row_final_json = itemObj._checkStrObj(row_final_json);
+
+                        var role_list_json = row_final_json[0].row_finaljson;
+                        if (role_list_json.length > 0) {
+                            var btn_json = role_list_json[0].json_type_22[0].edt_btn_json;
+
+                            if (btn_json.length == 1) {
+                                // don't display header in case of single control/column
+                            }
+                            else {
+                                // display header in case of multiple controls/columns
+
+                                // header
+                                type22_table_str += "<tr>";
+                                for (e = 0; e < btn_json.length; e++) {
+                                    var prop_obj = btn_json[e].prop;
+                                    if (prop_obj == "" || prop_obj == null || prop_obj == undefined) {
+                                        var txt_row = role_list_json[0].json_type_22[0].txt_row;
+                                        var header = txt_row[e].row_name;
+                                    }
+                                    else {
+                                        var header = btn_json[e].prop[0].name;
+                                    }
+
+                                    type22_table_str += "<th>" + header + "</th>";
+                                }
+                                type22_table_str += "</tr>";
+                            }
+
+                            for (var txtrow = 0; txtrow < role_list_json.length; txtrow++) {
+
+                                var btn_json = role_list_json[txtrow].json_type_22[0].edt_btn_json;
+
+                                // body
+                                type22_table_str += "<tr>";
+                                for (e = 0; e < btn_json.length; e++) {
+
+                                    var type22_Type = btn_json[e].type;
+                                    if (type22_Type == "6") {
+                                        var type22_Ans = btn_json[e].ans;
+                                        type22_table_str += "<td style='min-width: 50px'>" + type22_Ans + "</td>";
+                                    }
+                                    else if ((type22_Type == "7") || (type22_Type == "26") || (type22_Type == "28") || (type22_Type == "9")) {
+
+                                        var type22_Ans = btn_json[e].ans;
+                                        if (type22_Ans == "" || type22_Ans == null || type22_Ans == undefined || type22_Ans[0] == "" || type22_Ans[0] == null || type22_Ans[0] == undefined) {
+                                            type22_table_str += "<td style='min-width: 50px'></td>";
+                                        }
+                                        else {
+                                            // dynamic photo thumbnail by live url 25012021
+                                            var type22_img_que_id = btn_json[e].que_id;
+                                            var t_row_index_no = txtrow + 1;
+                                            var user_id = window.localStorage.getItem("user_id");
+                                            var uniqcode = JSON.parse(localStorage.getItem('uniqcode'));
+                                            var random_str = "&random=" + new Date().getTime();
+
+                                            //var img_Id = "" + global_resumable_url + "/api/GetFile/Select_File_Details?cid=" + check_type + "&t22id=" + que_id + "&t22i=" + t_row_index_no + "&id=" + primary_id + "&qd=" + type22_img_que_id + "&ctype=" + ctype + "&ud=" + user_id + "&uc=" + uniqcode + random_str + "";
+                                            var img_Id = "" + global_resumable_url + "GetFile/Select_File_Details?cid=" + check_type + "&t22id=" + que_id + "&t22i=" + t_row_index_no + "&id=" + primary_id + "&qd=" + type22_img_que_id + "&ctype=" + ctype + "&ud=" + user_id + "&uc=" + uniqcode + random_str + "";
+
+                                            var param_mouseover = 'get_zoom_img_onhover("' + img_Id + '", event)';
+                                            var param_mouseout = 'remove_zoom_img_onout()';
+
+                                            if (type22_Type == "7") {
+                                                type22_table_str += "<td><img class='img-thumb' id='img_thumb_type22_" + j + "' src=" + img_Id + " onmousemove='" + param_mouseover + "'  onmouseout='" + param_mouseout + "' style='width: 40px; height:40px' /></td>";
+                                            }
+                                            else if (type22_Type == "9") {
+                                                type22_table_str += "<td><img class='img-thumb' id='img_thumb_type22_" + j + "' src=" + img_Id + " onmousemove='" + param_mouseover + "'  onmouseout='" + param_mouseout + "' style='width: 40px; height:40px; border:1px solid #ccc' /></td>";
+                                            }
+                                            else if (type22_Type == "26") {
+                                                //type22_table_str += "<td style='vertical-align:middle'><a onclick='Open_popup_View(" + primary_id + "," + type_ + "," + que_id + ")'><i class='fa fa-file-text-o'></i></a></td>";
+
+                                                var param_doc = "window.open('" + img_Id + "')";
+                                                type22_table_str += '<td style="vertical-align:middle"><a class="btn" onclick="' + param_doc + '" title="View Document"><i class="fa fa-file-text-o"></i></a></td>';
+                                            }
+                                            else {
+                                                //type22_table_str += "<td style='vertical-align:middle'><a onclick='Open_popup_View(" + primary_id + "," + type_ + "," + que_id + ")'><i class='fa fa-file-video-o'></i></a></td>";
+
+                                                var param_video = "window.open('" + img_Id + "')";
+                                                type22_table_str += '<td style="vertical-align:middle"><a class="btn" onclick="' + param_video + '" title="View Video"><i class="fa fa-file-video-o"></i></a></td>';
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        var type22_Ans = btn_json[e].ans[0];
+                                        type22_table_str += "<td style='min-width: 50px'>" + type22_Ans + "</td>";
+
+                                    }
+                                }
+
+                                type22_table_str += "</tr>";
+                            }
+                        }
+                    }
+
+                    type22_table_str += "</table>";
+
+                    value = type22_table_str;
+                }
+                else if (type == 1) {
+                    var misc_Array = user_data[i].prop[0].misc_data;
+                    var prop_value = misc_Array[0].value;
+                    if (prop_value == '' || prop_value == null || prop_value == undefined) {
+                        var box_type = "";
+                    }
+                    else {
+                        prop_value = itemObj._checkStrObj(misc_Array[0].value);  // check_item
+                        var box_type = prop_value[0].box_type;
+                    }
+                }
+            }
+
+            //if (type == 22) {
+            //    detail_str += '<tr><td style="color:blue; widht: 50%;">' + header + '</td><td style="width: 50%">' + value + '</td></tr>';
+            //}
+            
+            if (que_id == 20) {
+                name = value;
+            }
+            else if (que_id == 10021) {
+                role_name = value;
+            }
+            else if (que_id == 42) {
+                circle_name = value;
+            }
+            else if (que_id == 10016) {
+                partner_name = value;
+            }
+            else if (que_id == 9) {
+                contact_numner = value;
+            }
+            else if (que_id == 10037) {
+                blood_group = value;
+            }
+            
+
+        }
+    }
+
+    let t_bottom_pro_img = $("#menu_img_profile").attr("src");
+    $("#img_sp_profilephoto").attr("src", t_bottom_pro_img)
+  
+    $("#lbl_sp_empid").html(emp_id);
+    $("#lbl_sp_name").html(name);
+    $("#lbl_sp_userrole").html(role_name);
+    $("#lbl_sp_circle").html(circle_name);
+    $("#lbl_sp_partnername").html(partner_name);
+    $("#lbl_sp_contactnumber").html(contact_numner);
+    $("#lbl_sp_bloodgroup").html(blood_group);
+
 }

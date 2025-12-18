@@ -509,6 +509,9 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                     ele_class += ' ' + ref_ele_class;
 
+                    // Static Q class with que_id e.g. Q13
+                    ele_class += ' Q' + que_id;
+
                     var label_str = '';
                     var misc_Array = jsonObj[i].prop[0].misc_data;
                     var value = misc_Array[0].value;

@@ -1984,7 +1984,7 @@ div[id^=div_step_Col_] .list-block ul:before, div[id^=div_step_Col_] .list-block
         background-color: rgba(0,0,0,.05);
     }
 
-    /*.tbl-type22 tr td {
+/*.tbl-type22 tr td {
         padding: 0 5px !important;
     }*/
 
@@ -2802,11 +2802,77 @@ video::-webkit-media-controls-timeline {
     background: #ecedef;
 }
 
-    .popup-profile .list-block ul:before, .popup-profile .list-block ulafter {
-        height: 0px;
-    }
+.popup-profile .list-block ul:before, .popup-profile .list-block ulafter {
+    height: 0px;
+}
 
 #profile_user_detail tr td:nth-child(2) {
     text-align: right;
     color: gray;
 }
+
+/* safety passport UI*/
+
+.passport-card {
+    margin: 16px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0a3d91, #06275e);
+    color: #fff;
+}
+
+.passport-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.passport-photo img {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    border: 2px solid #fff;
+}
+
+.passport-title {
+    margin-left: 35px;
+    text-align: center;
+}
+
+    .passport-title .country {
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .passport-title .doctype {
+        font-size: 18px;
+        margin-top: 4px;
+        font-weight: bold;
+    }
+
+.passport-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+    .passport-badge img {
+        width: 50px;
+        height: 50px;
+    }
+
+.passport-body .label {
+    font-size: 11px;
+    opacity: 0.7;
+    text-transform: uppercase;
+}
+
+.passport-body .value {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+    .passport-body .row:last-child .value {
+        margin-bottom: 0px;
+    }
