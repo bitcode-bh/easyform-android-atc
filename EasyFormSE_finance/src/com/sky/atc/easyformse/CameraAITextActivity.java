@@ -106,7 +106,7 @@ public class CameraAITextActivity extends AppCompatActivity {
     private CameraDevice cameraDevice;
     private CameraCaptureSession captureSession;
     private CaptureRequest.Builder previewRequestBuilder;
-    ImageView CaptureImage;
+    ImageView CaptureImage,BrowseImage;
     FrameLayout mFrameLayout;
     ScrollView mScrollView;
     LinearLayout mLinearLayoutmain;
@@ -129,7 +129,7 @@ public class CameraAITextActivity extends AppCompatActivity {
         mScrollView = findViewById(R.id.scrollview);
         textureView = findViewById(R.id.textureView);
         mLinearLayoutmain = findViewById(R.id.linearmain);
-
+        BrowseImage = findViewById(R.id.browseimage);
 
         pref = sqlitewraper.getSecureShared("MyPref");
 //        themecolor = pref.getString("themecolor","");
@@ -175,6 +175,12 @@ public class CameraAITextActivity extends AppCompatActivity {
             });
             mButtonDone.setOnClickListener(v -> SendPluginSuccess());
 
+            BrowseImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    opendocument();
+                }
+            });
 
         }
         catch (Exception e)
@@ -370,14 +376,16 @@ public class CameraAITextActivity extends AppCompatActivity {
             return;
         }
 
-        if(AI_type.equalsIgnoreCase("document"))
-        {
-            opendocument();
-        }
-        else {
-            startCamera();
+//        if(AI_type.equalsIgnoreCase("document"))
+//        {
+//            opendocument();
+//        }
+//        else {
+//
+//            startCamera();
+//        }
 
-        }
+        startCamera();
     }
 
     void requestCameraPermission () {
@@ -446,8 +454,8 @@ public class CameraAITextActivity extends AppCompatActivity {
         photoPickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
 
         photoPickerIntent.setType("*/*");
-        String[] mimetypes   = new String[]{ "application/pdf", "image/*"};
-
+//        String[] mimetypes   = new String[]{ "application/pdf", "image/*"};
+        String[] mimetypes   = new String[]{"image/*"};
         photoPickerIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
         startActivityForResult(photoPickerIntent, SELECT_PDF);
     }
