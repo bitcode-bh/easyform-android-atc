@@ -234,12 +234,12 @@ public class GeofenceTrasitionService extends IntentService {
                         c.put("is_send", "0");
                         c.put("appid", appid);
                         c.put("flowid", flowid);
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            public void run() {
-                                Toast toast = Toast.makeText(sqlitewraper.context,geoId + "- In ", Toast.LENGTH_LONG);
-                                toast.show();
-                            }
-                        });
+//                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                            public void run() {
+//                                Toast toast = Toast.makeText(sqlitewraper.context,geoId + "- In ", Toast.LENGTH_LONG);
+//                                toast.show();
+//                            }
+//                        });
 
                         long temp = database.insert("geofence_user_tracking_detail", null, c);
                         Log.d("####GeofenceInsert", String.valueOf(temp) + ": " + geoId);
@@ -256,12 +256,12 @@ public class GeofenceTrasitionService extends IntentService {
                     c.put("is_send", "0");
                     c.put("appid", appid);
                     c.put("flowid", flowid);
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        public void run() {
-                            Toast toast = Toast.makeText(sqlitewraper.context,geoId + "- In ", Toast.LENGTH_LONG);
-                            toast.show();
-                        }
-                    });
+//                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                        public void run() {
+//                            Toast toast = Toast.makeText(sqlitewraper.context,geoId + "- In ", Toast.LENGTH_LONG);
+//                            toast.show();
+//                        }
+//                    });
 
                     long temp = database.insert("geofence_user_tracking_detail", null, c);
                     Log.d("####GeofenceInsert", String.valueOf(temp) + ": " + geoId);
@@ -317,12 +317,12 @@ public class GeofenceTrasitionService extends IntentService {
                             c1.put("out_time", time);
                             c1.put("is_send", "1");
 
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                public void run() {
-                                    Toast toast = Toast.makeText(sqlitewraper.context, geoId +"- Out ", Toast.LENGTH_LONG);
-                                    toast.show();
-                                }
-                            });
+//                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                                public void run() {
+//                                    Toast toast = Toast.makeText(sqlitewraper.context, geoId +"- Out ", Toast.LENGTH_LONG);
+//                                    toast.show();
+//                                }
+//                            });
 
                             long temp = database.update("geofence_user_tracking_detail", c1, t, null);
                             Log.d("####GeofenceUpdate", String.valueOf(temp) + ":" + geoId);
@@ -356,12 +356,12 @@ public class GeofenceTrasitionService extends IntentService {
                         c1.put("out_time", time);
                         c1.put("is_send", "1");
 
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            public void run() {
-                                Toast toast = Toast.makeText(sqlitewraper.context,geoId +"- Out ", Toast.LENGTH_LONG);
-                                toast.show();
-                            }
-                        });
+//                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                            public void run() {
+//                                Toast toast = Toast.makeText(sqlitewraper.context,geoId +"- Out ", Toast.LENGTH_LONG);
+//                                toast.show();
+//                            }
+//                        });
                         long temp = database.update("geofence_user_tracking_detail", c1, t, null);
                         Log.d("####GeofenceUpdate", String.valueOf(temp) + ":" + geoId);
                         Log.d("####GEOMILLI_UPDATE", String.valueOf(time));
