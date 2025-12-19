@@ -519,9 +519,11 @@ public class CameraAITextActivity extends AppCompatActivity {
                             if(extension.contains(".pdf"))
                             {
                                 mimtypeforapi = "application/pdf";
+                                imageView.setImageResource(R.drawable.documentlogo);
                             }
                             else {
                                 mimtypeforapi = "image/jpeg";
+                                imageView.setImageURI(imageUri);
                             }
                             mFrameLayout.setVisibility(View.GONE);
                             mLinearLayoutmain.setVisibility(View.VISIBLE);
@@ -529,7 +531,6 @@ public class CameraAITextActivity extends AppCompatActivity {
                             imageView.setVisibility(View.VISIBLE);
                             pdftext.setVisibility(View.VISIBLE);
                             pdftext.setText(filename);
-                            imageView.setImageResource(R.drawable.documentlogo);
                             PromptText.setVisibility(View.VISIBLE);
                             PromptText.setText(promttext);
 
