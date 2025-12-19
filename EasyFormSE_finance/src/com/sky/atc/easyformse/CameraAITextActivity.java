@@ -34,6 +34,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -612,12 +613,15 @@ public class CameraAITextActivity extends AppCompatActivity {
                 else {
                     try{
                         json = response.body().string();
+                        Log.d("json",json);
                         JSONObject mjson = new JSONObject(json);
+                        String code = mjson.getJSONObject("error").getString("code");
                         String message = mjson.getJSONObject("error").getString("message");
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             public void run() {
+                                ToastUtil.show(sqlitewraper.context,  "Firebase Api Response code: " + code + "\n message:" + message);
 
-                                Toast.makeText(CameraAITextActivity.this, " Firebase Api Response : " + message, Toast.LENGTH_LONG).show();
+                               // Toast.makeText(CameraAITextActivity.this, " Firebase Api Response : " + message, Toast.LENGTH_LONG).show();
                             }
                         });
                         CameraAITextActivity.this.finish();
