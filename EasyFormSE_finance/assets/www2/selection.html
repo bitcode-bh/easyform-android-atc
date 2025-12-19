@@ -474,7 +474,7 @@
 
                                 <div class="right">
                                     <!--<a id="refresh_btn" onclick="check_table_availabililty()" class="link icon-only"><i class="fa fa-refresh" style="color: white"></i></a>
-                                <a href="#" onclick="get_user_notifications();" class="link icon-only"><i class="fa fa-bell-o" style="color: white"><span class="badge notification-badge color-red" style="opacity:0"></span></i></a>-->
+                                    <a href="#" onclick="get_user_notifications();" class="link icon-only"><i class="fa fa-bell-o" style="color: white"><span class="badge notification-badge color-red" style="opacity:0"></span></i></a>-->
                                     <!--<a href="#" class="open-panel link icon-only"><i class="icon icon-bars"></i></a>-->
                                     <!--<a href="#" class="open-panel link icon-only"><img id="menu_img_profile" src="images/profile_pic.png" /></a>-->
                                 </div>
@@ -490,8 +490,8 @@
                             </div>
 
                             <!--<div id="div_map" class="list-block">
-                            <div id="map-canvas"></div>
-                        </div>-->
+                                <div id="map-canvas"></div>
+                            </div>-->
                             <!-- New dashboard container 06082024 PG -->
                             <div id="div_new_dashboard" class="list-block">
                                 <div class="swiper-custom" id="dashboard_page_Content">
@@ -505,12 +505,12 @@
                                 </div>
 
                                 <!--<div id="dashboard_container">
-                                <ul class="toolbar tabbar" id="dashboard_page_tab">
-                                </ul>
+                                    <ul class="toolbar tabbar" id="dashboard_page_tab">
+                                    </ul>
 
-                                <div class="tab-content" id="dashboard_page_Content">
-                                </div>
-                            </div>-->
+                                    <div class="tab-content" id="dashboard_page_Content">
+                                    </div>
+                                </div>-->
                                 <!--<button type="button" id="btn_add_chart" class="btn btn-success mk_vibrate" title="Add new chart"><i class="fa fa-plus" aria-hidden="true"></i></button>-->
 
                             </div>
@@ -522,9 +522,9 @@
                                 <div id="glob_noti_container"></div>
 
                                 <!--<div id="glob_notification">
-                                <marquee id="marquee_noti" direction="left" behavior="scroll" loop="" onmouseover="this.stop();" onmouseout="this.start();"></marquee>
-                                <a href="#" class="button button-fill" onclick="got_it_notification()">Got it!</a>
-                            </div>-->
+                                    <marquee id="marquee_noti" direction="left" behavior="scroll" loop="" onmouseover="this.stop();" onmouseout="this.start();"></marquee>
+                                    <a href="#" class="button button-fill" onclick="got_it_notification()">Got it!</a>
+                                </div>-->
 
                                 <div id="noti_Attendance1" class="row" style="text-align:center; display:none; margin-top:5px">
                                     <div class="chip" style="background-color: white; border: 1px solid #ccc">
@@ -534,12 +534,22 @@
                                         <div class="chip-label">Profile picture is not set. It is used to fill attendance!</div>
                                     </div>
                                 </div>
-                                <div id="noti_Attendance2" class="row" style="text-align:center; display:none; margin-top:5px">
+                                <!--<div id="noti_Attendance2" class="row" style="text-align:center; display:none; margin-top:5px">
                                     <div class="chip" style="background-color: white; border: 1px solid #ccc">
                                         <div class="chip-media" style="background-color: red;">
                                             <i class="fa fa fa-info" style="margin: 0"></i>
                                         </div>
-                                        <div class="chip-label" onclick="noti_Attendance_Click()">Your attendance is pending!</div>
+                                        <div class="chip-label" onclick="noti_Attendance_Click()">Ready to Begin Your Daily Trip?</div>
+                                    </div>
+                                </div>-->
+
+                                <div id="noti_Attendance2" class="card" style="background-color: #ecedef; padding: 10px; border-radius: 10px;">
+                                    <span style="display: contents;color: #0D1829; font-weight: bold; margin-bottom: 8px;">Ready to Begin Your Daily Trip?</span>
+                                    <div class="row no-gutter">
+                                        <div class="col-75" style="margin-top: 5px; color: #757575;">Once you start, your trip will be tracked for accurate reporting.</div>
+                                        <div class="col-25" style="text-align: -webkit-right; margin-top: -5px;">
+                                            <a href="#" onclick="noti_Attendance_Click()" class="button button-fill color-green btn-small" style="height: 24px; width: 64px; line-height: 24px; background-color: green; border-radius: 5px;">START</a>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -552,30 +562,30 @@
                                 <!--list view-->
                                 <ul id="module_list">
                                     <!--<li><a href="#" class="item-link item-content"><div class="item-media"><i class="fa fa-object-ungroup"></i></div>
-                                <div class="item-inner"><div class="item-title">PV</div>
-                                    <div class="item-after"><span class="badge mkbadge button button-fill">25</span></div>
-                                </div>
-                                </a></li>-->
+                                    <div class="item-inner"><div class="item-title">PV</div>
+                                        <div class="item-after"><span class="badge mkbadge button button-fill">25</span></div>
+                                    </div>
+                                    </a></li>-->
                                 </ul>
 
                                 <!--card view-->
                                 <!--<div id="module_bg_div" style="margin-bottom: -6px; margin-top: -5px; position: relative; display: none;">
-                                <img src="images/bg2.jpg" style="width: 100%; height: 90px;">
-                                <div style="position: absolute; bottom: 10px; left: 12px; color: #fff; font-size: 20px;">
-                                    <span style="display: block; font-size: 26px;">Hello,</span>
-                                    <span id="card_username" style="text-transform: capitalize;"></span>
-                                </div>
-                            </div>-->
+                                    <img src="images/bg2.jpg" style="width: 100%; height: 90px;">
+                                    <div style="position: absolute; bottom: 10px; left: 12px; color: #fff; font-size: 20px;">
+                                        <span style="display: block; font-size: 26px;">Hello,</span>
+                                        <span id="card_username" style="text-transform: capitalize;"></span>
+                                    </div>
+                                </div>-->
                                 <table class="block" id="card_module_list" style="width: 100%;margin-top: 5px;"></table>
                             </div>
 
                             <!--<div id="menu_Attendance" class="list-block" style="display:none">
-                            <div class="row">
-                                <div class="col-50" style="width: 100%; font-size: 11pt">
+                                <div class="row">
+                                    <div class="col-50" style="width: 100%; font-size: 11pt">
 
+                                    </div>
                                 </div>
-                            </div>
-                        </div>-->
+                            </div>-->
 
                             <div id="menu_MISC" class="list-block" style="margin: 13px 0; display: none">
                                 <ul>
@@ -658,9 +668,9 @@
                                     <span class="tabbar-label">Home</span>
                                 </a>
                                 <!--<a href="#" class="tab-link" onclick="check_table_availabililty();check_for_glob_notification();">
-                                <i class="icon fa fa-refresh"></i>
-                                <span class="tabbar-label">Refresh</span>
-                            </a>-->
+                                    <i class="icon fa fa-refresh"></i>
+                                    <span class="tabbar-label">Refresh</span>
+                                </a>-->
                                 <a href="#" class="tab-link" onclick="get_user_notifications();">
                                     <i class="icon fa fa-bell-o"></i>
                                     <span class="tabbar-label">Notification</span>
@@ -1144,25 +1154,25 @@
                         </div>
                         <div class="page-content" id="div_notification_container">
                             <!--<div class="list-block media-list">
-                            <ul>
-                                <li>
-                                    <a href="#" class="item-link item-content">
-                                        <div class="item-inner">
-                                            <div class="item-subtitle">Vehicle Id: 1234 should be completed by the EOD.</div>
-                                            <div class="item-text">11/12/2020 12:12 PM</div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" class="item-link item-content">
-                                        <div class="item-inner">
-                                            <div class="item-subtitle">Please contact to circle admin. He need to talk with you.</div>
-                                            <div class="item-text">11/12/2020 11:55 PM</div>
-                                        </div>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>-->
+                                <ul>
+                                    <li>
+                                        <a href="#" class="item-link item-content">
+                                            <div class="item-inner">
+                                                <div class="item-subtitle">Vehicle Id: 1234 should be completed by the EOD.</div>
+                                                <div class="item-text">11/12/2020 12:12 PM</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="item-link item-content">
+                                            <div class="item-inner">
+                                                <div class="item-subtitle">Please contact to circle admin. He need to talk with you.</div>
+                                                <div class="item-text">11/12/2020 11:55 PM</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>-->
                         </div>
                     </div>
                 </div>
