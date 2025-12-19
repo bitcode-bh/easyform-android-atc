@@ -604,26 +604,36 @@ public class CameraAITextActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                String json;
+                String json = "";
+
                 if (response.isSuccessful()) {
                     json  = response.body().string();
                 }
                 else {
-                    json = response.body().string();
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        public void run() {
-                            Toast.makeText(CameraAITextActivity.this, " Firebase Api Response : " + json, Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    try{
+                        json = response.body().string();
+                        JSONObject mjson = new JSONObject(json);
+                        String message = mjson.getJSONObject("error").getString("message");
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            public void run() {
 
-                    CameraAITextActivity.this.finish();
+                                Toast.makeText(CameraAITextActivity.this, " Firebase Api Response : " + message, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                        CameraAITextActivity.this.finish();
+
+                    }
+                    catch (Exception e)
+                    {
+                    }
                 }
 
+                String finalJson = json;
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
 
                     try {
-                        JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+                        JsonObject obj = JsonParser.parseString(finalJson).getAsJsonObject();
                         String result = obj.getAsJsonArray("candidates")
                                 .get(0).getAsJsonObject()
                                 .getAsJsonObject("content")
