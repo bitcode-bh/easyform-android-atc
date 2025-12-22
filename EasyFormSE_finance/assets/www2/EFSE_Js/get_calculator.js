@@ -1256,6 +1256,10 @@ function check_for_pending_calculation(temp_calc_counter, eq_str, result) {
                     // result is < 1 day so convert it to the hours instead of days - mk - 18062025
                     result = result / (1000 * 60 * 60);
                 }
+                else if (temp_result > 365) {
+                    // result is > 1 year so convert it to the years instead of days - mk - 22122025
+                    result = temp_result / 365;
+                }
                 else {
                     result = temp_result;
                 }
