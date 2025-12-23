@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse.attendance.newattendanceutils.broadcasts;
 
+import static com.sky.atc.easyformse.sqlitewraper.context;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -27,25 +29,48 @@ import com.sky.atc.easyformse.sqlitewraper;
  */
 public class AttendanceNotificationAction extends BroadcastReceiver {
 
+    int NotificationId;
     @Override
     public void onReceive(Context context, Intent intent) {
-        NotificationUtil.cancelNotification(context);
+
         Bundle myBundle = intent.getExtras();
         if (myBundle != null && myBundle.containsKey(AttendanceNotificationShow.notificationTypeKey)) {
             NotificationType notificationType = (NotificationType) myBundle.getSerializable(AttendanceNotificationShow.notificationTypeKey);
+            NotificationId = intent.getExtras().getInt("Notificationid");
+            NotificationUtil.cancelNotification(context,NotificationId);
             if (notificationType == NotificationType.CheckIn) {
                 AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
                 MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
                 pref.putString("task_checksheet_id", mAttendanceData.getChecksheetId());
                 pref.putString("flow_id", String.valueOf(mAttendanceData.getFlowId()));
-                pref.putString("flow_name", mAttendanceData.getKey());
+                if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") || mAttendanceData.getFlow_name().equalsIgnoreCase("true"))
+                {
+                    pref.putString("flow_name", mAttendanceData.getKey());
+                }
+                else {
+                    pref.putString("flow_name", mAttendanceData.getFlow_name());
+                }
                 pref.commit();
 
-                Intent faceRecognizerActivityIntent = new Intent(context, FaceDetactionActivity.class);
-                faceRecognizerActivityIntent.putExtras(myBundle);
-                faceRecognizerActivityIntent.putExtra("IsCheckInNoti","true");
-                faceRecognizerActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(faceRecognizerActivityIntent);
+                if(mAttendanceData.getFacedetection() == null || mAttendanceData.getFacedetection().equalsIgnoreCase("null") || mAttendanceData.getFacedetection().equalsIgnoreCase("true"))
+                {
+                    Intent faceRecognizerActivityIntent = new Intent(context, FaceDetactionActivity.class);
+                    faceRecognizerActivityIntent.putExtras(myBundle);
+                    faceRecognizerActivityIntent.putExtra("IsCheckInNoti","true");
+                    faceRecognizerActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(faceRecognizerActivityIntent);
+                }
+                else {
+                    TaskData mTaskData = (TaskData) myBundle.getSerializable(AttendanceNotificationShow.taskDataKey);
+                    Intent LoadHtmlpage = new Intent(context, CreateAttendanceDynamictask.class);
+                    LoadHtmlpage.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    LoadHtmlpage.putExtra("photo_url","");
+                    LoadHtmlpage.putExtra("photo_name","");
+                    LoadHtmlpage.putExtra(AttendanceNotificationShow.taskDataKey, mTaskData);
+                    context.startActivity(LoadHtmlpage);
+                }
+
+
 
             } else if (notificationType == NotificationType.CheckOut && myBundle.containsKey(AttendanceNotificationShow.taskDataKey)) {
                 TaskData mTaskData = (TaskData) myBundle.getSerializable(AttendanceNotificationShow.taskDataKey);

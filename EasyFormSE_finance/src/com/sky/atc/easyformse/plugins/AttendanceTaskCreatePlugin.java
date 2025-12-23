@@ -69,7 +69,7 @@ public class AttendanceTaskCreatePlugin extends CordovaPlugin {
                         mTaskData.getModuleName() + "",
                         photo_url + "",
                         photo_name + "","true",mTaskData.getCheckOutBtn(), mTaskData.getPunchin_Status(),
-                        mTaskData.getPunchout_Status());
+                        mTaskData.getPunchout_Status(),mTaskData.getFacedetection());
 
 
 
@@ -86,7 +86,7 @@ public class AttendanceTaskCreatePlugin extends CordovaPlugin {
                     String CheckLastCheckinNoti = pref.getString("LastCheckinNoti","");
                     if(CheckLastCheckinNoti.equalsIgnoreCase("true"))
                     {
-                        NotificationUtil.cancelNotification(context);
+                        NotificationUtil.cancelNotification(context,0);
                         pref.putString("LastCheckinNoti", "");
                         pref.commit();
                     }

@@ -54,6 +54,43 @@ public class AttendanceData {
 	@SerializedName("Key")
 	private String key;
 
+	@Expose
+	@SerializedName("flow_name")
+	private String flow_name;
+
+	@Expose
+	@SerializedName("face_detection")
+	private String face_detection ;
+
+	@Expose
+	@SerializedName("role_id")
+	private String role_id;
+
+	public String getFlow_name() {
+		return flow_name;
+	}
+
+	public void setFlow_name(String flow_name) {
+		this.flow_name = flow_name;
+	}
+
+
+	public String getFacedetection() {
+		return face_detection;
+	}
+
+	public void setFacedetection(String face_detection ) {
+		face_detection  = face_detection ;
+	}
+
+	public String getRole_id() {
+		return role_id;
+	}
+
+	public void setRole_id(String role_id) {
+		this.role_id = role_id;
+	}
+
 	public String getChekOutBtn() {
 		return ChekOutBtn;
 	}
@@ -146,7 +183,9 @@ public class AttendanceData {
  	public String toString(){
 		return 
 			"AttendanceDataItem{" +
-			"auto_punchout_duration_hours = '" + auto_punchout_duration_hours + '\'' +
+			 "flow_name = '" + flow_name + '\'' +
+			",face_detection  = '" + face_detection  + '\'' +
+			",auto_punchout_duration_hours = '" + auto_punchout_duration_hours + '\'' +
 			",auto_punchout_duration = '" + auto_punchout_duration + '\'' +
 			",allow_round_trip = '" + allow_round_trip + '\'' +
 			",Punchin_Status = '" + Punchin_Status + '\'' +

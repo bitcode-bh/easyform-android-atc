@@ -41,7 +41,14 @@ public class AttendancePendingPlugin extends CordovaPlugin {
             AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
             TaskData mTaskData = new TaskData();
             mTaskData.setCheckSheetId(mAttendanceData.getChecksheetId());
-            mTaskData.setModuleName(mAttendanceData.getKey());
+//            mTaskData.setModuleName(mAttendanceData.getKey());
+            if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") || mAttendanceData.getFlow_name().equalsIgnoreCase("true"))
+            {
+                mTaskData.setModuleName(mAttendanceData.getKey());
+            }
+            else {
+                mTaskData.setModuleName(mAttendanceData.getFlow_name());
+            }
             mTaskData.setModuleId(Integer.parseInt(mAttendanceData.getFlowId()));
             mTaskData.setUserId(DeviceEventsUtils.getLoginDetails().get(0));
             mTaskData.setUsername(DeviceEventsUtils.getLoginDetails().get(3));
@@ -59,7 +66,17 @@ public class AttendancePendingPlugin extends CordovaPlugin {
                 MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
                 pref.putString("task_checksheet_id", mAttendanceData.getChecksheetId());
                 pref.putString("flow_id", String.valueOf(mAttendanceData.getFlowId()));
-                pref.putString("flow_name", mAttendanceData.getKey());
+
+                if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") || mAttendanceData.getFlow_name().equalsIgnoreCase("true"))
+                {
+                    mTaskData.setModuleName(mAttendanceData.getKey());
+                    pref.putString("flow_name", mAttendanceData.getKey());
+                }
+                else {
+                    mTaskData.setModuleName(mAttendanceData.getFlow_name());
+                    pref.putString("flow_name", mAttendanceData.getFlow_name());
+                }
+
                 pref.commit();
 
                 if (cordova != null) {

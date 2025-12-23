@@ -3,10 +3,12 @@ package com.sky.atc.easyformse.attendance.newattendanceutils;
 import static android.content.Context.ALARM_SERVICE;
 
 import android.app.AlarmManager;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -65,7 +67,8 @@ public class AttendanceUtil {
         }.getType();
         setAttendanceDataList(new Gson().fromJson(attendanceJson, listType));
     }
-
+    public static int CheckInNotiid;
+    public static int CheckOutNotiID;
     public static void setAttendanceNotificationAlarm(AttendanceData attendanceData) {
         TaskData mTaskData = new TaskData();
         if(attendanceData.getFlowId().equalsIgnoreCase("Select"))
@@ -87,7 +90,23 @@ public class AttendanceUtil {
 //            mTaskData.setModuleName("null");
 //            LogUtils.writeAttendanceLogToFile("attendanceData : " + attendanceData + "\n flow_master is null", "setAttendanceNotificationAlarm");
 //        }
-        mTaskData.setModuleName(attendanceData.getKey());
+        if(attendanceData.getFlow_name() == null || attendanceData.getFlow_name().equalsIgnoreCase("null") || attendanceData.getFlow_name().equalsIgnoreCase("true"))
+        {
+            mTaskData.setModuleName(attendanceData.getKey());
+        }
+        else {
+            mTaskData.setModuleName(attendanceData.getFlow_name());
+        }
+
+        if(attendanceData.getFacedetection() == null || attendanceData.getFacedetection().equalsIgnoreCase("null"))
+        {
+            mTaskData.setFacedetection("true");
+        }
+        else {
+            mTaskData.setFacedetection(attendanceData.getFacedetection());
+        }
+
+
         mTaskData.setUsername(DeviceEventsUtils.getLoginDetails().get(3));
         mTaskData.setUserId(DeviceEventsUtils.getLoginDetails().get(0));
         mTaskData.setCheckOutBtn(attendanceData.getChekOutBtn());
@@ -138,15 +157,24 @@ public class AttendanceUtil {
                 {
 
                 }
-                else{
+                else {
                     notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckIn));
                     notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+                    CheckInNotiid = (mTaskData.getModuleName() + "_CheckIn_").hashCode();
+                    notificationShowIntent.putExtra("Notificationid", CheckInNotiid);
 
-                    PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                    if (isNotificationActive(sqlitewraper.context, CheckInNotiid)) {
+                        // Check-In notification already active
+                    } else {
 
-                    setAlarmNotification(sqlitewraper.context,
-                            dayTime.get(0)
-                            , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckIn));
+                        PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                        setAlarmNotification(sqlitewraper.context,
+                                dayTime.get(0)
+                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckIn));
+
+                    }
+
                 }
 
 
@@ -193,12 +221,20 @@ public class AttendanceUtil {
                         {
                             notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
                             notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+                            CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
+                            notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
 
-                            PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                            if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
+                                // Check-In notification already active
+                            } else {
 
-                            setAlarmNotification(sqlitewraper.context,
-                                    dayTime.get(1)
-                                    , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+                                PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                                setAlarmNotification(sqlitewraper.context,
+                                        dayTime.get(1)
+                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+                            }
+
                         }
                     }
                     else {
@@ -207,12 +243,19 @@ public class AttendanceUtil {
                         {
                             notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
                             notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+                            CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
+                            notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
 
-                            PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                            if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
+                                // Check-In notification already active
+                            } else {
 
-                            setAlarmNotification(sqlitewraper.context,
-                                    dayTime.get(1)
-                                    , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+                                PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                                setAlarmNotification(sqlitewraper.context,
+                                        dayTime.get(1)
+                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+                            }
                         }
 
 //                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
@@ -277,4 +320,17 @@ public class AttendanceUtil {
     }
 
 
+    private static boolean isNotificationActive(Context context, int notificationId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            StatusBarNotification[] notifications = manager.getActiveNotifications();
+
+            for (StatusBarNotification notification : notifications) {
+                if (notification.getId() == notificationId) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

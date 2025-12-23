@@ -3,6 +3,7 @@ package com.sky.atc.easyformse.attendance.newattendanceutils.models;
 import androidx.annotation.Keep;
 
 import java.io.Serializable;
+import java.sql.Struct;
 
 /**
  * Created by NareshChocha on 4/6/2022.
@@ -23,6 +24,15 @@ public class TaskData implements Serializable {
     String Punchout_Status;
     String auto_punchout_duration;
     String allow_round_trip;
+    String face_detection;
+
+    public String getFacedetection() {
+        return face_detection ;
+    }
+
+    public void setFacedetection(String facedetection) {
+        face_detection  = facedetection;
+    }
 
     public String getAuto_punchout_duration() {
         return auto_punchout_duration;
@@ -127,6 +137,7 @@ public class TaskData implements Serializable {
                 ", Punchout_Status='" + Punchout_Status + '\'' +
                 ", auto_punchout_duration='" + auto_punchout_duration + '\'' +
                 ", allow_round_trip='" + allow_round_trip + '\'' +
+                ", face_detection ='" + face_detection  + '\'' +
                 '}';
     }
 }

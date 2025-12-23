@@ -34,28 +34,35 @@ public class NotificationUtil {
         return notificationChannel;
     }
 
-    public static void createNotification(Context context, String contentText, String actionString, PendingIntent actionPendingIntent) {
+    public static void createNotification(Context context, String contentText, String actionString,int notiid, PendingIntent actionPendingIntent) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, NotificationUtil.notificationIDName)
                 .setSmallIcon(R.drawable.atc_logo)
                 .setAutoCancel(false)
                 .setOngoing(false)
-                .setContentTitle("Attendance of the day")
+                .setContentTitle("Ready to Begin Your Daily Trip?")
                 .setContentText(contentText)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setContentIntent(actionPendingIntent)
-                //.addAction(android.R.drawable.arrow_down_float, actionString, actionPendingIntent)
+                .addAction(android.R.drawable.arrow_down_float, actionString, actionPendingIntent)
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(contentText));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationManager.createNotificationChannel(createNotificationChannel());
         }
-        notificationManager.notify(NotificationID, notificationBuilder.build());
+        notificationManager.notify(notiid, notificationBuilder.build());
     }
 
-    public static void cancelNotification(Context context) {
+    public static void cancelNotification(Context context,int NotificationId) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(NotificationID);
+        if(NotificationId == 0)
+        {
+            notificationManager.cancel(NotificationID);
+        }
+        else {
+            notificationManager.cancel(NotificationId);
+        }
+
     }
 
 
