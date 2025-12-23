@@ -90,7 +90,7 @@ public class AttendanceUtil {
 //            mTaskData.setModuleName("null");
 //            LogUtils.writeAttendanceLogToFile("attendanceData : " + attendanceData + "\n flow_master is null", "setAttendanceNotificationAlarm");
 //        }
-        if(attendanceData.getFlow_name() == null || attendanceData.getFlow_name().equalsIgnoreCase("null") || attendanceData.getFlow_name().equalsIgnoreCase("true"))
+        if(attendanceData.getFlow_name() == null || attendanceData.getFlow_name().equalsIgnoreCase("null") )
         {
             mTaskData.setModuleName(attendanceData.getKey());
         }
@@ -98,7 +98,7 @@ public class AttendanceUtil {
             mTaskData.setModuleName(attendanceData.getFlow_name());
         }
 
-        if(attendanceData.getFacedetection() == null || attendanceData.getFacedetection().equalsIgnoreCase("null"))
+        if(attendanceData.getFacedetection() == null || attendanceData.getFacedetection().equalsIgnoreCase("null") || attendanceData.getFacedetection().equalsIgnoreCase("true"))
         {
             mTaskData.setFacedetection("true");
         }

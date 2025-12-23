@@ -42,7 +42,7 @@ public class AttendancePendingPlugin extends CordovaPlugin {
             TaskData mTaskData = new TaskData();
             mTaskData.setCheckSheetId(mAttendanceData.getChecksheetId());
 //            mTaskData.setModuleName(mAttendanceData.getKey());
-            if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") || mAttendanceData.getFlow_name().equalsIgnoreCase("true"))
+            if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") )
             {
                 mTaskData.setModuleName(mAttendanceData.getKey());
             }
@@ -56,6 +56,7 @@ public class AttendancePendingPlugin extends CordovaPlugin {
             mTaskData.setCheckInBtn(mAttendanceData.getChekInBtn());
             mTaskData.setPunchin_Status(mAttendanceData.getPunchin_Status());
             mTaskData.setPunchout_Status(mAttendanceData.getPunchout_Status());
+            mTaskData.setFacedetection(mAttendanceData.getFacedetection());
 
 
 
@@ -67,7 +68,7 @@ public class AttendancePendingPlugin extends CordovaPlugin {
                 pref.putString("task_checksheet_id", mAttendanceData.getChecksheetId());
                 pref.putString("flow_id", String.valueOf(mAttendanceData.getFlowId()));
 
-                if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") || mAttendanceData.getFlow_name().equalsIgnoreCase("true"))
+                if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") )
                 {
                     mTaskData.setModuleName(mAttendanceData.getKey());
                     pref.putString("flow_name", mAttendanceData.getKey());

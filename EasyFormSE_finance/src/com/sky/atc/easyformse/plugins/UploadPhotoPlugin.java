@@ -303,7 +303,14 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                 AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
                 TaskData mTaskData = new TaskData();
                 mTaskData.setCheckSheetId(mAttendanceData.getChecksheetId());
-                mTaskData.setModuleName(mAttendanceData.getKey());
+//                mTaskData.setModuleName(mAttendanceData.getKey());
+                if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") || mAttendanceData.getFlow_name().equalsIgnoreCase("true"))
+                {
+                    mTaskData.setModuleName(mAttendanceData.getKey());
+                }
+                else {
+                    mTaskData.setModuleName(mAttendanceData.getFlow_name());
+                }
                 mTaskData.setModuleId(Integer.parseInt(mAttendanceData.getFlowId()));
                 mTaskData.setUserId(DeviceEventsUtils.getLoginDetails().get(0));
                 mTaskData.setUsername(DeviceEventsUtils.getLoginDetails().get(3));
@@ -311,6 +318,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                 mTaskData.setCheckInBtn(mAttendanceData.getChekInBtn());
                 mTaskData.setPunchin_Status(mAttendanceData.getPunchin_Status());
                 mTaskData.setPunchout_Status(mAttendanceData.getPunchout_Status());
+                mTaskData.setFacedetection(mAttendanceData.getFacedetection());
 
                 mTaskData.getCheckSheetId();
                 mTaskData.getModuleId();
@@ -321,6 +329,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                 mTaskData.getCheckInBtn();
                 mTaskData.getPunchin_Status();
                 mTaskData.getPunchout_Status();
+                mTaskData.getFacedetection();
 
                 Intent faceRecognizerActivityIntent = new Intent(this.cordova.getActivity(), FaceDetactionActivity.class);
                 faceRecognizerActivityIntent.putExtra(AttendancePlugin.WithoutTaskAttendanceKey, "true");
