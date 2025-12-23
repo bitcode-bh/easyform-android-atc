@@ -3566,7 +3566,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     $('#search_item_name_S_Search_' + curr_clps_new_id + '_' + check_type + '_7').attr('name', '1');
 
                     if (attendance_photo_url == "" || attendance_photo_url == null || attendance_photo_url == undefined) {
-                        alert1("Profile photo is blank!");
+                        //alert1("Profile photo is blank!");
                     }
                     else {
                         set_attendance_photo_in_task_form(check_type, attendance_photo_url)
