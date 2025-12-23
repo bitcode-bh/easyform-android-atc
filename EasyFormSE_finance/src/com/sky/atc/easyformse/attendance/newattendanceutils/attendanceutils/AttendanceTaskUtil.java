@@ -128,7 +128,7 @@ public class AttendanceTaskUtil {
                                             int moduleId,
                                             String checkSheetId,
                                             String moduleName,
-                                            String detectionFilePath, String detectionFileName ,String ischeckplugin,String checkoutbtn ,String Punchin_Status ,String Punchout_Status) {
+                                            String detectionFilePath, String detectionFileName ,String ischeckplugin,String checkoutbtn ,String Punchin_Status ,String Punchout_Status,String face_detatcion) {
         long milliseconds = System.currentTimeMillis();
 
         String task_id = DeviceEventsUtils.getLoginDetails().get(1) + "_" + milliseconds;
@@ -200,7 +200,11 @@ public class AttendanceTaskUtil {
         insertPunchMaster(database, username, insertedTid + "",
                 DeviceEventsUtils.getLoginDetails().get(2), userid, 0,Punchout_Status);
         insertFMaster(database, insertedTid, filledTaskCheckSheetJson, username, checkSheetId);
-        insertPMaster(database, insertedTid + "", checkSheetId, detectionFileName, detectionFilePath, "15");
+
+        if(!face_detatcion.equalsIgnoreCase("false"))
+        {
+            insertPMaster(database, insertedTid + "", checkSheetId, detectionFileName, detectionFilePath, "15");
+        }
 
         //call upload service
         Intent fUploadNewStructureIntent = new Intent(sqlitewraper.context, f_upload_new_structure.class);

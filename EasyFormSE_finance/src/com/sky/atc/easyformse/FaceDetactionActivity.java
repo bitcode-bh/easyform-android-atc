@@ -168,7 +168,8 @@ public class FaceDetactionActivity extends AppCompatActivity {
                                 "false",
                                 mTaskData.getCheckOutBtn(),
                                 mTaskData.getPunchin_Status(),
-                                mTaskData.getPunchout_Status());
+                                mTaskData.getPunchout_Status(),
+                                mTaskData.getFacedetection());
                         if (fromPlugin) {
                             setSuccessResult();
                         } else {

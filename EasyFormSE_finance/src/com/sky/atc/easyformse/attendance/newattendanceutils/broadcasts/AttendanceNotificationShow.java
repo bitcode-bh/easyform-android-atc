@@ -19,16 +19,19 @@ import com.sky.atc.easyformse.sqlitewraper;
  * @author NareshChocha
  */
 public class AttendanceNotificationShow extends BroadcastReceiver {
-
+    int NotificationId;
     @Override
     public void onReceive(Context context, Intent intent) {
 
         if (intent.getExtras() != null && intent.getExtras().containsKey(notificationTypeKey)) {
+            NotificationId = intent.getExtras().getInt("Notificationid");
+
             NotificationType notificationType = NotificationType.valueOf(intent.getExtras().getString(notificationTypeKey, ""));
             Intent actionReceiverIntent = new Intent(context, AttendanceNotificationAction.class);
             String contentText, actionString;
-            // actionReceiverIntent.putExtras(intent.getExtras());
+             actionReceiverIntent.putExtras(intent.getExtras());
             actionReceiverIntent.putExtra(notificationTypeKey, notificationType);
+            actionReceiverIntent.putExtra("NotificationId",NotificationId);
             actionReceiverIntent.putExtra(taskDataKey,
                     new Gson().fromJson(intent.getExtras().getString(taskDataKey, ""), TaskData.class));
 
@@ -36,8 +39,8 @@ public class AttendanceNotificationShow extends BroadcastReceiver {
             if (notificationType == NotificationType.CheckIn) {
 //                contentText = "Mark your attendance by CHECK IN for today";  // change notification msg and remove click action 30062025
 //                actionString = "Check In";
-                contentText = "Your today's start trip is pending , do it from Driver Safety Excellence.";
-                actionString = "";
+                contentText = "Once you start, your trip will be tracked for accurate reporting.";
+                actionString = "Check In";
                 MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
                 pref.putString("LastCheckinNoti", "true");
                 pref.commit();
@@ -50,9 +53,9 @@ public class AttendanceNotificationShow extends BroadcastReceiver {
                 contentText = "";
                 actionString = "";
             }
-//            PendingIntent actionIntentLogin = PendingIntent.getBroadcast(context, 1, actionReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE); // remove click action
-            PendingIntent actionIntentLogin = PendingIntent.getBroadcast(context, 1,  new Intent(), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            NotificationUtil.createNotification(context, contentText, actionString, actionIntentLogin);
+            PendingIntent actionIntentLogin = PendingIntent.getBroadcast(context, 1, actionReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE); // remove click action
+//            PendingIntent actionIntentLogin = PendingIntent.getBroadcast(context, 1,  new Intent(), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            NotificationUtil.createNotification(context, contentText, actionString,NotificationId, actionIntentLogin);
         } else {
             Log.e("AttendanceNotification", intent.getExtras().toString() +
                     " notificationTypeKey" + intent.getExtras().containsKey(taskDataKey));
