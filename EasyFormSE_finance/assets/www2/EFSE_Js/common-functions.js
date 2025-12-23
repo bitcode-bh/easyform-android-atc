@@ -4026,21 +4026,27 @@ function build_user_safety_passport(user_data) {
             //}
             
             if (que_id == 20) {
+                // Full Name
                 name = value;
             }
             else if (que_id == 10021) {
+                // Role List
                 role_name = value;
             }
             else if (que_id == 42) {
+                // Circle Map
                 circle_name = value;
             }
             else if (que_id == 10016) {
+                // Vendor Name
                 partner_name = value;
             }
-            else if (que_id == 9) {
+            else if (que_id == 10036) {
+                // Emergency Contact Number
                 contact_numner = value;
             }
             else if (que_id == 10037) {
+                // Blood Group
                 blood_group = value;
             }
             
@@ -4051,7 +4057,8 @@ function build_user_safety_passport(user_data) {
     let t_bottom_pro_img = $("#menu_img_profile").attr("src");
     $("#img_sp_profilephoto").attr("src", t_bottom_pro_img)
   
-    $("#lbl_sp_empid").html(emp_id);
+    //$("#lbl_sp_empid").html(emp_id);
+    $("#lbl_sp_empid").html(name);
     $("#lbl_sp_name").html(name);
     $("#lbl_sp_userrole").html(role_name);
     $("#lbl_sp_circle").html(circle_name);
