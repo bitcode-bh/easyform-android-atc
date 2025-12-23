@@ -4378,8 +4378,13 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         ap_json = finaljsonObj;
 
                         var data_json = JSON.parse(storage.getItem('list_json'));
-                        var list_data = JSON.parse(data_json);
-                        var redirect = list_data[0].redirect;
+                        if (data_json == "" || data_json == null || data_json == undefined) {
+                            var redirect = "task";
+                        }
+                        else {
+                            var list_data = JSON.parse(data_json);
+                            var redirect = list_data[0].redirect;
+                        }
                         if (redirect == 'customer') {
                             var is_new_cust_click = localStorage.getItem("is_new_customer_click");
                             if (is_new_cust_click == "true") {

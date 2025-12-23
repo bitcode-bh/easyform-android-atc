@@ -5760,8 +5760,14 @@ function onsucess_Insert_Json_1(invocation1) {
     var status = Suc_Message1[0].status;
     if (status == 1) {
         var data_json = JSON.parse(storage.getItem('list_json'));
-        var list_data = JSON.parse(data_json);
-        var customer_create_msg = list_data[0].customer_create_msg;
+        if (data_json == "" || data_json == null || data_json == undefined) {
+            var customer_create_msg = "";
+        }
+        else {
+            var list_data = JSON.parse(data_json);
+            var customer_create_msg = list_data[0].customer_create_msg;
+        }
+
         if (customer_create_msg == "" || customer_create_msg == null || customer_create_msg == undefined) {
             customer_create_msg = "Customer Inserted successfully";
         }
