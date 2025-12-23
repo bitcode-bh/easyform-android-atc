@@ -1259,6 +1259,7 @@ function check_for_pending_calculation(temp_calc_counter, eq_str, result) {
                 else if (temp_result > 365) {
                     // result is > 1 year so convert it to the years instead of days - mk - 22122025
                     result = temp_result / 365;
+                    result = Math.floor(result);
                 }
                 else {
                     result = temp_result;
@@ -1286,9 +1287,12 @@ function check_for_pending_calculation(temp_calc_counter, eq_str, result) {
                     }
                 }
                 else {
-                    // static 2 decimal point
                     result = parseFloat(result);
-                    result = result.toFixed(2);
+
+                    if (ans_type != 'date') {
+                        // static 2 decimal point
+                        result = result.toFixed(2);
+                    }
                 }
 
                 $("#txt_Calc_" + temp_calc_counter + "").val(result);
