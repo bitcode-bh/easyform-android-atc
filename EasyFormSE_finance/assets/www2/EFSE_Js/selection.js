@@ -1483,7 +1483,7 @@ function onsuccess_get_user_notifications(e) {
         if (t_offset == 0) {
             $("#div_notification_container").empty();
         }
-       
+
         var status = myArray[0].status;
         if (status == 1) {
             var data = myArray[0].data;
@@ -1534,7 +1534,7 @@ function onsuccess_get_user_notifications(e) {
                 //str += '<div class="card-footer"></div>';
                 str += '</div>';
                 $("#div_notification_container").append(str);
-            }           
+            }
             //}
         }
         else {
@@ -1579,7 +1579,7 @@ function check_table_availabililty() {
     }
     else {
         update_status_in_download_table_selection();
-    }    
+    }
 }
 
 function update_status_in_download_table_selection() {
@@ -2128,13 +2128,35 @@ function get_today_attendance_for_notification() {
                         if (today_atnd_found == 0) {
                             // display add attendance if not found for today
                             //mk_notify("Your attendance is pending!");
-                            $("#noti_Attendance2").css("display", "block");
+
+                            $("#noti_Attendance3").css("display", "none");
+
+                            let id_Array = JSON.parse(storage.getItem('id_Array'));
+                            if (id_Array == '' || id_Array == undefined || id_Array == null) {
+                                $("#noti_Attendance2").css("display", "block");
+                            }
+                            else {
+                                $("#noti_Attendance2").css("display", "none");
+                            }
+                        }
+                        else {
+                            var trip_status = localStorage.getItem('trip_status');
+                            if (trip_status == '0') {
+                                $("#noti_Attendance3").css("display", "block");
+                            }
                         }
                     }
                     else if (status == 2) {
                         // display add attendance if not found for today
                         //mk_notify("Your attendance is pending!");
-                        $("#noti_Attendance2").css("display", "block");
+
+                        let id_Array = JSON.parse(storage.getItem('id_Array'));
+                        if (id_Array == '' || id_Array == undefined || id_Array == null) {
+                            $("#noti_Attendance2").css("display", "block");
+                        }
+                        else {
+                            $("#noti_Attendance2").css("display", "none");
+                        }
                     }
                     else {
                         alert1("Server: " + message)
@@ -2422,4 +2444,107 @@ home_tab_click = () => {
     $('#div_page_content').show();
     $('#div_vertical_dashboard').hide();
     pageload_main();
+}
+
+// stop trip manualy via module listing
+stop_trip_manualy_from_module_listing = (ser_task_id) => {
+    let trip_ser_task_id = localStorage.getItem('trip_ser_task_id');
+    if (trip_ser_task_id == "" || trip_ser_task_id == null || trip_ser_task_id == undefined) {
+        alert('Trip server task id not found!');
+    }
+    else {
+        var query = "select tid from task_master where server_task_id = '" + ser_task_id + "'";
+        var q_jsonobj = [];
+        q_jsonobj.push({
+            data: query,
+            p: "1"
+        });
+        cordova.exec(function (e) {
+
+            update_server_task_entry_online_stop_trip(ser_task_id);
+
+            var myArray = JSON.parse(e);
+            var trip_tid = myArray[0].tid;
+            var q_jsonobj = [];
+            q_jsonobj.push({
+                'trip_status': "-1",
+                'tid': trip_tid,
+                'odometer_point': [],
+                'ETA': "",
+                'stillviolation_event': ""
+            });
+            cordova.exec(function (e) { }, function (e) { }, 'TripPlugin', 'anAction', q_jsonobj);
+
+        }, function (e) {
+            // tid not found
+            update_server_task_entry_online_stop_trip(ser_task_id);
+
+        }, 'SqlitePlugin', 'showValues', q_jsonobj);
+    }
+}
+function update_server_task_entry_online_stop_trip(selected_server_task_id) {
+    try {
+
+        var AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
+        var auto_trip = AttendanceJson[0].auto_trip;
+        if (auto_trip == "true") {
+            var myArray = JSON.parse(e);
+            var t_tid = myArray[0].tid;
+            auto_start_trip_on_attendane_task_create(t_tid);
+        }
+
+        loading();
+        var company_id = JSON.parse(storage.getItem('company_id'));
+        var user_id = JSON.parse(storage.getItem('user_id'));
+
+        var btn_status = 2;
+
+        var siteid = JSON.parse(storage.getItem('siteid'));
+        var check_type = JSON.parse(storage.getItem('check_type'));
+        var flow_id = JSON.parse(storage.getItem('wayflow'));
+        var start_status = JSON.parse(storage.getItem('start_status'));
+
+        if (check_type == '' || check_type == null || check_type == undefined || check_type == "null") {
+            check_type = 0;
+        }
+
+        var now = new Date();
+        var time = now.getTime();
+        var offset = now.getTimezoneOffset();
+        offset = offset * 60000;
+        var utcmilliseconds = time - offset;
+        var timezone = new Date().getTimezoneOffset();
+
+        var param_obj = [];
+        param_obj.push({
+            'username': username,
+            'height': 0,
+            'tower': 0,
+            'check_type': check_type,
+            'u_c': uniqcode,
+            'siteid': siteid,
+            'servertaskid': selected_server_task_id,
+            'status': btn_status,
+            'old_status': start_status,
+            'step': 1,
+            'moduledef': "",
+            'global_var': '',
+            'flow_id': flow_id,
+            'company_id': company_id,
+            'punch_flag': 0,
+            'in_ms': 0,
+            'out_ms': 0,
+            'duration': 0,
+            'utcmilliseconds': utcmilliseconds,
+            'timezone': timezone
+        });
+        //alert1(JSON.stringify(param_obj));
+
+        var getdata = new Webservicecall_REST(global_wcf_url + 'WCFTechnicianDataUpload', JSON.stringify(param_obj), onsuccess_update_server_task_entry_online_SB, onfail_update_server_task_entry_online_SB);
+        getdata.callOtherDomain();
+
+    }
+    catch (e) {
+        alert1(e + '_update_server_task_entry_online_SB()');
+    }
 }
