@@ -3880,8 +3880,7 @@ function build_user_safety_passport(user_data) {
 
     var itemObj = new MKCheckItem();
 
-    let emp_id = JSON.parse(storage.getItem('user_id'));;
-    let name = role_name = circle_name = partner_name = contact_numner = blood_group = '';
+    let sp_id = name = role_name = circle_name = partner_name = contact_numner = blood_group = '';
 
     for (var i = 0; i < user_data.length; i++) {
         var type = user_data[i].type;
@@ -4024,8 +4023,12 @@ function build_user_safety_passport(user_data) {
             //if (type == 22) {
             //    detail_str += '<tr><td style="color:blue; widht: 50%;">' + header + '</td><td style="width: 50%">' + value + '</td></tr>';
             //}
-            
-            if (que_id == 20) {
+
+            if (que_id == 10044) {
+                // Safety Passport ID
+                sp_id = value;
+            }
+            else if (que_id == 20) {
                 // Full Name
                 name = value;
             }
@@ -4049,21 +4052,26 @@ function build_user_safety_passport(user_data) {
                 // Blood Group
                 blood_group = value;
             }
-            
+
 
         }
     }
 
-    let t_bottom_pro_img = $("#menu_img_profile").attr("src");
-    $("#img_sp_profilephoto").attr("src", t_bottom_pro_img)
-  
-    //$("#lbl_sp_empid").html(emp_id);
-    $("#lbl_sp_empid").html(name);
-    $("#lbl_sp_name").html(name);
-    $("#lbl_sp_userrole").html(role_name);
-    $("#lbl_sp_circle").html(circle_name);
-    $("#lbl_sp_partnername").html(partner_name);
-    $("#lbl_sp_contactnumber").html(contact_numner);
-    $("#lbl_sp_bloodgroup").html(blood_group);
+    if (sp_id == "" || sp_id == null || sp_id == undefined) {
+        // do not fill safety passport data if safety passport id is not available 
+    }
+    else {
+
+        let t_bottom_pro_img = $("#menu_img_profile").attr("src");
+        $("#img_sp_profilephoto").attr("src", t_bottom_pro_img)
+
+        $("#lbl_sp_empid").html(sp_id);
+        $("#lbl_sp_name").html(name);
+        $("#lbl_sp_userrole").html(role_name);
+        $("#lbl_sp_circle").html(circle_name);
+        $("#lbl_sp_partnername").html(partner_name);
+        $("#lbl_sp_contactnumber").html(contact_numner);
+        $("#lbl_sp_bloodgroup").html(blood_group);
+    }
 
 }

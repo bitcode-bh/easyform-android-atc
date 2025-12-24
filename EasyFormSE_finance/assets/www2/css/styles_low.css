@@ -2842,6 +2842,8 @@ video::-webkit-media-controls-timeline {
         font-size: 13px;
         font-weight: bold;
         letter-spacing: 1px;
+        opacity: 0.7;
+        text-transform: uppercase;
     }
 
     .passport-title .doctype {
@@ -2872,6 +2874,11 @@ video::-webkit-media-controls-timeline {
     font-weight: 600;
     margin-bottom: 7px;
 }
+
+    .passport-body .value span {
+        min-height: 14px;
+        display: block;
+    }
 
 .passport-body .row:last-child .value {
     margin-bottom: 0px;
