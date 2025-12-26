@@ -2657,6 +2657,10 @@ video::-webkit-media-controls-timeline {
     border: 0.3mm solid #B4B6BA;
 }
 
+li.w-75-25 {
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+}
+
 .w-75-25 div.switch {
     width: 13% !important;
     display: inline-block;
@@ -2665,13 +2669,13 @@ video::-webkit-media-controls-timeline {
 }
 
 .w-75-25 .switch, .w-75-25 .switch-label {
-    height: 22px;
-    line-height: 22px;
+    height: 25px;
+    line-height: 25px;
 }
 
 .w-75-25 .switch-selector {
-    height: 18px;
-    line-height: 18px;
+    height: 21px;
+    line-height: 21px;
     left: 2px;
     top: 2px;
 }
