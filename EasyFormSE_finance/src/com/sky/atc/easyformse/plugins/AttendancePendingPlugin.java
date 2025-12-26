@@ -4,6 +4,7 @@ import static com.sky.atc.easyformse.sqlitewraper.context;
 
 import android.content.Intent;
 
+import com.sky.atc.easyformse.CreateAttendanceDynamictask;
 import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.FaceDetactionActivity;
 import com.sky.atc.easyformse.attendance.newattendanceutils.AttendanceUtil;
@@ -54,41 +55,68 @@ public class AttendancePendingPlugin extends CordovaPlugin {
             mTaskData.setUsername(DeviceEventsUtils.getLoginDetails().get(3));
             mTaskData.setCheckOutBtn(mAttendanceData.getChekOutBtn());
             mTaskData.setCheckInBtn(mAttendanceData.getChekInBtn());
-            mTaskData.setPunchin_Status(mAttendanceData.getPunchin_Status());
-            mTaskData.setPunchout_Status(mAttendanceData.getPunchout_Status());
+
+            if(mAttendanceData.getPunchin_Status() == null || mAttendanceData.getPunchin_Status().equalsIgnoreCase("null"))
+            {
+                mTaskData.setPunchin_Status("1");
+            }
+            else {
+                mTaskData.setPunchin_Status(mAttendanceData.getPunchin_Status());
+            }
+
+            if(mAttendanceData.getPunchout_Status() == null || mAttendanceData.getPunchout_Status().equalsIgnoreCase("null"))
+            {
+                mTaskData.setPunchout_Status("2");
+            }
+            else {
+                mTaskData.setPunchout_Status(mAttendanceData.getPunchout_Status());
+            }
             mTaskData.setFacedetection(mAttendanceData.getFacedetection());
 
+            if(mAttendanceData.getFacedetection() == null || mAttendanceData.getFacedetection().equalsIgnoreCase("null") || mAttendanceData.getFacedetection().equalsIgnoreCase("true"))
+            {
+               // if (!AttendanceTaskUtil.isAttendanceDone(sqlitewraper.getDatabase(), mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId(), "1")) {
 
+                    mTaskData.getCheckOutBtn();
+                    mTaskData.getCheckInBtn();
+                    MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
+                    pref.putString("task_checksheet_id", mAttendanceData.getChecksheetId());
+                    pref.putString("flow_id", String.valueOf(mAttendanceData.getFlowId()));
 
-            if (!AttendanceTaskUtil.isAttendanceDone(sqlitewraper.getDatabase(), mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId(), "1")) {
+                    if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") )
+                    {
+                        mTaskData.setModuleName(mAttendanceData.getKey());
+                        pref.putString("flow_name", mAttendanceData.getKey());
+                    }
+                    else {
+                        mTaskData.setModuleName(mAttendanceData.getFlow_name());
+                        pref.putString("flow_name", mAttendanceData.getFlow_name());
+                    }
 
-                mTaskData.getCheckOutBtn();
-                mTaskData.getCheckInBtn();
-                MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
-                pref.putString("task_checksheet_id", mAttendanceData.getChecksheetId());
-                pref.putString("flow_id", String.valueOf(mAttendanceData.getFlowId()));
+                    pref.commit();
 
-                if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") )
-                {
-                    mTaskData.setModuleName(mAttendanceData.getKey());
-                    pref.putString("flow_name", mAttendanceData.getKey());
-                }
-                else {
-                    mTaskData.setModuleName(mAttendanceData.getFlow_name());
-                    pref.putString("flow_name", mAttendanceData.getFlow_name());
-                }
-
-                pref.commit();
-
-                if (cordova != null) {
-                    Intent faceRecognizerActivityIntent = new Intent(cordova.getActivity(), FaceDetactionActivity.class);
-                    faceRecognizerActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    faceRecognizerActivityIntent.putExtra("IsCheckInNoti", "true");
-                    faceRecognizerActivityIntent.putExtra(AttendanceNotificationShow.taskDataKey, mTaskData);
-                    this.cordova.startActivityForResult(this, faceRecognizerActivityIntent, 0);
-                    return true;
-                }
+                    if (cordova != null) {
+                        Intent faceRecognizerActivityIntent = new Intent(cordova.getActivity(), FaceDetactionActivity.class);
+                        faceRecognizerActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        faceRecognizerActivityIntent.putExtra("IsCheckInNoti", "true");
+                        faceRecognizerActivityIntent.putExtra(AttendanceNotificationShow.taskDataKey, mTaskData);
+                        this.cordova.startActivityForResult(this, faceRecognizerActivityIntent, 0);
+                        return true;
+                    }
+               // }
             }
+            else {
+
+                Intent LoadHtmlpage = new Intent(context, CreateAttendanceDynamictask.class);
+                LoadHtmlpage.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                LoadHtmlpage.putExtra("photo_url","");
+                LoadHtmlpage.putExtra("photo_name","");
+                LoadHtmlpage.putExtra(AttendanceNotificationShow.taskDataKey, mTaskData);
+                context.startActivity(LoadHtmlpage);
+                return true;
+            }
+
+
 
         } catch (Exception e) {
             this.callbackContext.error("error: " + e.toString());
