@@ -73,27 +73,30 @@ public class AttendancePendingPlugin extends CordovaPlugin {
             }
             mTaskData.setFacedetection(mAttendanceData.getFacedetection());
 
+            MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
+            pref.putString("task_checksheet_id", mAttendanceData.getChecksheetId());
+            pref.putString("flow_id", String.valueOf(mAttendanceData.getFlowId()));
+
+            if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") )
+            {
+                mTaskData.setModuleName(mAttendanceData.getKey());
+                pref.putString("flow_name", mAttendanceData.getKey());
+            }
+            else {
+                mTaskData.setModuleName(mAttendanceData.getFlow_name());
+                pref.putString("flow_name", mAttendanceData.getFlow_name());
+            }
+
+            pref.commit();
+
+
             if(mAttendanceData.getFacedetection() == null || mAttendanceData.getFacedetection().equalsIgnoreCase("null") || mAttendanceData.getFacedetection().equalsIgnoreCase("true"))
             {
                // if (!AttendanceTaskUtil.isAttendanceDone(sqlitewraper.getDatabase(), mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId(), "1")) {
 
                     mTaskData.getCheckOutBtn();
                     mTaskData.getCheckInBtn();
-                    MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
-                    pref.putString("task_checksheet_id", mAttendanceData.getChecksheetId());
-                    pref.putString("flow_id", String.valueOf(mAttendanceData.getFlowId()));
 
-                    if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") )
-                    {
-                        mTaskData.setModuleName(mAttendanceData.getKey());
-                        pref.putString("flow_name", mAttendanceData.getKey());
-                    }
-                    else {
-                        mTaskData.setModuleName(mAttendanceData.getFlow_name());
-                        pref.putString("flow_name", mAttendanceData.getFlow_name());
-                    }
-
-                    pref.commit();
 
                     if (cordova != null) {
                         Intent faceRecognizerActivityIntent = new Intent(cordova.getActivity(), FaceDetactionActivity.class);
