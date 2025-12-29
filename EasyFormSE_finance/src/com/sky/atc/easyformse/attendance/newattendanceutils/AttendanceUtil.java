@@ -69,17 +69,226 @@ public class AttendanceUtil {
     }
     public static int CheckInNotiid;
     public static int CheckOutNotiID;
-    public static void setAttendanceNotificationAlarm(AttendanceData attendanceData) {
-        TaskData mTaskData = new TaskData();
-        if(attendanceData.getFlowId().equalsIgnoreCase("Select"))
-        {
-            mTaskData.setModuleId(Integer.parseInt("0"));
-        }
-        else {
-            mTaskData.setModuleId(Integer.parseInt(attendanceData.getFlowId()));
-        }
-        mTaskData.setCheckSheetId(attendanceData.getChecksheetId());
-        SQLiteDatabase database = sqlitewraper.getDatabase();
+
+    // old function check today attendace pending or not
+//    public static void setAttendanceNotificationAlarm(AttendanceData attendanceData) {
+//        TaskData mTaskData = new TaskData();
+//        if(attendanceData.getFlowId().equalsIgnoreCase("Select"))
+//        {
+//            mTaskData.setModuleId(Integer.parseInt("0"));
+//        }
+//        else {
+//            mTaskData.setModuleId(Integer.parseInt(attendanceData.getFlowId()));
+//        }
+//        mTaskData.setCheckSheetId(attendanceData.getChecksheetId());
+//        SQLiteDatabase database = sqlitewraper.getDatabase();
+////        Cursor flowMasterCursor = database
+////                .rawQuery("select module_name from flow_master where moduleid=" + mTaskData.getModuleId(), null);
+////        flowMasterCursor.moveToLast();
+////        int count = flowMasterCursor.getCount();
+////        if (count > 0) {
+////            mTaskData.setModuleName(flowMasterCursor.getString(0));
+////        } else {
+////            mTaskData.setModuleName("null");
+////            LogUtils.writeAttendanceLogToFile("attendanceData : " + attendanceData + "\n flow_master is null", "setAttendanceNotificationAlarm");
+////        }
+//        if(attendanceData.getFlow_name() == null || attendanceData.getFlow_name().equalsIgnoreCase("null") )
+//        {
+//            mTaskData.setModuleName(attendanceData.getKey());
+//        }
+//        else {
+//            mTaskData.setModuleName(attendanceData.getFlow_name());
+//        }
+//
+//        if(attendanceData.getFacedetection() == null || attendanceData.getFacedetection().equalsIgnoreCase("null") || attendanceData.getFacedetection().equalsIgnoreCase("true"))
+//        {
+//            mTaskData.setFacedetection("true");
+//        }
+//        else {
+//            mTaskData.setFacedetection(attendanceData.getFacedetection());
+//        }
+//
+//
+//        mTaskData.setUsername(DeviceEventsUtils.getLoginDetails().get(3));
+//        mTaskData.setUserId(DeviceEventsUtils.getLoginDetails().get(0));
+//        mTaskData.setCheckOutBtn(attendanceData.getChekOutBtn());
+//        mTaskData.setCheckInBtn(attendanceData.getChekInBtn());
+//        if(attendanceData.getPunchin_Status() == null || attendanceData.getPunchin_Status().equalsIgnoreCase("null"))
+//        {
+//            mTaskData.setPunchin_Status("1");
+//        }
+//        else {
+//            mTaskData.setPunchin_Status(attendanceData.getPunchin_Status());
+//        }
+//
+//        if(attendanceData.getPunchout_Status() == null || attendanceData.getPunchout_Status().equalsIgnoreCase("null"))
+//        {
+//            mTaskData.setPunchout_Status("2");
+//        }
+//        else {
+//            mTaskData.setPunchout_Status(attendanceData.getPunchout_Status());
+//        }
+//
+//        Calendar c = Calendar.getInstance();
+//        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+//
+//        List<String> dayTime;
+//        DaysTimes daysTimes = attendanceData.getDaysTimesList().get(0);
+//        if (dayOfWeek == 1) {
+//            dayTime = daysTimes.getDayOne();
+//        } else if (dayOfWeek == 2) {
+//            dayTime = daysTimes.getDayTwo();
+//        } else if (dayOfWeek == 3) {
+//            dayTime = daysTimes.getDayThree();
+//        } else if (dayOfWeek == 4) {
+//            dayTime = daysTimes.getDayFor();
+//        } else if (dayOfWeek == 5) {
+//            dayTime = daysTimes.getDayFive();
+//        } else if (dayOfWeek == 6) {
+//            dayTime = daysTimes.getDaySix();
+//        } else if (dayOfWeek == 7) {
+//            dayTime = daysTimes.getDaySeven();
+//        } else {
+//            dayTime = Arrays.asList("10:00", "19:30");
+//        }
+//        Intent notificationShowIntent = new Intent(sqlitewraper.context, AttendanceNotificationShow.class);
+//
+//        if (!AttendanceTaskUtil.isAttendanceDone(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId(), "2")) {
+//
+//                if(mTaskData.getCheckInBtn().equalsIgnoreCase("false"))
+//                {
+//
+//                }
+//                else {
+//                    notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckIn));
+//                    notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+//                    CheckInNotiid = (mTaskData.getModuleName() + "_CheckIn_").hashCode();
+//                    notificationShowIntent.putExtra("Notificationid", CheckInNotiid);
+//
+//                    if (isNotificationActive(sqlitewraper.context, CheckInNotiid)) {
+//                        // Check-In notification already active
+//                    } else {
+//
+//                        PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+//
+//                        setAlarmNotification(sqlitewraper.context,
+//                                dayTime.get(0)
+//                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckIn));
+//
+//                    }
+//
+//                }
+//
+//
+//            // sqlitewraper.context.sendBroadcast(intent);
+//        }
+//        else {
+//            String tid = AttendanceTaskUtil.getTaskMasterTid(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId());
+//
+//            if (!tid.equalsIgnoreCase("")) {
+////                SQLiteDatabase mSqLiteDatabase = sqlitewraper.getDatabase();
+////                Cursor c3 = mSqLiteDatabase.rawQuery(
+////                                "SELECT username,company_id,user_id FROM  Login_Master",
+////                                null);
+////                c3.moveToLast();
+////                int company_id = 0;
+////                if (c3.getCount() > 0) {
+////                    String username = c3.getString(0);
+////                    company_id = c3.getInt(1);
+////                    int user_id = c3.getInt(2);
+////
+////                    c3.close();
+////                }
+////               check out btn true hide checkout notification
+//                if(mTaskData.getCheckOutBtn() == null ||  mTaskData.getCheckOutBtn().equalsIgnoreCase("false"))
+//                {
+//                }
+//                else {
+//
+//                    String Status = AttendanceTaskUtil.getTaskMasterStatus(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId() , tid);
+//                    int tripstatus = AttendanceTaskUtil.getTripRuningOrnot(database, tid);
+//
+//                    boolean istripstart = false;
+//                    if(tripstatus > 0)
+//                    {
+//                        istripstart = true;
+//                    }
+//                    else {
+//                        istripstart = false;
+//                    }
+//                    //show check out notification
+//                    if(Status.equalsIgnoreCase(mTaskData.getPunchout_Status()))
+//                    {
+//                        if(istripstart)
+//                        {
+//                            notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
+//                            notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+//                            CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
+//                            notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
+//
+//                            if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
+//                                // Check-In notification already active
+//                            } else {
+//
+//                                PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+//
+//                                setAlarmNotification(sqlitewraper.context,
+//                                        dayTime.get(1)
+//                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+//                            }
+//
+//                        }
+//                    }
+//                    else {
+//
+//                        if(istripstart)
+//                        {
+//                            notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
+//                            notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+//                            CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
+//                            notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
+//
+//                            if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
+//                                // Check-In notification already active
+//                            } else {
+//
+//                                PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+//
+//                                setAlarmNotification(sqlitewraper.context,
+//                                        dayTime.get(1)
+//                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+//                            }
+//                        }
+//
+////                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
+////                        notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+////
+////                        PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+////
+////                        setAlarmNotification(sqlitewraper.context,
+////                                dayTime.get(1)
+////                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+//                    }
+//
+//                }
+//
+//            }
+//        }
+//    }
+
+
+// check any trip running or not if trip running no any notification show 29122025
+public static void setAttendanceNotificationAlarm(AttendanceData attendanceData) {
+    TaskData mTaskData = new TaskData();
+    if(attendanceData.getFlowId().equalsIgnoreCase("Select"))
+    {
+        mTaskData.setModuleId(Integer.parseInt("0"));
+    }
+    else {
+        mTaskData.setModuleId(Integer.parseInt(attendanceData.getFlowId()));
+    }
+    mTaskData.setCheckSheetId(attendanceData.getChecksheetId());
+    SQLiteDatabase database = sqlitewraper.getDatabase();
 //        Cursor flowMasterCursor = database
 //                .rawQuery("select module_name from flow_master where moduleid=" + mTaskData.getModuleId(), null);
 //        flowMasterCursor.moveToLast();
@@ -90,100 +299,101 @@ public class AttendanceUtil {
 //            mTaskData.setModuleName("null");
 //            LogUtils.writeAttendanceLogToFile("attendanceData : " + attendanceData + "\n flow_master is null", "setAttendanceNotificationAlarm");
 //        }
-        if(attendanceData.getFlow_name() == null || attendanceData.getFlow_name().equalsIgnoreCase("null") )
+    if(attendanceData.getFlow_name() == null || attendanceData.getFlow_name().equalsIgnoreCase("null") )
+    {
+        mTaskData.setModuleName(attendanceData.getKey());
+    }
+    else {
+        mTaskData.setModuleName(attendanceData.getFlow_name());
+    }
+
+    if(attendanceData.getFacedetection() == null || attendanceData.getFacedetection().equalsIgnoreCase("null") || attendanceData.getFacedetection().equalsIgnoreCase("true"))
+    {
+        mTaskData.setFacedetection("true");
+    }
+    else {
+        mTaskData.setFacedetection(attendanceData.getFacedetection());
+    }
+
+
+    mTaskData.setUsername(DeviceEventsUtils.getLoginDetails().get(3));
+    mTaskData.setUserId(DeviceEventsUtils.getLoginDetails().get(0));
+    mTaskData.setCheckOutBtn(attendanceData.getChekOutBtn());
+    mTaskData.setCheckInBtn(attendanceData.getChekInBtn());
+    if(attendanceData.getPunchin_Status() == null || attendanceData.getPunchin_Status().equalsIgnoreCase("null"))
+    {
+        mTaskData.setPunchin_Status("1");
+    }
+    else {
+        mTaskData.setPunchin_Status(attendanceData.getPunchin_Status());
+    }
+
+    if(attendanceData.getPunchout_Status() == null || attendanceData.getPunchout_Status().equalsIgnoreCase("null"))
+    {
+        mTaskData.setPunchout_Status("2");
+    }
+    else {
+        mTaskData.setPunchout_Status(attendanceData.getPunchout_Status());
+    }
+
+    Calendar c = Calendar.getInstance();
+    int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+
+    List<String> dayTime;
+    DaysTimes daysTimes = attendanceData.getDaysTimesList().get(0);
+    if (dayOfWeek == 1) {
+        dayTime = daysTimes.getDayOne();
+    } else if (dayOfWeek == 2) {
+        dayTime = daysTimes.getDayTwo();
+    } else if (dayOfWeek == 3) {
+        dayTime = daysTimes.getDayThree();
+    } else if (dayOfWeek == 4) {
+        dayTime = daysTimes.getDayFor();
+    } else if (dayOfWeek == 5) {
+        dayTime = daysTimes.getDayFive();
+    } else if (dayOfWeek == 6) {
+        dayTime = daysTimes.getDaySix();
+    } else if (dayOfWeek == 7) {
+        dayTime = daysTimes.getDaySeven();
+    } else {
+        dayTime = Arrays.asList("10:00", "19:30");
+    }
+    Intent notificationShowIntent = new Intent(sqlitewraper.context, AttendanceNotificationShow.class);
+    int trip_status = AttendanceTaskUtil.getTripRuningOrnot(database, "tid");
+
+    if (trip_status == 0) {
+
+        if(mTaskData.getCheckInBtn().equalsIgnoreCase("false"))
         {
-            mTaskData.setModuleName(attendanceData.getKey());
+
         }
         else {
-            mTaskData.setModuleName(attendanceData.getFlow_name());
+            notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckIn));
+            notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+            CheckInNotiid = (mTaskData.getModuleName() + "_CheckIn_").hashCode();
+            notificationShowIntent.putExtra("Notificationid", CheckInNotiid);
+
+            if (isNotificationActive(sqlitewraper.context, CheckInNotiid)) {
+                // Check-In notification already active
+            } else {
+
+                PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                setAlarmNotification(sqlitewraper.context,
+                        dayTime.get(0)
+                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckIn));
+
+            }
+
         }
 
-        if(attendanceData.getFacedetection() == null || attendanceData.getFacedetection().equalsIgnoreCase("null") || attendanceData.getFacedetection().equalsIgnoreCase("true"))
-        {
-            mTaskData.setFacedetection("true");
-        }
-        else {
-            mTaskData.setFacedetection(attendanceData.getFacedetection());
-        }
 
+        // sqlitewraper.context.sendBroadcast(intent);
+    }
+    else {
+        String tid = AttendanceTaskUtil.getTaskMasterTid(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId());
 
-        mTaskData.setUsername(DeviceEventsUtils.getLoginDetails().get(3));
-        mTaskData.setUserId(DeviceEventsUtils.getLoginDetails().get(0));
-        mTaskData.setCheckOutBtn(attendanceData.getChekOutBtn());
-        mTaskData.setCheckInBtn(attendanceData.getChekInBtn());
-        if(attendanceData.getPunchin_Status() == null || attendanceData.getPunchin_Status().equalsIgnoreCase("null"))
-        {
-            mTaskData.setPunchin_Status("1");
-        }
-        else {
-            mTaskData.setPunchin_Status(attendanceData.getPunchin_Status());
-        }
-
-        if(attendanceData.getPunchout_Status() == null || attendanceData.getPunchout_Status().equalsIgnoreCase("null"))
-        {
-            mTaskData.setPunchout_Status("2");
-        }
-        else {
-            mTaskData.setPunchout_Status(attendanceData.getPunchout_Status());
-        }
-
-        Calendar c = Calendar.getInstance();
-        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
-
-        List<String> dayTime;
-        DaysTimes daysTimes = attendanceData.getDaysTimesList().get(0);
-        if (dayOfWeek == 1) {
-            dayTime = daysTimes.getDayOne();
-        } else if (dayOfWeek == 2) {
-            dayTime = daysTimes.getDayTwo();
-        } else if (dayOfWeek == 3) {
-            dayTime = daysTimes.getDayThree();
-        } else if (dayOfWeek == 4) {
-            dayTime = daysTimes.getDayFor();
-        } else if (dayOfWeek == 5) {
-            dayTime = daysTimes.getDayFive();
-        } else if (dayOfWeek == 6) {
-            dayTime = daysTimes.getDaySix();
-        } else if (dayOfWeek == 7) {
-            dayTime = daysTimes.getDaySeven();
-        } else {
-            dayTime = Arrays.asList("10:00", "19:30");
-        }
-        Intent notificationShowIntent = new Intent(sqlitewraper.context, AttendanceNotificationShow.class);
-
-        if (!AttendanceTaskUtil.isAttendanceDone(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId(), "2")) {
-
-                if(mTaskData.getCheckInBtn().equalsIgnoreCase("false"))
-                {
-
-                }
-                else {
-                    notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckIn));
-                    notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
-                    CheckInNotiid = (mTaskData.getModuleName() + "_CheckIn_").hashCode();
-                    notificationShowIntent.putExtra("Notificationid", CheckInNotiid);
-
-                    if (isNotificationActive(sqlitewraper.context, CheckInNotiid)) {
-                        // Check-In notification already active
-                    } else {
-
-                        PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-                        setAlarmNotification(sqlitewraper.context,
-                                dayTime.get(0)
-                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckIn));
-
-                    }
-
-                }
-
-
-            // sqlitewraper.context.sendBroadcast(intent);
-        }
-        else {
-            String tid = AttendanceTaskUtil.getTaskMasterTid(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId());
-
-            if (!tid.equalsIgnoreCase("")) {
+        if (!tid.equalsIgnoreCase("")) {
 //                SQLiteDatabase mSqLiteDatabase = sqlitewraper.getDatabase();
 //                Cursor c3 = mSqLiteDatabase.rawQuery(
 //                                "SELECT username,company_id,user_id FROM  Login_Master",
@@ -198,65 +408,65 @@ public class AttendanceUtil {
 //                    c3.close();
 //                }
 //               check out btn true hide checkout notification
-                if(mTaskData.getCheckOutBtn() == null ||  mTaskData.getCheckOutBtn().equalsIgnoreCase("false"))
+            if(mTaskData.getCheckOutBtn() == null ||  mTaskData.getCheckOutBtn().equalsIgnoreCase("false"))
+            {
+            }
+            else {
+
+                String Status = AttendanceTaskUtil.getTaskMasterStatus(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId() , tid);
+                int tripstatus = AttendanceTaskUtil.getTripRuningOrnot(database, tid);
+
+                boolean istripstart = false;
+                if(tripstatus > 0)
                 {
+                    istripstart = true;
+                }
+                else {
+                    istripstart = false;
+                }
+                //show check out notification
+                if(Status.equalsIgnoreCase(mTaskData.getPunchout_Status()))
+                {
+                    if(istripstart)
+                    {
+                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
+                        notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+                        CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
+                        notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
+
+                        if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
+                            // Check-In notification already active
+                        } else {
+
+                            PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                            setAlarmNotification(sqlitewraper.context,
+                                    dayTime.get(1)
+                                    , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+                        }
+
+                    }
                 }
                 else {
 
-                    String Status = AttendanceTaskUtil.getTaskMasterStatus(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId() , tid);
-                    int tripstatus = AttendanceTaskUtil.getTripRuningOrnot(database, tid);
-
-                    boolean istripstart = false;
-                    if(tripstatus > 0)
+                    if(istripstart)
                     {
-                        istripstart = true;
-                    }
-                    else {
-                        istripstart = false;
-                    }
-                    //show check out notification
-                    if(Status.equalsIgnoreCase(mTaskData.getPunchout_Status()))
-                    {
-                        if(istripstart)
-                        {
-                            notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
-                            notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
-                            CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
-                            notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
+                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
+                        notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+                        CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
+                        notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
 
-                            if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
-                                // Check-In notification already active
-                            } else {
+                        if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
+                            // Check-In notification already active
+                        } else {
 
-                                PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                            PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-                                setAlarmNotification(sqlitewraper.context,
-                                        dayTime.get(1)
-                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
-                            }
-
+                            setAlarmNotification(sqlitewraper.context,
+                                    dayTime.get(1)
+                                    , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
                         }
                     }
-                    else {
-
-                        if(istripstart)
-                        {
-                            notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
-                            notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
-                            CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
-                            notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
-
-                            if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
-                                // Check-In notification already active
-                            } else {
-
-                                PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-                                setAlarmNotification(sqlitewraper.context,
-                                        dayTime.get(1)
-                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
-                            }
-                        }
 
 //                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
 //                        notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
@@ -266,13 +476,13 @@ public class AttendanceUtil {
 //                        setAlarmNotification(sqlitewraper.context,
 //                                dayTime.get(1)
 //                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
-                    }
-
                 }
 
             }
+
         }
     }
+}
 
     //Set alarm for Notification as per time slot
     public static void setAlarmNotification(Context context, String startTime, int dayCount, PendingIntent attendanceNotificationShowPendingIntent,String notificationtype) {
