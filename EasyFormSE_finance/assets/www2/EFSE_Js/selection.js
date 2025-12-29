@@ -2073,7 +2073,7 @@ function get_checksheet_id_for_task_online(flow_id) {
 }
 
 // check and notify user for today's attendance
-function get_today_attendance_for_notification() {
+function get_today_attendance_for_notification_old() {
     var Attendance = localStorage.getItem('Attendance');
     if (Attendance == "True") {
         var t_photo_url = $("#menu_img_profile").attr("src");
@@ -2168,6 +2168,42 @@ function get_today_attendance_for_notification() {
         //}
     }
 }
+
+function get_today_attendance_for_notification() {
+    var Attendance = localStorage.getItem('Attendance');
+    if (Attendance == "True") {
+        var AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
+        var attendance_flow_id = AttendanceJson[0].flow_id;
+        if (attendance_flow_id == "" || attendance_flow_id == null || attendance_flow_id == undefined) {
+            alert("Attendance flow id is not found in Attendance JSON!");
+        }
+        else {
+
+            // end trip button
+            $("#noti_Attendance3").css("display", "none");
+
+            let id_Array = JSON.parse(storage.getItem('id_Array'));
+            if (id_Array == '' || id_Array == undefined || id_Array == null) {
+
+                var trip_status = localStorage.getItem('trip_status');
+                if (trip_status == '1' || trip_status == '' || trip_status == null || trip_status == undefined) {
+                    // display trip start button
+                    $("#noti_Attendance2").css("display", "block");
+                }
+                else {
+                    // hide trip start button
+                    $("#noti_Attendance2").css("display", "none");
+                }
+
+            }
+            else {
+                // hide trip start button at inner level
+                $("#noti_Attendance2").css("display", "none");
+            }
+        }
+    }
+}
+
 
 noti_Attendance_Click = () => {
 
