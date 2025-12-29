@@ -2142,7 +2142,7 @@ function get_today_attendance_for_notification() {
                     else {
                         var trip_status = localStorage.getItem('trip_status');
                         if (trip_status == '0') {
-                            $("#noti_Attendance3").css("display", "block");
+                            //$("#noti_Attendance3").css("display", "block");
                         }
                     }
                 }
