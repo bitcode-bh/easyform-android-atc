@@ -25,18 +25,18 @@ function data_to_read_task() {
                 });
             }
 
-            data_to_read_task_post();
+            data_to_read_task_pre();
         }
         else {
-            data_to_read_task_post();
+            data_to_read_task_pre();
         }
     }, function (e) {
         // fail
-        data_to_read_task_post();
+        data_to_read_task_pre();
 
     }, 'SqlitePlugin', 'showValues', q_jsonobj);
 }
-function data_to_read_task_post() {
+function data_to_read_task_pre() {
     var query = "select username from Login_master";
     var q_jsonobj = [];
     q_jsonobj.push({
@@ -50,6 +50,7 @@ function data_to_read_task_post() {
 function onsuccess_check_for_notification_task(e) {
     try {
         var myArray = JSON.parse(e);
+        alert(JSON.stringify(myArray));
         var task_checksheet_id = myArray[0].task_checksheet_id;
         //var task_checksheet_id = 76909;
         if (task_checksheet_id == '' || task_checksheet_id == null || task_checksheet_id == undefined) {

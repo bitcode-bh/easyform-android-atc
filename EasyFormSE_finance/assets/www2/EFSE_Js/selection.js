@@ -2077,78 +2077,59 @@ function get_today_attendance_for_notification() {
     var Attendance = localStorage.getItem('Attendance');
     if (Attendance == "True") {
         var t_photo_url = $("#menu_img_profile").attr("src");
-        if (t_photo_url == "images/profile_pic.png") {
-            //mk_notify("Profile picture is not set. It is used to fill attendance!");
-            //$("#noti_Attendance1").css("display", "block");
+        //if (t_photo_url == "images/profile_pic.png") {
+        //    //mk_notify("Profile picture is not set. It is used to fill attendance!");
+        //    //$("#noti_Attendance1").css("display", "block");
+        //}
+        //else {
+
+        var t_user_id = JSON.parse(storage.getItem('user_id'));
+        var d = new Date();
+        var today_date = d.getDate();
+        var curr_month = d.getMonth();
+        var curr_year = d.getFullYear();
+
+        var AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
+        var attendance_flow_id = AttendanceJson[0].flow_id;
+
+        if (attendance_flow_id == "" || attendance_flow_id == null || attendance_flow_id == undefined) {
+            alert("Attendance flow id is not found in Attendance JSON!");
         }
         else {
+            var param_obj = [];
+            param_obj.push({
+                "Flow_id": attendance_flow_id,
+                "User_id": t_user_id,
+                "Month": curr_month + 1,
+                "Year": curr_year
+            });
 
-            var t_user_id = JSON.parse(storage.getItem('user_id'));
-            var d = new Date();
-            var today_date = d.getDate();
-            var curr_month = d.getMonth();
-            var curr_year = d.getFullYear();
-
-            var AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
-            var attendance_flow_id = AttendanceJson[0].flow_id;
-
-            if (attendance_flow_id == "" || attendance_flow_id == null || attendance_flow_id == undefined) {
-                alert("Attendance flow id is not found in Attendance JSON!");
-            }
-            else {
-                var param_obj = [];
-                param_obj.push({
-                    "Flow_id": attendance_flow_id,
-                    "User_id": t_user_id,
-                    "Month": curr_month + 1,
-                    "Year": curr_year
-                });
-
-                loading();
-                var getdata = new Webservicecall_REST(global_wcf_url + 'Get_Attendance', JSON.stringify(param_obj), function (e) {
-                    var res_text = e.responseText;
-                    var result = eval('(' + res_text + ')');
-                    var message = result[0].message;
+            loading();
+            var getdata = new Webservicecall_REST(global_wcf_url + 'Get_Attendance', JSON.stringify(param_obj), function (e) {
+                var res_text = e.responseText;
+                var result = eval('(' + res_text + ')');
+                var message = result[0].message;
 
 
-                    var status = result[0].status;
-                    if (status == 1) {
-                        var data = result[0].data;
-                        var d_Array = JSON.parse(data);
+                var status = result[0].status;
+                if (status == 1) {
+                    var data = result[0].data;
+                    var d_Array = JSON.parse(data);
 
-                        var today_atnd_found = 0;
-                        for (i = 0; i < d_Array.length; i++) {
-                            var d = new Date(d_Array[i].AssignDate).getDate();
+                    var today_atnd_found = 0;
+                    for (i = 0; i < d_Array.length; i++) {
+                        var d = new Date(d_Array[i].AssignDate).getDate();
 
-                            if (d == today_date) {
-                                today_atnd_found++;
-                            }
-                        }
-
-                        if (today_atnd_found == 0) {
-                            // display add attendance if not found for today
-                            //mk_notify("Your attendance is pending!");
-
-                            $("#noti_Attendance3").css("display", "none");
-
-                            let id_Array = JSON.parse(storage.getItem('id_Array'));
-                            if (id_Array == '' || id_Array == undefined || id_Array == null) {
-                                $("#noti_Attendance2").css("display", "block");
-                            }
-                            else {
-                                $("#noti_Attendance2").css("display", "none");
-                            }
-                        }
-                        else {
-                            var trip_status = localStorage.getItem('trip_status');
-                            if (trip_status == '0') {
-                                $("#noti_Attendance3").css("display", "block");
-                            }
+                        if (d == today_date) {
+                            today_atnd_found++;
                         }
                     }
-                    else if (status == 2) {
+
+                    if (today_atnd_found == 0) {
                         // display add attendance if not found for today
                         //mk_notify("Your attendance is pending!");
+
+                        $("#noti_Attendance3").css("display", "none");
 
                         let id_Array = JSON.parse(storage.getItem('id_Array'));
                         if (id_Array == '' || id_Array == undefined || id_Array == null) {
@@ -2159,13 +2140,32 @@ function get_today_attendance_for_notification() {
                         }
                     }
                     else {
-                        alert1("Server: " + message)
+                        var trip_status = localStorage.getItem('trip_status');
+                        if (trip_status == '0') {
+                            $("#noti_Attendance3").css("display", "block");
+                        }
                     }
-                    loading_hide();
-                }, onfail);
-                getdata.callOtherDomain();
-            }
+                }
+                else if (status == 2) {
+                    // display add attendance if not found for today
+                    //mk_notify("Your attendance is pending!");
+
+                    let id_Array = JSON.parse(storage.getItem('id_Array'));
+                    if (id_Array == '' || id_Array == undefined || id_Array == null) {
+                        $("#noti_Attendance2").css("display", "block");
+                    }
+                    else {
+                        $("#noti_Attendance2").css("display", "none");
+                    }
+                }
+                else {
+                    alert1("Server: " + message)
+                }
+                loading_hide();
+            }, onfail);
+            getdata.callOtherDomain();
         }
+        //}
     }
 }
 
