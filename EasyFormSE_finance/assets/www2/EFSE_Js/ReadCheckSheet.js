@@ -3571,6 +3571,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     else {
                         set_attendance_photo_in_task_form(check_type, attendance_photo_url)
                     }
+
+                    enable_back_button();
                 }
                 else {
                     // normal task create

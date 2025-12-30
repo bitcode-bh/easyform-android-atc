@@ -2179,9 +2179,6 @@ function get_today_attendance_for_notification() {
         }
         else {
 
-            // end trip button
-            $("#noti_Attendance3").css("display", "none");
-
             let id_Array = JSON.parse(storage.getItem('id_Array'));
             if (id_Array == '' || id_Array == undefined || id_Array == null) {
 
@@ -2189,16 +2186,19 @@ function get_today_attendance_for_notification() {
                 if (trip_status == '1' || trip_status == '' || trip_status == null || trip_status == undefined) {
                     // display trip start button
                     $("#noti_Attendance2").css("display", "block");
+                    $("#noti_Attendance3").css("display", "none");
                 }
                 else {
                     // hide trip start button
                     $("#noti_Attendance2").css("display", "none");
+                    $("#noti_Attendance3").css("display", "block");
                 }
 
             }
             else {
-                // hide trip start button at inner level
+                // hide trip start and end button at inner level
                 $("#noti_Attendance2").css("display", "none");
+                $("#noti_Attendance3").css("display", "none");
             }
         }
     }
@@ -2482,64 +2482,30 @@ home_tab_click = () => {
     pageload_main();
 }
 
-// stop trip manualy via module listing
-stop_trip_manualy_from_module_listing = (ser_task_id) => {
-    let trip_ser_task_id = localStorage.getItem('trip_ser_task_id');
-    if (trip_ser_task_id == "" || trip_ser_task_id == null || trip_ser_task_id == undefined) {
-        alert('Trip server task id not found!');
-    }
-    else {
-        var query = "select tid from task_master where server_task_id = '" + ser_task_id + "'";
-        var q_jsonobj = [];
-        q_jsonobj.push({
-            data: query,
-            p: "1"
-        });
-        cordova.exec(function (e) {
+// stop trip manualy via module listing (task was created offline so get server task id)
+stop_trip_manualy_from_module_listing = () => {
+    let trip_tid = localStorage.getItem('trip_tid');
+    var query = "select tid, server_task_id, status, moduleid, checksheetid, siteid from task_master where tid = '" + trip_tid + "'";
+    var q_jsonobj = [];
+    q_jsonobj.push({
+        data: query,
+        p: "1"
+    });
+    cordova.exec(function (e) {
 
-            update_server_task_entry_online_stop_trip(ser_task_id);
+        let myArray = JSON.parse(e);
+        let trip_tid = myArray[0].tid;
+        let server_task_id = myArray[0].server_task_id;
+        let start_status = myArray[0].status;
+        let flow_id = myArray[0].moduleid;
+        let check_type = myArray[0].checksheetid;
+        let siteid = myArray[0].siteid;
 
-            var myArray = JSON.parse(e);
-            var trip_tid = myArray[0].tid;
-            var q_jsonobj = [];
-            q_jsonobj.push({
-                'trip_status': "-1",
-                'tid': trip_tid,
-                'odometer_point': [],
-                'ETA': "",
-                'stillviolation_event': ""
-            });
-            cordova.exec(function (e) { }, function (e) { }, 'TripPlugin', 'anAction', q_jsonobj);
-
-        }, function (e) {
-            // tid not found
-            update_server_task_entry_online_stop_trip(ser_task_id);
-
-        }, 'SqlitePlugin', 'showValues', q_jsonobj);
-    }
-}
-function update_server_task_entry_online_stop_trip(selected_server_task_id) {
-    try {
-
-        var AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
-        var auto_trip = AttendanceJson[0].auto_trip;
-        if (auto_trip == "true") {
-            var myArray = JSON.parse(e);
-            var t_tid = myArray[0].tid;
-            auto_start_trip_on_attendane_task_create(t_tid);
-        }
-
-        loading();
+        let AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
+        let Punchout_Status = AttendanceJson[0].Punchout_Status;
+        
         var company_id = JSON.parse(storage.getItem('company_id'));
-        var user_id = JSON.parse(storage.getItem('user_id'));
-
-        var btn_status = 2;
-
-        var siteid = JSON.parse(storage.getItem('siteid'));
-        var check_type = JSON.parse(storage.getItem('check_type'));
-        var flow_id = JSON.parse(storage.getItem('wayflow'));
-        var start_status = JSON.parse(storage.getItem('start_status'));
-
+       
         if (check_type == '' || check_type == null || check_type == undefined || check_type == "null") {
             check_type = 0;
         }
@@ -2559,8 +2525,8 @@ function update_server_task_entry_online_stop_trip(selected_server_task_id) {
             'check_type': check_type,
             'u_c': uniqcode,
             'siteid': siteid,
-            'servertaskid': selected_server_task_id,
-            'status': btn_status,
+            'servertaskid': server_task_id,
+            'status': Punchout_Status,
             'old_status': start_status,
             'step': 1,
             'moduledef': "",
@@ -2575,12 +2541,144 @@ function update_server_task_entry_online_stop_trip(selected_server_task_id) {
             'timezone': timezone
         });
         //alert1(JSON.stringify(param_obj));
+        loading();
 
-        var getdata = new Webservicecall_REST(global_wcf_url + 'WCFTechnicianDataUpload', JSON.stringify(param_obj), onsuccess_update_server_task_entry_online_SB, onfail_update_server_task_entry_online_SB);
+        var getdata = new Webservicecall_REST(global_wcf_url + 'WCFTechnicianDataUpload', JSON.stringify(param_obj), function (e) {
+            var res_text = e.responseText;
+            var result = eval('(' + res_text + ')');
+            var message = result[0].message;
+            var status = result[0].status;
+            if (status == 1) {
+                loading_hide();
+
+                var q_jsonobj = [];
+                q_jsonobj.push({
+                    'trip_status': "1",
+                    'tid': trip_tid,
+                    'odometer_point': [],
+                    'ETA': "false",
+                    'stillviolation_event': "false",
+                    'vehicle_type': ""
+                });
+                cordova.exec(function (e) {
+                    // success
+
+                    localStorage.setItem('trip_status', '1');
+                    localStorage.setItem('trip_tid', '');
+                    localStorage.setItem('trip_ser_task_id', '');
+                    localStorage.setItem('trip_waypoint_dependency', '');
+
+                    changeurl("selection.html");
+                }, function (e) {
+                    // fail
+                    alert("Unable to end trip!")
+                }, 'TripPlugin', 'anAction', q_jsonobj);
+
+                
+            }
+            else {
+                alert1(message);
+                loading_hide();
+            }
+        }, onfail);
         getdata.callOtherDomain();
 
-    }
-    catch (e) {
-        alert1(e + '_update_server_task_entry_online_SB()');
-    }
+
+
+    }, function (e) {
+        // tid not found
+        alert("trip id is not found!");
+
+    }, 'SqlitePlugin', 'showValues', q_jsonobj);
+
 }
+
+
+
+
+//open_end_trip_checksheet = () => {
+//    let trip_tid = localStorage.getItem('trip_tid');
+//    var query = "select * from task_master where tid = '" + trip_tid + "'";
+//    var q_jsonobj = [];
+//    q_jsonobj.push({
+//        data: query,
+//        p: "1"
+//    });
+//    cordova.exec(function (e) {
+
+//        var myArray = JSON.parse(e);
+
+//        var selected_site = myArray[0].siteid;
+//        var selected_site_name = myArray[0].site_name;
+//        var selected_server_task_id = myArray[0].ser_task_id;
+//        var selected_start_status = myArray[0].task_status;
+//        var selected_moduleid = myArray[0].module_id;
+//        var selected_modulename = myArray[0].module_name;
+//        var t_site_lat = myArray[0].site_lat;
+//        var t_site_long = myArray[0].site_long;
+//        var t_task_update = 1;
+
+//        // task click logic (need to open end trip checksheet)
+
+//        // clear system variables on main task click 06052022
+//        var is_subflow = localStorage.getItem('is_subflow');
+//        if (is_subflow == 'true') { }
+//        else {
+//            storage.setItem('type20_columndata', JSON.stringify(''));
+//        }
+
+//        storage.setItem('site_lat', JSON.stringify(t_site_lat));
+//        storage.setItem('site_long', JSON.stringify(t_site_long));
+//        storage.setItem('curr_btn_mode', JSON.stringify(''));
+//        storage.setItem('siteid', JSON.stringify(selected_site));
+//        storage.setItem('sitename', JSON.stringify(selected_site_name));
+//        storage.setItem('type20_cust_id', JSON.stringify(selected_site));
+//        storage.setItem('type20_cust_name', JSON.stringify(selected_site_name));
+//        storage.setItem('server_task_id', JSON.stringify(selected_server_task_id));
+
+//        storage.setItem('start_status', JSON.stringify(selected_start_status));
+//        storage.setItem('wayflow', JSON.stringify(selected_moduleid));
+//        storage.setItem('wayflow_name', JSON.stringify(selected_modulename));
+//        storage.setItem('ser_task_update', JSON.stringify(t_task_update));
+//        set_common_localStorage('redirect_on_checksheet', 'true');
+
+//        storage.setItem('task_click_mode', JSON.stringify('static'));
+//        storage.setItem('tid', JSON.stringify(trip_tid));
+//        storage.setItem('type20_cust_id', JSON.stringify(selected_site));
+//        storage.setItem('type20_cust_name', JSON.stringify(selected_site_name));
+//        storage.setItem('loc_task_update', "false");
+
+//        var flow_Array = [];
+//        flow_Array.push({
+//            'id': id,
+//            'wayflow': flow_id,
+//            'wayflow_name': flow_name,
+//            'type': type,
+//            'tid': '',
+//            'siteid': '',
+//            'start_status': '',
+//            'end_status': '',
+//            'checklist': '',
+//            'list_json': data_count
+//        });
+
+//        var flow_Array = JSON.parse(storage.getItem('flow_Array'));
+//        if (flow_Array.length == 1) {
+//            storage.setItem('p_server_task_id', JSON.stringify(selected_server_task_id));
+//        }
+
+//        flow_Array[flow_Array.length - 1].tid = selected_tid;
+//        flow_Array[flow_Array.length - 1].siteid = selected_site;
+//        flow_Array[flow_Array.length - 1].start_status = selected_start_status;
+//        storage.setItem('flow_Array', JSON.stringify(flow_Array));
+
+//        changeurl("viewsitedata.html");
+
+//    }, function (e) {
+//        // tid not found
+//        alert("trip id is not found!");
+
+//    }, 'SqlitePlugin', 'showValues', q_jsonobj);
+
+//    redirect_on_pm_site_click_online(selected_site, selected_site_name, selected_server_task_id, selected_start_status, selected_moduleid, selected_modulename, t_task_update, t_site_lat, t_site_long, t_survey_date, t_millisecond);
+//}
