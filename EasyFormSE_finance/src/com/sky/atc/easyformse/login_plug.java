@@ -244,29 +244,7 @@ public class login_plug implements Runnable {
                     pref.putString("Attendance",jsonObject.getString("Attendance"));
                     pref.commit();
 
-                    //For Register Alarm for Attendance
-                    if (attendanceValues.equalsIgnoreCase("true")) {
-                        attendanceValues = jsonObject.getString("AttendanceJson");
-                        Log.d("attendanceJson ", attendanceValues);
 
-                        boolean isRoleMatched = DeviceEventsUtils.CheckRoleIdForAttendance(attendanceValues);
-
-                        if(isRoleMatched)
-                        {
-                            final String finalAttendanceValues = attendanceValues;
-                            AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
-                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                                // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
-                                Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
-                                AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
-                            }, 2000);
-                        }
-                        else {
-                            context.getSharedPreferences("AttendanceData", Context.MODE_PRIVATE).edit().clear().apply();
-
-                        }
-
-                    }
 
                     //for location tracking type if continues tracking or app tracking.
                     if (gpsflag.equalsIgnoreCase("1") || gpsflag.equalsIgnoreCase("2")) {
@@ -380,6 +358,32 @@ public class login_plug implements Runnable {
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
+                            }
+
+
+                            //For Register Alarm for Attendance
+                            // first store role_id after execute attendance logic
+                            if (attendanceValues.equalsIgnoreCase("true")) {
+                                attendanceValues = jsonObject.getString("AttendanceJson");
+                                Log.d("attendanceJson ", attendanceValues);
+
+                                boolean isRoleMatched = DeviceEventsUtils.CheckRoleIdForAttendance(attendanceValues);
+
+                                if(isRoleMatched)
+                                {
+                                    final String finalAttendanceValues = attendanceValues;
+                                    AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
+                                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                        // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
+                                        Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
+                                        AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
+                                    }, 2000);
+                                }
+                                else {
+                                    context.getSharedPreferences("AttendanceData", Context.MODE_PRIVATE).edit().clear().apply();
+
+                                }
+
                             }
 
 
