@@ -916,12 +916,30 @@ function updateuniquecode_android(invocation, res_type) {
             if (Attendance == '' || Attendance == null || Attendance == undefined) {
                 Attendance = "false";
             }
-            localStorage.setItem('Attendance', Attendance);
-
+            
             var AttendanceJson = result[0].AttendanceJson;
             if (AttendanceJson == '' || AttendanceJson == null || AttendanceJson == undefined) {
                 AttendanceJson = '';
             }
+            else {
+                let login_role_id = result[0].role_id;    // role_id in string comparission
+                let attendance_role_id = AttendanceJson[0].role_id_array;
+                if (attendance_role_id == "" || attendance_role_id == null || attendance_role_id == undefined) {
+                    // old attendance json
+                }
+                else {
+                    if (attendance_role_id.indexOf(login_role_id) !== -1) {
+                        // role id exist
+                    }
+                    else {
+                        // role id exist
+                        AttendanceJson = '';
+                        Attendance = "false";
+                    }
+                }
+            }
+
+            localStorage.setItem('Attendance', Attendance);
             localStorage.setItem('AttendanceJson', JSON.stringify(AttendanceJson));
 
             var profile_user_data = result[0].userdata;
