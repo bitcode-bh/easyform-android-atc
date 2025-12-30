@@ -2447,6 +2447,9 @@ function clear_localStorage() {
     let ios_device = localStorage.getItem('ios_device');
 
     let trip_status = localStorage.getItem('trip_status');
+    if (trip_status == "" || trip_status == null || trip_status == undefined || trip_status == "null") {
+        trip_status = "";
+    }
     let trip_tid = localStorage.getItem('trip_tid');
     let trip_ser_task_id = localStorage.getItem('trip_ser_task_id');
     let trip_Array = localStorage.getItem("trip_Array");
