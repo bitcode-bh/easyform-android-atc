@@ -289,26 +289,19 @@ public class UploadPhotoPlugin extends CordovaPlugin {
     }
 
     //online task listing camera with attendance (profile photo)
-    public boolean Facedetectioncmera(String photoUrl,String withoutTaskAttendance,String attendanceData)
-    {
-        String Attendance = pref.getString("Attendance","false");
-        if(Attendance.equalsIgnoreCase("false") || Attendance.equalsIgnoreCase("null"))
-        {
-            Toast.makeText(cordova.getActivity(), "Attendance Feature is not assign", Toast.LENGTH_SHORT).show();
-        }
-        else {
-
-            if(photoUrl.equalsIgnoreCase(""))
-            {
+    public boolean Facedetectioncmera(String photoUrl, String withoutTaskAttendance, String attendanceData) {
+        if (photoUrl.equalsIgnoreCase("")) {
+            String Attendance = pref.getString("Attendance", "false");
+            if (Attendance.equalsIgnoreCase("false") || Attendance.equalsIgnoreCase("null")) {
+                Toast.makeText(cordova.getActivity(), "Attendance Feature is not assign", Toast.LENGTH_SHORT).show();
+            } else {
                 AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
                 TaskData mTaskData = new TaskData();
                 mTaskData.setCheckSheetId(mAttendanceData.getChecksheetId());
 //                mTaskData.setModuleName(mAttendanceData.getKey());
-                if(mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") || mAttendanceData.getFlow_name().equalsIgnoreCase("true"))
-                {
+                if (mAttendanceData.getFlow_name() == null || mAttendanceData.getFlow_name().equalsIgnoreCase("null") || mAttendanceData.getFlow_name().equalsIgnoreCase("true")) {
                     mTaskData.setModuleName(mAttendanceData.getKey());
-                }
-                else {
+                } else {
                     mTaskData.setModuleName(mAttendanceData.getFlow_name());
                 }
                 mTaskData.setModuleId(Integer.parseInt(mAttendanceData.getFlowId()));
@@ -339,33 +332,27 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                     return true;
                 }
             }
-            else {
+        } else {
 
                 TaskData mTaskData = new Gson().fromJson(attendanceData, TaskData.class);
 
 
                 String photoName = mTaskData.getUserId() + System.currentTimeMillis() + ".jpeg";
 
-                Intent faceRecognizerActivityIntent = new Intent(context, FaceDetactionActivity.class);
-                faceRecognizerActivityIntent.putExtra(photoUrlKey, photoUrl);
-                faceRecognizerActivityIntent.putExtra(photoNameKey, photoName);
-                faceRecognizerActivityIntent.putExtra(WithoutTaskAttendanceKey,withoutTaskAttendance);
-                faceRecognizerActivityIntent.putExtra(AttendanceNotificationShow.taskDataKey,
-                        mTaskData);
-                try {
-                    this.cordova.startActivityForResult(this, faceRecognizerActivityIntent, 102);//null pointer check in case package name was not found
-                    return true;
-                } catch (Exception e) {
-                    LogUtils.writeAttendanceLogToFile("Exception : " + e.toString(), "openFaceRecognizerActivity AttendancePlugin");
-                    this.callbackContext.error("error: " + e.toString());
-                    return false;
-                }
+            Intent faceRecognizerActivityIntent = new Intent(context, FaceDetactionActivity.class);
+            faceRecognizerActivityIntent.putExtra(photoUrlKey, photoUrl);
+            faceRecognizerActivityIntent.putExtra(photoNameKey, photoName);
+            faceRecognizerActivityIntent.putExtra(WithoutTaskAttendanceKey, withoutTaskAttendance);
+            faceRecognizerActivityIntent.putExtra(AttendanceNotificationShow.taskDataKey,
+                    mTaskData);
+            try {
+                this.cordova.startActivityForResult(this, faceRecognizerActivityIntent, 102);//null pointer check in case package name was not found
+                return true;
+            } catch (Exception e) {
+                LogUtils.writeAttendanceLogToFile("Exception : " + e.toString(), "openFaceRecognizerActivity AttendancePlugin");
+                this.callbackContext.error("error: " + e.toString());
+                return false;
             }
-
-
-
-
-
         }
         return false;
     }

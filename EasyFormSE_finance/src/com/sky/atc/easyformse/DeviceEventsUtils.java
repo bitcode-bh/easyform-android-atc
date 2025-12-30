@@ -31,6 +31,8 @@ import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.maps.model.LatLng;
+import com.sky.atc.easyformse.attendance.newattendanceutils.models.AttendanceData;
+import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.utils.LogUtils;
 
 import net.sqlcipher.Cursor;
@@ -44,6 +46,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
@@ -682,6 +686,37 @@ public class DeviceEventsUtils {
         String result = wholePart + "." + decimalPart;
 
         return  result;
+    }
+
+
+    public static boolean CheckRoleIdForAttendance(String  attendanceData){
+        try{
+            MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+            String roleid = prefs.getString("authroleidn", "0");
+
+            JSONArray jsonArray = new JSONArray(attendanceData);
+            JSONObject firstObject = jsonArray.getJSONObject(0);
+            JSONArray roleIdArray = firstObject.getJSONArray("role_id");
+
+            if (roleIdArray == null || roleIdArray.length() == 0) {
+                return true;
+            }
+
+            for (int i = 0; i < roleIdArray.length(); i++) {
+                String roleId = roleIdArray.getString(i);
+
+                if (roleId.equals(roleid)) {
+                    return true;
+                }
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return true;
+        }
+        return false;
     }
 }
 

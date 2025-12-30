@@ -62,9 +62,9 @@ public class AttendanceData {
 	@SerializedName("face_detection")
 	private String face_detection ;
 
-	@Expose
-	@SerializedName("role_id")
-	private String role_id;
+//	@Expose
+//	@SerializedName("role_id")
+//	private String role_id;
 
 	public String getFlow_name() {
 		return flow_name;
@@ -83,13 +83,13 @@ public class AttendanceData {
 		face_detection  = face_detection ;
 	}
 
-	public String getRole_id() {
-		return role_id;
-	}
-
-	public void setRole_id(String role_id) {
-		this.role_id = role_id;
-	}
+//	public String getRole_id() {
+//		return role_id;
+//	}
+//
+//	public void setRole_id(String role_id) {
+//		this.role_id = role_id;
+//	}
 
 	public String getChekOutBtn() {
 		return ChekOutBtn;
