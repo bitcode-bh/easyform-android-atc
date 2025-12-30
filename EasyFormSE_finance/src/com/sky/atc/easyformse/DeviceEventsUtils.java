@@ -696,7 +696,7 @@ public class DeviceEventsUtils {
 
             JSONArray jsonArray = new JSONArray(attendanceData);
             JSONObject firstObject = jsonArray.getJSONObject(0);
-            JSONArray roleIdArray = firstObject.getJSONArray("role_id");
+            JSONArray roleIdArray = firstObject.getJSONArray("role_id_array");
 
             if (roleIdArray == null || roleIdArray.length() == 0) {
                 return true;
