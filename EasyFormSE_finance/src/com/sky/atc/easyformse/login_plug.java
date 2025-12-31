@@ -380,7 +380,7 @@ public class login_plug implements Runnable {
                                     }, 2000);
                                 }
                                 else {
-                                    context.getSharedPreferences("AttendanceData", Context.MODE_PRIVATE).edit().clear().apply();
+                                    sqlitewraper.getSecureShared("AttendanceData").clear();
 
                                 }
 

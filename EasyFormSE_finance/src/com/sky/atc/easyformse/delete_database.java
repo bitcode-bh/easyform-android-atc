@@ -227,7 +227,8 @@ public class delete_database extends CordovaPlugin {
             update_tables("4");
 
             try {
-                context.getSharedPreferences("AttendanceData", Context.MODE_PRIVATE).edit().clear().apply();
+//                context.getSharedPreferences("AttendanceData", Context.MODE_PRIVATE).edit().clear().apply();
+                sqlitewraper.getSecureShared("AttendanceData").clear();
                // context.getSharedPreferences("UPDATEPREF", Context.MODE_PRIVATE).edit().clear().apply();
                // context.getSharedPreferences("MyPref", Context.MODE_PRIVATE).edit().clear().apply();
                // context.getSharedPreferences("MY_PREFS_NAME", Context.MODE_PRIVATE).edit().clear().apply();
