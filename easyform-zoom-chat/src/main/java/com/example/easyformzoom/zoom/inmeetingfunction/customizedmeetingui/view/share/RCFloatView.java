@@ -85,17 +85,17 @@ public class RCFloatView extends LinearLayout implements View.OnClickListener {
         mActivity = (FragmentActivity) context;
         mHelpDialog = new Dialog(context);
         mHelpDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        mHelpDialog.setContentView(R.layout.zm_rc_fingers_question);
+        mHelpDialog.setContentView(us.zoom.videomeetings.R.layout.zm_rc_fingers_question);
         mHelpDialog.setCanceledOnTouchOutside(true);
 
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.zm_rc_float_view, this);
-        mIvRCControl = (ImageView) view.findViewById(R.id.rc_control);
-        mIvKeyboard = (ImageView) view.findViewById(R.id.rc_keyboard);
-        mIvQuestion = (ImageView) view.findViewById(R.id.rc_question);
-        mVGContentSpan = (ViewGroup) view.findViewById(R.id.rc_content_span);
-        mHiddenEditText = (EditText) view.findViewById(R.id.rc_hidden_edit);
-        mVGFloatPanel = (ViewGroup) view.findViewById(R.id.rc_float_panel);
+        View view = inflater.inflate(us.zoom.videomeetings.R.layout.zm_rc_float_view, this);
+        mIvRCControl = (ImageView) view.findViewById(us.zoom.videomeetings.R.id.rc_control);
+        mIvKeyboard = (ImageView) view.findViewById(us.zoom.videomeetings.R.id.rc_keyboard);
+        mIvQuestion = (ImageView) view.findViewById(us.zoom.videomeetings.R.id.rc_question);
+        mVGContentSpan = (ViewGroup) view.findViewById(us.zoom.videomeetings.R.id.rc_content_span);
+        mHiddenEditText = (EditText) view.findViewById(us.zoom.videomeetings.R.id.rc_hidden_edit);
+        mVGFloatPanel = (ViewGroup) view.findViewById(us.zoom.videomeetings.R.id.rc_float_panel);
 
         mIvRCControl.setOnClickListener(this);
         mIvRCControl.setImageResource(R.drawable.zm_rc_control);
@@ -281,7 +281,7 @@ public class RCFloatView extends LinearLayout implements View.OnClickListener {
         String shareUsername = "" + userID;
         //TODO
         //user.getScreenName();
-        String messageFormat = mActivity.getString(R.string.zm_rc_tap_notice);
+        String messageFormat = mActivity.getString(us.zoom.videomeetings.R.string.zm_rc_tap_notice);
         return String.format(messageFormat, shareUsername);
     }
 

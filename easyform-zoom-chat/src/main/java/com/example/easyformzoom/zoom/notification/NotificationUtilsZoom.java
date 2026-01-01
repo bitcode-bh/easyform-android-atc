@@ -13,6 +13,7 @@ import android.media.AudioAttributes;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.annotation.RequiresPermission;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -43,7 +44,7 @@ public class NotificationUtilsZoom {
         remoteTokenNew= remoteToken;
         deviceTypeNew=deviceType;
 
-        Uri sound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + App.getContext().getPackageName() + "/" + R.raw.ring_original);
+        Uri sound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + App.getContext().getPackageName() + "/" + us.zoom.videomeetings.R.raw.ring_original);
         NotificationChannel channel;
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -115,6 +116,7 @@ public class NotificationUtilsZoom {
 
     public static class ActionReceiver extends BroadcastReceiver {
 
+        @RequiresPermission("android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS")
         @Override
         public void onReceive(Context context, Intent intent) {
 

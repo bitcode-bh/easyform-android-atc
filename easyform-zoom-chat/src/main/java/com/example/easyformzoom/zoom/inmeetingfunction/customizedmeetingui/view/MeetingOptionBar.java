@@ -19,8 +19,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.multidex.BuildConfig;
 
-import com.example.easyformzoom.BuildConfig;
 import com.example.easyformzoom.R;
 import com.example.easyformzoom.zoom.inmeetingfunction.customizedmeetingui.rawdata.VirtualVideoSource;
 import com.example.easyformzoom.zoom.inmeetingfunction.customizedmeetingui.rawdata.WaterMarkData;
@@ -550,7 +550,7 @@ public class MeetingOptionBar extends FrameLayout implements View.OnClickListene
                     }
                     case MENU_INTERNAL_SOURCE:{
                         ZoomSDKVideoSourceHelper sourceHelper=ZoomSDK.getInstance().getVideoSourceHelper();
-                        Bitmap waterMark = BitmapFactory.decodeResource(getResources(), R.drawable.zm_watermark_sdk);
+                        Bitmap waterMark = BitmapFactory.decodeResource(getResources(), us.zoom.videomeetings.R.drawable.zm_watermark_sdk);
                         byte[] yuv = YUVConvert.convertBitmapToYuv(waterMark);
                         final WaterMarkData data = new WaterMarkData(waterMark.getWidth(), waterMark.getHeight(), yuv);
 

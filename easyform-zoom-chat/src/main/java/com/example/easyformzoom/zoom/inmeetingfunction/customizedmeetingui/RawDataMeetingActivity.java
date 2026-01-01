@@ -412,7 +412,7 @@ public class RawDataMeetingActivity extends FragmentActivity implements InMeetin
         if (null != builder) {
             builder.dismiss();
         }
-        builder = new Dialog(this, R.style.ZMDialog);
+        builder = new Dialog(this, us.zoom.videomeetings.R.style.ZMDialog);
         builder.setTitle("Need password or displayName");
         builder.setContentView(R.layout.layout_input_password_name);
 

@@ -54,15 +54,7 @@ public class ColorCircle extends View {
 		init();
 	}
 
-	/**
-	 * Construct object, initializing with any attributes we understand from a
-	 * layout file.
-	 * 
-	 * These attributes are defined in res/values/attrs.xml .
-	 * 
-	 * @see View#View(Context,
-	 *      AttributeSet, java.util.Map)
-	 */
+
 	public ColorCircle(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();

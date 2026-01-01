@@ -121,15 +121,15 @@ public class RealNameAuthDialog extends Dialog implements View.OnClickListener, 
         Log.i(TAG, "sinkRequestRealNameAuthSMS, result=" + result.ordinal());
 
         if (result != MobileRTCSMSVerificationError.SMSVerificationCodeErr_Success) {
-            int resId = R.string.zm_msg_verify_send_sms_failed_109213;
+            int resId = us.zoom.videomeetings.R.string.zm_msg_verify_send_sms_failed_109213;
             if (result == MobileRTCSMSVerificationError.SMSVerificationCodeErr_Retrieve_InvalidPhoneNum) {
-                resId = R.string.zm_msg_verify_invalid_phone_num_109213;
+                resId = us.zoom.videomeetings.R.string.zm_msg_verify_invalid_phone_num_109213;
                 //TODO enable Send button
             } else if (result == MobileRTCSMSVerificationError.SMSVerificationCodeErr_Retrieve_PhoneNumAlreadyBound) {
-                resId = R.string.zm_msg_verify_phone_num_already_bound_109213;
+                resId = us.zoom.videomeetings.R.string.zm_msg_verify_phone_num_already_bound_109213;
                 //TODO enable Send button
             } else if (result == MobileRTCSMSVerificationError.SMSVerificationCodeErr_Retrieve_PhoneNumSendTooFrequent) {
-                resId = R.string.zm_msg_verify_phone_num_send_too_frequent_109213;
+                resId = us.zoom.videomeetings.R.string.zm_msg_verify_phone_num_send_too_frequent_109213;
             }
             Toast.makeText(getContext(), getContext().getString(resId), Toast.LENGTH_LONG).show();
         }
