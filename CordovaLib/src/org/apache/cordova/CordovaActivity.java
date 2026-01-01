@@ -21,6 +21,7 @@ package org.apache.cordova;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import org.apache.cordova.engine.SystemWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,6 +42,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
@@ -143,6 +146,19 @@ public class CordovaActivity extends Activity {
         if (!appView.isInitialized()) {
             appView.init(cordovaInterface, pluginEntries, preferences);
         }
+        SystemWebViewEngine engine =
+                (SystemWebViewEngine) appView.getEngine();
+
+        WebView webView = (WebView) engine.getView();
+
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public boolean isJitsiCallRunning() {
+                return false;
+            }
+
+        }, "AndroidCallChecker");
+
         cordovaInterface.onCordovaInit(appView.getPluginManager());
 
         // Wire the hardware volume controls to control media if desired.

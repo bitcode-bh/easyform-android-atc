@@ -338,6 +338,12 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             }
         }
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        if (isReceiverRegistered && screenshotReceiver != null) {
+            unregisterReceiver(screenshotReceiver);
+            isReceiverRegistered = false;
+            screenshotReceiver = null;
+            Log.d("Receiver", "Receiver unregistered");
+        }
 
     }
 
