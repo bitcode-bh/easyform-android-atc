@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -22,6 +23,7 @@ import android.content.Intent;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
@@ -41,6 +43,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -540,7 +543,11 @@ public class activity_recognize extends BroadcastReceiver {
                             if (IsCheckAlaraSet) {
                                 // timer is stared then stop it
                                 Intent mIntent1 = new Intent(context, activity_recognize.class);
-                                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, mIntent1, 0);
+                                int flags = PendingIntent.FLAG_CANCEL_CURRENT;
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    flags = PendingIntent.FLAG_MUTABLE;
+                                }
+                                @SuppressLint("WrongConstant") PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, mIntent1, flags);
                                 alarmManager = (AlarmManager) sqlitewraper.context.getSystemService(Context.ALARM_SERVICE);
 
                                 alarmManager.cancel(pendingIntent);
@@ -633,6 +640,16 @@ public class activity_recognize extends BroadcastReceiver {
                 .build();
 
         NotificationManagerCompat notificationManager1 = NotificationManagerCompat.from(sqlitewraper.context);
+        if (ActivityCompat.checkSelfPermission(sqlitewraper.context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         notificationManager1.notify(202, notification);
         still_violation_Entry();
 

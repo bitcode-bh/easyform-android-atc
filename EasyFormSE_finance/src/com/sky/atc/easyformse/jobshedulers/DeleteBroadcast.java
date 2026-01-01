@@ -54,7 +54,7 @@ public class DeleteBroadcast extends BroadcastReceiver {
 
         AlarmManager mAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent deleteBroadcastIntent = new Intent(context, DeleteBroadcast.class);
-        PendingIntent pendingBroadcast = PendingIntent.getBroadcast(context, 0, deleteBroadcastIntent, 0);
+        PendingIntent pendingBroadcast = PendingIntent.getBroadcast(context, 0, deleteBroadcastIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         assert mAlarmManager != null;
         mAlarmManager.cancel(pendingBroadcast);
         mAlarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntervalMillis, pendingBroadcast); // Millisec * Second * Minute

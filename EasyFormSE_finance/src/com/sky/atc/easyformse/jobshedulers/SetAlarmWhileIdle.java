@@ -1,5 +1,6 @@
 package com.sky.atc.easyformse.jobshedulers;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -158,7 +159,12 @@ public class SetAlarmWhileIdle extends BroadcastReceiver {
         Log.d("#####SETALART", "2");
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(context, SetAlarmWhileIdle.class);
-        PendingIntent pi = PendingIntent.getBroadcast(context, 91, i, 0);
+        int flags = PendingIntent.FLAG_CANCEL_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            flags |= PendingIntent.FLAG_MUTABLE;
+        }
+
+        @SuppressLint("WrongConstant") PendingIntent pi = PendingIntent.getBroadcast(context, 91, i, flags);
         am.cancel(pi);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

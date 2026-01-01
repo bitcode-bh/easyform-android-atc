@@ -524,7 +524,11 @@ public class newfused extends Service implements LocationListener {
         PendingIntent pendingIntent;
         Intent intent = new Intent(sqlitewraper.context, newfused_recevier.class);
         // intent.setAction("Location_entry");
-        pendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        int flags = PendingIntent.FLAG_CANCEL_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            flags = PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_MUTABLE;
+        }
+        pendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 0, intent, flags);
 
         MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
         pref.putBoolean("isuploadlastentry", true); // Saving string

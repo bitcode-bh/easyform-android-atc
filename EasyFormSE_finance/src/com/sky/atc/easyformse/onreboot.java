@@ -7,6 +7,7 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 import commonsware.cwac.LocationPoller;
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -19,6 +20,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
 import android.widget.Toast;
@@ -88,7 +90,7 @@ public class onreboot extends BroadcastReceiver {
 
 			boolean alarmUp1 = (PendingIntent.getBroadcast(
 					sqlitewraper.context, id, new Intent(mContext,
-							servicenew.class), PendingIntent.FLAG_NO_CREATE) != null);
+							servicenew.class), PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE) != null);
 
 			if (alarmUp1) {
 
@@ -97,15 +99,19 @@ public class onreboot extends BroadcastReceiver {
 				Intent i = new Intent(mContext, servicenew.class);
 				i.putExtra(key, value);
 				PendingIntent pi = PendingIntent.getBroadcast(
-						sqlitewraper.context, id, i, 0);
+						sqlitewraper.context, id, i, PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
 				// autoupdate GPS lat long in every 15 minutes
 				alarmManager.cancel(pi);
 				alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
 						SystemClock.elapsedRealtime() + start, repeat, pi);
 
-				boolean alarmUp12 = (PendingIntent.getBroadcast(
+				int flags = PendingIntent.FLAG_CANCEL_CURRENT ;
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+					flags = PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_MUTABLE;
+				}
+				@SuppressLint("WrongConstant") boolean alarmUp12 = (PendingIntent.getBroadcast(
 						sqlitewraper.context, id, i,
-						PendingIntent.FLAG_UPDATE_CURRENT) != null);
+						flags) != null);
 				if (alarmUp12) {
 					System.out.print("k");
 
@@ -118,8 +124,8 @@ public class onreboot extends BroadcastReceiver {
 		if (ch.equalsIgnoreCase("l")) {
 			boolean alarmUp1 = (PendingIntent
 					.getBroadcast(sqlitewraper.context, id, new Intent(
-							sqlitewraper.context, LocationPoller.class),
-							PendingIntent.FLAG_NO_CREATE) != null);
+									sqlitewraper.context, LocationPoller.class),
+							PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE) != null);
 
 			if (alarmUp1) {
 

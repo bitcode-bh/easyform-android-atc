@@ -127,6 +127,7 @@ public class PhotoPreviewActivity extends AppCompatActivity implements View.OnTo
     private View viewRectangleMask;
     private Size deviceRealSize;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
