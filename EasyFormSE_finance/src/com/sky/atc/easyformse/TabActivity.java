@@ -21,9 +21,9 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class TabActivity extends AppCompatActivity {
 
     private final static String[] tabs = {"Security", "Database", "Backup", "Setting"};

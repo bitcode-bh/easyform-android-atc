@@ -68,9 +68,9 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class cameraactivity extends Activity {
 
     Uri outputFileUri;

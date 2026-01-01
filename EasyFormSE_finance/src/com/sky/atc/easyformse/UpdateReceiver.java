@@ -20,9 +20,9 @@ import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class UpdateReceiver extends BroadcastReceiver {
 
 	@Override

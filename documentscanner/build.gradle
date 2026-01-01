@@ -10,6 +10,7 @@
 apply plugin: 'com.android.library'
 group='com.github.mayuce'
 android {
+    namespace "com.labters.documentscanner"
     compileSdkVersion 30
 
 

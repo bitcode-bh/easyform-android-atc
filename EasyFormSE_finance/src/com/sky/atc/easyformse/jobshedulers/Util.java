@@ -13,10 +13,10 @@ import com.firebase.jobdispatcher.Job;
 import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.Trigger;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.JOB_SCHEDULER_SERVICE;
-@Obfuscate
+@StringFogIgnore
 public class Util {
     // schedule the start of the service every 10 - 30 seconds
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)

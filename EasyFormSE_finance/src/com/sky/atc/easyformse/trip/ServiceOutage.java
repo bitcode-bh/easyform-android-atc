@@ -28,12 +28,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static com.sky.atc.easyformse.sqlitewraper.context;
 
 //Calculate service outage for trips
-@Obfuscate
+@StringFogIgnore
 public class ServiceOutage {
 
 

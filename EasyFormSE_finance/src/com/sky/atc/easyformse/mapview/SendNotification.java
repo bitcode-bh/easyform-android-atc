@@ -18,10 +18,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
-@Obfuscate
+@StringFogIgnore
 public class SendNotification {
 
 //    private static final String FCM_API = "https://fcm.googleapis.com/fcm/send";

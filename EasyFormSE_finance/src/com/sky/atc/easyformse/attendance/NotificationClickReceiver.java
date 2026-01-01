@@ -20,7 +20,7 @@ import com.sky.atc.easyformse.utils.LogUtils;
 import java.util.Calendar;
 import java.util.Date;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
@@ -28,7 +28,7 @@ import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 
 //To handle Notification click event Handler
-@Obfuscate
+@StringFogIgnore
 public class NotificationClickReceiver extends BroadcastReceiver {
 
     private static SharedPreferences pref;

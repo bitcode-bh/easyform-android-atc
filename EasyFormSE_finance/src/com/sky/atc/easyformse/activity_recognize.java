@@ -51,10 +51,10 @@ import com.sky.atc.easyformse.attendance.newattendanceutils.AttendanceUtil;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.trip.SpeedViolation;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Activity Recognizes the activity type and start the service for Acc Deacc
-@Obfuscate
+@StringFogIgnore
 public class activity_recognize extends BroadcastReceiver {
 
     private SQLiteDatabase databse;

@@ -23,13 +23,13 @@ import android.net.NetworkInfo;
 
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.MODE_PRIVATE;
 
 //Used in rare case if maulik.java plugin not working
 //logic to push new location as and when it received
-@Obfuscate
+@StringFogIgnore
 public class current_lat extends CordovaPlugin {
 
 	private static final String TAG = "maulik";

@@ -29,10 +29,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to handle gps status
-@Obfuscate
+@StringFogIgnore
 public class GpsReceiverService extends WakefulIntentService {
 
 

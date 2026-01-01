@@ -265,6 +265,9 @@
         <param name="android-package" value="com.sky.atc.easyformse.plugins.EditPhotoplugin" />
     </feature>
 
+    <feature name="JitsiScreenShotPlugin">
+        <param name="android-package" value="com.easyform.newjitsi.activitys.call.JitsiScreenShotPlugin" />
+    </feature>
 
     <allow-intent href="http://*/*"></allow-intent>
     <allow-intent href="https://*/*"></allow-intent>

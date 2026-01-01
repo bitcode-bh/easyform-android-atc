@@ -13,10 +13,10 @@ import android.util.Base64;
 import java.security.MessageDigest;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Data Utils Class for checking Auth of an application
-@Obfuscate
+@StringFogIgnore
 public class CheckAuthOfApplication {
 
     //For Checking of app signature

@@ -86,7 +86,7 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Service providing the guts of the location polling engine. Uses a WakeLock to
@@ -96,7 +96,7 @@ import io.michaelrocks.paranoid.Obfuscate;
  * Those wishing to leverage this service should do so via the LocationPoller
  * class.
  */
-@Obfuscate
+@StringFogIgnore
 public class newfused extends Service implements LocationListener {
     private static final String LOCK_NAME_STATIC = "com.commonsware.cwac.locpoll.LocationPoller";
     static int mockalert = 1;

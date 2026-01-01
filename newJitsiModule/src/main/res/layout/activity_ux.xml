@@ -1,0 +1,39 @@
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ar_framelayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ic_color_back"
+    tools:context=".activitys.drawing.AR.ARDrawActivity">
+
+  <LinearLayout
+      android:id="@+id/main_layout"
+      android:layout_width="match_parent"
+      android:clickable="true"
+      android:focusable="true"
+      android:orientation="vertical"
+      android:background="@color/rippelColor"
+      android:layout_height="match_parent">
+  <fragment android:name="com.google.ar.sceneform.ux.ArFragment"
+      android:id="@+id/ux_fragment"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+  </LinearLayout>
+  <Button
+      android:id="@+id/btn_stop"
+      android:layout_width="wrap_content"
+      android:layout_gravity="center|bottom"
+      android:text="STOP"
+      android:textColor="@android:color/white"
+      android:layout_height="wrap_content"/>
+
+  <Button
+      android:id="@+id/btn_clickme"
+      android:layout_width="wrap_content"
+      android:layout_gravity="center"
+      android:text="click me"
+      android:visibility="gone"
+      android:layout_height="wrap_content"/>
+
+</FrameLayout>

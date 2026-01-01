@@ -23,9 +23,9 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class SendPushNotification {
 
     private static final String TOPIC = "/topics/sky";

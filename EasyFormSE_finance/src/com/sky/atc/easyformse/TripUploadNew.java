@@ -29,10 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Upload Finished Trip to the server
-@Obfuscate
+@StringFogIgnore
 public class TripUploadNew {
 
     //WCF URL

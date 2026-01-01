@@ -47,10 +47,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.utils.LogUtils;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Upload Events to the server
-@Obfuscate
+@StringFogIgnore
 public class Event extends WakefulIntentService {
 
     SQLiteDatabase database;

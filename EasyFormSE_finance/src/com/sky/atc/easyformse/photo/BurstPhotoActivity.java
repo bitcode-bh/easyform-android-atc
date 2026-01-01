@@ -30,10 +30,10 @@ import com.sky.atc.easyformse.sqlitewraper;
 import java.io.File;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Burst mode for more than one photo
-@Obfuscate
+@StringFogIgnore
 public class BurstPhotoActivity extends AppCompatActivity implements PhotoRecylerViewAdapter.ItemClickListener {
 
     File selectedFile;

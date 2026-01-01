@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Trip background map click create floating bubble service
@@ -45,7 +45,7 @@ import io.michaelrocks.paranoid.Obfuscate;
  *
  * @author NareshChocha
  */
-@Obfuscate
+@StringFogIgnore
 public class FloatingBubbleService extends Service implements View.OnClickListener {
     private WindowManager mWindowManager;
     private View mFloatingWidgetView, collapsedView, expandedView;
@@ -390,26 +390,26 @@ public class FloatingBubbleService extends Service implements View.OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.close_floating_view:
-                //close the service and remove the from from the window
-                stopSelf();
-                break;
-            case R.id.close_expanded_view:
-                collapsedView.setVisibility(View.VISIBLE);
-                expandedView.setVisibility(View.GONE);
-                break;
-            case R.id.open_activity_button:
-                //open the activity and stop service
-
-                Intent activityIntent = new Intent(context, NotificationActivity.class);
-                activityIntent.putExtra("notification_title",notification_title);
-                activityIntent.putExtra("readnoti",Readnoti);
-                activityIntent.putExtra("notification_list",mNotificationlist);
-                activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(activityIntent);
-                //close the service and remove view from the view hierarchy
-                stopSelf();
-                break;
+//            case R.id.close_floating_view:
+//                //close the service and remove the from from the window
+//                stopSelf();
+//                break;
+//            case R.id.close_expanded_view:
+//                collapsedView.setVisibility(View.VISIBLE);
+//                expandedView.setVisibility(View.GONE);
+//                break;
+//            case R.id.open_activity_button:
+//                //open the activity and stop service
+//
+//                Intent activityIntent = new Intent(context, NotificationActivity.class);
+//                activityIntent.putExtra("notification_title",notification_title);
+//                activityIntent.putExtra("readnoti",Readnoti);
+//                activityIntent.putExtra("notification_list",mNotificationlist);
+//                activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                context.startActivity(activityIntent);
+//                //close the service and remove view from the view hierarchy
+//                stopSelf();
+//                break;
         }
     }
     public void addNotificationContent(String content,String readnoti) {

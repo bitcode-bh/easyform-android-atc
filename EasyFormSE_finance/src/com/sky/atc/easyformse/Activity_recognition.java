@@ -65,10 +65,10 @@ import net.sqlcipher.database.SQLiteDatabase;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to start the activity recognization service
-@Obfuscate
+@StringFogIgnore
 public class Activity_recognition extends Service
 //        implements
 //        ActivityRecognitionApi, GoogleApiClient.ConnectionCallbacks,

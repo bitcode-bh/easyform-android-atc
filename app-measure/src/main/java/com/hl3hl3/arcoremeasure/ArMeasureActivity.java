@@ -134,9 +134,9 @@ public class ArMeasureActivity extends AppCompatActivity {
 
 
     private void log(String tag, String log) {
-        if (BuildConfig.DEBUG) {
-            Log.d(tag, log);
-        }
+//        if (BuildConfig.DEBUG) {
+//            Log.d(tag, log);
+//        }
     }
 
     private void log(Exception e) {
@@ -959,7 +959,7 @@ public class ArMeasureActivity extends AppCompatActivity {
     private void showNotSupportedDialog(String message) {
 
         new LovelyTextInputDialog(this, R.style.AppTheme)
-                .setTopColorRes(R.color.ld_textInputError)
+                .setTopColorRes(R.color.colorAccent)
                 .setTitle(message)
                 .setMessage("Augemeted Reality is not supported in your device.You have to Enter your measurement manually.")
                 .setIcon(R.mipmap.ic_launcher)

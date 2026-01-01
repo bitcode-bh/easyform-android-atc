@@ -28,10 +28,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //plugin to Upload profile photo
-@Obfuscate
+@StringFogIgnore
 public class ProfilePhotoPlugin extends CordovaPlugin {
 
     private CallbackContext callbackContext;

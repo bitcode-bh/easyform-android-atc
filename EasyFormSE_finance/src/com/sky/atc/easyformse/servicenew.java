@@ -39,14 +39,14 @@ import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 import commonsware.cwac.LocationPoller;
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * BroadcastReceiver to be launched by AlarmManager. Simply passes the work over
  * to LocationPollerService, who arranges to make sure the WakeLock stuff is
  * done properly.
  */
-@Obfuscate
+@StringFogIgnore
 public class servicenew extends BroadcastReceiver {
 
 

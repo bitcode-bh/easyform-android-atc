@@ -30,9 +30,9 @@ import com.sky.atc.easyformse.LocationReceiver_network;
 import com.sky.atc.easyformse.sqlitewraper;
 
 import commonsware.cwac.LocationPoller;
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class LocationReceiver_network extends BroadcastReceiver {
 	private SQLiteDatabase database;
 	private MySQLiteHelper dbHelper;

@@ -35,10 +35,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //To receive Geofence event occurence enter/exit
-@Obfuscate
+@StringFogIgnore
 public class GeofenceTrasitionService extends IntentService {
 
     public static final int GEOFENCE_NOTIFICATION_ID = 0;

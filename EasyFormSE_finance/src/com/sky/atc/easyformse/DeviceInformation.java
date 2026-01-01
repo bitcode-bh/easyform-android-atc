@@ -14,11 +14,11 @@ import org.json.JSONObject;
 
 import java.io.File;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 //get device information
-@Obfuscate
+@StringFogIgnore
 public class DeviceInformation {
 
 

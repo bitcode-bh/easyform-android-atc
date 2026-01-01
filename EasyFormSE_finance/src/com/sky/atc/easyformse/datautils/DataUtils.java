@@ -1,9 +1,9 @@
 package com.sky.atc.easyformse.datautils;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Data Utils for set and get Server milli from login_plug
-@Obfuscate
+@StringFogIgnore
 public class DataUtils {
 
     public static long getServiceMilli() {

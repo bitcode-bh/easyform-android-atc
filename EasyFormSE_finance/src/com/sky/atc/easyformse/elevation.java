@@ -30,9 +30,9 @@ import android.net.ConnectivityManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 // Plugin for calculating MSL (altitude)
 //
 public class elevation extends CordovaPlugin {

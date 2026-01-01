@@ -21,9 +21,9 @@ import org.json.JSONException;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class BillScannerPlugin extends CordovaPlugin {
 
 

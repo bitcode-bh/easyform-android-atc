@@ -15,13 +15,13 @@ import android.view.animation.AnimationUtils;
 
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * @author Tommy-Carlos Williams, Huge chunks lifted/adapted from the
  *         NextworkManager core PhoneGap plugin
  */
-@Obfuscate
+@StringFogIgnore
 public class print_plug extends CordovaPlugin {
 
 	public static final String TYPE_NONE = "NONE";

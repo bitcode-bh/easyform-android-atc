@@ -16,9 +16,9 @@ import org.apache.cordova.PluginResult.Status;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 /**
  * @author Tommy-Carlos Williams, Huge chunks lifted/adapted from the
  *         NextworkManager core PhoneGap plugin

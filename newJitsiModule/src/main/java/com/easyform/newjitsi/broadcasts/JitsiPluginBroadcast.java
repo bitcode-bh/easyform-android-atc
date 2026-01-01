@@ -2,221 +2,574 @@ package com.easyform.newjitsi.broadcasts;
 
 
 import static android.content.Context.MODE_PRIVATE;
+import static com.easyform.newjitsi.App.context;
+import static com.easyform.newjitsi.App.getContext;
 
+import android.app.ActivityManager;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.service.notification.StatusBarNotification;
+import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.Keep;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.easyform.newjitsi.R;
-import com.easyform.newjitsi.activitys.ProgressActivity;
-import com.easyform.newjitsi.network.requests.Args;
-import com.easyform.newjitsi.network.requests.AuthJson;
-import com.easyform.newjitsi.network.requests.LoginData;
-import com.easyform.newjitsi.network.requests.ZoomMeetingItem;
-import com.easyform.newjitsi.network.requests.notifcation.NotificationData;
-import com.easyform.newjitsi.network.requests.usershow.AuthData;
+import com.easyform.newjitsi.activitys.call.IncomingCallActivity;
+import com.easyform.newjitsi.activitys.drawing.AR.ARDrawActivity;
+import com.easyform.newjitsi.activitys.drawing.AR.EventUtils;
+import com.easyform.newjitsi.activitys.drawing.AR.TouchEventAR;
+import com.easyform.newjitsi.activitys.drawing.CameraPreviewActivity;
+import com.easyform.newjitsi.activitys.drawing.NormalDrawingUtils;
+import com.easyform.newjitsi.activitys.drawing.PaintViewNormal;
+import com.easyform.newjitsi.activitys.drawing.models.RemoteUtils;
+import com.easyform.newjitsi.activitys.jitsimeet.CustomJitsiMeetActivity;
+import com.easyform.newjitsi.activitys.jitsimeet.CustomJitsiMeetViewModel;
+import com.easyform.newjitsi.activitys.jitsimeet.VideoRecordingService;
+import com.easyform.newjitsi.activitys.jitsimeet.WebDialogFragment;
+import com.easyform.newjitsi.activitys.loading.LoadingActivity;
+import com.easyform.newjitsi.fragments.InviteListItem;
+import com.easyform.newjitsi.fragments.MultiChoiceDialogFragment;
+import com.easyform.newjitsi.network.Models.OtherData;
+import com.easyform.newjitsi.network.Models.UserData;
+import com.easyform.newjitsi.network.requests.notifcation.FirebaseRequest;
+import com.easyform.newjitsi.network.requests.notifcation.FirebaseRequestData;
+import com.easyform.newjitsi.network.response.notifcation.FirebaseResponse;
+import com.easyform.newjitsi.utils.FCMNotificationApiCall;
 import com.easyform.newjitsi.utils.NotificationUtils;
 import com.easyform.newjitsi.utils.Utils;
+
 import com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import okhttp3.internal.Util;
-import timber.log.Timber;
+import retrofit2.Response;
 
 /**
  * Created by NareshChocha on 18/2/2023.
  */
 @Keep
 public class JitsiPluginBroadcast extends BroadcastReceiver {
-    static final String TAG = JitsiPluginBroadcast.class.getName();
+    static final String TAG = "JitsiPluginBroadcast";
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         Bundle extras = intent.getExtras();
+
         if (extras != null) {
             if (action.matches(Utils.BroadcastAction.JITSI_PLUGIN_CALL)) {
-                pluginCalled(context, extras);
+
+                context.startActivity(getLoadingActivityIntent(context, action, extras));
             } else if (action.matches(Utils.BroadcastAction.JITSI_NOTIFICATION)) {
-                JoinMeetNow(context, extras);
+                showNotificationForCall(context, extras);
+            } else if (action.matches(Utils.BroadcastAction.JITSI_CALL_REJECT)) {
+                sendAndClearNotification(context, extras);
+            } else if (action.matches(Utils.BroadcastAction.JITSI_REJECT_NOTIFICATION)) {
+                showRejectNotification(context, extras);
+            } else if (action.matches(Utils.BroadcastAction.JITSI_SCREEN_SIZE_REMOTE)) {
+                remoteScreenSize(context, extras);
+            } else if (action.matches(Utils.BroadcastAction.JITSI_SCREEN_DRAW_DATA)) {
+                try {
+                    ScreenARDraw(extras);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else if (action.matches(Utils.BroadcastAction.JITSI_CALL_STOP)) {
+                StopIncomingCallActivity(context, extras);
+            } else if (action.matches(Utils.BroadcastAction.JITSI_CALL_STOP_Action)) {
+                CallStopAction(context, extras);
+            } else if (action.matches(Utils.BroadcastAction.JITSI_CALL_PhotoId)) {
+                SendPhotoId(context, extras);
+            } else if (action.matches(Utils.BroadcastAction.JITSI_CALL_Get_PhotoId)) {
+                Get_photoId(context, extras);
             }
-        } else {
-            Timber.tag(TAG).e("Extras Data is null");
         }
+    }
+
+    Intent getLoadingActivityIntent(Context context, String action, Bundle extras) {
+        Intent loadingActivityIntent = new Intent(context, LoadingActivity.class);
+        loadingActivityIntent.setAction(action);
+        loadingActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        loadingActivityIntent.putExtras(extras);
+        return loadingActivityIntent;
     }
 
     Gson mGson = new Gson();
 
-    private void pluginCalled(Context context, Bundle extras) {
+    private void showNotificationForCall(Context context, Bundle extras) {
+        int notificationId = 9999;
+        if (isNotificationActive(context, notificationId)) {
 
-        String click_action = extras.getString(Utils.BundleExtras.CLICK_ACTION, "");
-        String userGetData = extras.getString(Utils.BundleExtras.GET_USER_DATA, "");
-        String Role_id = extras.getString(Utils.BundleExtras.ROLE_ID, "");
-        String companyFeatureid = extras.getString(Utils.BundleExtras.COMPANY_FEATURE_ID, "");
-        String auth1 = extras.getString(Utils.BundleExtras.AUTH1, "");
-        String webpush = extras.getString(Utils.BundleExtras.WEB_PUSH, "");
-        String senderfcmid = extras.getString(Utils.BundleExtras.SENDER_FCM_ID, "");
-        String loginjson = extras.getString(Utils.BundleExtras.LOGIN_DATA, "");
-        String arg = extras.getString(Utils.BundleExtras.ARGS, "");
-        String body = extras.getString(Utils.BundleExtras.BODY, "");
-        String url = extras.getString(Utils.BundleExtras.URL, "");
-
-        //LogUtils.JitsiLogFile(loginjson, "plugincallloginjson line172");
-
-        SharedPreferences sharedPreferences = context.getSharedPreferences("Plugin", MODE_PRIVATE);
-        SharedPreferences.Editor myEdit = sharedPreferences.edit();
-        myEdit.putString("isPlugin", "isPluginCall");
+        } else {
+            String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+            FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
 
 
-        myEdit.putString("loginjson", loginjson);
-        myEdit.apply();
-        LoginData loginData = mGson.fromJson(loginjson, LoginData.class);
+            NotificationUtils.createNotification(notificationId, context,
+                    getAcceptCallPendingIntent(context, extras, notificationId),
+                    getRejectCallPendingIntent(context, extras, notificationId),
+                    "EASYFORM CALL",
+                    mFirebaseRequestData.getCallfrom() + " is Inviting you for Meet !",
+                    R.drawable.atc_logo);
 
+            sharedPreferences = context.getSharedPreferences("Jitsiuser", MODE_PRIVATE);
+            editor = sharedPreferences.edit();
+            editor.putString("call_username", mFirebaseRequestData.getCallfrom());
+            editor.commit();
 
-        Args args = mGson.fromJson(arg.substring(1, arg.length() - 1), Args.class);
+            Intent callIntent = new Intent(context, IncomingCallActivity.class);
+            callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            callIntent.putExtra("Bundle_extras", extras);
+            callIntent.putExtra("notificationId", notificationId);
+            callIntent.putExtra("callfrom", mFirebaseRequestData.getCallfrom() + " is Inviting you for Meet !");
+            context.startActivity(callIntent);
 
-        AuthJson authJson = new AuthJson();
-        authJson.setAppversion(loginData.getAppVersion());
-        authJson.setAppid(loginData.getAppId());
-        authJson.setDevicetype("android");//ios //Web
-        authJson.setUserId(loginData.getUserId());
-        authJson.setUsername(loginData.getUsername());
-        authJson.setUC(loginData.getUc());
-
-        List<String> fcmIosIds = new ArrayList<>();
-
-        List<String> fcmIds = new ArrayList<>();
-        for (int i = 0; i < args.getZoomMeeting().size(); i++) {
-            ZoomMeetingItem zoomMeetingItem = args.getZoomMeeting().get(i);
-            if (zoomMeetingItem.getDeviceType().matches("ios")) {
-                fcmIosIds.add(zoomMeetingItem.getFcmid());
-            } else {
-                fcmIds.add(zoomMeetingItem.getFcmid());
-            }
         }
-
-        String participntId = null;
-        NotificationData data = new NotificationData(loginData.getUsername() + " is calling to you!", "EASYFORM CALL",
-                "call", loginData.getUsername(), loginData.getUserId() + "" + loginData.getCompanyId(),
-                "jitsiMeet", "0", senderfcmid, arg, click_action, webpush, authJson.getDevicetype(), senderfcmid, Role_id, companyFeatureid, auth1, userGetData, participntId, loginData.getUc(), "", "");
-
-        Intent mIntent = new Intent(context, ProgressActivity.class);
-        mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mIntent.putExtra(Utils.BundleExtras.NOTIFICATION_DATA, data);
-        mIntent.putExtra(Utils.BundleExtras.AUTHJSON_DATA, authJson);
-        mIntent.putExtra(Utils.BundleExtras.LOGIN_DATA, loginData);
-        mIntent.putExtra(Utils.BundleExtras.FCM_IOS_IDS_LIST, mGson.toJson(fcmIosIds));
-        mIntent.putExtra(Utils.BundleExtras.FCM_IDS_LIST, mGson.toJson(fcmIds));
-        mIntent.putExtra(Utils.BundleExtras.AUTH1, auth1);
-        mIntent.putExtra(Utils.BundleExtras.ROLE_ID, Role_id);
-        mIntent.putExtra(Utils.BundleExtras.COMPANY_FEATURE_ID, companyFeatureid);
-        mIntent.putExtra(Utils.BundleExtras.ARGS, arg.substring(1, arg.length() - 1));
-        mIntent.putExtra(Utils.BundleExtras.SENDER_FCM_ID, senderfcmid);
-        mIntent.putExtra(Utils.BundleExtras.URL, url);
-        mIntent.putExtra(Utils.BundleExtras.BODY, body);
-        mIntent.putExtra(Utils.BundleExtras.USER_GET_DATA, userGetData);
-        context.startActivity(mIntent);
     }
 
-    private void JoinMeetNow(Context context, Bundle extras) {
-        String remoteMessageData = extras.getString(Utils.BundleExtras.REMOTE_MESSAGE_DATA, "");
-        NotificationData notificationData = new Gson().fromJson(remoteMessageData, NotificationData.class);
-        String url = extras.getString(Utils.BundleExtras.URL, "");
-        String loginJson = extras.getString(Utils.BundleExtras.LOGIN_DATA, "");
-        LoginData loginData = new Gson().fromJson(loginJson, LoginData.class);
+
+    private PendingIntent getAcceptCallPendingIntent(Context context, Bundle extras, int notificationId) {
+        Intent loadingActivityIntent = getLoadingActivityIntent(context, Utils.BroadcastAction.JITSI_CALL_ACCEPT, extras);
+        loadingActivityIntent.putExtra(Utils.BroadcastActionExtrasKeys.NOTIFICATION_ID, notificationId);
+        return PendingIntent.getActivity(context, 4812, loadingActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    private PendingIntent getRejectCallPendingIntent(Context context, Bundle extras, int notificationId) {
+        Intent jitsiPluginBroadcastIntent = new Intent(context, JitsiPluginBroadcast.class);
+        jitsiPluginBroadcastIntent.setAction(Utils.BroadcastAction.JITSI_CALL_REJECT);
+        jitsiPluginBroadcastIntent.putExtra(Utils.BroadcastActionExtrasKeys.NOTIFICATION_ID, notificationId);
+        jitsiPluginBroadcastIntent.putExtras(extras);
+        return PendingIntent.getBroadcast(context, 5850, jitsiPluginBroadcastIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    ExecutorService mExecutorService = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? Executors.newWorkStealingPool(4) :
+            Executors.newFixedThreadPool(4);
+
+    private void sendAndClearNotification(Context context, Bundle extras) {
+        mExecutorService.execute(() -> {
+
+            NotificationUtils.stopRingtone();
+            String loginUserDataString = extras.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");
+            String otherDataString = extras.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
+            int notificationId = extras.getInt(Utils.BroadcastActionExtrasKeys.NOTIFICATION_ID, -2);
+
+            String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+            FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+
+            UserData mUserData = mGson.fromJson(loginUserDataString, UserData.class);
+            OtherData mOtherData = mGson.fromJson(otherDataString, OtherData.class);
+            SharedPreferences sharedPreferences = context.getSharedPreferences("Jitsi_roomname", MODE_PRIVATE);
+            String roomname = sharedPreferences.getString("Roomname", "");
+            FirebaseRequestData data = new FirebaseRequestData("Call Rejected",
+                    mUserData.getUsername() + " has declined your call !",
+                    "Decline", mUserData.getUsername(), roomname,
+                    "jitsiMeetreject",
+                    "0",
+                    "",
+                    mOtherData.getClickAction() + "",
+                    mOtherData.getWebPush().toString() + "",
+                    mUserData.getDeviceType() + "",
+                    mUserData.getFCMToken() + "",
+                    mUserData.getUserid() + "", mOtherData.getServer_task_id() + "", "rejected", "", "", false, "", ""
+            );
+            List<String> fcmIosIds = new ArrayList<>();
+            List<String> fcmIds = new ArrayList<>();
+            if (mFirebaseRequestData.getDevice_type().matches("ios")) {
+                fcmIosIds.add(mFirebaseRequestData.getRemotetoken());
+            } else {
+                fcmIds.add(mFirebaseRequestData.getRemotetoken());
+            }
+            callNotificationApi(context, data, false, fcmIds, fcmIosIds, notificationId);
+        });
+    }
+
+    void callNotificationApi(Context context, FirebaseRequestData data, Boolean isiOS, List<String> fcmIds, List<String> fcmIosIds, int notificationId) {
+        FirebaseRequest firebaseRequest = new FirebaseRequest();
+        if (isiOS) {
+            firebaseRequest.setNotification(data);
+            firebaseRequest.setRegistrationIds(fcmIosIds);
+        } else {
+            firebaseRequest.setData(data);
+            firebaseRequest.setRegistrationIds(fcmIds);
+        }
+
+        try {
+            List<String> targetTokens = isiOS ? fcmIosIds : fcmIds;
+
+            for (String token : targetTokens) {
+                FCMNotificationApiCall.sendNotification(data, token, isiOS);
+            }
+
+            // If we just sent Android notifications, send iOS next
+            if (!isiOS && !fcmIosIds.isEmpty()) {
+                callNotificationApi(context, data, true, fcmIds, fcmIosIds, notificationId);
+            } else {
+                Utils.clearNotification(context, notificationId);
+            }
 
 
-        AuthJson authJson = new AuthJson();
-        authJson.setAppversion(loginData.getAppVersion());
-        authJson.setAppid(loginData.getAppId());
-        authJson.setDevicetype("android");
-        authJson.setUserId(loginData.getUserId());
-        authJson.setUsername(loginData.getUsername());
-        authJson.setUC(loginData.getUc());
+        } catch (Exception e) {
 
-        AuthData authData = new AuthData();
-        authData.setUsername(loginData.getUsername());
-        authData.setUc(loginData.getUc());
-        authData.setUserId(loginData.getUserId());
+        }
 
-        int NOTIFICATION_ID = (int) System.currentTimeMillis();
+//        try {
+//            if (!fcmIds.isEmpty() || isiOS) {
+//                Response<FirebaseResponse> firebaseResponse = FCMNotificationApiCall.sendNotification(firebaseRequest).execute();
+//                if (firebaseResponse.isSuccessful() && firebaseResponse.code() == 200) {
+//                    if (!fcmIosIds.isEmpty() && !isiOS) {
+//                        callNotificationApi(context, data, true, fcmIds, fcmIosIds, notificationId);
+//                    } else {
+//                        Utils.clearNotification(context, notificationId);
+//                    }
+//                }
+//            } else if (!fcmIosIds.isEmpty()) {
+//                callNotificationApi(context, data, true, fcmIds, fcmIosIds, notificationId);
+//            }
+//        } catch (Exception e) {
+//
+//        }
+    }
 
-        NotificationUtils.createNotification(NOTIFICATION_ID, context,
-                getAcceptCallPendingIntent(NOTIFICATION_ID, context, notificationData.getRoomName(), url, loginData, authJson, remoteMessageData, notificationData.getArgs(), notificationData.getWebpush(), notificationData.getClick_action(), notificationData.getAuth1(), notificationData.getUserGetData(), notificationData.getRole_id(), notificationData.getCompanyFeatureid(), authData, notificationData.getBody()),
-                getRejectCallPendingIntent(NOTIFICATION_ID, context, notificationData.getSenderfcmid(), url, loginData, loginJson, authJson, notificationData.getArgs(), remoteMessageData, notificationData.getWebpush(), notificationData.getClick_action(), notificationData.getRemotetoken()),
-                notificationData.getTitle(),
-                notificationData.getBody(),
+    private void showRejectNotification(Context context, Bundle extras) {
+        String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+        FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+        int notificationId = (int) System.currentTimeMillis();
+
+        String username = mFirebaseRequestData.getCallfrom();
+        sharedPreferences = context.getSharedPreferences("Jitsiuser", MODE_PRIVATE);
+        editor = sharedPreferences.edit();
+        editor.putString("rejectnoti", username);
+        editor.commit();
+
+//        sharedPreferences = context.getSharedPreferences("jitsicall", MODE_PRIVATE);
+//        editor = sharedPreferences.edit();
+//        editor.putString("isclick","true");
+//        editor.commit();
+
+        if (MultiChoiceDialogFragment.adapter != null) {
+            MultiChoiceDialogFragment.adapter.notifyDataSetChanged();
+        }
+
+        NotificationUtils.rejectCallNotification(notificationId, context,
+                mFirebaseRequestData.getTitle(),
+                mFirebaseRequestData.getBody(),
                 R.drawable.atc_logo);
     }
 
+    private void remoteScreenSize(Context context, Bundle extras) {
+        String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+        FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+        int height;
+        int width;
+        try {
+            JSONObject jsonObject = new JSONObject(mFirebaseRequestData.getArjson());
+            JSONArray screensizeArr = jsonObject.getJSONArray("screensize");
+            JSONArray inner = screensizeArr.getJSONArray(0);
+            width = inner.getInt(0); // "720"
+            height = inner.getInt(1); // "1600"
 
-    /**
-     * @param NOTIFICATION_ID Notification id to use in show Notification
-     * @param context         pass context
-     * @return is returning pending intent is will call on user reject call on Notification
-     * @author SavanSolanki
-     */
-    private PendingIntent getRejectCallPendingIntent(int NOTIFICATION_ID, Context
-            context, String senderfcmid, String url, LoginData logindata, String loginjson, AuthJson
-                                                             authjson, String args, String remoteMessagedata, String webpush, String action_click, String
-                                                             remotetoken) {
-        Intent jitsiBroadcast = new Intent(context, JitsiPluginBroadcast.class);
-        jitsiBroadcast.setAction("com.easyform.jitsi.Reject");
-        jitsiBroadcast.putExtra("notificationId", NOTIFICATION_ID);
-        jitsiBroadcast.putExtra("senderfcmid", senderfcmid);
-        jitsiBroadcast.putExtra("remotetoken", remotetoken);
-        jitsiBroadcast.putExtra("url", url);
-        jitsiBroadcast.putExtra("logindata", logindata);
-        jitsiBroadcast.putExtra("loginjson", loginjson);
-        jitsiBroadcast.putExtra("authjson", authjson);
-        jitsiBroadcast.putExtra("args", args);
-        jitsiBroadcast.putExtra("remoteMessagedata", remoteMessagedata);
-        jitsiBroadcast.putExtra("webpush", webpush);
-        jitsiBroadcast.putExtra("action_click", action_click);
-
-        return PendingIntent.getBroadcast(context, 4812, jitsiBroadcast, PendingIntent.FLAG_CANCEL_CURRENT);
+            //  height = jsonObject.getInt("remoteHeight");
+            // width = jsonObject.getInt("remoteWidth");
+            RemoteUtils.setRemoteHeight(height);
+            RemoteUtils.setRemoteWidth(width);
+            stopScreenShearRemote(context);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * @param NOTIFICATION_ID Notification id to use in show Notification
-     * @param context         pass context
-     * @param roomName        roomName user join to meet
-     * @param url             url to getKey form server
-     * @param loginData       {@link LoginData} pass login data
-     * @param authJson        {@link AuthJson} pass authJson
-     * @return is returning pending intent is will call on user Accept call on Notification
-     * @author SavanSolanki
-     */
-    private PendingIntent getAcceptCallPendingIntent(int NOTIFICATION_ID, Context
-            context, String roomName, String url, LoginData loginData, AuthJson authJson, String
-                                                             remoteMessageData, String args, String webpush, String click_action, String auth1, String
-                                                             userGetData, String role_id, String companyFeatureid, AuthData authData, String body) {
-        Intent mainActivityJitsi = new Intent(context, ProgressActivity.class);
-        mainActivityJitsi.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.URL, url);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.AUTHJSON_DATA, authJson);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.LOGIN_DATA, loginData);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.ROOM_NAME, roomName);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.NOTIFICATION_ID, NOTIFICATION_ID);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.ARGS, args);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.WEB_PUSH, webpush);
-        mainActivityJitsi.putExtra("action_click", click_action);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.AUTH1, auth1);
-        mainActivityJitsi.putExtra("remoteMessageData", remoteMessageData);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.USER_GET_DATA, userGetData);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.ROLE_ID, role_id);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.COMPANY_FEATURE_ID, companyFeatureid);
-        //mainActivityJitsi.putExtra(Utils.BundleExtras.AUTHJSON_DATA, authData);
-        mainActivityJitsi.putExtra(Utils.BundleExtras.BODY, body);
-        return PendingIntent.getActivity(context, 4812, mainActivityJitsi, PendingIntent.FLAG_CANCEL_CURRENT);
+    void stopScreenShearRemote(Context context) {
+        Intent jitsiPluginBroadcast = new Intent();
+        jitsiPluginBroadcast.setAction(Utils.BroadcastAction.JITSI_SCREEN_SIZE_REMOTE_ACTIVITY);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(jitsiPluginBroadcast);
     }
 
+    private void ScreenARDraw(Bundle extras) throws JSONException {
+        if (!extras.containsKey(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA)) {
+            return;
+        }
+        String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+        FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+
+        TouchEventAR touchEventAR = EventUtils.touchEventAR;
+        String JsonData = null;
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(mFirebaseRequestData.getJsonData());
+            JsonData = jsonObject.getJSONArray(mFirebaseRequestData.getKeyType()).toString();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("gestures")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+                touchEventAR.onTouchEventArClick("gestures", JsonData);
+            } else {
+                NormalDrawingUtils.drawingNormal("gestures", JsonData);
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("Color")) {
+            String JsonColor = jsonObject.getString("selectedcolor");
+            if (ARDrawActivity.isArSupportedDevice) {
+                touchEventAR.onTouchEventArClick("Color", JsonColor);
+            } else {
+                PaintViewNormal.currentColor = Color.parseColor(JsonColor);
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("clear")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+                touchEventAR.onTouchEventArClick("delete", JsonData);
+            } else {
+                NormalDrawingUtils.drawingNormal("delete", JsonData);
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("arrow")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+                touchEventAR.onTouchEventArClick("arrow", JsonData);
+            } else {
+                NormalDrawingUtils.drawingNormal("arrow", JsonData);
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("textlable")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+                touchEventAR.onTouchEventArClick("textlable", JsonData);
+            } else {
+                NormalDrawingUtils.drawingNormal("textlable", JsonData);
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("imagearrow")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+
+                touchEventAR.onTouchEventArClick("imagearrow", JsonData);
+            } else {
+                NormalDrawingUtils.drawingNormal("imagearrow", JsonData);
+            }
+
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("touches")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+                touchEventAR.onTouchEventArClick("touches", JsonData);
+            } else {
+                NormalDrawingUtils.drawingNormal("touches", JsonData);
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("screenshot")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+            } else {
+
+                boolean check = isMyServiceRunning(context,
+                        VideoRecordingService.class.getName());
+
+                if (check) {
+                    VideoRecordingService.takescreenshot(JsonData);
+
+                } else {
+                    CameraPreviewActivity.takescreenshot(JsonData);
+
+                }
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("flash")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+            } else {
+                boolean check = isMyServiceRunning(context,
+                        VideoRecordingService.class.getName());
+
+                if (check) {
+                    VideoRecordingService.OnOffFlashLight(JsonData);
+                } else {
+
+                    CameraPreviewActivity.OnOffFlashLight(JsonData);
+                }
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("video_recording")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+            } else {
+                // CameraPreviewActivity.startstopservice(JsonData);
+                try {
+                    JSONArray jsonArray = new JSONArray(JsonData);
+                    String keyname = jsonArray.getString(0);
+
+                    if (keyname.equalsIgnoreCase("start")) {
+
+                        Intent serviceIntent = new Intent(context, VideoRecordingService.class);
+                        serviceIntent.putExtra("Bundle_extras",extras);
+                        context.startService(serviceIntent);
+                        CameraPreviewActivity.mImageViewVideoStop.setVisibility(View.GONE);
+                        CameraPreviewActivity.mImageViewVideoStart.setVisibility(View.GONE);
+                    } else {
+
+                        Intent serviceIntent = new Intent(context, VideoRecordingService.class);
+                        serviceIntent.putExtra("Bundle_extras",extras);
+                        context.stopService(serviceIntent);
+                        CameraPreviewActivity.mImageViewVideoStop.setVisibility(View.GONE);
+                        CameraPreviewActivity.mImageViewVideoStart.setVisibility(View.GONE);
+                    }
+
+                } catch (Exception e) {
+
+                }
+
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("zoom_in")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+            } else {
+                boolean check = isMyServiceRunning(context,
+                        VideoRecordingService.class.getName());
+                if (check) {
+                    VideoRecordingService.zoomIn();
+                } else {
+                    CameraPreviewActivity.zoomIn();
+                }
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("zoom_out")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+            } else {
+                boolean check = isMyServiceRunning(context,
+                        VideoRecordingService.class.getName());
+                if (check) {
+                    VideoRecordingService.zoomOut();
+                } else {
+                    CameraPreviewActivity.zoomOut();
+                }
+
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("zoom_original")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+            } else {
+                boolean check = isMyServiceRunning(context,
+                        VideoRecordingService.class.getName());
+                if (check) {
+                    VideoRecordingService.zoomClear();
+                } else {
+                    CameraPreviewActivity.zoom_clear();
+                }
+
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("flip_camera")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+            } else {
+                boolean check = isMyServiceRunning(context,
+                        VideoRecordingService.class.getName());
+
+                if (check) {
+                    VideoRecordingService.backfroncamera(JsonData);
+                } else {
+
+                    CameraPreviewActivity.backfroncamera(JsonData);
+                }
+            }
+        } else if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("stop")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+            } else {
+                boolean check = isMyServiceRunning(context,
+                        VideoRecordingService.class.getName());
+
+                if (check) {
+                    getContext().stopService(new Intent(context, VideoRecordingService.class));
+                }
+
+                CameraPreviewActivity mCameraPreviewActivity = new CameraPreviewActivity();
+                mCameraPreviewActivity.finishActivity();
+            }
+        }
+
+        sendDeleteData();
+    }
+
+    void sendDeleteData() {
+        mExecutorService.execute(() -> {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+            }
+            TouchEventAR touchEventAR = EventUtils.touchEventAR;
+            if (ARDrawActivity.isArSupportedDevice) {
+                touchEventAR.onTouchEventArClick("delete", "");
+            } else {
+                NormalDrawingUtils.drawingNormal("delete", "");
+            }
+        });
+    }
+
+    private boolean isMyServiceRunning(Context context, String Myservice) {
+        ActivityManager manager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager
+                .getRunningServices(Integer.MAX_VALUE)) {
+            if (Myservice.equals(service.service.getClassName())) {
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isNotificationActive(Context context, int notificationId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            StatusBarNotification[] notifications = manager.getActiveNotifications();
+
+            for (StatusBarNotification notification : notifications) {
+                if (notification.getId() == notificationId) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void StopIncomingCallActivity(Context context, Bundle bundle) {
+
+        String notificationRemoteDataString = bundle.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+        FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+        int notificationId = (int) System.currentTimeMillis();
+
+        NotificationUtils.rejectCallNotification(notificationId, context,
+                mFirebaseRequestData.getTitle(),
+                mFirebaseRequestData.getBody(),
+                R.drawable.atc_logo);
+        if (IncomingCallActivity.mActivity != null) {
+            NotificationUtils.stopRingtone();
+            IncomingCallActivity.mActivity.finish();
+        }
+        if (CameraPreviewActivity.mActivity != null) {
+            CameraPreviewActivity.mActivity.finish();
+        }
+    }
+
+    CustomJitsiMeetViewModel meetViewModel;
+
+    private void CallStopAction(Context context, Bundle bundle) {
+
+        meetViewModel = new CustomJitsiMeetViewModel();
+        meetViewModel.sendNotificationforstopcall(bundle, context);
+    }
+
+    private void SendPhotoId(Context context, Bundle mBundle) {
+        meetViewModel = new CustomJitsiMeetViewModel();
+        meetViewModel.sendNotificationforPhotoId(mBundle, context);
+
+    }
+
+    private void Get_photoId(Context context, Bundle bundle) {
+
+
+       meetViewModel = new CustomJitsiMeetViewModel();
+       meetViewModel.Get_photoid(bundle,context);
+
+
+    }
 }

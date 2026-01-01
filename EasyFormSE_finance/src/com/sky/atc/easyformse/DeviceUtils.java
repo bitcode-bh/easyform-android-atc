@@ -12,14 +12,14 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by Divyang on 2/19/2018.
  */
 
 //Utils class fro root detection method
-@Obfuscate
+@StringFogIgnore
 class DeviceUtils {
 
     public static boolean checkExecuteCommand() {

@@ -52,10 +52,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //upload customer photo online
-@Obfuscate
+@StringFogIgnore
 public class UploadPhotoPlugin extends CordovaPlugin {
 
     private MySharedPreferences pref;

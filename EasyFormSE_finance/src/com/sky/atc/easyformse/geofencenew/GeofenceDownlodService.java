@@ -6,10 +6,10 @@ import android.content.Intent;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.sky.atc.easyformse.GeofenceDownlaod;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //To Download Geofence Data
-@Obfuscate
+@StringFogIgnore
 public class GeofenceDownlodService extends WakefulIntentService {
 
 

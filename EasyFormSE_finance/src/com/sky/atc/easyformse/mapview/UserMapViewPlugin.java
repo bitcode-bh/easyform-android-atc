@@ -20,10 +20,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Plugin will call to start the UserMapViewActivity to initialize live mapview
-@Obfuscate
+@StringFogIgnore
 public class UserMapViewPlugin extends CordovaPlugin {
 
 

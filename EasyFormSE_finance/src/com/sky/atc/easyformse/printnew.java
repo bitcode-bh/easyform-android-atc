@@ -47,9 +47,9 @@ import android.widget.Toast;
 import com.analogics.thermalAPI.Bluetooth_Printer_2inch_ThermalAPI;
 import com.analogics.thermalprinter.AnalogicsThermalPrinter;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class printnew extends Activity {
 	private SQLiteDatabase database;
 	static final int ACTIVATION_REQUEST = 47;

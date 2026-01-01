@@ -74,7 +74,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 import okhttp3.CertificatePinner;
 import okhttp3.Connection;
 import okhttp3.MediaType;
@@ -84,7 +84,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-@Obfuscate
+@StringFogIgnore
 public class UploadUtils {
 
 

@@ -25,14 +25,14 @@ import android.net.NetworkInfo;
 
 import com.sky.atc.easyformse.utils.LogUtils;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * @author Tommy-Carlos Williams, Huge chunks lifted/adapted from the
  * NextworkManager core PhoneGap plugin
  */
 //Return application version to UI
-@Obfuscate
+@StringFogIgnore
 public class version_plug extends CordovaPlugin {
 
     public static final String TYPE_NONE = "NONE";

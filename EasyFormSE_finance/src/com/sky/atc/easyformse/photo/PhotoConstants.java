@@ -17,11 +17,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //photo Constant class for saving values for photo
-@Obfuscate
+@StringFogIgnore
 public class PhotoConstants {
 
     public static String originalPhoto;

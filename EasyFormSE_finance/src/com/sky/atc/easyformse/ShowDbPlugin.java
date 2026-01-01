@@ -8,11 +8,11 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //plugin to show Database class
-@Obfuscate
+@StringFogIgnore
 public class ShowDbPlugin extends CordovaPlugin {
     public CallbackContext callbackContext;
 

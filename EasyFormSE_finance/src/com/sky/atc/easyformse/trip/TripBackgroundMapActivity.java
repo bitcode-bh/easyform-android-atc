@@ -44,14 +44,14 @@ import com.sky.atc.easyformse.gpsreciever;
 import com.sky.atc.easyformse.ph_s;
 import com.sky.atc.easyformse.sqlitewraper;
 import net.sqlcipher.database.SQLiteDatabase;
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static com.sky.atc.easyformse.sqlitewraper.context;
 
 import java.util.Locale;
 
 //Showing Backgrond Map for trip
-@Obfuscate
+@StringFogIgnore
 public class TripBackgroundMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     GoogleMap map;

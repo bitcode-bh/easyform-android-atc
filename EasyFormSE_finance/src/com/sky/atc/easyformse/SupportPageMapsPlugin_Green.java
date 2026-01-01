@@ -43,7 +43,7 @@ import org.json.JSONObject;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //import com.sky.atc.easyformse.geofencenew.GeofenceTrasitionServicenew;
 
@@ -51,7 +51,7 @@ import io.michaelrocks.paranoid.Obfuscate;
 /**
  * Created by Chetan Patel on 26-Aug-16.
  */
-@Obfuscate
+@StringFogIgnore
 public class SupportPageMapsPlugin_Green extends CordovaPlugin implements LocationListener, ResultCallback<Status> {
 
     public CallbackContext callbackContext;

@@ -44,7 +44,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.concurrent.ExecutorService;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -54,7 +54,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 //to add Event in calender
-@Obfuscate
+@StringFogIgnore
 public class CalendarEventPlugin extends CordovaPlugin {
     static final String TAG = "CalendarEventPlugin";
     private ExecutorService executorService;

@@ -5,10 +5,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Login Utils for use of Auth
-@Obfuscate
+@StringFogIgnore
 public class LoginUtils {
 
     public static String getRandomString(int n){

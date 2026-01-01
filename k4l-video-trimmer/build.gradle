@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace "life.knowledge4.videotrimmer"
     compileSdkVersion project.ext.compileSdk
     defaultConfig {
         minSdkVersion project.ext.minSdk

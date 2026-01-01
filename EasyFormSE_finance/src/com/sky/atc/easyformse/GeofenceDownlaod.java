@@ -49,7 +49,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.sky.atc.easyformse.DemoDeviceAdminReceiver.TAG;
@@ -63,7 +63,7 @@ import androidx.core.app.NotificationCompat;
  * @author NareshChocha
  */
 //To download geofence for that
-@Obfuscate
+@StringFogIgnore
 public class GeofenceDownlaod {
 
     private static final String UPLOADWCFURL = sqlitewraper.context.getResources().getString(R.string.GEOWCFURL);

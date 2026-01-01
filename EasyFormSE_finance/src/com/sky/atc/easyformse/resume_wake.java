@@ -31,14 +31,14 @@ import org.ksoap2.transport.HttpTransportSE;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by Mikka on 12/14/2016.
  */
 
 //download document file from link will call fro sql_class
-@Obfuscate
+@StringFogIgnore
 
 public class resume_wake extends WakefulIntentService {
 

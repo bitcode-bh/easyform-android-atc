@@ -39,10 +39,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //for Auto trip stop and upload
-@Obfuscate
+@StringFogIgnore
 public class AutoTripStopService extends WakefulIntentService implements LocationListener {
 
     private static final String MY_PREFS_NAME = "MY_TRIP";

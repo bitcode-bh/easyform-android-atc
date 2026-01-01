@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/adduser_menu"
+        android:title="@string/add_user"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/adduser_draw_menu"
+        android:title="@string/remote_screen_share"
+        android:visible="true"
+        app:showAsAction="ifRoom">
+    </item>
+<!--    <item-->
+<!--        android:id="@+id/screen_share"-->
+<!--        android:title="@string/draw"-->
+<!--        android:visible="true"-->
+<!--        app:showAsAction="ifRoom" />-->
+<!--    <item-->
+<!--        android:id="@+id/color_set"-->
+<!--        android:title="@string/color"-->
+<!--        android:visible="true"-->
+<!--        app:showAsAction="ifRoom" />-->
+    <!--    <item-->
+    <!--        android:id="@+id/screen_stop"-->
+    <!--        android:title="@string/screen_share_stop"-->
+    <!--        android:visible="true"-->
+    <!--        app:showAsAction="ifRoom" />-->
+
+</menu>

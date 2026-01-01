@@ -19,7 +19,7 @@ import android.os.Bundle;
 import com.nareshchocha.app.weatherapp.ui.activitys.EasyWeatherWeatherActivity;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 /**
@@ -28,7 +28,7 @@ import io.michaelrocks.paranoid.Obfuscate;
  */
 
 // Open Weather application
-@Obfuscate
+@StringFogIgnore
 public class weather_plug extends CordovaPlugin {
 
     public static final String TYPE_NONE = "NONE";

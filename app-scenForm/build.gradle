@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+    namespace "com.google.ar.sceneform.samples.hellosceneform"
     compileSdkVersion  project.ext.compileSdk
     defaultConfig {
         minSdkVersion project.ext.minSdk

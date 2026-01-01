@@ -19,11 +19,11 @@ import com.sky.atc.easyformse.sqlitewraper;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Job Scheduler to for location services
 //Used Firebase JOb dispatcher
-@Obfuscate
+@StringFogIgnore
 public class MyJobService extends JobService {
 
     SQLiteDatabase database;

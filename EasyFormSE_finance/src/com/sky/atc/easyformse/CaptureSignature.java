@@ -52,10 +52,10 @@ import androidx.core.content.ContextCompat;
 
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //capture the Signature
-@Obfuscate
+@StringFogIgnore
 public class CaptureSignature extends Activity {
 
 	LinearLayout mContent;

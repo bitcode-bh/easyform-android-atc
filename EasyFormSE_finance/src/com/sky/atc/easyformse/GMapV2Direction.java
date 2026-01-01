@@ -26,11 +26,11 @@ import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to get shortest path from server API
 //right now it not in use moved to server side
-@Obfuscate
+@StringFogIgnore
 public class GMapV2Direction {
 	public final static String MODE_DRIVING = "driving";
 	public final static String MODE_WALKING = "walking";

@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
+    namespace "com.guojunustb.library"
     compileSdkVersion  project.ext.compileSdk
     defaultConfig {
         minSdkVersion project.ext.minSdk

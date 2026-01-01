@@ -20,14 +20,14 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * this Broadcast Receiver is use for deleting old task
  * <p>
  * this is Broadcast send by AlarmManager and AlarmManager set {@link #setDeleteBroadcastAlarm(Context)}
  */
-@Obfuscate
+@StringFogIgnore
 public class DeleteBroadcast extends BroadcastReceiver {
     private SQLiteDatabase database;
     private final static long alarmIntervalMillis = TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);

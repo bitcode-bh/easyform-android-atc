@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace "com.nareshchocha.facerecognition"
     compileSdkVersion project.ext.compileSdk
 
     defaultConfig {
@@ -27,6 +28,7 @@ android {
     buildFeatures {
         viewBinding = true
         dataBinding = true
+        buildConfig = true
     }
 
     compileOptions {

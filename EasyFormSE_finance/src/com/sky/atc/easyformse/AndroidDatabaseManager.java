@@ -35,10 +35,10 @@ import androidx.core.widget.NestedScrollView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 // Database Manager class for View of Database android
-@Obfuscate
+@StringFogIgnore
 public class AndroidDatabaseManager extends AppCompatActivity {
 
     // root Views

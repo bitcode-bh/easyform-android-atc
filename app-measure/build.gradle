@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace "com.hl3hl3.arcoremeasure"
     compileSdkVersion project.ext.compileSdk
     defaultConfig {
         // 24 is the minimum since ARCore only works with 24 and higher.

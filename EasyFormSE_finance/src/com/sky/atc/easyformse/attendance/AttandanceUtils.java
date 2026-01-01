@@ -4,10 +4,10 @@ import android.app.NotificationManager;
 import android.content.SharedPreferences;
 import com.sky.atc.easyformse.sqlitewraper;
 import java.util.Calendar;
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 import static android.content.Context.NOTIFICATION_SERVICE;
 
-@Obfuscate
+@StringFogIgnore
 public class AttandanceUtils {
 
     public static  void aftertaskCreatedReg(){

@@ -34,9 +34,9 @@ import com.sky.atc.easyformse.trip.TripMapUtils;
 import net.sqlcipher.database.SQLiteDatabase;
 
 import commonsware.cwac.LocationPoller;
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class loc_change extends WakefulIntentService {
 	SQLiteDatabase database;
 	Long time;

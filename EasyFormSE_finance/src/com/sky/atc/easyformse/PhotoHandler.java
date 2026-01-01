@@ -24,10 +24,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Photo Handler Class for process and saving of captured photo
-@Obfuscate
+@StringFogIgnore
 public class PhotoHandler implements PictureCallback {
 
     private final Context context;

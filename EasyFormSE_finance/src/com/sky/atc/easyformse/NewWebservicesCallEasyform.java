@@ -23,7 +23,7 @@ import org.json.JSONObject;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 import okhttp3.CertificatePinner;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -38,7 +38,7 @@ import okhttp3.Response;
  */
 
 //Web service client to call different webservice
-@Obfuscate
+@StringFogIgnore
 public class NewWebservicesCallEasyform {
 
 

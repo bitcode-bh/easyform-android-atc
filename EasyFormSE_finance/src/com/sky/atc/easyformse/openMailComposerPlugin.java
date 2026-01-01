@@ -12,10 +12,10 @@ import org.json.JSONException;
 
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //open main composer
-@Obfuscate
+@StringFogIgnore
 public class openMailComposerPlugin extends CordovaPlugin {
 
 

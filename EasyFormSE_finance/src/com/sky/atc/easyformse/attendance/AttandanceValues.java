@@ -19,10 +19,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //AttandaceValues class to for generate class
-@Obfuscate
+@StringFogIgnore
 public class AttandanceValues {
     static int saveAttandanceValuesCount = 0;
 

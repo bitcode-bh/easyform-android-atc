@@ -32,14 +32,14 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by NareshChocha on 1/24/2024.
  *
  * @author NareshChocha
  */
-@Obfuscate
+@StringFogIgnore
 public class newfused_recevier extends BroadcastReceiver {
     MySharedPreferences pref;
     long intervalMillis = 10 * 60 * 1000; // 10 minutes

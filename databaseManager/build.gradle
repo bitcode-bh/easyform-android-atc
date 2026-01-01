@@ -1,9 +1,10 @@
 plugins {
     id 'com.android.library'
-    id 'io.michaelrocks.paranoid'
+//    id 'io.michaelrocks.paranoid'
 }
 
 android {
+    namespace "com.nareshchocha.databasemanager"
     compileSdk project.ext.compileSdk
     defaultConfig {
         minSdk project.ext.minSdk
@@ -27,6 +28,7 @@ android {
     buildFeatures {
         viewBinding = true
         dataBinding = true
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -51,4 +53,5 @@ dependencies {
 
     // alternately - if using Java8, use the following instead of lifecycle-compiler
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+    implementation 'com.github.megatronking.stringfog:xor:5.0.0'
 }

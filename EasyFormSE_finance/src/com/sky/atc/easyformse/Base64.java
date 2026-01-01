@@ -1,6 +1,6 @@
 package com.sky.atc.easyformse;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * <p>Encodes and decodes to and from Base64 notation.</p>
@@ -151,7 +151,7 @@ import io.michaelrocks.paranoid.Obfuscate;
  */
 
 //Utils class to convert image to Base64
-@Obfuscate
+@StringFogIgnore
 public class Base64
 {
     

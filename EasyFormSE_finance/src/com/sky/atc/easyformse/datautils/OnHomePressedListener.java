@@ -1,9 +1,9 @@
 package com.sky.atc.easyformse.datautils;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Home Button Click Listener
-@Obfuscate
+@StringFogIgnore
 public interface OnHomePressedListener {
     void onHomePressed();
     void onHomeLongPressed();

@@ -9,14 +9,14 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by NareshChocha on 12/4/2023.
  *
  * @author NareshChocha
  */
-@Obfuscate
+@StringFogIgnore
 public class VibrationPlugin extends CordovaPlugin {
     private Vibrator vibrator;
     @Override

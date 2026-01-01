@@ -34,10 +34,10 @@ import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 import java.io.File;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to Setting app
-@Obfuscate
+@StringFogIgnore
 public class SettingFragment extends Fragment {
 
     MaterialButton mbtnCheckDeveloper;

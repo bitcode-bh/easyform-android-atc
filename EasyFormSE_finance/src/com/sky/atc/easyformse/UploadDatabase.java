@@ -30,12 +30,12 @@ import java.io.Writer;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.MODE_PRIVATE;
 //to upload database to server
 
-@Obfuscate
+@StringFogIgnore
 public class UploadDatabase {
 
     static int bufferSize;

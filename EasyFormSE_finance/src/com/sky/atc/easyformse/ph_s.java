@@ -91,13 +91,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static com.sky.atc.easyformse.sqlitewraper.context;
 import static com.sky.atc.easyformse.sqlitewraper.mainactivity;
 
 
-@Obfuscate
+@StringFogIgnore
 public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, ResultCallback {
 
     protected GoogleApiClient mGoogleApiClient;
@@ -673,7 +673,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             e.printStackTrace();
         }
     }
-
+    private ScreenshotBroadcastReceiver screenshotReceiver;
+    private boolean isReceiverRegistered = false;
     private void registerBroadcast() {
         IntentFilter intentFilter1 = new IntentFilter("android.intent.action.QUICKBOOT_POWERON");
         //activity_recognize receiver
@@ -692,6 +693,17 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         this.registerReceiver(new onreboot(), intentFilter3);
         this.registerReceiver(new ShutdownReceiver(), intentFilter4);
         this.registerReceiver(new PowerSaveModeReceiver(), intentFilter5);
+
+        if (!isReceiverRegistered) {
+            screenshotReceiver = new ScreenshotBroadcastReceiver();
+            IntentFilter intentFilter = new IntentFilter("com.easyfrom.jitsi.SCREENSHOT_SAVED");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                this.registerReceiver(screenshotReceiver, intentFilter, Context.RECEIVER_EXPORTED);
+            }
+            isReceiverRegistered = true;
+            Log.d("Receiver", "Receiver registered");
+        }
+
 
         ComponentName receiver = new ComponentName(this, onreboot.class);
         PackageManager pm = this.getPackageManager();

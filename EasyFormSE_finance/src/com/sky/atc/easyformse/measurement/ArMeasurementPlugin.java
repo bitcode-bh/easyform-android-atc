@@ -17,10 +17,10 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //AR measurement plugin to start measurement activity
-@Obfuscate
+@StringFogIgnore
 public class ArMeasurementPlugin extends CordovaPlugin {
 
 //import com.easyform.smartmeasure.ui.activitys.MeasureTwoActivity;

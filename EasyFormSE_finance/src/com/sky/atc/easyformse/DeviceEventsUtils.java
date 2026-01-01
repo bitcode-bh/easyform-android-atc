@@ -71,11 +71,11 @@ import java.util.Random;
 
 import javax.net.ssl.TrustManagerFactory;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //Different Utils functins
-@Obfuscate
+@StringFogIgnore
 public class DeviceEventsUtils {
 
     static SQLiteDatabase database = sqlitewraper.getDatabase();

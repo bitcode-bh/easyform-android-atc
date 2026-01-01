@@ -24,9 +24,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class SqlitePlugin extends CordovaPlugin {
 
     private static final String TAG = "SqlitePlugin";

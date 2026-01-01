@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by Mikka on 8/8/2016.
@@ -43,7 +43,7 @@ import io.michaelrocks.paranoid.Obfuscate;
 
 //FOR THEME STARTING PAGE- FIRST PLUGIN
 //to get support details
-@Obfuscate
+@StringFogIgnore
 public class cntct_info implements Runnable {
 
     public static final String TYPE_NONE = "NONE";

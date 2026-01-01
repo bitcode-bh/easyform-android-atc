@@ -11,10 +11,10 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Color picker dialog for drawing on photo
-@Obfuscate
+@StringFogIgnore
 public class ColorPickerDialogs extends Dialog {
 
 	public interface OnColorChangedListener 

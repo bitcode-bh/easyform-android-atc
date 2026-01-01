@@ -15,10 +15,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Log is not available on server so server validation handling Utils class
-@Obfuscate
+@StringFogIgnore
 public class UploadLogDeleteUtils {
 
 

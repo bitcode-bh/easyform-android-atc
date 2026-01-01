@@ -14,10 +14,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //To return distance from site
-@Obfuscate
+@StringFogIgnore
 public class distance extends CordovaPlugin {
 
 	private static final String TAG = "maulik";

@@ -28,12 +28,12 @@ import com.nareshchocha.databasemanager.viewmodels.DatabaseManagerViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * before staring this activity set DatabaseManagerSQLite.setSqlDB( SQLiteDatabase );
  */
-@Obfuscate
+@StringFogIgnore
 public class AndroidDatabaseManager extends AppCompatActivity {
     ManagerDatabaseAndroidBinding managerDatabaseAndroidBinding;
     DatabaseManagerViewModel databaseManagerViewModel;

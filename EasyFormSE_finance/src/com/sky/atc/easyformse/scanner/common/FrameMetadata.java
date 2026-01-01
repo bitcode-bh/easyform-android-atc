@@ -13,9 +13,9 @@
 // limitations under the License.
 package com.sky.atc.easyformse.scanner.common;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 /** Describing a frame info. */
 public class FrameMetadata {
 

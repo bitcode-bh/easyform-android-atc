@@ -15,30 +15,30 @@ public class FirebaseRequest {
 
     @Expose
     @SerializedName("data")
-    private NotificationData notificationData;
+    private FirebaseRequestData data;
 
     @Expose
     @SerializedName("notification")
-    private NotificationData notification;
+    private FirebaseRequestData notification;
 
     @Expose
     @SerializedName("registration_ids")
     private List<String> registrationIds;
 
-    public NotificationData getNotification() {
+    public FirebaseRequestData getNotification() {
         return notification;
     }
 
-    public void setNotification(NotificationData notification) {
+    public void setNotification(FirebaseRequestData notification) {
         this.notification = notification;
     }
 
-    public void setData(NotificationData notificationData) {
-        this.notificationData = notificationData;
+    public void setData(FirebaseRequestData data) {
+        this.data = data;
     }
 
-    public NotificationData getData() {
-        return notificationData;
+    public FirebaseRequestData getData() {
+        return data;
     }
 
     public void setRegistrationIds(List<String> registrationIds) {

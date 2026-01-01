@@ -9,12 +9,12 @@ import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.MODE_PRIVATE;
 
 //to store different values
-@Obfuscate
+@StringFogIgnore
 public class data {
 
     private static String event_name = "NA";

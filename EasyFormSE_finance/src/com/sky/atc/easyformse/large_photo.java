@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -27,7 +27,7 @@ import static android.content.Context.MODE_PRIVATE;
  */
 
 //plugin to browse files
-@Obfuscate
+@StringFogIgnore
 public class large_photo extends CordovaPlugin {
 
 	public static final String TYPE_NONE = "NONE";

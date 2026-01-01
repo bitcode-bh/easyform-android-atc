@@ -12,10 +12,10 @@ import net.sqlcipher.database.SQLiteDatabase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //it will Called when Device event generated
-@Obfuscate
+@StringFogIgnore
 public class status_server extends WakefulIntentService {
 
 	private SQLiteDatabase database;

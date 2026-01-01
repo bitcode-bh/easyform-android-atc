@@ -31,10 +31,10 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Main plugin for different configuration
-@Obfuscate
+@StringFogIgnore
 public class sql_class implements Runnable {
 
     private static String CREATE_DB_ACTION = "createDatabase";

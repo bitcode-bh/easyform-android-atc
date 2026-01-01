@@ -7,10 +7,10 @@ import android.database.*;
 import android.net.*;
 import android.os.*;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Not in use anymore
-@Obfuscate
+@StringFogIgnore
 public class LocalFileContentProvider extends ContentProvider {
    private static final String URI_PREFIX = "content://com.skyproductivity.android.emf_vodafone_survey";
 

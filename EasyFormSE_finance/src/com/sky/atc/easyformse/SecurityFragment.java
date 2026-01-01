@@ -24,10 +24,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to export DB from tablayout
-@Obfuscate
+@StringFogIgnore
 public class SecurityFragment extends Fragment {
 	ComponentName demoDeviceAdmin;
 	ToggleButton toggleButton;

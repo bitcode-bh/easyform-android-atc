@@ -13,9 +13,9 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions;
 import com.sky.atc.easyformse.R;
 import com.sky.atc.easyformse.scanner.common.CameraSource;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 /** Utility class to retrieve shared preferences. */
 public class PreferenceUtils {
 

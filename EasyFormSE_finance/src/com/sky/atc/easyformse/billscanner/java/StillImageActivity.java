@@ -60,13 +60,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Activity demonstrating different image detector features with a still image from camera.
  */
 
-@Obfuscate
+@StringFogIgnore
 public final class StillImageActivity extends AppCompatActivity implements TextInterface {
 
     private static final String TAG = "StillImageActivity";

@@ -1,13 +1,13 @@
 package com.sky.atc.easyformse;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by Acer on 1/17/2017.
  */
 
 //Utils class used in Download
-@Obfuscate
+@StringFogIgnore
 public class MyObject {
     int flowid;
     int value;

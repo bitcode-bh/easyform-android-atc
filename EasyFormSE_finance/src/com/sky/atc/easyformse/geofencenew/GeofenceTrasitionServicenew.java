@@ -40,11 +40,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //New Service For Receive geofence enter/exit
-@Obfuscate
+@StringFogIgnore
 public class GeofenceTrasitionServicenew extends IntentService {
 
     private static final String TAG = "GeoIntentService";

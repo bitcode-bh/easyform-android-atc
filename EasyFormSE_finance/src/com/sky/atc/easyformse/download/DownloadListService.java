@@ -45,11 +45,11 @@ import net.sqlcipher.database.SQLiteDatabase;
 import java.util.Date;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Main Service to initiate download
 //Download Intent Service
-@Obfuscate
+@StringFogIgnore
 public class DownloadListService extends WakefulIntentService implements LocationListener{
 
     SQLiteDatabase database;

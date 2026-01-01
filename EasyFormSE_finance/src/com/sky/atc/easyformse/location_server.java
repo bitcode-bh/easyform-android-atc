@@ -30,9 +30,9 @@ import androidx.core.app.ActivityCompat;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class location_server extends WakefulIntentService {
 	SQLiteDatabase database;
 	String lat = null;

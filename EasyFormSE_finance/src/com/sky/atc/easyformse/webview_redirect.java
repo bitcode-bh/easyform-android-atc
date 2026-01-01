@@ -17,10 +17,10 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to open webview activity
-@Obfuscate
+@StringFogIgnore
 public class webview_redirect extends Activity {
     private ProgressBar progressBar;
     private WebView webView;

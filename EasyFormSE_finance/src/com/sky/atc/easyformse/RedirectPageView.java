@@ -10,10 +10,10 @@ import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 import org.apache.cordova.CordovaActivity;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to page redirect after add attendance successfully
-@Obfuscate
+@StringFogIgnore
 public class RedirectPageView extends CordovaActivity {
 
     String login_key;

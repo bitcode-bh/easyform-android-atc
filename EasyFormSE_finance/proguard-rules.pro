@@ -244,3 +244,24 @@
 -keep class com.googlecode.mp4parser.** { *; }
 -dontwarn com.coremedia.iso.**
 -dontwarn com.googlecode.mp4parser.**
+
+-dontwarn org.xmlpull.v1.**
+-dontwarn org.kxml2.io.**
+-dontwarn android.content.res.**
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+
+-keep class org.xmlpull.** { *; }
+-keepclassmembers class org.xmlpull.** { *; }
+
+-keep class io.surepass.** { *; }
+-dontwarn io.surepass.**
+-keep class * extends android.app.Activity { *; }
+-keep class com.google.gson.** { *; }
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keepattributes *Annotation*
+-dontwarn okhttp3.**
+-keep class okhttp3.** { *; }
+-keep class okio.** { *; }
+-keep class org.apache.cordova.** { *; }

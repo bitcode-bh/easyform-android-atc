@@ -5,7 +5,7 @@ import java.util.Calendar;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 import commonsware.cwac.LocationPoller;
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import android.app.ActivityManager;
 import android.app.AlarmManager;
@@ -25,7 +25,7 @@ import android.widget.Toast;
 
 
 //User unlock the screen it will called
-@Obfuscate
+@StringFogIgnore
 public class onreboot extends BroadcastReceiver {
 
 	private Context mContext;

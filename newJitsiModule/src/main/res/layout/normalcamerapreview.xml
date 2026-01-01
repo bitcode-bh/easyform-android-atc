@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/frame_cameraview"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <SurfaceView
+        android:id="@+id/surfaceView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <com.easyform.newjitsi.activitys.drawing.PaintViewNormal
+        android:id="@+id/paintviewNormal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center" />
+
+    <ImageButton
+        android:id="@+id/startBtn"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center|bottom"
+        android:src="@drawable/stop"
+        android:background="@null"
+        android:layout_marginBottom="5dp"
+        android:scaleType="centerCrop"
+        android:visibility="visible" />
+
+    <ImageButton
+        android:id="@+id/videostar"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="top|right"
+
+        android:background="@drawable/badge_button"
+        android:padding="5dp"
+        android:src="@drawable/video_on"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/videotimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right|center"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="55dp"
+        android:background="@drawable/badge_button"
+        android:padding="5dp"
+        android:textColor="@color/black"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/videostop"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="top|right"
+        android:layout_margin="3dp"
+        android:background="@drawable/badge_button"
+        android:padding="5dp"
+        android:src="@drawable/video_stop"
+        android:visibility="gone" />
+
+
+
+    <ImageButton
+        android:id="@+id/flashon"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/badge_button"
+        android:padding="5dp"
+        android:src="@drawable/flash_on"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/flashoff"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/badge_button"
+        android:padding="5dp"
+        android:src="@drawable/off_flash"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/Screenshot"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/badge_button"
+        android:padding="5dp"
+
+        android:src="@drawable/screenshot"
+        android:visibility="gone" />
+
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="160dp"
+        android:id="@+id/screenshotimag"
+        android:visibility="gone"
+        android:layout_margin="5dp"
+        />
+
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="160dp"
+        android:id="@+id/screenshotloading"
+        android:visibility="gone"
+        android:src="@drawable/loading"
+        android:layout_margin="5dp"
+        />
+
+    <ImageButton
+        android:id="@+id/backcamera"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="100dp"
+        android:background="@drawable/badge_button"
+        android:src="@drawable/back_camera"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/frontcamera"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="100dp"
+        android:background="@drawable/badge_button"
+        android:src="@drawable/front_camera"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/zoomin"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="200dp"
+        android:background="@drawable/badge_button"
+        android:src="@drawable/zoom_in"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/zoomout"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="250dp"
+        android:background="@drawable/badge_button"
+        android:src="@drawable/zoom_out"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/zoom_clear"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="300dp"
+        android:background="@drawable/badge_button"
+        android:src="@drawable/zoom_clear"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/showPermissionMsg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="16dp"
+        android:text="permission_message"
+        android:textAlignment="center"
+        android:textStyle="bold|italic"
+        android:visibility="gone" />
+
+</FrameLayout>

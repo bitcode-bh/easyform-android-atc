@@ -26,9 +26,9 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.sky.atc.easyformse.sqlitewraper;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class CurrentLocation extends Service {
 
     private LocationManager locationManager;

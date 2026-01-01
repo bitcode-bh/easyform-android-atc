@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:elevation="100dp"
+    tools:background="@color/black"
+    tools:context=".activitys.jitsimeet.CustomJitsiMeetActivity">
+
+    <LinearLayout
+        android:id="@+id/llUserActions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.95"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.09">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/jitsi_invite"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="10dp"
+            android:adjustViewBounds="true"
+            android:background="?selectableItemBackground"
+            android:padding="5dp"
+            android:src="@drawable/ic_user_add"
+            android:tint="@color/white" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/jitsiRequestScreenShare"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="10dp"
+            android:background="?selectableItemBackground"
+            android:padding="5dp"
+            android:src="@drawable/ic_edit"
+            android:tint="@color/white" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/jitsiRequestChat"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="10dp"
+            android:background="?selectableItemBackground"
+            android:padding="5dp"
+            android:visibility="gone"
+            android:src="@drawable/chat"
+            android:tint="@color/white" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/jitsicontainer"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="match_parent" />
+    <FrameLayout
+        android:id="@+id/flDrawOptions"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="match_parent">
+
+        <com.easyform.newjitsi.ui.customViews.MovableFloatingActionButton
+            android:id="@+id/stopShare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|end"
+            android:layout_margin="7dp"
+            android:src="@drawable/ic_stopscreen" />
+
+        <com.easyform.newjitsi.ui.customViews.MovableFloatingActionButton
+            android:id="@+id/draw_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="7dp"
+            android:layout_marginTop="70dp"
+            android:layout_marginEnd="7dp"
+            android:layout_marginBottom="7dp"
+            android:src="@drawable/ic_pen" />
+
+
+        <FrameLayout
+            android:id="@+id/flPaintView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.easyform.newjitsi.activitys.drawing.PaintView
+                android:id="@+id/paintview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

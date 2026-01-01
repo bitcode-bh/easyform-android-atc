@@ -80,11 +80,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //Browse file from local storage and send Back to UI
-@Obfuscate
+@StringFogIgnore
 public class upload_large_file extends Activity {
 
     private final int SELECT_PHOTO = 1;

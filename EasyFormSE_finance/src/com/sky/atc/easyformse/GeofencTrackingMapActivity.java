@@ -50,14 +50,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by NareshChocha on 9/4/2023.
  *
  * @author NareshChocha
  */
-@Obfuscate
+@StringFogIgnore
 public class GeofencTrackingMapActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,GoogleMap.InfoWindowAdapter  {
 

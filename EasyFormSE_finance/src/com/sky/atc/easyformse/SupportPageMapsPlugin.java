@@ -8,14 +8,14 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by Chetan Patel on 26-Aug-16.
  */
 
 //For show site for geofencing when red mark is available
-@Obfuscate
+@StringFogIgnore
 public class SupportPageMapsPlugin extends CordovaPlugin {
 
     public CallbackContext callbackContext;

@@ -5,22 +5,103 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.CAMERA" /> <!-- Sceneform requires OpenGLES 3.0 or later. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
+    <uses-permission android:name="android.permission.RECORD_VIDEO" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-    <application>
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
+    <uses-feature android:name="android.hardware.camera.flash" />
+
+    <application
+        android:allowBackup="true">
         <activity
-            android:name=".activitys.JitsiMeetCustomActivity"
+            android:name=".activitys.chat.AddUSerActivity"
+            android:exported="false"
+            android:theme="@style/JitsiModule.Theme" />
+        <activity
+            android:name=".activitys.chat.ChatActivity"
+            android:exported="false"
+            android:theme="@style/JitsiModule.Theme"/>
+        <activity
+            android:name=".activitys.drawing.newar.ARDrawNewActivity"
             android:exported="false" />
         <activity
-            android:name=".activitys.ProgressActivity"
-            android:noHistory="true"
+            android:name=".activitys.drawing.AR.DrawingActivity"
             android:exported="false" />
+        <activity
+            android:name=".activitys.drawing.CameraPreviewActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen" />
+        <activity
+            android:name=".activitys.drawing.AR.ARDrawActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activitys.jitsimeet.CustomJitsiMeetActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:launchMode="singleTask"
+            android:supportsPictureInPicture="true"
+            android:resizeableActivity="true"
+            android:screenOrientation="unspecified"
+            android:exported="true"
+            android:theme="@style/JitsiModule.Theme"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity
+            android:name=".activitys.loading.LoadingActivity"
+            android:exported="true"
+            android:theme="@style/JitsiModule.Theme" />
+
+        <activity android:name=".activitys.call.IncomingCallActivity"
+            android:exported="true"
+            android:theme="@style/JitsiModule.Theme"/>
+
+        
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="optional"
+            tools:replace="android:value" />
+
+        <service
+            android:name=".activitys.jitsimeet.VideoRecordingService"
+            android:enabled="true"
+            android:exported="true"/>
+
+        <receiver
+            android:name=".broadcasts.FlashlightToggleReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.easyform.newjitsi.Flash_light" />
+                <action android:name="com.easyform.newjitsi.screenshot" />
+                <action android:name="com.easyform.newjitsi.camera" />
+                <action android:name="com.easyform.newjitsi.ZoomControlIn" />
+                <action android:name="com.easyform.newjitsi.ZoomControlOut" />
+            </intent-filter>
+        </receiver>
+
 
         <receiver
             android:name=".broadcasts.JitsiPluginBroadcast"
             android:exported="false">
             <intent-filter>
+
                 <action android:name="com.easyform.newjitsi.JitsiPluginCall" />
                 <action android:name="com.easyform.newjitsi.notification" />
+                <action android:name="com.easyform.newjitsi.rejectNotification" />
+                <action android:name="com.easyform.newjitsi.ScreenSizeRemote" />
+                <action android:name="com.easyform.newjitsi.ScreenDrawData" />
+                <action android:name="com.easyform.newjitsi.Reject" />
+                <action android:name="com.easyform.newjitsi.Accept" />
+                <action android:name="com.easyform.newjitsi.clearNotification" />
             </intent-filter>
         </receiver>
     </application>

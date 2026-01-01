@@ -33,9 +33,9 @@ import com.sky.atc.easyformse.scanner.common.GraphicOverlay;
 import java.io.IOException;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 /**
  * Barcode Detector Demo.
  */

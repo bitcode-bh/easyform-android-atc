@@ -9,7 +9,7 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by Mikka on 8/11/2016.
@@ -17,7 +17,7 @@ import io.michaelrocks.paranoid.Obfuscate;
 
 //Plugin to download pdf
 
-@Obfuscate
+@StringFogIgnore
 public class pdf_download extends CordovaPlugin {
 
     public CallbackContext callbackContext;

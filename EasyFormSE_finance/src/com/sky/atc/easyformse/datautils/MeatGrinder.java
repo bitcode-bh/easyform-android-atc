@@ -6,10 +6,10 @@ import android.content.DialogInterface;
 
 import androidx.annotation.NonNull;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //For Root Detection Using NDK
-@Obfuscate
+@StringFogIgnore
 public class MeatGrinder {
     private final static String LIB_NAME = "native-lib";
     private static boolean isLoaded;

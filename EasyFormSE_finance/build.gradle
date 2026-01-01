@@ -2,13 +2,14 @@ plugins {
     id 'com.android.application'
     id 'com.google.ar.sceneform.plugin'
     //used to encrypt string in java class
-    //add @Obfuscate annotation on class name
-    id 'io.michaelrocks.paranoid'
+    //add @StringFogIgnore annotation on class name
+//    id 'io.michaelrocks.paranoid'
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 android {
+    namespace "com.sky.atc.easyformse"
     compileSdkVersion project.ext.compileSdk
     useLibrary 'org.apache.http.legacy'
     //defualt config set from server
@@ -18,7 +19,7 @@ android {
         minSdkVersion project.ext.minSdk  //not set from server
         targetSdkVersion project.ext.targetSdk //not set from server
         versionCode 107    //not set from server
-        versionName "ATC_19.6.29_F7_V5"
+        versionName "ATC_19.6.29_F7_V1.9"
         multiDexEnabled true //not set from server
 
 
@@ -140,6 +141,10 @@ android {
             path file('cpp/CMakeLists.txt')
         }
     }
+    buildFeatures {
+        buildConfig = true
+
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -159,6 +164,7 @@ android {
         exclude 'META-INF/ASL2.0'
         exclude("META-INF/*.kotlin_module")*/
     }
+
 }
 
 dependencies {
@@ -214,9 +220,12 @@ dependencies {
     // for biometric login
     implementation 'androidx.biometric:biometric:1.2.0-alpha05'
 
+    // @StringFogIgnore annotation on class name
+    implementation 'com.github.megatronking.stringfog:xor:5.0.0'
   //  implementation "com.google.auth:google-auth-library-oauth2-http:1.3.0" // get google access token
 
     // implementation project(path: ':Jitsi')
+    implementation project(path: ':newJitsiModule')
     // implementation project(path: ':easyform-zoom-chat')
      implementation project(path: ':faceDetectionModel')
     // implementation project(path: ':documentscanner')

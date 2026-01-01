@@ -3,10 +3,10 @@ package com.sky.atc.easyformse.datautils;
 
 import android.util.Log;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //For Root Detection
-@Obfuscate
+@StringFogIgnore
 public class RootUtils {
 
     public static boolean checkRooted() {

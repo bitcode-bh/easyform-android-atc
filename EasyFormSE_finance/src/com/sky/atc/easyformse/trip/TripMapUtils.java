@@ -3,10 +3,10 @@ package com.sky.atc.easyformse.trip;
 import com.sky.atc.easyformse.R;
 import com.sky.atc.easyformse.sqlitewraper;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Trip Map background UTils class
-@Obfuscate
+@StringFogIgnore
 public class TripMapUtils {
 
     private static boolean isAppRunnig;

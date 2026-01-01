@@ -7,14 +7,14 @@ import android.content.Intent;
 import android.provider.Settings;
 import androidx.appcompat.app.AlertDialog;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by Nisarg on 13-07-2017.
  */
 
 //For Showing progress
-@Obfuscate
+@StringFogIgnore
 public class ShowProgress {
 
 

@@ -10,9 +10,9 @@ import android.util.Log;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 //Custom Brodcast to restart the location service if there is trip running
-@Obfuscate
+@StringFogIgnore
 public class restartservice extends BroadcastReceiver {
 
     SQLiteDatabase database;

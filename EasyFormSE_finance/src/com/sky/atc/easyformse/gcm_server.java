@@ -13,11 +13,11 @@ import androidx.core.app.ActivityCompat;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //To upload fcm data to server
-@Obfuscate
+@StringFogIgnore
 public class gcm_server extends WakefulIntentService {
 
 	private SQLiteDatabase database;

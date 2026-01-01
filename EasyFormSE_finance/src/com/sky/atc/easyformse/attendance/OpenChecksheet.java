@@ -4,10 +4,10 @@ import android.os.Bundle;
 
 import org.apache.cordova.CordovaActivity;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Open Checksheet Logic pending
-@Obfuscate
+@StringFogIgnore
 public class OpenChecksheet extends CordovaActivity {
 
 

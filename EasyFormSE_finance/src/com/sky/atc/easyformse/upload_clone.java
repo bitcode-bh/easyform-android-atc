@@ -24,13 +24,13 @@ import androidx.core.app.NotificationCompat;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.sky.atc.easyformse.utils.Utils;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_LOW;
 import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 
 //upload files
-@Obfuscate
+@StringFogIgnore
 public class upload_clone extends WakefulIntentService {
 
 	SQLiteDatabase database;

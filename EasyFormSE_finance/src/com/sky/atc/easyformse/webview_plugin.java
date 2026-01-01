@@ -24,14 +24,14 @@ import net.sqlcipher.database.SQLiteDatabase;
 
 import java.io.File;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static com.sky.atc.easyformse.sqlitewraper.context;
 
 
 
 //open webview plugin
-@Obfuscate
+@StringFogIgnore
 public class webview_plugin extends CordovaPlugin {
 
 

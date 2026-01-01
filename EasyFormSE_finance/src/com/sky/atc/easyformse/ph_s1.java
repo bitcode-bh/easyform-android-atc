@@ -19,10 +19,10 @@ import org.apache.cordova.CordovaActivity;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to check on pending upload notification and call upload service
-@Obfuscate
+@StringFogIgnore
 public class ph_s1 extends CordovaActivity {
 
 	@Override

@@ -21,10 +21,10 @@ import android.text.format.Time;
 
 import com.sky.atc.easyformse.utils.LogUtils;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //generate and save error log for crash
-@Obfuscate
+@StringFogIgnore
 public class custom_ex implements UncaughtExceptionHandler {
 
     private UncaughtExceptionHandler defaultUEH;

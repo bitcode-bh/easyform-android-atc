@@ -19,10 +19,10 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Trip plugin to start and end the trip
-@Obfuscate
+@StringFogIgnore
 public class TripPlugin extends CordovaPlugin {
 
 

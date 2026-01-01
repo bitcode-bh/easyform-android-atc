@@ -31,9 +31,9 @@ import com.sky.atc.easyformse.scanner.common.VisionImageProcessor;
 
 import java.nio.ByteBuffer;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
     // To keep the latest images and its metadata.

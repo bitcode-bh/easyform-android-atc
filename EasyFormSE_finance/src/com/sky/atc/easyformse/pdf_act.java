@@ -42,11 +42,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //To download PDF FILE
-@Obfuscate
+@StringFogIgnore
 public class pdf_act extends Activity {
     private SQLiteDatabase database;
     ComponentName demoDeviceAdmin;

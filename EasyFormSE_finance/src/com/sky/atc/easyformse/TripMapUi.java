@@ -78,10 +78,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Open Map for Trip start and end and Insert data into databse
-@Obfuscate
+@StringFogIgnore
 public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, ResultCallback<Status> {
 
     private static final String MY_PREFS_NAME = "MY_TRIP";

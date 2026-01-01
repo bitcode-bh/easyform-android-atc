@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace "com.nareshchocha.app.weatherapp"
     compileSdk 29
     defaultConfig {
         minSdk 21

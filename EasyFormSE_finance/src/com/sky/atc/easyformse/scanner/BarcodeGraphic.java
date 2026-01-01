@@ -22,9 +22,9 @@ import android.graphics.RectF;
 import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcode;
 import com.sky.atc.easyformse.scanner.common.GraphicOverlay;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 /** Graphic instance for rendering Barcode position and content information in an overlay view. */
 public class BarcodeGraphic extends GraphicOverlay.Graphic {
 

@@ -2,10 +2,10 @@ package com.sky.atc.easyformse;
 
 import java.util.LinkedList;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //For acc/ deacc
-@Obfuscate
+@StringFogIgnore
 class GroupOfFourInts {
 	float x;
 	float y;

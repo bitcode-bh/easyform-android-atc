@@ -52,9 +52,9 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 class DownloadMainStructure {
 
     private ArrayList<MyObject> mylist;

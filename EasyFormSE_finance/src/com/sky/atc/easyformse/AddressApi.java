@@ -17,10 +17,10 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Address API to get address from API
-@Obfuscate
+@StringFogIgnore
 public class AddressApi {
 
 

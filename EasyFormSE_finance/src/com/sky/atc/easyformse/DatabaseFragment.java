@@ -15,11 +15,11 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.nareshchocha.databasemanager.Utils.DatabaseManagerSQLite;
 import com.nareshchocha.databasemanager.ui.activitys.AndroidDatabaseManager;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //To open database of app
-@Obfuscate
+@StringFogIgnore
 public class DatabaseFragment extends Fragment {
 
     @Override

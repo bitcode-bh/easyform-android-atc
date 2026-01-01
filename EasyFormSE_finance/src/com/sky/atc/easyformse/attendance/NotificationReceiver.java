@@ -10,10 +10,10 @@ import com.sky.atc.easyformse.utils.LogUtils;
 
 import java.util.Calendar;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //To Show Notification on Received Alarm
-@Obfuscate
+@StringFogIgnore
 public class NotificationReceiver extends BroadcastReceiver {
 
     @Override

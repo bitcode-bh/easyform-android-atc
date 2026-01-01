@@ -19,10 +19,10 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Secure Sharedprences common class
-@Obfuscate
+@StringFogIgnore
 public class MySharedPreferences {
 
     public static class SecurePreferencesException extends RuntimeException {

@@ -9,12 +9,12 @@ import android.util.Log;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.geofencenew.GeoFenceDraw;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.MODE_PRIVATE;
 
 //Boot Receiver to redraw geofence
-@Obfuscate
+@StringFogIgnore
 public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {

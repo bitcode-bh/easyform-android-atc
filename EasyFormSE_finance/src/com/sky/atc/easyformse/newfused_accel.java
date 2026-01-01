@@ -47,10 +47,10 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //For Calculation of acceleration ad Declaration
-@Obfuscate
+@StringFogIgnore
 public class newfused_accel extends Service
 //        implements LocationListener,
 //        GoogleApiClient.ConnectionCallbacks,

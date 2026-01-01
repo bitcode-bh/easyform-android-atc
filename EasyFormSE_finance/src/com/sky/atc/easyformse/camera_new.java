@@ -32,14 +32,14 @@ import org.json.JSONObject;
 
 import java.io.File;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 /**
  * @author Tommy-Carlos Williams, Huge chunks lifted/adapted from the
  * NextworkManager core PhoneGap plugin
  */
-@Obfuscate
+@StringFogIgnore
 public class camera_new extends CordovaPlugin {
 
     public static final String TYPE_NONE = "NONE";

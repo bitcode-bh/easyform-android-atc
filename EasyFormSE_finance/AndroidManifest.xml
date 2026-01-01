@@ -426,7 +426,13 @@
         <receiver android:name=".attendance.NotificationClickReceiver" />
         <receiver android:name=".attendance.NotificationReceiver" />
         <receiver android:name=".attendance.AutoCheckOutReceiver" />
-
+        <receiver android:name=".ScreenshotBroadcastReceiver"
+            android:exported="false"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.easyfrom.jitsi.SCREENSHOT_SAVED"/>
+            </intent-filter>
+        </receiver>
         <service
             android:name=".jobshedulers.MyJobService"
             android:exported="false">
@@ -526,7 +532,7 @@
             android:value="barcode,face,ocr,ica" />
         <meta-data
             android:name="com.google.ar.core"
-            android:value="required" />
+            android:value="optional" />
 
         <receiver android:name=".zoom.screenshare.NotificationUtils$ActionReceiver" />
         <receiver

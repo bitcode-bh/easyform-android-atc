@@ -13,10 +13,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //To insert Fae location enrty to databse
-@Obfuscate
+@StringFogIgnore
 public class FakeLocationUtils {
 
 

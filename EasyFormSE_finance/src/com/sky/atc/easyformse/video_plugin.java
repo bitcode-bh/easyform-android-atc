@@ -33,11 +33,11 @@ import org.json.JSONException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //plugin to open video application
-@Obfuscate
+@StringFogIgnore
 public class video_plugin extends CordovaPlugin {
     public static final String TYPE_NONE = "NONE";
     private CallbackContext mCallbackContext;

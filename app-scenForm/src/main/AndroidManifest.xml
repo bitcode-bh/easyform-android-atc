@@ -41,7 +41,7 @@
              the app. For an "AR Optional" app, specify "optional" instead of "required". -->
         <meta-data
             android:name="com.google.ar.core"
-            android:value="required" />
+            android:value="optional" />
 
         <activity
             android:name=".HelloSceneformActivity"

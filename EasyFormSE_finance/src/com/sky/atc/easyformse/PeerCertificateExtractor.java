@@ -7,14 +7,14 @@ import java.security.MessageDigest;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by fabiomsr on 3/7/16.
  */
 
 //SSL OKHTTPCLIENT UTILS
-@Obfuscate
+@StringFogIgnore
 public class PeerCertificateExtractor {
 
     /**

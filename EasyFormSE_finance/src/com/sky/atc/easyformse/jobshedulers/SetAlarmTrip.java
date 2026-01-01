@@ -21,10 +21,10 @@ import com.sky.atc.easyformse.sqlitewraper;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //alarm for loaction service start
-@Obfuscate
+@StringFogIgnore
 public class SetAlarmTrip extends BroadcastReceiver
 {
     @Override

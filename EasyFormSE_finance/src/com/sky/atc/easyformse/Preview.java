@@ -32,12 +32,12 @@ import com.sky.atc.easyformse.azurevision.AutofocusTouchListner;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.utils.LogUtils;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.MODE_PRIVATE;
 
 //To set Camera Preview and camera parameter
-@Obfuscate
+@StringFogIgnore
 class Preview extends SurfaceView implements SurfaceHolder.Callback, AutofocusTouchListner {
     private static final String TAG = "Preview";
     boolean isfocus = false;

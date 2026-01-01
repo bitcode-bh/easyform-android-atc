@@ -21,10 +21,10 @@ import org.apache.http.protocol.HttpContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //for ETA calculation ad upload it to the server
-@Obfuscate
+@StringFogIgnore
 public class TripService extends WakefulIntentService {
 
     private static final String MY_PREFS_NAME = "MY_TRIP";

@@ -21,7 +21,7 @@ import android.content.Intent;
 import net.sqlcipher.database.SQLiteDatabase;
 import android.os.Bundle;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * @author Tommy-Carlos Williams, Huge chunks lifted/adapted from the
@@ -29,7 +29,7 @@ import io.michaelrocks.paranoid.Obfuscate;
  */
 
 //to open scanner plugin application
-@Obfuscate
+@StringFogIgnore
 public class scanner_plug extends CordovaPlugin {
 
 	public static final String TYPE_NONE = "NONE";

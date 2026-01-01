@@ -42,10 +42,10 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to Export DB
-@Obfuscate
+@StringFogIgnore
 public class BackupFragment extends Fragment {
 
     String CreatzipFolder;

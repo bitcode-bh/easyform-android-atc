@@ -14,9 +14,9 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 /** Utils functions for bitmap conversions. */
 public class BitmapUtils {
 

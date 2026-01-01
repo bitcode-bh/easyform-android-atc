@@ -14,8 +14,42 @@
     <string name="enter_name">Enter Name</string>
     <string name="stop">STOP</string>
     <string name="permission_message">permission_message</string>
+    <string name="backslashes">\</string>
+
+    <string name="depth_use_explanation" translatable="false">When Depth is enabled on supported devices, virtual objects adapt to the environment by blending in with the real world.</string>
+    <string name="button_text_enable_depth" translatable="false">Enable</string>
+    <string name="button_text_disable_depth" translatable="false">Disable</string>
+    <string name="options_title_with_depth" translatable="false">Your device supports depth</string>
+    <string name="options_title_without_depth" translatable="false">Your device does not support depth</string>
+    <string name="done" translatable="false">Done</string>
+    <string-array name="depth_options_array" translatable="false">
+        <item>Enable depth</item>
+        <item>Show depth map</item>
+    </string-array>
+    <string name="options_title_instant_placement" translatable="false">Instant Placement options</string>
+    <string-array name="instant_placement_options_array" translatable="false">
+        <item>Enable Instant Placement</item>
+    </string-array>
 
 
+    <string name="clear_drawing">Clear drawing</string>
+    <string name="select_color">Select color</string>
+    <string name="undo_last_drawing_element">Undo last drawing element</string>
+    <string name="white_color">White color</string>
+    <string name="red_color">Red color</string>
+    <string name="green_color">Green color</string>
+    <string name="blue_color">Blue color</string>
+    <string name="black_color">Black color</string>
+    <string name="rainbow_color">Rainbow color</string>
+
+    <string name="screenshot">Screen shot</string>
+    <string name="videorecording">Video Recording Start/Stop</string>
+    <string name="flash">Flash On/Off</string>
+    <string name="switchcamera">Switch Camera Front/Back</string>
+    <string name="camerazoomout">Camera zoom out</string>
+    <string name="camerazoomIn">Camera zoom In</string>
+    <string name="zoomclear">zoom clear</string>
+    <string name="delete">Delete</string>
     <!--   <string name="ongoing_notification_title">Demo title</string>
     <string name="ongoing_notification_text">notification text</string>-->
 </resources>

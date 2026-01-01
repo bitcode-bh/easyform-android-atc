@@ -22,14 +22,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by NareshChocha on 12/8/2021.
  *
  * @author NareshChocha
  */
-@Obfuscate
+@StringFogIgnore
 public class MyCustomView extends View {
     SQLiteDatabase database;
     String username = "";

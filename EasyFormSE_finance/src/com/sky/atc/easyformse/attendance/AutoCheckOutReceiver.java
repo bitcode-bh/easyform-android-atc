@@ -5,10 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Not Used
-@Obfuscate
+@StringFogIgnore
 public class AutoCheckOutReceiver extends BroadcastReceiver {
 
     @Override

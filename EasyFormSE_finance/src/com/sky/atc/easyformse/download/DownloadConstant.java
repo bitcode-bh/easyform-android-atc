@@ -3,9 +3,9 @@ package com.sky.atc.easyformse.download;
 import com.sky.atc.easyformse.R;
 import com.sky.atc.easyformse.sqlitewraper;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 class DownloadConstant {
 
     //Download URL And Method

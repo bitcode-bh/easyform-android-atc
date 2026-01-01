@@ -30,10 +30,10 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Receiver to receive Internet status and insert outage in gp_total
-@Obfuscate
+@StringFogIgnore
 public class gprs extends BroadcastReceiver {
 
 	protected static final int GPS_EVENT_STARTED = 0;

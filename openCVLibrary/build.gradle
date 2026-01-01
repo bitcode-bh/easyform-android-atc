@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
+    namespace "org.opencv"
     compileSdkVersion 27
 
     defaultConfig {

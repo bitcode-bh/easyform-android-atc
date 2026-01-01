@@ -27,10 +27,10 @@ import net.sqlcipher.database.SQLiteDatabase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //To Draw geofence
-@Obfuscate
+@StringFogIgnore
 public class GeoFenceDraw implements
         LocationListener,
         ResultCallback<Status> {

@@ -7,10 +7,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Its not calling
-@Obfuscate
+@StringFogIgnore
 public class touch_current extends BroadcastReceiver {
 	SQLiteDatabase database;
 

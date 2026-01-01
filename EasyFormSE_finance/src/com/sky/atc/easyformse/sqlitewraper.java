@@ -30,11 +30,11 @@ import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.geofencenew.GoogleApiHelper;
 
 import java.io.IOException;
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //APPLICATION CLASS TO INTIALIZE THE VALUSES LIKE DATABASE
 
-@Obfuscate
+@StringFogIgnore
 public class sqlitewraper extends MultiDexApplication {
 
     /**

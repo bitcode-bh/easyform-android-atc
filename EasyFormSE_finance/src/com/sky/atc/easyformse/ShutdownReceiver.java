@@ -26,11 +26,11 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //shutDown receiver
-@Obfuscate
+@StringFogIgnore
 public class ShutdownReceiver extends BroadcastReceiver {
 	Context context;
 	SQLiteDatabase database;

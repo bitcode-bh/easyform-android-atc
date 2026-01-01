@@ -23,10 +23,10 @@ import com.sky.atc.easyformse.sqlitewraper;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Job schedulers to start the location  service
-@Obfuscate
+@StringFogIgnore
 public class TestJobService extends JobService {
 
     SQLiteDatabase database;

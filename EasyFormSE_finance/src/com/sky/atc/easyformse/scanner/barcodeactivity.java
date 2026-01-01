@@ -39,10 +39,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 @KeepName
-@Obfuscate
+@StringFogIgnore
 public final class barcodeactivity extends AppCompatActivity
         implements ActivityCompat.OnRequestPermissionsResultCallback,
         AdapterView.OnItemSelectedListener,

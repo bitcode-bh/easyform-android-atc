@@ -27,11 +27,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URLEncoder;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //QUESTION LOG DOWNLOAD SERVICE
-@Obfuscate
+@StringFogIgnore
 public class DowoloadQuestionLogService extends WakefulIntentService {
 
     SQLiteDatabase database;

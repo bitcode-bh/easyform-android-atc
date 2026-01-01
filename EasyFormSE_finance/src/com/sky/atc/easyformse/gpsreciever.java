@@ -16,13 +16,13 @@ import net.sqlcipher.database.SQLiteDatabase;
 import android.os.Build;
 import android.util.Log;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static androidx.legacy.content.WakefulBroadcastReceiver.completeWakefulIntent;
 import static androidx.legacy.content.WakefulBroadcastReceiver.startWakefulService;
 
 //to receive gps status and insert into device event gp_total
-@Obfuscate
+@StringFogIgnore
 public class gpsreciever extends BroadcastReceiver {
     protected static final int GPS_EVENT_STARTED = 0;
     protected static final int GPS_EVENT_STOPPED = 0;

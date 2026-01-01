@@ -8,10 +8,10 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.SeekBar;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //vetrticale seekbar for photo edit
-@Obfuscate
+@StringFogIgnore
 public class VerticalSeekBar extends SeekBar {
 
 	public VerticalSeekBar(Context context) {

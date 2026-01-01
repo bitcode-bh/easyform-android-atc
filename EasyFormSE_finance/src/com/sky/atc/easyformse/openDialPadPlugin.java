@@ -10,10 +10,10 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //open dialpad
-@Obfuscate
+@StringFogIgnore
 public class openDialPadPlugin extends CordovaPlugin {
 
 

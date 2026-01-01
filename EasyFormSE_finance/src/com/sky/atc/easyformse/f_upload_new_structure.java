@@ -67,7 +67,7 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static com.sky.atc.easyformse.DeviceEventsUtils.VideoSizeConverter;
 import static com.sky.atc.easyformse.sqlitewraper.context;
@@ -78,7 +78,7 @@ import static com.sky.atc.easyformse.sqlitewraper.context;
  * @author NareshChocha
  */
 //UPLOAD SERVICE
-@Obfuscate
+@StringFogIgnore
 public class f_upload_new_structure extends WakefulIntentService {
 
 

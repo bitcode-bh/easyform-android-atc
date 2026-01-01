@@ -84,14 +84,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.sky.atc.easyformse.sqlitewraper.mainactivity;
 
 //for camera preview and photo saving
-@Obfuscate
+@StringFogIgnore
 public class MakePhotoActivity extends Activity implements SensorEventListener, LocationListener, View.OnTouchListener {
 
 

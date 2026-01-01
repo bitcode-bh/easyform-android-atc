@@ -17,10 +17,10 @@ import android.os.Build;
 import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //For Showing Upload pending Notification
-@Obfuscate
+@StringFogIgnore
 public class foreverservice extends Service {
     private static final String TAG = "Forever Service";
     SQLiteDatabase database = sqlitewraper.getDatabase();

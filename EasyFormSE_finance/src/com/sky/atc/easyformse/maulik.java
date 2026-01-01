@@ -31,12 +31,12 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.LOCATION_SERVICE;
 
 //to return latest location data in plugin
-@Obfuscate
+@StringFogIgnore
 public class maulik extends CordovaPlugin {
 
     private static final String TAG = "maulik";

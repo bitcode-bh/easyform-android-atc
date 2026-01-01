@@ -28,9 +28,9 @@ import com.sky.atc.easyformse.scanner.common.preference.PreferenceUtils;
 
 import java.io.IOException;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 /** Preview the camera image in the screen. */
 public class CameraSourcePreview extends ViewGroup {
   private static final String TAG = "MIDemoApp:Preview";

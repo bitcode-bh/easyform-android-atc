@@ -16,10 +16,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Forgot password plugin
-@Obfuscate
+@StringFogIgnore
 public class ForgotPasswordPlugin extends CordovaPlugin {
 
 

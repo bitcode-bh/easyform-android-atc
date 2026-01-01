@@ -26,10 +26,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Receiver to Add Phone on/off event
-@Obfuscate
+@StringFogIgnore
 public class phoneon extends BroadcastReceiver {
     Context context;
     SQLiteDatabase database;

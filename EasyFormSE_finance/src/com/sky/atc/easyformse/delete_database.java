@@ -28,12 +28,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static com.sky.atc.easyformse.sqlitewraper.context;
 
 //plugin to delete the database during user swap
-@Obfuscate
+@StringFogIgnore
 public class delete_database extends CordovaPlugin {
 
     private static final String TAG = "maulik";

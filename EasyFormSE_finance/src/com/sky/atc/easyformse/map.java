@@ -11,7 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.Bundle;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * @author Tommy-Carlos Williams, Huge chunks lifted/adapted from the
@@ -19,7 +19,7 @@ import io.michaelrocks.paranoid.Obfuscate;
  */
 
 //To show route between user and site
-@Obfuscate
+@StringFogIgnore
 public class map extends CordovaPlugin {
 
 	public static final String TYPE_NONE = "NONE";

@@ -3,10 +3,10 @@ package com.sky.atc.easyformse.location;
 import android.location.Location;
 import android.util.Log;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Manual Speed calculation
-@Obfuscate
+@StringFogIgnore
 public class SpeedCalculation {
 
     private static Location locationA;

@@ -36,10 +36,10 @@ import org.json.JSONObject;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Speed violation calculation
-@Obfuscate
+@StringFogIgnore
 public class SpeedViolation {
 
 

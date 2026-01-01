@@ -22,9 +22,9 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class GraphicOverlay extends View {
   private final Object lock = new Object();
   private int previewWidth;

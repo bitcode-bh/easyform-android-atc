@@ -1,8 +1,8 @@
 package com.sky.atc.easyformse.mapview;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public interface LocationInterface {
     void locationvalue (String value);
 }

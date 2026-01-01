@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <org.apache.cordova.engine.SystemWebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+    <ImageView
+        android:id="@+id/btnClose"
+        android:layout_width="45sp"
+        android:layout_height="45sp"
+        android:src="@drawable/cancle"
+        android:layout_alignParentStart="true"
+        android:layout_gravity="left"
+        />
+
+</RelativeLayout >

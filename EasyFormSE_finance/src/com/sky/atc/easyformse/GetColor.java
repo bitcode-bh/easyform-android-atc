@@ -2,10 +2,10 @@ package com.sky.atc.easyformse;
 
 import android.graphics.Color;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Color Utils - Draw
-@Obfuscate
+@StringFogIgnore
 public class GetColor 
 {
 	private static int ColorValue;

@@ -24,7 +24,6 @@ import android.media.RingtoneManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.FileUtils;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -34,24 +33,19 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-//import com.easyform.jitsi.utils.drawing.App;
-import com.google.ar.sceneform.samples.hellosceneform.HelloSceneformActivity;
-import com.google.firebase.BuildConfig;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.download.DownloadListService;
 import com.sky.atc.easyformse.mapview.CurrentLocation;
 import com.sky.atc.easyformse.mapview.LocationInterface;
-import com.sky.atc.easyformse.mapview.UserMapViewActivity;
 import com.sky.atc.easyformse.plugins.JitsiMeetingPlugin;
-import com.sky.atc.easyformse.trip.FloatingBubbleService;
-import com.sky.atc.easyformse.zoom.firebase.SendPushNotification;
+
 import com.sky.atc.easyformse.zoom.screenshare.MessageReceivedUtils;
-import com.sky.atc.easyformse.zoom.screenshare.Utils;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
@@ -63,10 +57,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
 
-import io.michaelrocks.paranoid.Obfuscate;
+
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Firebase push notification receiver
-@Obfuscate
+@StringFogIgnore
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     SQLiteDatabase database;
@@ -98,152 +93,208 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         /*String customData = data.get("body");
         String title2 = data.get("title");*/
 
-        MessageReceivedUtils.messageDetailsCheck(getApplicationContext(), remoteMessage);
 
         if (data.containsKey("videocallType")) {
+            Log.d("remoteMessage :: ", new JSONObject(data) + "");
             if (data.get("videocallType").matches("jitsiMeet")) {
                 try {
+                    MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+                    String roleid = prefs.getString("authroleidn", "0");
+                    String companyFeatureid = prefs.getString("authcompanyfid", "0");
+                    ArrayList<String> loginDetails = DeviceEventsUtils.getLoginDetails();
+                    ArrayList<String> loginUserFcmDataList = DeviceEventsUtils.getFCMID();
+
+                    JSONObject apiAuth = new JSONObject();
+                    apiAuth.put("username", loginDetails.get(3));
+                    apiAuth.put("u_c", new B_new().GetValue());
+                    apiAuth.put("user_id", loginDetails.get(0));
+
+                    JSONObject loginUserData = new JSONObject();
+                    loginUserData.put("FCM_Token", loginUserFcmDataList.get(0));
+                    loginUserData.put("UNIQUE_KEY", new B_new().GetValue());
+                    loginUserData.put("COMPANY_FEATURE_ID", companyFeatureid);
+                    loginUserData.put("ROLE_ID", roleid);
+
+
+                    if (loginDetails.size() > 4) {
+                        loginUserData.put("USER_ID", loginDetails.get(0));
+                        loginUserData.put("USERNAME", loginDetails.get(3));
+                        loginUserData.put("IMEI", loginDetails.get(1));
+                        loginUserData.put("APP_ID", loginDetails.get(2));
+                        loginUserData.put("COMPANY_ID", loginDetails.get(4));
+                        loginUserData.put("APP_VERSION", com.sky.atc.easyformse.BuildConfig.VERSION_NAME);
+                        // loginJson.put("servertaskid", servertaskid); get from arges;
+                    }
+                    JSONObject linkObject = new JSONObject();
+                    linkObject.put("link", sqlitewraper.context.getResources().getString(R.string.App_URL));
+                    JSONObject fcmOptionsObject = new JSONObject();
+                    fcmOptionsObject.put("fcm_options", linkObject);
+                    JSONObject webpush = new JSONObject();
+                    webpush.put("webpush", fcmOptionsObject);
+
+                    JSONObject otherData = new JSONObject();
+                    otherData.put("WEB_PUSH", webpush);
+                    //  otherData.put("CLICK_ACTION", "click_action: https://development.easyform.in/WEB,");
+                    otherData.put("CLICK_ACTION", sqlitewraper.context.getResources().getString(R.string.App_URL));
+                    otherData.put("WCFURL", sqlitewraper.context.getResources().getString(R.string.WCFURL) + "JwtToken/JwtToken_String");
+                    otherData.put("USERDATA_FROM_COMPANY_ID_URL", getApplicationContext().getResources().getString(R.string.WCFURL) + "WCF_Getuserdata_using_companyid");
+                    otherData.put("Common_Wcf_Url", sqlitewraper.context.getResources().getString(R.string.Common_Wcf_Url) );
+//                    otherData.put("role_id",roleid);
+                    String jsondata = data.get("args");
+                    if(jsondata != null) {
+                        JSONArray mJsonArray = new JSONArray(jsondata);
+                        JSONObject jsonObject = mJsonArray.getJSONObject(0);
+                        JSONArray zoomMeetingArray = jsonObject.getJSONArray("zoom_meeting");
+                        otherData.put("server_task_id", zoomMeetingArray.getJSONObject(0).get("task_id"));
+                        otherData.put("flow_id",zoomMeetingArray.getJSONObject(0).get("flow_id"));
+                        if(zoomMeetingArray.getJSONObject(0).has("site_id")) {
+                            otherData.put("site_id", zoomMeetingArray.getJSONObject(0).get("site_id"));
+                        }
+                        if(zoomMeetingArray.getJSONObject(0).has("start_status")) {
+                            otherData.put("start_status", zoomMeetingArray.getJSONObject(0).get("start_status"));
+                        }
+                        if(zoomMeetingArray.getJSONObject(0).has("role_id")) {
+                            otherData.put("role_id", zoomMeetingArray.getJSONObject(0).getString("role_id"));
+                        }
+                        if(zoomMeetingArray.getJSONObject(0).has("user_id"))
+                        {
+                            otherData.put("user_id", zoomMeetingArray.getJSONObject(0).getString("user_id"));
+                        }
+                        if(zoomMeetingArray.getJSONObject(0).has("udf_id"))
+                        {
+                            otherData.put("udf_id", zoomMeetingArray.getJSONObject(0).getString("udf_id"));
+                        }
+
+                    }
                     Intent jitsiPluginBroadcast = null;
                     try {
-                        jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JitsiPluginBroadcastClass));
+                        jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JITSI_PLUGIN_BROADCAST_CLASS));
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
-                    ArrayList<String> loginDetails = DeviceEventsUtils.getLoginDetails();
-                    ArrayList<String> loginfcmid = DeviceEventsUtils.getFCMID();
-                    JSONObject loginJson = new JSONObject();
-                    if (loginDetails.size() > 4) {
-                        loginJson.put("appVersion", BuildConfig.VERSION_NAME);
-                        loginJson.put("userId", loginDetails.get(0));
-                        loginJson.put("imei", loginDetails.get(1));
-                        loginJson.put("appId", loginDetails.get(2));
-                        loginJson.put("username", loginDetails.get(3));
-                        loginJson.put("companyId", loginDetails.get(4));
-                        loginJson.put("uc", new B_new().GetValue());
-                        loginJson.put("senderfcmid", loginfcmid.get(0));
-                        Log.d("loginDetails :: ", loginJson + "");
-                    }
-                    String WCFURL = sqlitewraper.context.getResources().getString(R.string.WCFURL) + "JwtToken/JwtToken_String";
                     if (jitsiPluginBroadcast != null) {
-                        jitsiPluginBroadcast.setAction("com.easyform.newjitsi.notification");
-//                        jitsiPluginBroadcast.putExtra("Args", args.toString());
-                        jitsiPluginBroadcast.putExtra("Url", WCFURL);
-                        jitsiPluginBroadcast.putExtra("remoteMessageData", new JSONObject(data).toString());
-                        jitsiPluginBroadcast.putExtra("loginJson", loginJson.toString());
+                        jitsiPluginBroadcast.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "notification");
+
+                        jitsiPluginBroadcast.putExtra("API_AUTH", apiAuth.toString());
+                        jitsiPluginBroadcast.putExtra("LOGIN_USER_DATA", loginUserData.toString());
+                        jitsiPluginBroadcast.putExtra("OTHER_DATA", otherData.toString());
+                        jitsiPluginBroadcast.putExtra("NOTIFICATION_REMOTE_DATA", new JSONObject(data).toString());
+
+
                         sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
                     }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-            }
-            else if (data.get("videocallType").matches("jitsiMeetreject")) {
+            } else if (data.get("videocallType").matches("jitsimeetScreenShare")) {
+
+                Intent jitsiPluginBroadcast = new Intent();
+                jitsiPluginBroadcast.setAction(JitsiMeetingPlugin.JITSI_SCREEN_SHEAR_ACTION);
+                Boolean screenShear = false;
                 try {
-
-                    Intent jitsiPluginBroadcast = null;
-                    try {
-                        jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JitsiPluginBroadcastClass));
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                    ArrayList<String> loginDetails = DeviceEventsUtils.getLoginDetails();
-                    ArrayList<String> loginfcmid = DeviceEventsUtils.getFCMID();
-                    JSONObject loginJson = new JSONObject();
-                    if (loginDetails.size() > 4) {
-                        loginJson.put("appVersion", BuildConfig.VERSION_NAME);
-                        loginJson.put("userId", loginDetails.get(0));
-                        loginJson.put("imei", loginDetails.get(1));
-                        loginJson.put("appId", loginDetails.get(2));
-                        loginJson.put("username", loginDetails.get(3));
-                        loginJson.put("companyId", loginDetails.get(4));
-                        loginJson.put("uc", new B_new().GetValue());
-                        loginJson.put("senderfcmid", loginfcmid.get(0));
-                        Log.d("loginDetails :: ", loginJson + "");
-                    }
-                    String WCFURL = sqlitewraper.context.getResources().getString(R.string.WCFURL) + "JwtToken/JwtToken_String";
-                    if (jitsiPluginBroadcast != null) {
-                        jitsiPluginBroadcast.setAction("com.easyform.jitsi.rejectnotification");
-//                        jitsiPluginBroadcast.putExtra("Args", args.toString());
-                        jitsiPluginBroadcast.putExtra("Url", WCFURL);
-                        jitsiPluginBroadcast.putExtra("remoteMessageData", new JSONObject(data).toString());
-                        jitsiPluginBroadcast.putExtra("loginJson", loginJson.toString());
-                        sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
-                    }
+                    screenShear = (new JSONObject(data)).getBoolean("screenShear");
                 } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            else if (data.get("videocallType").matches("jitsimeetScreenShare")) {
-
-
-
-
-
-                try {
-
-                    Intent jitsiPluginBroadcast = null;
-                    try {
-                        jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JitsiPluginBroadcastClass));
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                    ArrayList<String> loginDetails = DeviceEventsUtils.getLoginDetails();
-                    ArrayList<String> loginfcmid = DeviceEventsUtils.getFCMID();
-                    JSONObject loginJson = new JSONObject();
-                    if (loginDetails.size() > 4) {
-                        loginJson.put("appVersion", BuildConfig.VERSION_NAME);
-                        loginJson.put("userId", loginDetails.get(0));
-                        loginJson.put("imei", loginDetails.get(1));
-                        loginJson.put("appId", loginDetails.get(2));
-                        loginJson.put("username", loginDetails.get(3));
-                        loginJson.put("companyId", loginDetails.get(4));
-                        loginJson.put("uc", new B_new().GetValue());
-                        loginJson.put("senderfcmid", loginfcmid.get(0));
-                        Log.d("loginDetails :: ", loginJson + "");
-                    }
-                    String WCFURL = sqlitewraper.context.getResources().getString(R.string.WCFURL) + "JwtToken/JwtToken_String";
-                    if (jitsiPluginBroadcast != null) {
-                        jitsiPluginBroadcast.setAction("com.easyform.jitsi.ScreenshareAccept");
-                        jitsiPluginBroadcast.putExtra("Url", WCFURL);
-                        jitsiPluginBroadcast.putExtra("remoteMessageData", new JSONObject(data).toString());
-                        jitsiPluginBroadcast.putExtra("loginJson", loginJson.toString());
-                        sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
 
-            }
-            else if (data.get("videocallType").equalsIgnoreCase("ARDAW")) {
+                jitsiPluginBroadcast.putExtra("SHARE_TOGGLE", screenShear);
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(jitsiPluginBroadcast);
 
-
-
+            } else if (data.get("videocallType").matches("jitsiMeetreject")) {
                 Intent jitsiPluginBroadcast = null;
                 try {
-                    jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JitsiPluginBroadcastClass));
+                    jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JITSI_PLUGIN_BROADCAST_CLASS));
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
-                Log.d("RemoteData", new JSONObject(data).toString());
-                jitsiPluginBroadcast.setAction("com.easyform.jitsi.Jitsi-event_broadcast-noti");
-                jitsiPluginBroadcast.putExtra("remoteMessageData", new JSONObject(data).toString());
-                sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
-
-//                remotesize
-            }
-            else if (data.get("videocallType").matches("remotesize")) {
+                if (jitsiPluginBroadcast != null) {
+                    jitsiPluginBroadcast.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "rejectNotification");
+                    jitsiPluginBroadcast.putExtra("NOTIFICATION_REMOTE_DATA", new JSONObject(data).toString());
+                    sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
+                }
+            } else if (data.get("videocallType").matches("remotesize")) {
                 Intent jitsiPluginBroadcast = null;
                 try {
-                    jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JitsiPluginBroadcastClass));
+                    jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JITSI_PLUGIN_BROADCAST_CLASS));
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
-                jitsiPluginBroadcast.setAction("com.easyform.jitsi.sizeRemote");
-                jitsiPluginBroadcast.putExtra("remoteMessageData", new JSONObject(data).toString());
-                sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
+                if (jitsiPluginBroadcast != null) {
+                    jitsiPluginBroadcast.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "ScreenSizeRemote");
+                    jitsiPluginBroadcast.putExtra("NOTIFICATION_REMOTE_DATA", new JSONObject(data).toString());
+                    sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
+                }
+            } else if (data.get("videocallType").equalsIgnoreCase("ARDAW")) {
+
+                Intent jitsiPluginBroadcast = null;
+                try {
+                    jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JITSI_PLUGIN_BROADCAST_CLASS));
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                if (jitsiPluginBroadcast != null) {
+                    jitsiPluginBroadcast.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "ScreenDrawData");
+                    jitsiPluginBroadcast.putExtra("NOTIFICATION_REMOTE_DATA", new JSONObject(data).toString());
+                    sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
+                }
             }
 
+            else if(data.get("videocallType").equalsIgnoreCase("jitsicallstop"))
+            {
+                Intent jitsiPluginBroadcast = null;
+                try {
+                    jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JITSI_PLUGIN_BROADCAST_CLASS));
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                if (jitsiPluginBroadcast != null) {
+                    jitsiPluginBroadcast.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "CallStop");
+                    jitsiPluginBroadcast.putExtra("NOTIFICATION_REMOTE_DATA", new JSONObject(data).toString());
+                    sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
+                }
+            }
+
+            else if(data.get("videocallType").equalsIgnoreCase("jitsicallPhotoId"))
+            {
+                Intent jitsiPluginBroadcast = null;
+                try {
+                    jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JITSI_PLUGIN_BROADCAST_CLASS));
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                if (jitsiPluginBroadcast != null) {
+                    jitsiPluginBroadcast.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "Get_PhotoId");
+                    jitsiPluginBroadcast.putExtra("NOTIFICATION_REMOTE_DATA", new JSONObject(data).toString());
+                    sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
+                }
+            }
+
+        } else {
+            Intent jitsiPluginBroadcast = null;
+            try {
+                jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JITSI_PLUGIN_BROADCAST_CLASS));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            if (jitsiPluginBroadcast == null) {
+                MessageReceivedUtils.messageDetailsCheck(getApplicationContext(), remoteMessage);
+            } else {
+
+            }
+        }
+
+        if(data.containsKey("textType"))
+        {
+            if(data.get("textType").equalsIgnoreCase("Comment")) {
+                String task_id = data.get("task_id");
+
+                Intent intent = new Intent("com.easyform.newjitsi.activitys.jitsimeet.COMMENT_NOTIFICATION");
+                intent.putExtra("textType", "Comment");
+                intent.putExtra("task_id",task_id);
+                sendBroadcast(intent);
+
+            }
         }
         super.onMessageReceived(remoteMessage);
 
@@ -472,8 +523,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         stackBuilder.addParentStack(select_view.class);
         // Adds the Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
+        int flags = PendingIntent.FLAG_CANCEL_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            flags = PendingIntent.FLAG_MUTABLE;
+        }
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                flags);
         mBuilder.setContentIntent(resultPendingIntent);
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -524,7 +579,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             String message = data.get("message");
 
             String query12 = data.get("query");
-            int CompanyId = Integer.parseInt(data.get("CompanyId"));
+            int CompanyId= 0;
+            try{
+                CompanyId = Integer.parseInt(data.get("CompanyId"));
+            }
+            catch (Exception e)
+            {
+
+            }
 
             Cursor c4 = database.rawQuery(
                     "SELECT username,u_c,company_id FROM  Login_Master", null);
@@ -694,12 +756,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 //                    //This will send current location as reply to the request
 //                    //Initialize the service to send location continuously if body is blank
                     if (subtitle.equalsIgnoreCase("")) {
+                        Context appContext = sqlitewraper.context.getApplicationContext();
 
                         Intent i = new Intent(sqlitewraper.context, CurrentLocation.class);
                         i.putExtra("senderid", senderid);
                         i.putExtra("receiverid", receiverid);
                         i.putExtra("Company_Id", Company_Id);
-                        sqlitewraper.context.startService(i);
+                       // sqlitewraper.context.startService(i);
+                        ContextCompat.startForegroundService(appContext, i);
+
 
                     } else {
                         //This will update the opponent location in map through broadcast

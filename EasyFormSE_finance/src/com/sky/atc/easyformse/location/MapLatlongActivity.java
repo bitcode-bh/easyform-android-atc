@@ -35,10 +35,10 @@ import com.sky.atc.easyformse.R;
 
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //To give location details to plugin from map
-@Obfuscate
+@StringFogIgnore
 public class MapLatlongActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         GoogleMap.OnMarkerDragListener,

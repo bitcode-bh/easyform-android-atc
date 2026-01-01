@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+    namespace "com.example.easyformzoom"
     compileSdkVersion  project.ext.compileSdk
     defaultConfig {
         minSdkVersion project.ext.minSdk

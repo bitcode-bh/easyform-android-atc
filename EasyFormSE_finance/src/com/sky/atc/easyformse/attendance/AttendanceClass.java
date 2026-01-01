@@ -46,13 +46,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
 import static android.content.Context.NOTIFICATION_SERVICE;
 
-@Obfuscate
+@StringFogIgnore
 public class AttendanceClass {
     //Set alarm for Notification as per time slot
     public static void setAlarmNotification(String startTime, int dayCount, int timeSlot) {

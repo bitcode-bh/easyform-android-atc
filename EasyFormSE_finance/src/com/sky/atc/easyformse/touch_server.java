@@ -60,11 +60,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //to Entry in Device status imei master
-@Obfuscate
+@StringFogIgnore
 public class touch_server extends WakefulIntentService implements
         LocationListener,
         GoogleApiClient.ConnectionCallbacks,

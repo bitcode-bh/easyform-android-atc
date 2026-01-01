@@ -17,11 +17,11 @@ import net.sqlcipher.database.SQLiteOpenHelper;
 
 import java.util.ArrayList;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //Main Database Creation class
-@Obfuscate
+@StringFogIgnore
 public class MySQLiteHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "location.db";

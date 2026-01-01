@@ -17,10 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /** Configures live preview demo settings. */
-@Obfuscate
+@StringFogIgnore
 public class LivePreviewPreferenceFragment extends PreferenceFragment {
 
   @Override

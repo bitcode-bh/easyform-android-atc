@@ -6,11 +6,11 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 //Device admin setting
-@Obfuscate
+@StringFogIgnore
 /**
  * This is the component that is responsible for actual device administration.
  * It becomes the receiver when a policy is applied. It is important that we

@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace "com.riontech.calendar"
     compileSdkVersion  project.ext.compileSdk
     defaultConfig {
         minSdkVersion project.ext.minSdk

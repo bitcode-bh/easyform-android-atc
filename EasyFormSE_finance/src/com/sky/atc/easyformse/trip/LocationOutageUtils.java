@@ -23,10 +23,10 @@ import net.sqlcipher.database.SQLiteDatabase;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Showing Location outage notification
-@Obfuscate
+@StringFogIgnore
 public class LocationOutageUtils {
 
 

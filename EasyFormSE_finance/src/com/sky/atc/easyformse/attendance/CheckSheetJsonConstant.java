@@ -6,10 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Set Alarm for Notification
-@Obfuscate
+@StringFogIgnore
 public class CheckSheetJsonConstant {
 
     static String getCheckSheetJSon() {

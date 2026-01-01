@@ -22,10 +22,10 @@ import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 import org.apache.cordova.CordovaActivity;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to open selection view from push data
-@Obfuscate
+@StringFogIgnore
 public class select_view extends CordovaActivity {
 
     @Override

@@ -15,13 +15,13 @@ import android.os.Bundle;
 
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static android.content.Context.MODE_PRIVATE;
 
 
 //plugin for capturing signature
-@Obfuscate
+@StringFogIgnore
 public class signature extends CordovaPlugin {
 
 	public static final String TYPE_NONE = "NONE";

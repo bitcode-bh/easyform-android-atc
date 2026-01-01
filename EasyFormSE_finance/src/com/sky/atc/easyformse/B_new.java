@@ -6,10 +6,10 @@ import android.hardware.Camera;
 
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //Data Utils class to hold different constatnts
-@Obfuscate
+@StringFogIgnore
 public class B_new {
 
     static Preview p;

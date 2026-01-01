@@ -8,10 +8,10 @@ import com.sky.atc.easyformse.sqlitewraper;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //To genrate screen on/off event on power button click
-@Obfuscate
+@StringFogIgnore
 public class ScreenOnoffUtils {
     private static long offtime = 0;
     private static MySharedPreferences pref = sqlitewraper.getSecureShared("SCREENONOFF");

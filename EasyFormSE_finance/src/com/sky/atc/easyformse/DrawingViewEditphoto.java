@@ -15,10 +15,10 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //View is for drawing on photo
-@Obfuscate
+@StringFogIgnore
 class DrawingViewEditphoto extends View
 {
 	Paint mPaint;

@@ -53,7 +53,7 @@ import com.sky.atc.easyformse.datautils.DataUtils;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.trip.TripMapUtils;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 
 /**
@@ -64,7 +64,7 @@ import io.michaelrocks.paranoid.Obfuscate;
  * Those wishing to leverage this service should do so via the LocationPoller
  * class.
  */
-@Obfuscate
+@StringFogIgnore
 public class newfused_gps extends Service {
 //    private static final String LOCK_NAME_STATIC = "com.commonsware.cwac.locpoll.LocationPoller";
 //

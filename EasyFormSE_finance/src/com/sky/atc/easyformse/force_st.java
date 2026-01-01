@@ -14,14 +14,14 @@ import net.sqlcipher.database.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by Mikka on 8/12/2016.
  */
 
 //to programattically force stop the application
-@Obfuscate
+@StringFogIgnore
 public class force_st extends Activity {
     SQLiteDatabase database;
     DevicePolicyManager devicePolicyManager;

@@ -27,14 +27,14 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  * Created by NareshChocha on 3/28/2022.
  *
  * @author NareshChocha
  */
-@Obfuscate
+@StringFogIgnore
 public class DatabaseManagerViewModel extends ViewModel {
     static final String TAG = "DatabaseManagerViewModel";
     ExecutorService executor = Executors.newFixedThreadPool(4);

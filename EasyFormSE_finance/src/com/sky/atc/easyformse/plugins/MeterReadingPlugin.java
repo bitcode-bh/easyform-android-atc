@@ -15,10 +15,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to open Anyline meter Reading APK
-@Obfuscate
+@StringFogIgnore
 public class MeterReadingPlugin extends CordovaPlugin {
 
     private MySharedPreferences pref;

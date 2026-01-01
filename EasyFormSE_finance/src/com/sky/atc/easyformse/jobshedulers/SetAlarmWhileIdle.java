@@ -21,12 +21,12 @@ import com.sky.atc.easyformse.sqlitewraper;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import static com.sky.atc.easyformse.DeviceEventsUtils.isMyServiceRunning;
 
 //Set alarm while idle for location services
-@Obfuscate
+@StringFogIgnore
 public class SetAlarmWhileIdle extends BroadcastReceiver {
 
 

@@ -41,9 +41,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 @SuppressLint("MissingPermission")
 public class CameraSource {
   @SuppressLint("InlinedApi")

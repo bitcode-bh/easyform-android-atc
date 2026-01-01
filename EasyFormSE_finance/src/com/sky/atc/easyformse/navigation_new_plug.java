@@ -17,10 +17,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //open google map navigation
-@Obfuscate
+@StringFogIgnore
 public class navigation_new_plug extends CordovaPlugin {
 
 	private static final String TAG = "maulik";

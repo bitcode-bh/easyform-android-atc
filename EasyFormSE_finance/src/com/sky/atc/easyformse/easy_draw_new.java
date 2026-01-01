@@ -126,9 +126,9 @@ import static com.sky.atc.easyformse.azurevision.ComputerVisionDetection.TF_OD_A
 import static com.sky.atc.easyformse.azurevision.ComputerVisionDetection.resizeBitmapImageForFitSquare;
 import static com.sky.atc.easyformse.cameraactivity.convertToMutable;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-@Obfuscate
+@StringFogIgnore
 public class easy_draw_new extends Activity implements OnClickListener,
         OnTouchListener, OnColorChangedListener, OnSeekBarChangeListener,
         AnimationListener, OnColorSelectedListener, LocationListener, TexRecognizationListener {

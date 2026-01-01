@@ -7,9 +7,9 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.util.Log;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 //Home watcher class for Home Button click event
-@Obfuscate
+@StringFogIgnore
 public class HomeWatcher {
 
     static final String TAG = "hg";

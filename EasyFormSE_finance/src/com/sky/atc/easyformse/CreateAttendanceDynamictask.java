@@ -10,10 +10,10 @@ import com.sky.atc.easyformse.attendance.newattendanceutils.models.TaskData;
 
 
 import org.apache.cordova.CordovaActivity;
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //to load html taskchecksheet dynamic json page
-@Obfuscate
+@StringFogIgnore
 public class CreateAttendanceDynamictask extends CordovaActivity {
 
     String photo_url,photo_name;

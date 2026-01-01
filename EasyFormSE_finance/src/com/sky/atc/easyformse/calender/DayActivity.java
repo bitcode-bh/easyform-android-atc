@@ -38,12 +38,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 /**
  *
  */
-@Obfuscate
+@StringFogIgnore
 public class DayActivity extends AppCompatActivity implements WeekDayView.MonthChangeListener,
         WeekDayView.EventClickListener, WeekDayView.EventLongPressListener, WeekDayView.EmptyViewClickListener, WeekDayView.EmptyViewLongPressListener, WeekDayView.ScrollListener, MyInterface {
     Toolbar toolbar;

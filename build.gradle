@@ -7,14 +7,14 @@ buildscript {
         maven { url "https://repo.grails.org/grails/core/"}
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath 'com.android.tools.build:gradle:8.6.0'
         classpath 'com.google.gms:google-services:4.3.13'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
         classpath "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1"
         //used to encrypt string in java class
-        //add @Obfuscate annotation on class name
-        classpath 'io.michaelrocks:paranoid-gradle-plugin:0.3.5'
+        //add @StringFogIgnore annotation on class name
+//        classpath 'io.michaelrocks:paranoid-gradle-plugin:0.3.5'
         classpath 'com.google.ar.sceneform:plugin:1.17.1'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.1'
 
@@ -33,9 +33,9 @@ buildscript {
         }
 
         project.ext {
-            minSdk = 24
+            minSdk = 26
             targetSdk = 29
-            compileSdk = 33
+            compileSdk = 34
         }
     }
 }

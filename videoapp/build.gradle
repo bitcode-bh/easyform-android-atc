@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
 }
 android {
+    namespace "com.example.nitin.newcustomvideorecording"
     compileSdkVersion project.ext.compileSdk
 
 
@@ -13,12 +14,12 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                     'proguard-rules.pro'
         }
         debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

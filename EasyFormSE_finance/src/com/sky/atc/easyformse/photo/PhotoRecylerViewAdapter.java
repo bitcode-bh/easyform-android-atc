@@ -19,10 +19,10 @@ import com.sky.atc.easyformse.camera_new;
 import java.io.File;
 import java.util.List;
 
-import io.michaelrocks.paranoid.Obfuscate;
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 //photo Recyclerview adpater for photo burst activity
-@Obfuscate
+@StringFogIgnore
 public class PhotoRecylerViewAdapter extends RecyclerView.Adapter<PhotoRecylerViewAdapter.ViewHolder> {
 
     private List<File> mData;
