@@ -32,6 +32,28 @@ buildscript {
  	maven { url "https://repo.grails.org/grails/core/"}
         }
 
+
+        configurations.all {
+            resolutionStrategy {
+                // Force Kotlin versions
+                force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.10'
+                force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
+                force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10'
+
+                // Force React / Hermes versions
+                eachDependency { DependencyResolveDetails details ->
+                    if (details.requested.group == "com.facebook.react") {
+                        if (details.requested.name == "react-android") {
+                            details.useVersion "0.77.2"
+                        }
+                        if (details.requested.name == "hermes-android") {
+                            details.useVersion "0.77.2"
+                        }
+                    }
+                }
+            }
+        }
+
         project.ext {
             minSdk = 26
             targetSdk = 29
