@@ -225,7 +225,7 @@ dependencies {
   //  implementation "com.google.auth:google-auth-library-oauth2-http:1.3.0" // get google access token
 
     // implementation project(path: ':Jitsi')
-    implementation project(path: ':newJitsiModule')
+   // implementation project(path: ':newJitsiModule')
     // implementation project(path: ':easyform-zoom-chat')
      implementation project(path: ':faceDetectionModel')
     // implementation project(path: ':documentscanner')

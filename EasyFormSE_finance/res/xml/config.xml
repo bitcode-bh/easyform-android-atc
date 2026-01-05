@@ -269,6 +269,10 @@
         <param name="android-package" value="com.easyform.newjitsi.activitys.call.JitsiScreenShotPlugin" />
     </feature>
 
+    <feature name="HtmlToPdfEmailPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.HtmlToPdfEmailPlugin" />
+    </feature>
+
     <allow-intent href="http://*/*"></allow-intent>
     <allow-intent href="https://*/*"></allow-intent>
     <platform name="android">
