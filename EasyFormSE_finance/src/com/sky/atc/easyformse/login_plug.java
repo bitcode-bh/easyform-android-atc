@@ -381,7 +381,7 @@ public class login_plug implements Runnable {
                                 }
                                 else {
                                     sqlitewraper.getSecureShared("AttendanceData").clear();
-
+                                    AttendanceUtil.setAttendanceDataListAndSave(null);
                                 }
 
                             }

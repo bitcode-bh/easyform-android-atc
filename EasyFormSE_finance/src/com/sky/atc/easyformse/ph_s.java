@@ -497,26 +497,11 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             }
             else {
                 if( AttendanceUtil.getAttendanceDataList() != null) {
-
-
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
-
-                        MySharedPreferences mySharedPreferences = sqlitewraper.getSecureShared("AttendanceData");
-                        String attendanceJson = mySharedPreferences.getString("attendanceJson", "");
-                        boolean isRoleMatched = DeviceEventsUtils.CheckRoleIdForAttendance(attendanceJson);
-
-                        if(isRoleMatched) {
                             // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
                             Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
                             AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
-                        }
-                        else {
-                            sqlitewraper.getSecureShared("AttendanceData").clear();
-                        }
-
                     }, 1000);
-
-
                 }
             }
         }
