@@ -143,7 +143,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
         set_system_variable();
 
         curr_all_data_20["current_checksheet_id"] = check_type;
-    
+
         var c_is_online = JSON.parse(storage.getItem('c_is_online'));           // 1 = online checksheet, 0 = offline checksheet
         var c_is_disabled = JSON.parse(storage.getItem('c_is_disabled'));
         if (c_is_disabled == 1) { disabled_flag = 1 }
@@ -846,7 +846,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                         dependency_Array.push(data); // fill_array_for_show/hide_question
                                     }
                                 }
-                 
+
                                 var paramData = JSON.stringify(data);
                                 if (jsonObj[i].dependency[0].dep_type == 0) {
                                     param = "change_validation_by_dep_type_0('" + encodeURIComponent(paramData) + "'); ";
@@ -5955,6 +5955,17 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     $('#div_Search_' + t_new_id + '').find('div.item-input.item-input-field.form-div').attr('onclick', new_param);
 
                     set_parent_child_dropdown_readsurvey(Type20_AutoFill_DDL_Array[z]);                         //bind onchange event only for parent (lead.meng--Order/Sales Visit)  [FT-11062025]
+                }
+
+                // handled searchable autofill for below controls in case of filled data - mk - 06012025
+                var t_answer = Type20_AutoFill_DDL_Array[z].answer;
+                if (t_answer == "" || t_answer == null || t_answer == undefined) { }
+                else {
+                    let Fill_Data = Type20_AutoFill_DDL_Array[z].value_new[0].Fill_Data;
+                    for (let fj = 0; fj < Fill_Data.length; fj++) {
+                        var box_class = Fill_Data[fj].classname;
+                        $("." + box_class + "").attr("autofill_parent_id", "div_Search_" + t_new_id + "");
+                    }
                 }
 
             }
