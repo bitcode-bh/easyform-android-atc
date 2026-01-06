@@ -7,33 +7,58 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.pdf.PdfDocument;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.print.PrintAttributes;
 import android.provider.Settings;
+import android.webkit.WebView;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.XMLWorkerHelper;
+import com.sky.atc.easyformse.sqlitewraper;
+
+import net.sqlcipher.database.SQLiteDatabase;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 public class HtmlToPdfEmailPlugin extends CordovaPlugin {
     private static final int PERMISSION_REQUEST_CODE = 201;
     CallbackContext mCallbackContext;
     String html_string;
+    private SQLiteDatabase database;
+
     @Override
     public boolean execute(String action, JSONArray args,
                            CallbackContext callbackContext) {
 
         try {
             this.mCallbackContext  = callbackContext;
-            html_string = args.getJSONObject(0).getString("html_string");
+            database = sqlitewraper.getDatabase();
+            html_string = "<html>\n" +
+                    "<body>\n" +
+                    "<h2>Safety Passport</h2>\n" +
+                    "<img width=\"300\"\n" +
+                    "src=\"https://www.gstatic.com/webp/gallery/4.sm.jpg\"/>\n" +
+                    "<p>Generated from Cordova</p>\n" +
+                    "</body>\n" +
+                    "</html>\n";
 
             if (checkPermission())
             {
@@ -54,35 +79,102 @@ public class HtmlToPdfEmailPlugin extends CordovaPlugin {
 
     }
 
-    private void createPdfAndEmail(String html) throws Exception {
 
-        PdfDocument document = new PdfDocument();
-        PdfDocument.PageInfo pageInfo =
-                new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+    private void createPdfAndEmail(String html) throws IOException, DocumentException {
 
-        PdfDocument.Page page = document.startPage(pageInfo);
-
-        page.getCanvas().drawText(
-                android.text.Html.fromHtml(html).toString(),
-                20, 50,
-                new android.graphics.Paint()
+        File pdfDir = new File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
+                "Easyform_pdf"
         );
-
-        document.finishPage(page);
-
-        File pdfDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) , "pdf");
-
         if (!pdfDir.exists()) pdfDir.mkdirs();
 
-        File pdfFile = new File(pdfDir, "Safety_Passport.pdf");
+        Cursor c3 = database.rawQuery("SELECT username FROM Login_Master",
+                null);
+        c3.moveToLast();
+        String username = c3.getString(0);
 
-        FileOutputStream fos = new FileOutputStream(pdfFile);
-        document.writeTo(fos);
+        c3.close();
+        String pdfname = "Safety_Passport_" +username +".pdf" ;
+       File pdfFile = new File(pdfDir, pdfname);
+
+        OutputStream file = new FileOutputStream(pdfFile);
+        Document document = new Document();
+        PdfWriter writer = PdfWriter.getInstance(document, file);
+        document.open();
+        InputStream is = new ByteArrayInputStream(html.getBytes("UTF-8"));
+        XMLWorkerHelper.getInstance().parseXHtml(writer, document, is,null,
+                Charset.forName("UTF-8"));
         document.close();
-        fos.close();
-
+        file.close();
         sendEmail(pdfFile);
     }
+
+//    public File downloadPdf(Context context, String pdfUrl) throws IOException {
+//
+//        URL url = new URL(pdfUrl);
+//        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//        connection.connect();
+//
+//        InputStream input = new BufferedInputStream(connection.getInputStream());
+//
+//        File pdfFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) , "Easyform_Pdf");
+//        if (!pdfFile.exists()) pdfFile.mkdirs();
+//
+//        Cursor c3 = database.rawQuery("SELECT username FROM Login_Master",
+//                null);
+//        c3.moveToLast();
+//        String username = c3.getString(0);
+//
+//        c3.close();
+//        String pdfname = "Safety_Passport_" +username +".pdf" ;
+//        pdfFile = new File(pdfFile, pdfname);
+//
+//        OutputStream output = new FileOutputStream(pdfFile);
+//
+//        byte[] buffer = new byte[1024];
+//        int count;
+//        while ((count = input.read(buffer)) != -1) {
+//            output.write(buffer, 0, count);
+//        }
+//
+//        output.flush();
+//        output.close();
+//        input.close();
+//        connection.disconnect();
+//
+//        return pdfFile;
+//    }
+
+
+//    private void createPdfAndEmail(String html) throws Exception {
+//
+//        PdfDocument document = new PdfDocument();
+//        PdfDocument.PageInfo pageInfo =
+//                new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+//
+//        PdfDocument.Page page = document.startPage(pageInfo);
+//
+//        page.getCanvas().drawText(
+//                android.text.Html.fromHtml(html).toString(),
+//                20, 50,
+//                new android.graphics.Paint()
+//        );
+//
+//        document.finishPage(page);
+//
+//        File pdfDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) , "Easyform_pdf");
+//
+//        if (!pdfDir.exists()) pdfDir.mkdirs();
+//
+//        File pdfFile = new File(pdfDir, "Safety_Passport.pdf");
+//
+//        FileOutputStream fos = new FileOutputStream(pdfFile);
+//        document.writeTo(fos);
+//        document.close();
+//        fos.close();
+//
+//        sendEmail(pdfFile);
+//    }
 
     private void sendEmail(File pdfFile) {
 
