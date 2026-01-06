@@ -51,14 +51,7 @@ public class HtmlToPdfEmailPlugin extends CordovaPlugin {
         try {
             this.mCallbackContext  = callbackContext;
             database = sqlitewraper.getDatabase();
-            html_string = "<html>\n" +
-                    "<body>\n" +
-                    "<h2>Safety Passport</h2>\n" +
-                    "<img width=\"300\"\n" +
-                    "src=\"https://www.gstatic.com/webp/gallery/4.sm.jpg\"/>\n" +
-                    "<p>Generated from Cordova</p>\n" +
-                    "</body>\n" +
-                    "</html>\n";
+            html_string = args.getJSONObject(0).getString("html_string");
 
             if (checkPermission())
             {
