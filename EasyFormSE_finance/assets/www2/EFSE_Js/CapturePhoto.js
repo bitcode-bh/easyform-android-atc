@@ -88,6 +88,13 @@ function CaptureClick(item_id, que_id, img_div, form_flag_temp, photo_type, img_
             else {
                 $("#popover_re_capture").parent().show();
                 $("#popover_editphoto").parent().show();
+
+                let is_autofilled = $("#" + img_div + "").attr("autofill");
+                if (is_autofilled == "true") {
+                    // hide re capture in case of searchable autofill image - mk - 07012026 
+                    $("#popover_re_capture").parent().hide();
+                }
+
             }
         } else {
             // re-captured/ image not exist
@@ -1284,6 +1291,14 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                 $("#popover_re_capture").parent().hide();
                 $("#popover_editphoto").parent().hide();
             }
+            else {
+                let is_autofilled = $("#" + img_div + "").attr("autofill");
+                if (is_autofilled == "true") {
+                    // hide re capture in case of searchable autofill image - mk - 07012026 
+                    $("#popover_re_capture").parent().hide();
+                }
+            }
+
         }
         else {
             if ((form_flag_temp == 0 || form_flag_temp == 1) && c_is_online == 1) {
