@@ -94,12 +94,26 @@ public class HtmlToPdfEmailPlugin extends CordovaPlugin {
         Document document = new Document();
         PdfWriter writer = PdfWriter.getInstance(document, file);
         document.open();
-        InputStream is = new ByteArrayInputStream(html.getBytes("UTF-8"));
+        String Final_html = makeXhtmlSafe(html);
+        InputStream is = new ByteArrayInputStream(Final_html.getBytes("UTF-8"));
         XMLWorkerHelper.getInstance().parseXHtml(writer, document, is,null,
                 Charset.forName("UTF-8"));
         document.close();
         file.close();
         sendEmail(pdfFile);
+    }
+
+
+    private String makeXhtmlSafe(String html) {
+
+        html = html.replaceAll("<img([^>]*?)(?<!/)>", "<img$1 />");
+        html = html.replaceAll("<br>", "<br />");
+        html = html.replaceAll("<hr>", "<hr />");
+        html = html.replaceAll("<input([^>]*?)(?<!/)>", "<input$1 />");
+        html = html.replaceAll("<meta([^>]*?)(?<!/)>", "<meta$1 />");
+        html = html.replaceAll("<link([^>]*?)(?<!/)>", "<link$1 />");
+
+        return html;
     }
 
 //    public File downloadPdf(Context context, String pdfUrl) throws IOException {
