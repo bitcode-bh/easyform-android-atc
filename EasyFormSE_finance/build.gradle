@@ -23,10 +23,10 @@ android {
         multiDexEnabled true //not set from server
 
 
-        resValue "string", "App_URL", "https://atcmwfm.americantower.com/web"
+        resValue "string", "App_URL", "https://atcmwfm.americantower.com/"
         resValue "string", "Video_URL", "https://atcmwfm.americantower.com/Api/"
         resValue "string", "WCFURL", "https://atcmwfm.americantower.com/coreapi/api/"
-        resValue "string", "Resumable_URL", "https://atcmwfm.americantower.com/Api/"
+        resValue "string", "Resumable_URL", "https://atcmwfm.americantower.com/coreapi/api/"
         resValue "string", "Common_Wcf_Url", "https://atcmwfm.americantower.com/coreapi/api/"
 
         resValue "string", "LOGINWCFURL", "https://atcmwfm.americantower.com/core_login/api/"
