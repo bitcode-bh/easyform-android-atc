@@ -490,25 +490,26 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 //            }
 //        }
 
-        try{
-            String Attendance = pref.getString("Attendance","false");
-            if(Attendance.equalsIgnoreCase("false") || Attendance.equalsIgnoreCase("null"))
-            {
-            }
-            else {
-                if( AttendanceUtil.getAttendanceDataList() != null) {
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                            // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
-                            Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
-                            AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
-                    }, 1000);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+//        onresume send notification code remove 07012026
+//        try{
+//            String Attendance = pref.getString("Attendance","false");
+//            if(Attendance.equalsIgnoreCase("false") || Attendance.equalsIgnoreCase("null"))
+//            {
+//            }
+//            else {
+//                if( AttendanceUtil.getAttendanceDataList() != null) {
+//                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+//                            // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
+//                            Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
+//                            AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
+//                    }, 1000);
+//                }
+//            }
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
 
         String AllPermission = sqlitewraper.context.getResources().getString(R.string.AllPermission);
         if(AllPermission.equalsIgnoreCase("true")) {
