@@ -552,199 +552,207 @@ public class f_upload_new_structure extends WakefulIntentService {
             int count = c.getCount();
             if (c.getCount() > 0) {
                 for (int i = 0; i < c.getCount(); i++) {
-                    // not using so comments
-                    // int p_flag, f_flag;
-                    p_f = 0;
-                    f_f = 0;
-                    int tid = c.getInt(0);
-                    int checksheetid = c.getInt(1);
+                    try{
+                        // not using so comments
+                        // int p_flag, f_flag;
+                        p_f = 0;
+                        f_f = 0;
+                        int tid = c.getInt(0);
+                        int checksheetid = c.getInt(1);
 
-                    int step = c.getInt(2);
-                    String username = c.getString(3);
-                    int server_task_id = c.getInt(4);
-                    int status = c.getInt(5);
-                    String millisecond = c.getString(6);
-                    // not using so comments
-                    //String moduledef = c.getString(7);
-                    int p_server_task_id = c.getInt(8);
-                    // not using so comments
-                    // String initialstatus = c.getString(9);
-                    String lat = c.getString(10);
-                    String lng = c.getString(11);
-                    String matchKeyId = c.getString(12);
-                    String pmatchKeyId = c.getString(13);
+                        int step = c.getInt(2);
+                        String username = c.getString(3);
+                        int server_task_id = c.getInt(4);
+                        int status = c.getInt(5);
+                        String millisecond = c.getString(6);
+                        // not using so comments
+                        //String moduledef = c.getString(7);
+                        int p_server_task_id = c.getInt(8);
+                        // not using so comments
+                        // String initialstatus = c.getString(9);
+                        String lat = c.getString(10);
+                        String lng = c.getString(11);
+                        String matchKeyId = c.getString(12);
+                        String pmatchKeyId = c.getString(13);
 
 
-                    if (username.equalsIgnoreCase("")) {
+                        if (username.equalsIgnoreCase("")) {
+
+                            Cursor cuser = database.rawQuery(
+                                    "SELECT username,appid FROM Login_Master", null);
+
+                            int count2 = cuser.getCount();
+                            cuser.moveToLast();
+                            username = cuser.getString(0);
+
+                        }
 
                         Cursor cuser = database.rawQuery(
-                                "SELECT username,appid FROM Login_Master", null);
+                                "SELECT f_data FROM f_master where c_type = 5 and tid =" + tid, null);
 
                         int count2 = cuser.getCount();
                         cuser.moveToLast();
-                        username = cuser.getString(0);
+                        String f_data = cuser.getString(0);
 
-                    }
+                        JSONArray jsonArray2 = new JSONArray(f_data);
+                        JSONObject jsonObject1 = jsonArray2.getJSONObject(0);
+                        String data = jsonObject1.getString("data");
 
-                    Cursor cuser = database.rawQuery(
-                            "SELECT f_data FROM f_master where c_type = 5 and tid =" + tid, null);
+                        cuser.close();
 
-                    int count2 = cuser.getCount();
-                    cuser.moveToLast();
-                    String f_data = cuser.getString(0);
+                        JSONArray j = new JSONArray(data);
+                        Cursor c3 = database.rawQuery(
+                                "SELECT username,company_id,appid,devicetype,appversion FROM Login_Master", null);
+                        int count4 = c3.getCount();
 
-                    JSONArray jsonArray2 = new JSONArray(f_data);
-                    JSONObject jsonObject1 = jsonArray2.getJSONObject(0);
-                    String data = jsonObject1.getString("data");
+                        c3.moveToLast();
+                        // not using so comments
+                        // String username1 = c3.getString(0);
+                        B_new b = new B_new();
+                        String u_c = b.GetValue();
+                        int company_id = c3.getInt(1);
+                        String appid = c3.getString(2);
 
-                    cuser.close();
+                        String devicetype = c3.getString(3);
+                        String appversion = c3.getString(4);
 
-                    JSONArray j = new JSONArray(data);
-                    Cursor c3 = database.rawQuery(
-                            "SELECT username,company_id,appid,devicetype,appversion FROM Login_Master", null);
-                    int count4 = c3.getCount();
+                        cursorClose(c3);
 
-                    c3.moveToLast();
-                    // not using so comments
-                    // String username1 = c3.getString(0);
-                    B_new b = new B_new();
-                    String u_c = b.GetValue();
-                    int company_id = c3.getInt(1);
-                    String appid = c3.getString(2);
-
-                    String devicetype = c3.getString(3);
-                    String appversion = c3.getString(4);
-
-                    cursorClose(c3);
-
-                    //utc
-                    ArrayList<String> utcmi = new ArrayList<>();
-                    utcmi = utcCalculationOffset(millisecond);
-                    String timezone = utcmi.get(1);
-                    String utcmilliseconds = utcmi.get(0);
-                    database = sqlitewraper.getDatabase();
+                        //utc
+                        ArrayList<String> utcmi = new ArrayList<>();
+                        utcmi = utcCalculationOffset(millisecond);
+                        String timezone = utcmi.get(1);
+                        String utcmilliseconds = utcmi.get(0);
+                        database = sqlitewraper.getDatabase();
 
 
-                    Cursor c4 = database.rawQuery(
-                            "SELECT status,step FROM task_master where tid="
-                                    + tid, null);
-                    c4.moveToLast();
-                    status = c4.getInt(0);
-                    step = c4.getInt(1);
-                    c4.close();
+                        Cursor c4 = database.rawQuery(
+                                "SELECT status,step FROM task_master where tid="
+                                        + tid, null);
+                        c4.moveToLast();
+                        status = c4.getInt(0);
+                        step = c4.getInt(1);
+                        c4.close();
 
-                    JSONObject data1 = new JSONObject();
-                    data1.put("checksheet_id", checksheetid);
-                    data1.put("StepNo", step);
-                    data1.put("Company_id", company_id);
-                    data1.put("check_type", checksheetid);
-                    data1.put("createby", 0);
-                    data1.put("UpdatedBy", 0);
-                    data1.put("data", j);
-                    data1.put("status", status);
-                    data1.put("server_task_id", server_task_id);
-                    data1.put("p_server_task_id", p_server_task_id);
+                        JSONObject data1 = new JSONObject();
+                        data1.put("checksheet_id", checksheetid);
+                        data1.put("StepNo", step);
+                        data1.put("Company_id", company_id);
+                        data1.put("check_type", checksheetid);
+                        data1.put("createby", 0);
+                        data1.put("UpdatedBy", 0);
+                        data1.put("data", j);
+                        data1.put("status", status);
+                        data1.put("server_task_id", server_task_id);
+                        data1.put("p_server_task_id", p_server_task_id);
 
-                    data1.put("Millisecond", millisecond);
-                    data1.put("utcmilliseconds", utcmilliseconds);
-                    data1.put("timezone", timezone);
-                    data1.put("appid", appid);
-                    data1.put("mpkey", tid);
-                    data1.put("lat", lat);
-                    data1.put("lang", lng);
-                    data1.put("call_type", "mobile");
-                    data1.put("p_match_temp_id", pmatchKeyId);
+                        data1.put("Millisecond", millisecond);
+                        data1.put("utcmilliseconds", utcmilliseconds);
+                        data1.put("timezone", timezone);
+                        data1.put("appid", appid);
+                        data1.put("mpkey", tid);
+                        data1.put("lat", lat);
+                        data1.put("lang", lng);
+                        data1.put("call_type", "mobile");
+                        data1.put("p_match_temp_id", pmatchKeyId);
 
-                    JSONObject data2 = new JSONObject();
-                    data2.put("username", username);
-                    data2.put("u_c", u_c);
-                    data2.put("appid", appid + "_" + tid);
-
-
-                    data2.put("devicetype", devicetype);
-                    data2.put("appversion", appversion);
+                        JSONObject data2 = new JSONObject();
+                        data2.put("username", username);
+                        data2.put("u_c", u_c);
+                        data2.put("appid", appid + "_" + tid);
 
 
-                    String u_c1 = b.GetValue();
+                        data2.put("devicetype", devicetype);
+                        data2.put("appversion", appversion);
 
-                    if (!u_c1.equalsIgnoreCase("NA")) {
 
-                        String restext = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, UPLOADTASK, METHOD_NAME_corner3, matchKeyId, null);
-                        JSONArray jsonArray = new JSONArray(restext);
+                        String u_c1 = b.GetValue();
 
-                        String status1 = null;
-                        JSONObject jsonObject = null;
-                        String message = "You Are Logout!";
-                        int Server_task_id = 0;
-                        for (int k1 = 0; k1 < jsonArray.length(); k1++) {
-                            jsonObject = jsonArray.getJSONObject(0);
-                            status1 = jsonObject.getString("status");
-                            Server_task_id = jsonObject.getInt("Server_task_id");
-                            if (jsonObject.has("message")) {
-                                message = jsonObject.getString("message");
-                            }
-                        }
+                        if (!u_c1.equalsIgnoreCase("NA")) {
 
-                        //Pending to (Frontend)
-                        try {
-                            String t;
-                            t = "tid='" + tid + "'";
-                            ContentValues t_i = new ContentValues();
-                            t_i.put("response_status", status1);
-                            long task = database.update("task_master", t_i, t,
-                                    null);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                            String restext = com.sky.atc.easyformse.NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, UPLOADTASK, METHOD_NAME_corner3, matchKeyId, null);
+                            JSONArray jsonArray = new JSONArray(restext);
 
-                        if (status1.equalsIgnoreCase("1")) {
-                            {
-                                String t;
-                                t = "tid='" + tid + "'";
-                                ContentValues t_i = new ContentValues();
-                                t_i.put("server_task_id", Server_task_id);
-                                long task = database.update("task_master", t_i, t,
-                                        null);
-
-                                Cursor cuser2 = database.rawQuery(
-                                        "SELECT sid FROM lat_plug", null);
-
-                                if (cuser2.getCount() > 0) {
-                                    cuser2.moveToLast();
-                                    String sidlat = cuser2.getString(0);
-                                    cuser2.close();
-
-                                    //Need to change the logic from TID
-                                    if (sidlat.equalsIgnoreCase("0")) {
-                                        ContentValues t_i2 = new ContentValues();
-                                        t_i2.put("sid", Server_task_id);
-                                        long task2 = database.update("lat_plug", t_i2, t,
-                                                null);
-                                        Log.d("##LatplugUpdateF", String.valueOf(task2) + " SID: " + Server_task_id);
-                                    }
+                            String status1 = null;
+                            JSONObject jsonObject = null;
+                            String message = "You Are Logout!";
+                            int Server_task_id = 0;
+                            for (int k1 = 0; k1 < jsonArray.length(); k1++) {
+                                jsonObject = jsonArray.getJSONObject(0);
+                                status1 = jsonObject.getString("status");
+                                Server_task_id = jsonObject.getInt("Server_task_id");
+                                if (jsonObject.has("message")) {
+                                    message = jsonObject.getString("message");
                                 }
                             }
 
-                        } else if (status1.equalsIgnoreCase("4")) {
-                            Utils.logoutUser(message);
-                        }
-                        //Invalid Log - Validation Error
-                        else if (status1.equalsIgnoreCase("11")) {
-
-                            if (jsonObject != null) {
-                                String dataKEy = jsonObject.getString("data");
-                                UploadUtils.isValidLog(tid, dataKEy, String.valueOf(checksheetid), "1");
+                            //Pending to (Frontend)
+                            try {
+                                String t;
+                                t = "tid='" + tid + "'";
+                                ContentValues t_i = new ContentValues();
+                                t_i.put("response_status", status1);
+                                long task = database.update("task_master", t_i, t,
+                                        null);
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
 
+                            if (status1.equalsIgnoreCase("1")) {
+                                {
+                                    String t;
+                                    t = "tid='" + tid + "'";
+                                    ContentValues t_i = new ContentValues();
+                                    t_i.put("server_task_id", Server_task_id);
+                                    long task = database.update("task_master", t_i, t,
+                                            null);
+
+                                    Cursor cuser2 = database.rawQuery(
+                                            "SELECT sid FROM lat_plug", null);
+
+                                    if (cuser2.getCount() > 0) {
+                                        cuser2.moveToLast();
+                                        String sidlat = cuser2.getString(0);
+                                        cuser2.close();
+
+                                        //Need to change the logic from TID
+                                        if (sidlat.equalsIgnoreCase("0")) {
+                                            ContentValues t_i2 = new ContentValues();
+                                            t_i2.put("sid", Server_task_id);
+                                            long task2 = database.update("lat_plug", t_i2, t,
+                                                    null);
+                                            Log.d("##LatplugUpdateF", String.valueOf(task2) + " SID: " + Server_task_id);
+                                        }
+                                    }
+                                }
+
+                            } else if (status1.equalsIgnoreCase("4")) {
+                                Utils.logoutUser(message);
+                            }
+                            //Invalid Log - Validation Error
+                            else if (status1.equalsIgnoreCase("11")) {
+
+                                if (jsonObject != null) {
+                                    String dataKEy = jsonObject.getString("data");
+                                    UploadUtils.isValidLog(tid, dataKEy, String.valueOf(checksheetid), "1");
+                                }
+
+                            } else {
+                                LogUtils.writeUploadLogToFile("Status: " + status1, METHOD_NAME_corner3, "Upload Task");
+                            }
+
+
                         } else {
-                            LogUtils.writeUploadLogToFile("Status: " + status1, METHOD_NAME_corner3, "Upload Task");
+
+                            upload_task++;
                         }
-                        c.moveToNext();
-
-                    } else {
-
+                    }
+                    catch (Exception e)
+                    {
                         upload_task++;
                     }
+                    c.moveToNext();
+
                 }
 
             }
