@@ -144,7 +144,7 @@
         var F7_device = 'android';
         storage.setItem('F7_view', JSON.stringify(F7_view));
         storage.setItem('F7_device', JSON.stringify(F7_device));
-        
+
         document.addEventListener('deviceready', function showValues() {
             $("#test_support").css("white-space", "pre");
 
@@ -435,8 +435,13 @@
                 </div>
                 <div>
                     <hr />
-                    <span style="display:inline-block;margin-top:10px; margin-left:5px"><label>IMEI No.: </label><label id="lbl_IMEI"></label></span>
-                    <a class="button button-fill" onclick="send_mail_for_imei();" style="width:25%;font-size:12px;float:right;display:inline-block;border-radius:5px; margin-right:5px; margin-bottom:5px">Share</a>
+                    <span style="margin-left:5px"><label>IMEI No.: </label><label id="lbl_IMEI" style="font-size: 12px;"></label></span>
+                    <a class="button button-fill" onclick="send_mail_for_imei();" style="float: right; display: inline-block; border-radius: 5px; margin-right: 5px; min-width: 34px; height: 24px; line-height: 26px; top: -2px; "><i class="fa fa-share" style="margin: 0;"></i></a>
+                </div>
+                <div>
+                    <hr />
+                    <span style="margin-left:5px"><label>APK Link: </label><label id="lbl_IMEI" style="font-size: 12px;"></label></span>
+                    <a class="button button-fill" onclick="send_mail_for_app_link();" style="float: right; display: inline-block; border-radius: 5px; margin-right: 5px; min-width: 34px; height: 24px; line-height: 26px; top: -2px; margin-bottom: 4px;"><i class="fa fa-share" style="margin: 0;"></i></a>
                 </div>
             </div>
         </div>
