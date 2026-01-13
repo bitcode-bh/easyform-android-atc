@@ -1232,7 +1232,14 @@ function onsuccess_update_task_status_on_pm_checksheet_submit(e) {
                             flow_Array[flow_Array.length - 1].start_status = end_status;            //refresh flow_array start staus for subflow center btn submit (atc-Add Inventory) [16072021]
                             storage.setItem('flow_Array', JSON.stringify(flow_Array));
 
-                            changeurl("viewsitelist_pm_grouplist.html");
+                            var is_jitsi_plugin_call = checkCall();
+                            if (is_jitsi_plugin_call == true) {
+                                //close jitsi webview page from android
+                                AndroidCallChecker.closeWebView();
+                            }
+                            else {
+                                changeurl("viewsitelist_pm_grouplist.html");
+                            }
                         } else {
                             var curr_module_id = JSON.parse(storage.getItem('wayflow'));
                             var all_count = $("#site_list > li").length;

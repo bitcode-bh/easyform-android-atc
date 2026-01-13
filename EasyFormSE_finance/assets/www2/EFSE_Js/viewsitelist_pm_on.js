@@ -1787,6 +1787,14 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                     }
 
                     if (user_column == "" || user_column == null || user_column == undefined) {
+
+                        if (user_column == "" || user_column == null || user_column == undefined) {
+                            var jitsi_videocall = 'false';
+                        }
+                        else {
+                            var jitsi_videocall = 'true';
+                        }
+
                         if (geofance_flag == "true") {
                             // geofence is true
 
@@ -1864,6 +1872,8 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                         }
                     }
                     else {
+                        var jitsi_videocall = 'true';                                               //if user_column is defined for another user then display Jitsi Icon [FT-08092025]
+
                         //when user_column is defined to get another user lat long
                         var user_column_obj = {
                             "siteid": siteid,
@@ -2031,6 +2041,14 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                     }
                     //}
 
+                    if (jitsi_videocall == 'true') {
+                        var t_columndata = myArray;
+                        var role_id = JSON.parse(storage.getItem('role_id'));
+                        var udf_id = JSON.parse(storage.getItem('udf_id'));;
+                        var encode_columndata = encodeURIComponent(JSON.stringify(t_columndata));
+                        var param_jitsi_icon = "get_jitsi_videocall_user_from_user_column('" + encode_columndata + "','" + ser_task_id + "','" + module_id + "','" + role_id + "','" + siteid + "','" + task_status + "','" + udf_id + "')";
+                        icon_str += '<i class="fa fa-video-camera cls_task_ico" style="font-size: 30px; margin-bottom:4px" onclick="' + param_jitsi_icon + '"></i>';
+                    }
 
                     list_item += '<input type="checkbox" id="check_box_' + ser_task_id + '" name="li_chk" class="myChecksheet" value="' + ser_task_id + '" task_status="' + task_status + '"onchange="get_selected_chk_count()"><div class="item-media li_no_chk"><i class="icon icon-form-checkbox"></i></div>';
                     list_item += '<div class="item-inner item-no-pad" style="padding-bottom:0 !important;" onclick ="' + param + '"><div class="item-title" style="width: 100% !important;">';

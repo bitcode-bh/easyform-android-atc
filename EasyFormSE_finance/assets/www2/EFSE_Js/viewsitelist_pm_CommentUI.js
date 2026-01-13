@@ -955,14 +955,13 @@ function open_popup_for_chatuser_list() {
             q_btm_str += '<div class="right"><a href="#" class="link" onclick="' + video_param + '"><i class="fa fa-video-camera" style="color: white;font-size: 26px;"></i></a></div>';
         }
 
-        Zoom = "True";
         if (Zoom == "True") {
             var zoom_param = "plugin_call_for_zoom_meeting()";
             z_btm_str += '<div class="right"><a href="#" class="link" onclick="' + zoom_param + '"><i class="fa fa-video-camera" style="color: white;font-size: 16px;background: #2da5ff; padding:8px;border-radius:50%;"></i></a></div>';
         }
 
-        //var jitsi_param = "plugin_call_for_jitsi_meeting()";
-        //j_btm_str += '<div class="right"><a href="#" class="link" onclick="' + jitsi_param + '"><i class="fa fa-video-camera" style="color: white;font-size: 16px;background: #0cad0c; padding:8px;border-radius:6px;"></i></a></div>';
+        var jitsi_param = "plugin_call_for_jitsi_meeting()";                                    //uncommented as per requirement [FT-25082025]
+        j_btm_str += '<div class="right"><a href="#" class="link" onclick="' + jitsi_param + '"><i class="fa fa-video-camera" style="color: white;font-size: 16px;background: #0cad0c; padding:8px;border-radius:6px;"></i></a></div>';
 
         var btm_str = q_btm_str + z_btm_str + j_btm_str;
         $(".popup-chat-user-bottom").append(btm_str);
@@ -1024,9 +1023,6 @@ function onsuccess_chatuser_list(e) {
                 var fcmid = data[i].fcmid;
                 var device_type = data[i].DeviceType;
 
-                if (curr_login_user == full_name.toLowerCase()) {
-                    login_user_found = 1;
-                }
 
                 if (fcmid == "" || fcmid == null || fcmid == undefined) {
                     var cls_disabled = 'disabled';
@@ -1035,12 +1031,17 @@ function onsuccess_chatuser_list(e) {
                     var cls_disabled = '';
                 }
 
-                str += '<li><label class="label-checkbox item-content ' + cls_disabled + '" style="min-height:20px;">';
-                str += "<input type='checkbox' id='user_chk_" + id + "' title='" + id + "' name='" + full_name + "' fcmid='" + fcmid + "' device_type='" + device_type + "'>";
-                str += '<div class="item-media"><i class="icon icon-form-checkbox"></i></div>';
-                str += '<div class="item-inner" style="min-height:20px;padding:2px;"><div class="item-title">' + full_name + '</div></div></label></li>';
+                if (curr_login_user.toLowerCase() == full_name.toLowerCase()) {                               //removed curr login user from Jitsi Video Call user list [FT-02092025]
+                    login_user_found = 1;
+                }
+                else {
+                    str += '<li><label class="label-checkbox item-content ' + cls_disabled + '" style="min-height:20px;">';
+                    str += "<input type='checkbox' id='user_chk_" + id + "' title='" + id + "' name='" + full_name + "' fcmid='" + fcmid + "' device_type='" + device_type + "'>";
+                    str += '<div class="item-media"><i class="icon icon-form-checkbox"></i></div>';
+                    str += '<div class="item-inner" style="min-height:20px;padding:2px;"><div class="item-title">' + full_name + '</div></div></label></li>';
 
-                task_users_list.push(data[i]);
+                    task_users_list.push(data[i]);
+                }
             }
 
             $("#list_chatuser").empty();
@@ -1483,7 +1484,7 @@ function onsuccess_get_users_by_checksheet_id(e) {
                 var id = message[j].id;
                 var user_name = data[3];
 
-                if (curr_login_user == user_name) { }
+                if (curr_login_user.toLowerCase() == user_name) { }
                 else {
                     meeting_users_list.push(message[j]);
                 }
@@ -1784,7 +1785,14 @@ function plugin_call_for_jitsi_meeting() {
             });
 
             loading();
-            cordova.exec(onsuccess_plugin_call_for_jitsi_meeting, onfail_plugin_call_for_jitsi_meeting, 'JitsiMeetingPlugin', 'anAction', q_jsonobj);
+            cordova.exec(function (e) {
+                // success 
+                loading_hide();
+            }, function (e) {
+                // onfail
+                loading_hide();
+
+            }, 'JitsiMeetingPlugin', 'anAction', q_jsonobj);
         }
     }
     catch (e) {
@@ -1793,22 +1801,7 @@ function plugin_call_for_jitsi_meeting() {
     }
 }
 
-function onsuccess_plugin_call_for_jitsi_meeting(e) {
-    try {
-        loading_hide();
-        //alert1('JitsiMeetingPlugin success');
-    }
-    catch (e) {
-        loading_hide();
-        alert1(e + '_onsuccess_plugin_call_for_jitsi_meeting');
-    }
-}
-
-function onfail_plugin_call_for_jitsi_meeting(e) {
-    loading_hide();
-    //alert1(e + '_onfail_plugin_call_for_jitsi_meeting');
-}
-
+var glob_statusId_ary = [];
 var glob_statusName_ary = [];
 var glob_statusColor_ary = [];
 var glob_textColor_ary = [];
@@ -1834,6 +1827,7 @@ get_statusName_from_numericStatus = (page_name) => {
                 Data = JSON.parse(Data);
                 var FSM_Data = Data[0]["FSM_Data"];
 
+                var status_id_ary = [];
                 var status_name_ary = [];
                 var status_color_ary = [];
                 var status_textColor_ary = [];
@@ -1846,11 +1840,13 @@ get_statusName_from_numericStatus = (page_name) => {
                         status_color = "gray";
                     }
 
+                    status_id_ary[Status_Name] = Status;
                     status_name_ary[Status] = Status_Name;
                     status_color_ary[Status_Name] = status_color;
                     status_textColor_ary[Status_Name] = status_textColor;
                 }
 
+                glob_statusId_ary = status_id_ary;
                 glob_statusName_ary = status_name_ary;
                 glob_statusColor_ary = status_color_ary;
                 glob_textColor_ary = status_textColor_ary;
@@ -1873,7 +1869,6 @@ get_statusName_from_numericStatus = (page_name) => {
             }
 
             loading_hide();
-
         });
         getdata.callOtherDomain();
     }
@@ -1919,7 +1914,9 @@ function send_comment_for_status_change(s_task_id, s_old_status, s_new_status) {
             if (status == 1) {
                 $("#Commentdata").val('');
 
-                get_sub_tasks(s_task_id);
+                if ($('#btn_Submit').is(':hidden')) {
+                    get_sub_tasks(s_task_id);
+                }
             }
             else {
                 mk_notify(message, "danger");
@@ -1933,3 +1930,278 @@ function send_comment_for_status_change(s_task_id, s_old_status, s_new_status) {
     }
 }
 
+
+
+get_jitsi_videocall_user_from_user_column = (encode_columndata, t_ser_task_id, t_module_id, t_role_id, t_site_id, t_start_status, t_udf_id) => {
+    try {
+        var another_user_name = '';
+        var data_json = JSON.parse(storage.getItem('list_json'));
+        var list_data = JSON.parse(data_json);
+        var user_column = list_data[0].user_column;
+        var columndata_Array = JSON.parse(decodeURIComponent(encode_columndata));
+        if (columndata_Array == '' || columndata_Array == null || columndata_Array == undefined) { }
+        else {
+            for (c = 0; c < columndata_Array.length; c++) {
+                var key = columndata_Array[c].header;
+                var value = columndata_Array[c].ans;
+                if (key == user_column) {
+                    another_user_name = value;
+                    break
+                }
+            }
+        }
+
+        get_task_wise_user_for_jitsi_call(another_user_name, t_ser_task_id, t_module_id, t_role_id, t_site_id, t_start_status, t_udf_id)
+    }
+    catch (e) {
+        alert(e + '_get_jitsi_videocall_user_from_user_column');
+    }
+}
+
+//get_task_wise_user_for_jitsi_call = (another_user_name, t_ser_task_id) => {
+//    try {
+//        var Param_obj = [];
+//        Param_obj.push({
+//            'servertaskid': t_ser_task_id
+//        });
+
+//        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_get_userlist_for_chat_using_taskid', JSON.stringify(Param_obj), function (e) {
+//            var Data_Json = e.responseText;
+//            Data_Json = eval('(' + Data_Json + ')');
+//            var status = Data_Json[0].status;
+//            var meeting_users_list = [];
+
+//            if (status == 1) {
+//                loading_hide();
+//                var data = Data_Json[0].data;
+//                data = JSON.parse(data);
+//                var curr_login_user = JSON.parse(storage.getItem('username'));
+
+//                for (var j = 0; j < data.length; j++) {
+//                    var user_name = data[j].full_name;
+//                    if (curr_login_user == user_name) { }
+//                    else {
+//                        meeting_users_list.push(data[j]);
+//                    }
+//                }
+
+//                var jitsi_meeting = [];
+//                for (var i = 0; i < meeting_users_list.length; i++) {
+//                    var user_name = meeting_users_list[i].full_name;
+//                    var device_type = meeting_users_list[i].DeviceType;
+//                    if (device_type == "" || device_type == null || device_type == undefined) {
+//                        device_type = "Web";
+//                    }
+
+//                    if (another_user_name == user_name) {
+//                        var fcmid = meeting_users_list[i].fcmid;
+//                        if (fcmid == "" || fcmid == null || fcmid == undefined) { }
+//                        else {
+//                            jitsi_meeting.push({
+//                                username: user_name,
+//                                fcmid: fcmid,
+//                                device_type: device_type,
+//                                task_id: t_ser_task_id
+//                            });
+//                            break;
+//                        }
+
+//                    }
+//                }
+
+//                var q_jsonobj = [];
+//                q_jsonobj.push({
+//                    zoom_meeting: jitsi_meeting
+//                });
+
+//                loading();
+//                cordova.exec(onsuccess_plugin_call_for_jitsi_meeting, onfail_plugin_call_for_jitsi_meeting, 'JitsiMeetingPlugin', 'anAction', q_jsonobj);
+//            }
+//            else {
+//                loading_hide();
+//                alert(Data_Json[0].message);
+//            }
+//        }, onfail);
+//        getdata.callOtherDomain();
+//    }
+//    catch (e) {
+//        alert(e + '_get_task_wise_user_for_jitsi_call');
+//    }
+//}
+
+
+get_task_wise_user_for_jitsi_call = (another_user_name, t_ser_task_id, t_module_id, t_role_id, t_site_id, t_start_status, t_udf_id) => {
+    try {
+
+        let company_id = JSON.parse(storage.getItem('company_id'));
+        let user_id = JSON.parse(storage.getItem('user_id'));
+
+        var Param_obj = [];
+        Param_obj.push({
+            "username": another_user_name,
+            "company_id": company_id
+        });
+
+        loading();
+        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_getGCMdataByUsername', JSON.stringify(Param_obj), function (e) {
+            var Data_Json = e.responseText;
+            Data_Json = eval('(' + Data_Json + ')');
+            var status = Data_Json[0].status;
+
+            if (status == 1) {
+                loading_hide();
+
+                // var fcmid = Data_Json[0].data;
+                var data = Data_Json[0].data;
+                data = JSON.parse(data);
+                var EmailId = data[0].EmailId;
+                var fcmid = data[0].GID;
+                if (fcmid == "" || fcmid == null || fcmid == undefined) {
+                    alert("FCM Id not found for " + another_user_name + "");
+                }
+                else {
+                    var jitsi_meeting = [];
+                    jitsi_meeting.push({
+                        username: another_user_name,
+                        fcmid: fcmid,
+                        device_type: F7_device,
+                        task_id: t_ser_task_id,
+                        flow_id: t_module_id,
+                        role_id: t_role_id,
+                        site_id: t_site_id,
+                        start_status: t_start_status,
+                        EmailId: EmailId,
+                        user_id: user_id,
+                        udf_id: t_udf_id
+                    });
+
+                    var q_jsonobj = [];
+                    q_jsonobj.push({
+                        zoom_meeting: jitsi_meeting
+                    });
+
+                    loading();
+
+                    //localStorage.setItem('jitsi_plugin_call', 'true');
+
+                    cordova.exec(function (e) {
+                        // success
+                        loading_hide();
+                    }, function (e) {
+                        // onfail
+                        loading_hide();
+
+                    }, 'JitsiMeetingPlugin', 'anAction', q_jsonobj);
+                }
+            }
+            else if (status == 2) {
+                loading_hide();
+                alert(Data_Json[0].data);
+            } else {
+                loading_hide();
+                alert(Data_Json[0].message);
+            }
+        }, onfail);
+        getdata.callOtherDomain();
+    }
+    catch (e) {
+        alert(e + '_get_task_wise_user_for_jitsi_call');
+    }
+}
+
+
+function capture_jitsi_screenshot(item_id, jitsi_checksheet_id, jitsi_que_id, img_div, null_img) {
+    try {
+        //var query = "select imei from Login_Master";
+        storage.setItem('img_id', JSON.stringify(item_id));
+        storage.setItem('img_div_id', JSON.stringify(img_div));
+        myApp.closeModal('.popover-type7');
+
+        var src = $("#" + img_div + "").attr("src");
+        if (null_img == 1 || null_img == 2 || (null_img == 0 && src != 'images/camera.png')) {
+            var clickedLink = $("#" + img_div + "");
+            var param = 'capture_jitsi_screenshot("' + item_id + '", "' + jitsi_checksheet_id + '","' + jitsi_que_id + '", "' + img_div + '", "3")';
+            myApp.popover('.popover-type7', clickedLink);
+            $("#popover_viewphoto").attr("onclick", "get_full_view_image_type7_F7('" + src + "')");
+            $("#popover_re_capture").attr("onclick", param);
+        }
+        else {
+            var screenshot_ary = [{
+                'checksheet_id': jitsi_checksheet_id,
+                'que_id': jitsi_que_id
+            }];
+
+            var data_json = {};
+            data_json["screenshot"] = screenshot_ary;
+
+            var q_jsonobj = [];
+            q_jsonobj.push({
+                data: data_json,
+            });
+            //alert1('q_jsonobj: ' + JSON.stringify(q_jsonobj));
+
+            loading();
+            //cordova.exec(onsuccess_capture_jitsi_screenshot, onfail_capture_jitsi_screenshot, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
+            cordova.exec(onsuccess_capture_jitsi_screenshot, onfail_capture_jitsi_screenshot, 'JitsiScreenShotPlugin', 'anAction', q_jsonobj);
+        }
+    }
+    catch (e) {
+        alert1(e + '_capture_jitsi_screenshot');
+    }
+}
+
+
+// online photo success
+function onsuccess_capture_jitsi_screenshot(e) {
+    try {
+        loading_hide();
+
+        var response = JSON.parse(e);
+        var photo_id = response[0].PhotoId;
+        var curr_file_size_mb = response[0].photo_size;
+        var photo_path = response[0].photo_path;
+        var checksheet_id = response[0].checksheet_id;
+        var que_id = response[0].que_id;
+        var task_id = response[0].task_id;
+        var t_check_type = "1";                                                                      //1 - mobile checksheet
+        var user_id = JSON.parse(storage.getItem('user_id'));
+        var uniqcode = JSON.parse(storage.getItem('uniqcode'));
+        var random_str = "&random=" + new Date().getTime();
+        var curr_img_div_id = JSON.parse(storage.getItem('img_div_id'));
+
+        var global_resumable_url = JSON.parse(storage.getItem('global_resumable_url'));
+        var img_src = "" + global_resumable_url + "GetFile/Select_File_Details?cid=" + checksheet_id + "&t22id=0&t22i=0&id=" + task_id + "&qd=" + que_id
+            + "&ctype=" + t_check_type + "&ud=" + user_id + "&uc=" + uniqcode + random_str + "";
+
+        var smallImage = document.getElementById(curr_img_div_id);
+        smallImage.src = img_src;
+
+        //        $(".img-jitsi-screenshot").show();
+        //        $(".img-jitsi-screenshot").attr('src', img_src);
+
+        var siteid = 0;
+        var date_s = new Date();
+        var time = date_s.getTime();
+        var company_id = JSON.parse(storage.getItem('company_id'));
+        var user_id = JSON.parse(storage.getItem('user_id'));
+        var t_row_index_no = 0;
+
+        var p_name = company_id + "_" + user_id + "_" + siteid + "_" + time + '_' + t_row_index_no + '.jpeg';
+
+        var answer = [];
+        answer.push(photo_path, p_name, '', '', photo_id, curr_file_size_mb);
+
+        var img_id = JSON.parse(storage.getItem('img_id'));
+        jsonObj_old[img_id].ans = answer;
+    }
+    catch (e) {
+        alert1(e + '_onsuccess_capture_jitsi_screenshot');
+        loading_hide();
+    }
+}
+
+
+function onfail_capture_jitsi_screenshot(e) {
+    loading_hide();
+    //alert1(e + "_onfail_capture_jitsi_screenshot")
+}

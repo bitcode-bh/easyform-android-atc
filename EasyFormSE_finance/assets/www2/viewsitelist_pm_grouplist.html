@@ -28,6 +28,7 @@
     <script src="EFSE_Js/viewsitelist_sub_task_hybrid.js" type="text/javascript"></script>
     <script src="EFSE_Js/selection.js" type="text/javascript"></script>
     <script src="EFSE_Js/viewsitelist_pm_on.js" type="text/javascript"></script>
+    <script src="EFSE_Js/EF_Jitsi_Checksheet.js" type="text/javascript"></script>
 
     <script src="js/webservicecall_REST.js" type="text/javascript"></script>
     <style type="text/css">
@@ -106,6 +107,7 @@
         var server_dt_Counter = 0;
 
         var form_flag;
+        var jitsi_server_task_id = 0;
 
         // set blank checksheet dependency for class(show/hide elements in all the steps)
         var checksheet_dependency = [];
@@ -205,7 +207,18 @@
             pageload_main();
             function pageload_main() {
                 if (typeof (myApp) != "undefined") {
-                    check_child_flow_for_parent();
+                    //check_child_flow_for_parent();
+
+                    var urlParams = new URLSearchParams(window.location.search);
+                    var task_id = urlParams.get('task_id');
+                    if (task_id == "" || task_id == null || task_id == undefined) {
+                        check_child_flow_for_parent();
+                    }
+                    else {
+                        //for open checksheet page from jitsi meeting [FT-23122025]
+                        jitsi_server_task_id = task_id;
+                        check_last_dummy_entry_jitsi(task_id);
+                    }
                 }
                 else {
                     setTimeout(function () { pageload_main(); }, 500);

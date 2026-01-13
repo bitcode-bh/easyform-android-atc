@@ -665,6 +665,12 @@
             pageload_main();
             function pageload_main() {
                 if (typeof (myApp) != "undefined") {
+
+                    var is_jitsi_plugin_call = checkCall();
+                    if (is_jitsi_plugin_call == true) {
+                        $("#btn_page_back").hide();
+                    }
+
                     data_to_read();
 
                     setTimeout(function () {

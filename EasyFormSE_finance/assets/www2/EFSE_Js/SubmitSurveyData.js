@@ -5114,6 +5114,10 @@ function showValuesFailCallBack_check_survey_entry_next_read(e) {
         var dynamic_checklist = list_data[0].dynamic_checklist;
         var server_call_flag = JSON.parse(storage.getItem('server_call_flag'));
         var check_old_log = list_data[0].check_old_log;
+        var is_jitsi_plugin_call = checkCall();
+        if (is_jitsi_plugin_call == true) {
+            check_old_log = "false"
+        }
 
         if (check_old_log == 'true') {
             // if true found check_old_log key DV-27062023

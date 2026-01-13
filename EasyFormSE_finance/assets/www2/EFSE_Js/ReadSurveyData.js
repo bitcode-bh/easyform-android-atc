@@ -1408,97 +1408,105 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             var survey_mode = 'online';
                         }
 
-                        if (img_Id == "" || img_Id == null || img_Id == undefined) {
-                            if (form_flag == 7 || form_flag == 8 || form_flag == 12 || (form_flag == 0 && c_is_online == 1) || (form_flag == 1 && c_is_online == 1) || (form_flag == 6 && survey_mode == "online") || (curr_page_flag == "viewsitedata_task" && survey_mode == "online")) {
-                                //upload photos online for customer/user/form/ online mobile checksheet
+                        var is_jitsi_plugin_call = checkCall();
+                        if (is_jitsi_plugin_call == true) {
+                            var param = 'capture_jitsi_screenshot("' + i + '", "' + check_type + '","' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "0")';
+                            var src_str = 'images/camera.png';
+                        }
+                        else {
+                            if (img_Id == "" || img_Id == null || img_Id == undefined) {
+                                if (form_flag == 7 || form_flag == 8 || form_flag == 12 || (form_flag == 0 && c_is_online == 1) || (form_flag == 1 && c_is_online == 1) || (form_flag == 6 && survey_mode == "online") || (curr_page_flag == "viewsitedata_task" && survey_mode == "online")) {
+                                    //upload photos online for customer/user/form/ online mobile checksheet
 
-                                if (ref_class == '' || ref_class == null || ref_class == undefined) {
-                                    var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + target_div + '")';
-                                }
-                                else {
-                                    photo_type = "Attendance";                      //for profile photo face detection camera plugin [FT - 01122023]
-
-                                    // attendance offline plugin will call via online photo plugin - mk - 31102025
-                                    var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + target_div + '", "' + ref_class + '")';
-                                }
-
-                            }
-                            else {
-                                // offline checksheet
-
-                                if (ref_class == '' || ref_class == null || ref_class == undefined) {
-
-                                    if (photo_type == "GroupAttendance") {
-                                        var param = 'verify_group_photo_with_face_detection("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                    if (ref_class == '' || ref_class == null || ref_class == undefined) {
+                                        var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + target_div + '")';
                                     }
                                     else {
-                                        var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                        photo_type = "Attendance";                      //for profile photo face detection camera plugin [FT - 01122023]
+
+                                        // attendance offline plugin will call via online photo plugin - mk - 31102025
+                                        var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + target_div + '", "' + ref_class + '")';
                                     }
+
                                 }
                                 else {
-                                    // compare attendance and print photo
-                                    var param = 'verify_user_profile_photo("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + ref_class + '")';
-                                }
+                                    // offline checksheet
 
-                            }
-                            var param1 = '';
-                            var src_str = 'images/camera.png'
-                        } else {
-                            if (form_flag == 7 || form_flag == 8 || form_flag == 12 || (form_flag == 0 && c_is_online == 1) || (form_flag == 6 && survey_mode == "online") || (curr_page_flag == "viewsitedata_task" && survey_mode == "online")) {
-                                //upload photos online for customer/user/form/ online mobile checksheet
+                                    if (ref_class == '' || ref_class == null || ref_class == undefined) {
 
-                                if (ref_class == '' || ref_class == null || ref_class == undefined) {
-                                    var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + target_div + '")';
-                                }
-                                else {
-                                    photo_type = "Attendance";                      //for profile photo face detection camera plugin [FT - 01122023]
-
-                                    // attendance offline plugin will call via online photo plugin - mk - 31102025
-                                    var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + target_div + '", "' + ref_class + '")';
-                                }
-
-                            }
-                            else {
-                                // offline checksheet
-
-                                if (ref_class == '' || ref_class == null || ref_class == undefined) {
-
-                                    if (photo_type == "GroupAttendance") {
-                                        var param = 'verify_group_photo_with_face_detection("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                        if (photo_type == "GroupAttendance") {
+                                            var param = 'verify_group_photo_with_face_detection("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                        }
+                                        else {
+                                            var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                        }
                                     }
                                     else {
-                                        var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '")';
+                                        // compare attendance and print photo
+                                        var param = 'verify_user_profile_photo("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '", "' + ref_class + '")';
+                                    }
+
+                                }
+                                var param1 = '';
+                                var src_str = 'images/camera.png'
+                            }
+                            else {
+                                if (form_flag == 7 || form_flag == 8 || form_flag == 12 || (form_flag == 0 && c_is_online == 1) || (form_flag == 6 && survey_mode == "online") || (curr_page_flag == "viewsitedata_task" && survey_mode == "online")) {
+                                    //upload photos online for customer/user/form/ online mobile checksheet
+
+                                    if (ref_class == '' || ref_class == null || ref_class == undefined) {
+                                        var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + target_div + '")';
+                                    }
+                                    else {
+                                        photo_type = "Attendance";                      //for profile photo face detection camera plugin [FT - 01122023]
+
+                                        // attendance offline plugin will call via online photo plugin - mk - 31102025
+                                        var param = 'CaptureClick_Customer("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + target_div + '", "' + ref_class + '")';
                                     }
 
                                 }
                                 else {
-                                    // compare attendance and print photo
-                                    var param = 'verify_user_profile_photo("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + ref_class + '")';
+                                    // offline checksheet
+
+                                    if (ref_class == '' || ref_class == null || ref_class == undefined) {
+
+                                        if (photo_type == "GroupAttendance") {
+                                            var param = 'verify_group_photo_with_face_detection("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","0", "' + burstmode + '")';
+                                        }
+                                        else {
+                                            var param = 'CaptureClick("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '")';
+                                        }
+
+                                    }
+                                    else {
+                                        // compare attendance and print photo
+                                        var param = 'verify_user_profile_photo("' + i + '", "' + jsonObj[i].que_id + '", "cbtn_' + new_id + '", "' + form_flag_temp + '","' + photo_type + '","' + latlong + '","' + width + '","' + height + '","' + quality + '","1", "' + burstmode + '", "' + ref_class + '")';
+                                    }
+
                                 }
 
-                            }
-
-                            var type22_popup = $('.popup-type22:visible');
-                            if (type22_popup.length > 0) {
-                                var type22_img_que_id = storage.getItem('img_id_type22');
-                                if (type22_current_mode == 'edit') {
-                                    // edit mode
-                                    var t_row_index_no = row_index_no;
+                                var type22_popup = $('.popup-type22:visible');
+                                if (type22_popup.length > 0) {
+                                    var type22_img_que_id = storage.getItem('img_id_type22');
+                                    if (type22_current_mode == 'edit') {
+                                        // edit mode
+                                        var t_row_index_no = row_index_no;
+                                    }
+                                    else {
+                                        //  insert mode
+                                        var last_index = $('#row_index_' + type22_new_id + '').val();
+                                        last_index = parseInt(last_index);
+                                        var t_row_index_no = last_index + 1;
+                                    }
                                 }
                                 else {
-                                    //  insert mode
-                                    var last_index = $('#row_index_' + type22_new_id + '').val();
-                                    last_index = parseInt(last_index);
-                                    var t_row_index_no = last_index + 1;
+                                    var type22_img_que_id = 0;
+                                    var t_row_index_no = 0;
                                 }
-                            }
-                            else {
-                                var type22_img_que_id = 0;
-                                var t_row_index_no = 0;
-                            }
 
-                            var param1 = 'bind_unavailable_images("cbtn_' + new_id + '", "' + p_name + '","' + step + '", "' + check_type + '", "' + jsonObj[i].que_id + '", "' + type22_img_que_id + '", "' + t_row_index_no + '")';
-                            var src_str = img_Id;
+                                var param1 = 'bind_unavailable_images("cbtn_' + new_id + '", "' + p_name + '","' + step + '", "' + check_type + '", "' + jsonObj[i].que_id + '", "' + type22_img_que_id + '", "' + t_row_index_no + '")';
+                                var src_str = img_Id;
+                            }
                         }
 
                         newdiv += '<div id="div_cbtn_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="' + disp_cntrl + '" ' + cls_enable + ' ' + common_str + '>';

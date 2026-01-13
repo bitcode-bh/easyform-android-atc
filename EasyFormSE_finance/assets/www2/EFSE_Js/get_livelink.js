@@ -137,7 +137,7 @@ function get_full_view_image_type40_F7(t_obj) {
 function open_pinch_zoom_div(t_src) {
     $(".pinch-zoom-container").remove();
     $(".pinch_close").remove();
-    let zoom_str = '<div class="pinch-zoom"><img src = "' + t_src + '" /></div>';
+    let zoom_str = '<div class="pinch-zoom"><i id="pinch_close" class="fa fa-times-circle text-danger" onclick="close_zoom()"></i><img src = "' + t_src + '" /></div>';
     $("body").prepend(zoom_str);
 
     new PinchZoom.default(document.querySelector('.pinch-zoom'), {
@@ -151,10 +151,11 @@ function open_pinch_zoom_div(t_src) {
     let middle_height = (container_height - photo_height) / 2;
     $(".pinch-zoom img").css({ 'position': 'absolute', 'top': middle_height + 'px' });
 
-    $("body").prepend('<i id="pinch_close" class="fa fa-times-circle" onclick="close_zoom()"></i>');
+    //$("body").prepend('<i id="pinch_close" class="fa fa-times-circle" onclick="close_zoom()"></i>');
 
 }
 
 function close_zoom() {
     $(".pinch-zoom-container").remove();
+    $(".pinch-zoom").hide();
 }

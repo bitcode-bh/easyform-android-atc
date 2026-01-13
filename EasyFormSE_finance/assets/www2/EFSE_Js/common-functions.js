@@ -4143,3 +4143,10 @@ function convertAndReplaceImages(containerSelector, done) {
         }
     });
 }
+
+
+function checkCall() {
+    // Call the native Android interface
+    var is_jitsi_plugin_call = AndroidCallChecker.isJitsiCallRunning();
+    return is_jitsi_plugin_call;
+}
