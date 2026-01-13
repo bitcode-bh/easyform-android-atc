@@ -1437,6 +1437,8 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                 var cls_task_layout = "";
             }
 
+            var jitsi_videocall = list_data[0].jitsi_videocall;
+
             if (customer_info == "" || customer_info == null || customer_info == undefined) {
                 customer_info = "true";
             }
@@ -1787,14 +1789,6 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                     }
 
                     if (user_column == "" || user_column == null || user_column == undefined) {
-
-                        if (user_column == "" || user_column == null || user_column == undefined) {
-                            var jitsi_videocall = 'false';
-                        }
-                        else {
-                            var jitsi_videocall = 'true';
-                        }
-
                         if (geofance_flag == "true") {
                             // geofence is true
 
@@ -1871,9 +1865,7 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                             }
                         }
                     }
-                    else {
-                        var jitsi_videocall = 'true';                                               //if user_column is defined for another user then display Jitsi Icon [FT-08092025]
-
+                    else {                        
                         //when user_column is defined to get another user lat long
                         var user_column_obj = {
                             "siteid": siteid,
