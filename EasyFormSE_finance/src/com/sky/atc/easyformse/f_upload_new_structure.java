@@ -1707,6 +1707,11 @@ public class f_upload_new_structure extends WakefulIntentService {
                 String moduleid = c1.getString(11);
                 String millisecond = c1.getString(12);
 
+                if(millisecond == null || millisecond.equalsIgnoreCase("null") || millisecond.equalsIgnoreCase(""))
+                {
+                    millisecond = String.valueOf(System.currentTimeMillis());
+                }
+
 
                 //-----------punch----------//
 

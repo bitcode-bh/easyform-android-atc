@@ -37,6 +37,7 @@ import net.sqlcipher.database.SQLiteDatabase;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
@@ -709,102 +710,113 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
 //                                Log.d("tag","Callstoptrip");
 //                                stopTrip(location);
 //                            }
-                            AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
-                            String punchoutstatus = mAttendanceData.getPunchout_Status();
 
-                            if(punchoutstatus != null)
+                            List<AttendanceData> attendanceDataList = AttendanceUtil.getAttendanceDataList();
+                            AttendanceData mAttendanceData = null;
+
+                            if (attendanceDataList != null && !attendanceDataList.isEmpty()) {
+                                mAttendanceData = attendanceDataList.get(0);
+                            }
+
+                            if(mAttendanceData != null)
                             {
-                                boolean shouldStopTrip = false;
-                                String Duration ;
-                                String SameLocation = "false";
-                                String duration_hour = "";
+                                String punchoutstatus = mAttendanceData.getPunchout_Status();
 
-                                if (mAttendanceData.getAllow_round_trip() != null) {
-                                    SameLocation = mAttendanceData.getAllow_round_trip();
-                                }
-
-                                //  Condition 1: Trip start + duration time
-//
-                                if( mAttendanceData.getAuto_punchout_duration_hours() == null || mAttendanceData.getAuto_punchout_duration_hours().equalsIgnoreCase(""))
+                                if(punchoutstatus != null)
                                 {
-                                    // duration hours getting null use 24 hours
-                                    duration_hour = "24:00";
-                                    if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
-                                        stopTrip(location,punchoutstatus);
-                                        return;
+                                    boolean shouldStopTrip = false;
+                                    String Duration ;
+                                    String SameLocation = "false";
+                                    String duration_hour = "";
+
+                                    if (mAttendanceData.getAllow_round_trip() != null) {
+                                        SameLocation = mAttendanceData.getAllow_round_trip();
                                     }
-                                }
-                                else {
-                                    duration_hour = mAttendanceData.getAuto_punchout_duration_hours();
-//                                    duration_hour = "5:00";
-                                    if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
-                                        stopTrip(location,punchoutstatus);
-                                        return;
-                                    }
-                                }
 
-
-                                //Condition 2: Use configured auto punch-out duration
-                                // Check duration or 24-hour time condition
-                                if (mAttendanceData.getAuto_punchout_duration() == null || mAttendanceData.getAuto_punchout_duration().equalsIgnoreCase("")) {
-                                    if (is24HoursPassed(Long.parseLong(TripStartTime))) {
-                                        stopTrip(location,punchoutstatus);
-                                        return;
-                                    }
-                                }
-                                else {
-                                    try {
-                                        Duration = mAttendanceData.getAuto_punchout_duration();
-                                        if(shouldAutoStopTrip(Long.parseLong(TripStartTime),Duration,System.currentTimeMillis()))
-                                        {
-                                            shouldStopTrip = true;
-                                        }
-                                    } catch (Exception e) {
-                                        // log warning if needed
-                                    }
-                                }
-
-                                if (shouldStopTrip) {
-
-                                    MySharedPreferences pref1 = sqlitewraper.getSecureShared("MyPref");
-                                    boolean ISTripStartAfter6PM = pref1.getBoolean("ISTripStartAfter6PM",false);
-                                    boolean ISExitGeofence = pref1.getBoolean("ISExitGeofence",false);
-
-                                    if(SameLocation.equalsIgnoreCase("true"))
+                                    //  Condition 1: Trip start + duration time
+//
+                                    if( mAttendanceData.getAuto_punchout_duration_hours() == null || mAttendanceData.getAuto_punchout_duration_hours().equalsIgnoreCase(""))
                                     {
-                                        if (!ISTripStartAfter6PM && distance < LOCATION_THRESHOLD) {
+                                        // duration hours getting null use 24 hours
+                                        duration_hour = "24:00";
+                                        if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
                                             stopTrip(location,punchoutstatus);
                                             return;
                                         }
-                                        else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour)){
-                                            stopTrip(location,punchoutstatus);
-
-                                            pref1.putBoolean("ISTripStartAfter6PM",false);
-                                            pref1.putBoolean("ISExitGeofence",false);
-                                            pref1.commit();
-                                            return;
-
-                                        }
-
                                     }
                                     else {
-                                        if (!ISTripStartAfter6PM) {
+                                        duration_hour = mAttendanceData.getAuto_punchout_duration_hours();
+//                                    duration_hour = "5:00";
+                                        if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
                                             stopTrip(location,punchoutstatus);
                                             return;
-                                        }
-                                        else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour) ){
-                                            stopTrip(location,punchoutstatus);
-
-                                            pref1.putBoolean("ISTripStartAfter6PM",false);
-                                            pref1.putBoolean("ISExitGeofence",false);
-                                            pref1.commit();
-                                            return;
-
                                         }
                                     }
-                                }
 
+
+                                    //Condition 2: Use configured auto punch-out duration
+                                    // Check duration or 24-hour time condition
+                                    if (mAttendanceData.getAuto_punchout_duration() == null || mAttendanceData.getAuto_punchout_duration().equalsIgnoreCase("")) {
+                                        if (is24HoursPassed(Long.parseLong(TripStartTime))) {
+                                            stopTrip(location,punchoutstatus);
+                                            return;
+                                        }
+                                    }
+                                    else {
+                                        try {
+                                            Duration = mAttendanceData.getAuto_punchout_duration();
+                                            if(shouldAutoStopTrip(Long.parseLong(TripStartTime),Duration,System.currentTimeMillis()))
+                                            {
+                                                shouldStopTrip = true;
+                                            }
+                                        } catch (Exception e) {
+                                            // log warning if needed
+                                        }
+                                    }
+
+                                    if (shouldStopTrip) {
+
+                                        MySharedPreferences pref1 = sqlitewraper.getSecureShared("MyPref");
+                                        boolean ISTripStartAfter6PM = pref1.getBoolean("ISTripStartAfter6PM",false);
+                                        boolean ISExitGeofence = pref1.getBoolean("ISExitGeofence",false);
+
+                                        if(SameLocation.equalsIgnoreCase("true"))
+                                        {
+                                            if (!ISTripStartAfter6PM && distance < LOCATION_THRESHOLD) {
+                                                stopTrip(location,punchoutstatus);
+                                                return;
+                                            }
+                                            else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour)){
+                                                stopTrip(location,punchoutstatus);
+
+                                                pref1.putBoolean("ISTripStartAfter6PM",false);
+                                                pref1.putBoolean("ISExitGeofence",false);
+                                                pref1.commit();
+                                                return;
+
+                                            }
+
+                                        }
+                                        else {
+                                            if (!ISTripStartAfter6PM) {
+                                                stopTrip(location,punchoutstatus);
+                                                return;
+                                            }
+                                            else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour) ){
+                                                stopTrip(location,punchoutstatus);
+
+                                                pref1.putBoolean("ISTripStartAfter6PM",false);
+                                                pref1.putBoolean("ISExitGeofence",false);
+                                                pref1.commit();
+                                                return;
+
+                                            }
+                                        }
+                                    }
+
+                                }
                             }
+
 
                         }
                     }

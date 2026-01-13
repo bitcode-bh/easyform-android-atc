@@ -88,7 +88,7 @@ public class LoadingActivity extends AppCompatActivity {
                     LoadingActivity.this.finish();
                 }
             } else {
-                Toast.makeText(LoadingActivity.this, "jwtToken is Null", Toast.LENGTH_SHORT).show();
+              //  Toast.makeText(LoadingActivity.this, "jwtToken is Null", Toast.LENGTH_SHORT).show();
             }
         });
     }

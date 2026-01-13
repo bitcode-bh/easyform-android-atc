@@ -10,6 +10,7 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.util.Base64;
 
+import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -32,6 +33,7 @@ public class AccessToken {
             .replace("-----BEGIN PRIVATE KEY-----", "")
             .replace("-----END PRIVATE KEY-----", "")
             .replace("\n", "")
+            .replaceAll("\\s+", "")
             .replace("\\", "");
 
 
@@ -135,15 +137,21 @@ public class AccessToken {
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         MediaType mediaType = MediaType.parse("text/plain");
-        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart("assertion",jwtToken)
-                .addFormDataPart("grant_type","urn:ietf:params:oauth:grant-type:jwt-bearer")
-                .addFormDataPart("scope","https://www.googleapis.com/auth/firebase.messaging")
-                .addFormDataPart("aud","https://oauth2.googleapis.com/token")
-                .addFormDataPart("iss","firebase-adminsdk-uygu2@wipro-86aed.iam.gserviceaccount.com")
-                .addFormDataPart("exp","1625491000")
-                .addFormDataPart("iat","1625487400")
+//        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+//                .addFormDataPart("assertion",jwtToken)
+//                .addFormDataPart("scope","https://www.googleapis.com/auth/firebase.messaging")
+//                .addFormDataPart("grant_type","urn:ietf:params:oauth:grant-type:jwt-bearer")
+//                .addFormDataPart("aud","https://oauth2.googleapis.com/token")
+//                .addFormDataPart("iss",client_email)
+//                .addFormDataPart("exp","1625491000")
+//                .addFormDataPart("iat","1625487400")
+//                .build();
+
+        RequestBody body = new FormBody.Builder()
+                .add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                .add("assertion", jwtToken)
                 .build();
+
         Request request = new Request.Builder()
                 .url("https://oauth2.googleapis.com/token")
                 .method("POST", body)

@@ -577,25 +577,38 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 Check_PowerSavingMode(trip_status);  // check power saving mode on off in trip start time 29072025
             // location get after update lat_plug entry for start trip 07072025
                 long temp = database.update("lat_plug", latc, t, null);
-            AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
+
+
+            List<AttendanceData> attendanceDataList = AttendanceUtil.getAttendanceDataList();
+
+            AttendanceData mAttendanceData = null;
+
+
+            if (attendanceDataList != null && !attendanceDataList.isEmpty()) {
+                mAttendanceData = attendanceDataList.get(0);
+            }
             String Duration ;
             boolean shouldStopTrip = false;
-            if(mAttendanceData.getAuto_punchout_duration() != null) {
-                try {
-                    Duration = mAttendanceData.getAuto_punchout_duration();
-                    if (isAfterDuaration(Duration)) {
-                        shouldStopTrip = true;
+            if(mAttendanceData != null)
+            {
+                if(mAttendanceData.getAuto_punchout_duration() != null) {
+                    try {
+                        Duration = mAttendanceData.getAuto_punchout_duration();
+                        if (isAfterDuaration(Duration)) {
+                            shouldStopTrip = true;
+                        }
+                    } catch (NumberFormatException e) {
+                        // log warning if needed
                     }
-                } catch (NumberFormatException e) {
-                    // log warning if needed
                 }
-            }
-            if (shouldStopTrip) {
+                if (shouldStopTrip) {
                     MySharedPreferences pref1 = sqlitewraper.getSecureShared("MyPref");
                     pref1.putBoolean("ISTripStartAfter6PM",true);
                     pref1.commit();
                     startgeofence(new LatLng(Double.parseDouble(s_lat), Double.parseDouble(s_lon)),200,tid,1);
                 }
+            }
+
 
                 //for ETA
                 Intent i = new Intent(sqlitewraper.context, TripService.class);

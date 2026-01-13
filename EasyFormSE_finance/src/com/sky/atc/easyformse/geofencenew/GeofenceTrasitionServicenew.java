@@ -104,26 +104,6 @@ public class GeofenceTrasitionServicenew extends IntentService {
                 pref.putString("isTripPauseAfterTask","false");
                 pref.commit();
 
-                AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
-                String Duration ;
-                boolean shouldStopTrip = false;
-                if(mAttendanceData.getAuto_punchout_duration() != null) {
-                    try {
-                        Duration = mAttendanceData.getAuto_punchout_duration();
-                        if (isAfterDuaration(Duration)) {
-                            shouldStopTrip = true;
-                        }
-                    } catch (NumberFormatException e) {
-                        // log warning if needed
-                    }
-                }
-
-                if(shouldStopTrip)
-                {
-                    MySharedPreferences pref1 = sqlitewraper.getSecureShared("MyPref");
-                    pref1.putBoolean("ISExitGeofence",true);
-                    pref1.commit();
-                }
                 List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
                 ArrayList<String> geofenceTransitionDetails = getGeofenceTrasitionDetails(transaction, triggeringGeofences);
                 // Send notification details as a String
@@ -145,6 +125,40 @@ public class GeofenceTrasitionServicenew extends IntentService {
                         sqlitewraper.context.startActivity(pipIntent);
                     }
                 }
+
+                    List<AttendanceData> attendanceDataList = AttendanceUtil.getAttendanceDataList();
+
+                    AttendanceData mAttendanceData = null;
+
+
+                    if (attendanceDataList != null && !attendanceDataList.isEmpty()) {
+                        mAttendanceData = attendanceDataList.get(0);
+                    }
+
+                    String Duration ;
+                    boolean shouldStopTrip = false;
+
+                    if(mAttendanceData != null) {
+
+                        if (mAttendanceData.getAuto_punchout_duration() != null) {
+                            try {
+                                Duration = mAttendanceData.getAuto_punchout_duration();
+                                if (isAfterDuaration(Duration)) {
+                                    shouldStopTrip = true;
+                                }
+                            } catch (NumberFormatException e) {
+                                // log warning if needed
+                            }
+                        }
+
+                        if (shouldStopTrip) {
+                            MySharedPreferences pref1 = sqlitewraper.getSecureShared("MyPref");
+                            pref1.putBoolean("ISExitGeofence", true);
+                            pref1.commit();
+                        }
+                    }
+
+
             }
 
         }

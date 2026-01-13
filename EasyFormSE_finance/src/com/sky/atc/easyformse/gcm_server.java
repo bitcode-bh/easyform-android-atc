@@ -86,7 +86,7 @@ public class gcm_server extends WakefulIntentService {
 				data1.put("username", username);
 				data1.put("CompanyId", c_id);
 				data1.put("deviceinfo", DeviceInformation.getDeviceInformation());
-
+				data1.put("DeviceType","android");
 
 				String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequest(data1, WCFURL, METHOD_NAME_corner);
 

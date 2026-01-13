@@ -1114,7 +1114,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                     for (EasyFromUser easyFromUser : easyFromUserItemList.get(0).getData()) {
                         boolean isOnmeeting = false;
                         for (Participant participant : participantList) {
-                            if (participant.getName().equalsIgnoreCase(easyFromUser.getUsername()) && !participant.getIsLocal().matches("true") && easyFromUser.getDeviceType().matches("android")) {
+                            if (participant.getName().equalsIgnoreCase(easyFromUser.getUsername()) && !participant.getIsLocal().matches("true") && !easyFromUser.getDeviceType().matches("Web")) {
                                 isOnmeeting = true;
                                 break;
                             }
