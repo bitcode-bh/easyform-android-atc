@@ -70,7 +70,12 @@ public class UserMapViewPlugin extends CordovaPlugin {
 
                         if (Status.equalsIgnoreCase("1")) {
 
-                            receivertoken = jsonObject.getString("data");
+                            String giddata = jsonObject.getString("data");
+
+                            JSONArray datajsonarray = new JSONArray(giddata);
+                            JSONObject datajasonobject = datajsonarray.getJSONObject(0);
+
+                            receivertoken = datajasonobject.getString("GID");
 
                             Cursor a_t2 = database.rawQuery(
                                     "select gid from gcm_server", null);
