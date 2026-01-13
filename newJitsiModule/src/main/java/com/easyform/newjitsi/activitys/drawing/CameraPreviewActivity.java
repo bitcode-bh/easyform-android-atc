@@ -1025,9 +1025,8 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
 
     public static void backfroncamera(String cameratype)
     {
-        camera.stopPreview();
         camera.release();
-
+        camera = null;
 
         try {
             JSONArray jsonArray = new JSONArray(cameratype);
@@ -1054,8 +1053,8 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
         catch (Exception e)
         {
             camerastart();
-            camera.stopPreview();
             camera.release();
+            camera = null;
             camera = Camera.open(currentCameraId);
         }
         try {

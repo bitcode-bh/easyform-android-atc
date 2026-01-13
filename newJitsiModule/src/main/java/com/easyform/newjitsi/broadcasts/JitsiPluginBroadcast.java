@@ -89,7 +89,7 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
                 remoteScreenSize(context, extras);
             } else if (action.matches(Utils.BroadcastAction.JITSI_SCREEN_DRAW_DATA)) {
                 try {
-                    ScreenARDraw(extras);
+                    ScreenARDraw(context,extras);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -303,7 +303,7 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
         LocalBroadcastManager.getInstance(context).sendBroadcast(jitsiPluginBroadcast);
     }
 
-    private void ScreenARDraw(Bundle extras) throws JSONException {
+    private void ScreenARDraw(Context context, Bundle extras) throws JSONException {
         if (!extras.containsKey(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA)) {
             return;
         }
