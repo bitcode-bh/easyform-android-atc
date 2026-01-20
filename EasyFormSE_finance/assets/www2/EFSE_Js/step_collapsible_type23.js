@@ -562,6 +562,14 @@ function onsuccesss_select_detail_for_back_survey_collapse_form(e) {
         }
         else if (status == 2) {
             $("#div_step_Col_" + curr_clps_new_id + "").hide();
+
+            let parent = $("#div_step_Col_" + curr_clps_new_id + "").parent("li.swipeout").parent("div[id^='div_que_']");
+            let child_cnt = $(parent).find("div.cntrl_main_div").length;
+            if (child_cnt == 1) {
+                // hide parent main form type 0 if having only collapsible control only - mk - 20012026
+                $(parent).hide();
+            }
+
             if (collapse_id_Array.length > 0) {
                 var clps_id = collapse_id_Array[0];
                 collapse_id_Array.shift();
