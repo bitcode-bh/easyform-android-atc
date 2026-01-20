@@ -2027,6 +2027,7 @@ function onsuccess_get_all_searched_list_New(e) {
     }
 }
 
+var last_single_trigger_ms = 0;
 function check_and_call_next_single_option() {
     try {
         if (single_opt_onchange_ary.length > 0) {
@@ -2072,7 +2073,25 @@ function check_and_call_next_single_option() {
                 single_opt_onchange_ary.splice(0, 1);
 
                 setTimeout(function () {
-                    $("#ddl_search_type20_" + s_curr_btnSearch_Counter + "").trigger("onchange");
+                    //$("#ddl_search_type20_" + s_curr_btnSearch_Counter + "").trigger("onchange");
+
+                    if (last_single_trigger_ms == 0) {
+                        let t_ms = new Date().getTime();
+                        last_single_trigger_ms = t_ms;
+                        $("#ddl_search_type20_" + s_curr_btnSearch_Counter + "").trigger("onchange");
+                    }
+                    else {
+                        let t_ms = new Date().getTime();
+                        let diff_ms = t_ms - last_single_trigger_ms;
+                        if (diff_ms > 500) {
+                            last_single_trigger_ms = t_ms;
+                            $("#ddl_search_type20_" + s_curr_btnSearch_Counter + "").trigger("onchange");
+                        }
+                        else {
+                            single_opt_onchange_ary.push(s_curr_btnSearch_Counter);
+                        }
+                    }
+
                 }, 500);
             }
             else {
