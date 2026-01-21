@@ -274,15 +274,15 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
         }.start();
 
 
-//        File sdcard = Environment.getExternalStorageDirectory();
-        File sdcard = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+        File sdcard = Environment.getExternalStorageDirectory();
+//        File sdcard = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
 
         f_file_new = new File(sdcard + "/Video_EasyForm");
         f_file_new.mkdir();
 
 
-//        String dst = Environment.getExternalStorageDirectory().getAbsolutePath();
-        File dst = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+        String dst = Environment.getExternalStorageDirectory().getAbsolutePath();
+//        File dst = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
         final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         final String fileName = "VID_" + timeStamp + "_" + imei + ".mp4";
         String filePath = dst + "/Video_EasyForm/" + fileName;

@@ -271,8 +271,8 @@ public class UploadUtils {
     //upload photo using resumable
     public static int uploadPhotoResumable(String path, String CompanyId, String CustomerUniq, String checksheetid_new, String que_id, String step_No, String type, String Ph_id, String it_id, String th_path, String sid) throws IOException {
 
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+//        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+//        StrictMode.setThreadPolicy(policy);
 
         ch_number = 0;
 

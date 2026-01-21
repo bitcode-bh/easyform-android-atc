@@ -175,8 +175,8 @@ public class VideoActivity extends AppCompatActivity {
     private void setPath(String videopath) {
 
 
-//        File sdcard = Environment.getExternalStorageDirectory();
-        File sdcard = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+        File sdcard = Environment.getExternalStorageDirectory();
+//        File sdcard = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
         File f_file = new File(sdcard + "/Video_EasyForm/thumbnail");
         f_file.mkdir();
 

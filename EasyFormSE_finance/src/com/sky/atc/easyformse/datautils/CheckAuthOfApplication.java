@@ -21,7 +21,6 @@ import java.security.MessageDigest;
 import java.util.List;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
-import com.sky.atc.easyformse.NativeClass;
 
 //Data Utils Class for checking Auth of an application
 @StringFogIgnore
@@ -49,7 +48,7 @@ public class CheckAuthOfApplication {
 
 
                 //compare signatures
-                if (NativeClass.stringFromJNI().equals(currentSignature)) {
+                if (stringFromJNI().equals(currentSignature)) {
                     return 1;
                 }else {
                     activity.finish();
@@ -154,11 +153,11 @@ public class CheckAuthOfApplication {
 
 
 
-    // public static native boolean isCheckRoot();
+     public static native boolean isCheckRoot();
 
-    //public static native boolean isCheckDebug();
+    public static native boolean isCheckDebug();
 
-    // public static native boolean isFridaServer();
+     public static native boolean isFridaServer();
 
 
     public static boolean checkRootFilesAndPackages(Context context) {

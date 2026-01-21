@@ -49,35 +49,21 @@ Java_com_sky_atc_easyformse_datautils_CheckAuthOfApplication_getEmail(
     return env->NewStringUTF(raminit.c_str());
 }
 
-//extern "C"
-//JNIEXPORT jboolean JNICALL
-//Java_com_sky_atc_easyformse_datautils_CheckAuthOfApplication_isCheckRoot(JNIEnv *env, jclass clazz) {
-//    return true;
-//}
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_com_sky_atc_easyformse_NativeClass_a(
-        JNIEnv *env,
-        jclass clazz) {
-    std::string raminit = "RM/5zTBNzQbkDtzMmzCDkq2nydE=\n";
-    return env->NewStringUTF(raminit.c_str());
-}
-// for isCheckRoot falg
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_sky_atc_easyformse_NativeClass_b(JNIEnv *env, jclass clazz) {
+Java_com_sky_atc_easyformse_datautils_CheckAuthOfApplication_isCheckRoot(JNIEnv *env, jclass clazz) {
     return true;
 }
-// for isCheckDebug flag
+
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_sky_atc_easyformse_NativeClass_c(JNIEnv *env, jclass clazz) {
+Java_com_sky_atc_easyformse_datautils_CheckAuthOfApplication_isCheckDebug(JNIEnv *env, jclass clazz) {
     return false;
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_sky_atc_easyformse_NativeClass_d(JNIEnv *env, jclass clazz) {
+Java_com_sky_atc_easyformse_datautils_CheckAuthOfApplication_isFridaServer(JNIEnv *env, jclass clazz) {
     struct sockaddr_in sa;
 
     memset(&sa, 0, sizeof(sa));
@@ -91,95 +77,6 @@ Java_com_sky_atc_easyformse_NativeClass_d(JNIEnv *env, jclass clazz) {
     }
     return false;
 }
-
-// for isMagiskDetected
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_sky_atc_easyformse_NativeClass_f(JNIEnv *env, jclass clazz) {
-// TODO: implement f()
-    const char *magiskPaths[] = {
-            "/sbin/magisk",
-            "/system/bin/magisk",
-            "/system/xbin/magisk",
-            "/sbin/.magisk",
-            "/data/adb/magisk.db",
-            "/data/adb/magisk",
-            "/data/adb/zygisk",
-            "/data/adb/modules"
-    };
-
-    for (const char *path : magiskPaths) {
-        if (access(path, F_OK) == 0) {  // check if file exists
-            return JNI_TRUE;
-        }
-    }
-
-    return JNI_FALSE;
-}
-
-
-// for FridaServer
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_sky_atc_easyformse_NativeClass_g(JNIEnv *env, jclass clazz) {
-    int result;
-    struct stat sb;
-
-    if (stat("/data/local/tmp/frida-server", &sb) == 0) {
-        return true;
-    }
-    return false;
-}
-
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_sky_atc_easyformse_NativeClass_h(JNIEnv *env, jclass clazz) {
-    FILE *fp = fopen("/proc/self/maps", "r");
-    if (!fp) return JNI_FALSE;
-
-    char line[512];
-    while (fgets(line, sizeof(line), fp)) {
-        if (strstr(line, "zygisk") ||
-            strstr(line, "magisk") ||
-            strstr(line, "shamiko") ||
-            strstr(line, "xposed") ||
-            strstr(line, "lsposed")) {
-
-            fclose(fp);
-            return JNI_TRUE;
-        }
-    }
-
-    fclose(fp);
-    return JNI_FALSE;
-
-}
-
-bool isHooked(void* funcPtr) {
-    unsigned char* p = (unsigned char*) funcPtr;
-
-    // On ARM64, LSPosed usually patches the function with a jump (0x50??)
-    // Check for typical trampoline patterns
-    if (p[0] == 0x50 || p[0] == 0x90 || p[0] == 0xA0) {
-        return true;
-    }
-    return false;
-}
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_sky_atc_easyformse_NativeClass_I(JNIEnv *env, jclass clazz) {
-
-    void* accessFn = dlsym(RTLD_DEFAULT, "access");
-    void* openFn   = dlsym(RTLD_DEFAULT, "open");
-    void* statFn   = dlsym(RTLD_DEFAULT, "stat");
-
-    if (isHooked(accessFn)) return JNI_TRUE;
-    if (isHooked(openFn))   return JNI_TRUE;
-    if (isHooked(statFn))   return JNI_TRUE;
-
-    return JNI_FALSE;
-}
-
 
 extern "C" JNIEXPORT int JNICALL
 Java_com_sky_atc_easyformse_datautils_RootUtils_checkRootAccessMethod1(JNIEnv *env, jclass clazz) {

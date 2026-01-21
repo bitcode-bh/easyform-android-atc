@@ -111,44 +111,26 @@ public class MainActivity extends Activity {
 
         database = sqlitewraper.getDatabase();
         sqlitewraper.setMainactivity(MainActivity.this);
-        if (NativeClass.isCheckDebug()) {
-            CheckAuthOfApplication.checkAppSignature(this);
+        if (MeatGrinder.isFoundXposed()) {
+            Toast.makeText(getApplicationContext(), "This device is rooted. You can't use this app.", Toast.LENGTH_LONG).show();
+            this.finish();
+            System.exit(0);
         }
-        if(CheckAuthOfApplication.checkBuildProps() || CheckAuthOfApplication.checkEmulatorFiles() || CheckAuthOfApplication.checkSensorsAndTelephony(MainActivity.this))
-        {
-            runOnUiThread(() -> {
-                //Toast.makeText(getApplicationContext(), "This device is emulator.", Toast.LENGTH_LONG).show();
-                this.finish();
-            });
-
-
+        if (CheckAuthOfApplication.isFridaServer() || CheckAuthOfApplication.checkRunningProcesses(this)) {
+            Toast.makeText(getApplicationContext(), "This device is rooted. You can't use this app.", Toast.LENGTH_LONG).show();
+            this.finish();
+            System.exit(0);
         }
-        if (NativeClass.isCheckRoot()) {
-            if (MeatGrinder.isFoundXposed()) {
-                Toast.makeText(getApplicationContext(), "This device is rooted. You can't use this app.", Toast.LENGTH_LONG).show();
-                this.finish();
-            }
-
-            if (NativeClass.isFridaServer()  ||CheckAuthOfApplication.checkRunningProcesses(this) || NativeClass.FridaServer() || CheckAuthOfApplication.isFridaCheckpath()
-                    || NativeClass.isMagiskDetected() || CheckAuthOfApplication.IsMagiskInstall(sqlitewraper.context) || CheckAuthOfApplication.checkRootFilesAndPackages(context) || CheckAuthOfApplication.knownDangerousAppsPackages(context) ||
-                    CheckAuthOfApplication.knownRootCloakingPackages(context) || NativeClass.detectShamikoNative() ||  CheckAuthOfApplication.isZygiskDetected() || CheckAuthOfApplication.hasMagiskFilesRoot()
-                    || CheckAuthOfApplication.detectXposedStack() || NativeClass.detectHook()) {
-                Toast.makeText(getApplicationContext(), "This device is rooted. You can't use this app.", Toast.LENGTH_LONG).show();
-                this.finish();
-                System.exit(0);
-            }
-        }
-        if (NativeClass.isCheckRoot()) {
+        if (CheckAuthOfApplication.isCheckRoot()) {
             MeatGrinder.isRooted(this);
             if (RootUtils.checkRooted()) {
                 showAlertDialogAndExitApp("This device is rooted. You can't use this app.");
             }
-            if (NativeClass.isCheckRoot()) {
+            if (CheckAuthOfApplication.isCheckRoot()) {
                 executor.execute(() -> {
                     if (DeviceUtils.checkExecuteCommand()) {
                         runOnUiThread(() -> {
                             Toast.makeText(getApplicationContext(), "This device is rooted. You can't use this app.", Toast.LENGTH_LONG).show();
-                            this.finish();
                             // HelloAndroid.this.finish();
                             // System.exit(0);
                         });
@@ -159,12 +141,12 @@ public class MainActivity extends Activity {
 
 
         //CHECK IF APP IS DEBUGGABLE
-//        if (CheckAuthOfApplication.isCheckDebug()) {
-//            if (CheckAuthOfApplication.checkDebuggable(this)) {
-//                finish();
-//                System.exit(0);
-//            }
-//        }
+        if (CheckAuthOfApplication.isCheckDebug()) {
+            if (CheckAuthOfApplication.checkDebuggable(this)) {
+                finish();
+                System.exit(0);
+            }
+        }
 //        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 //        StrictMode.setThreadPolicy(policy);
 //        AccessToken accessToken = new AccessToken();
@@ -311,7 +293,7 @@ public class MainActivity extends Activity {
         String admin = a_t2.getString(0);
         a_t2.close();
 
-        if (NativeClass.isCheckRoot()) {
+        if (CheckAuthOfApplication.isCheckRoot()) {
             if (DeviceUtils.isDeviceRooted() || new RootBeer(context).isRooted() || new RootBeer(context).isRootedWithoutBusyBoxCheck()) {
                 showAlertDialogAndExitApp("This device is rooted. You can't use this app.");
             } else {
