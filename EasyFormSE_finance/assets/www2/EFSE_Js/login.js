@@ -1941,6 +1941,49 @@ function send_mail_for_imei() {
     }
 }
 
+function send_mail_for_app_link() {
+    try {
+
+        let username = JSON.parse(storage.getItem('username'));
+        let global_wcf_url = JSON.parse(storage.getItem('global_wcf_url'));
+
+        var param_obj = [];
+        param_obj.push({
+            'version': version,
+            'username': username,
+            'Feature': 'version'
+        });
+
+        loading();
+        var getdata = new Webservicecall_REST(global_wcf_url + 'Wcf_GetApplicationURL_New', JSON.stringify(param_obj), function (e) {
+            var myArray = JSON.parse(e.responseText);
+            var status = myArray[0].status;
+            if (status == 1) {
+
+                let download_url = myArray[0].url;
+
+                var body_str = 'Download Link:\n ' + download_url + '';
+                var mail_str = ' , ' + body_str + ', Application Download Link';
+                mail_str = encodeURIComponent(mail_str);
+                open_mail(mail_str);
+                
+            }
+            else {
+                var message = myArray[0].message;
+                alert1(message);
+                loading_hide();
+            }
+        }, onfail);
+        getdata.callOtherDomain();
+
+    }
+    catch (e) {
+        alert1(e + '_send_mail_for_app_link()')
+    }
+}
+
+
+
 // show app info on 5 times click on hidden button
 var btn_cliked = 0, timer;
 function check_5_times_click() {
