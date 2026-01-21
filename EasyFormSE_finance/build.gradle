@@ -89,7 +89,8 @@ android {
         config {
             keyAlias 'key'
             keyPassword 'skypatel7'
-            storeFile file('E:/Android_Studio/key1')
+            storeFile file('E:/Android_Studio/key')  // atc live
+//            storeFile file('E:/Android_Studio/key1')   // for security
             storePassword 'skypatel7'
             v1SigningEnabled false
             v2SigningEnabled true
