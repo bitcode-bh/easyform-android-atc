@@ -247,7 +247,7 @@ public class AutoMlVisonModelActivity extends AppCompatActivity {
                                 imageViewCaptured.setImageBitmap(finalBitmap);
 
                                 if (detector != null) {
-                                    List<DetectionResult> results = detector.runDetection(finalBitmap, 0.65f);
+                                    List<DetectionResult> results = detector.runDetection(finalBitmap, 0.5f);
                                     overlayView.setDetections(results, finalBitmap.getWidth(), finalBitmap.getHeight());
 
                                     if(results != null) {
