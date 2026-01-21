@@ -69,7 +69,6 @@
         android:largeHeap="true"
         android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true"
         tools:node="merge"
         tools:replace="android:allowBackup,android:icon,android:theme">
         <activity

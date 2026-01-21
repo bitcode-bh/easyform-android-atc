@@ -21,9 +21,18 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import okhttp3.CertificatePinner;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -44,11 +53,25 @@ public class NewWebservicesCallEasyform {
 
     static SQLiteDatabase database;
     static MySharedPreferences pref;
-    private static OkHttpClient okHttpClient = getHttpClientWithTimeout();
+    private static OkHttpClient okHttpClient;
+
+    static {
+        try {
+            okHttpClient = getHttpClientWithTimeout();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (KeyManagementException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static OkHttpClient getOkHttpClient() {
-        if (okHttpClient == null) {
+        try {
             okHttpClient = getHttpClientWithTimeout();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (KeyManagementException e) {
+            throw new RuntimeException(e);
         }
         return okHttpClient;
     }
@@ -385,48 +408,101 @@ public class NewWebservicesCallEasyform {
         return jsonResponse;
     }
 
-    //-------timeout
-    private static OkHttpClient getHttpClientWithTimeout() {
+    private static OkHttpClient getHttpClientWithTimeout() throws   NoSuchAlgorithmException, KeyManagementException {
 
         String isSSL = sqlitewraper.context.getResources().getString(R.string.SSL);
-        OkHttpClient.Builder builder;
-        if (isSSL.equalsIgnoreCase("true")) {
-            builder = new OkHttpClient.Builder();
-            // myaims.vedangcellular.com url is not working in android 6 same ssl problem
-            /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                builder = new OkHttpClient.Builder();
-            } else {
-                builder = UnsafeOkHttpClient.getUnsafeOkHttpClient();
-            } */
-        } else {
-            //  wfmtest.grameenphone.com url is not working in android same ssl problem as per discuss with sir we skip the check ssl
-            builder = UnsafeOkHttpClient.getUnsafeOkHttpClient();
-        }
-        builder.connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS);
 
         if (isSSL.equalsIgnoreCase("true")) {
-            String appURL;
-            try {
-                appURL = sqlitewraper.context.getResources().getString(R.string.App_URL).split("/")[2].trim();
-                Log.i("appURL", "appURL ::: " + appURL);
-            } catch (Exception e) {
-                appURL = "viu.vodafoneidea.com";
-            }
-//            Resources res = context.getResources();
-//            InputStream file = res.openRawResource(R.raw.viu_vodafoneidea_com);
-//            String hashKey = PeerCertificateExtractor.extract(file);
+
+            Resources res = context.getResources();
+            InputStream file = res.openRawResource(R.raw.fe9fb17a0f008ee);
+            String hashKey = PeerCertificateExtractor.extract(file);
             CertificatePinner certPinner = new CertificatePinner.Builder()
-                    .add(appURL, "sha256/+K9l1+oT7O4+ZyDmtftPtAD7JqUzI8/fB/hwkMQR0JQ=")
-                    .add(appURL,"sha256/Wec45nQiFwKvHtuHxSAMGkt19k+uPSw9JlEkxhvYPHk=")
-                    .add(appURL,"sha256/i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=")
-                    .add(appURL,"sha256/DtA+el5OloRQ2t7Al4CUK/m/tddYC8HGEtzd9nTarz0=")
+                    .add("metal.easyform.in", hashKey)
                     .build();
-            builder.certificatePinner(certPinner);
+
+            final OkHttpClient client1 = new OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .certificatePinner(certPinner)
+                    .build();
+            return client1;
+        } else {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                        public void checkClientTrusted(
+                                java.security.cert.X509Certificate[] certs, String authType) {
+                        }
+                        public void checkServerTrusted(
+                                java.security.cert.X509Certificate[] certs, String authType) {
+                        }
+                    }
+            };
+
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+// Disable hostname verification
+            HostnameVerifier allHostsValid = (hostname, session) -> true;
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+
+
+            final OkHttpClient client1 = new OkHttpClient.Builder()
+                    .sslSocketFactory(sc.getSocketFactory(), (X509TrustManager)trustAllCerts[0])
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .build();
+            return client1;
         }
-        return builder.build();
     }
+    //-------timeout
+//    private static OkHttpClient getHttpClientWithTimeout() {
+//
+//        String isSSL = sqlitewraper.context.getResources().getString(R.string.SSL);
+//        OkHttpClient.Builder builder;
+//        if (isSSL.equalsIgnoreCase("true")) {
+//            builder = new OkHttpClient.Builder();
+//            // myaims.vedangcellular.com url is not working in android 6 same ssl problem
+//            /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//                builder = new OkHttpClient.Builder();
+//            } else {
+//                builder = UnsafeOkHttpClient.getUnsafeOkHttpClient();
+//            } */
+//        } else {
+//            //  wfmtest.grameenphone.com url is not working in android same ssl problem as per discuss with sir we skip the check ssl
+//            builder = UnsafeOkHttpClient.getUnsafeOkHttpClient();
+//        }
+//        builder.connectTimeout(60, TimeUnit.SECONDS)
+//                .readTimeout(60, TimeUnit.SECONDS)
+//                .writeTimeout(60, TimeUnit.SECONDS);
+//
+//        if (isSSL.equalsIgnoreCase("true")) {
+//            String appURL;
+//            try {
+//                appURL = sqlitewraper.context.getResources().getString(R.string.App_URL).split("/")[2].trim();
+//                Log.i("appURL", "appURL ::: " + appURL);
+//            } catch (Exception e) {
+//                appURL = "viu.vodafoneidea.com";
+//            }
+////            Resources res = context.getResources();
+////            InputStream file = res.openRawResource(R.raw.viu_vodafoneidea_com);
+////            String hashKey = PeerCertificateExtractor.extract(file);
+//            CertificatePinner certPinner = new CertificatePinner.Builder()
+//                    .add(appURL, "sha256/+K9l1+oT7O4+ZyDmtftPtAD7JqUzI8/fB/hwkMQR0JQ=")
+//                    .add(appURL,"sha256/Wec45nQiFwKvHtuHxSAMGkt19k+uPSw9JlEkxhvYPHk=")
+//                    .add(appURL,"sha256/i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=")
+//                    .add(appURL,"sha256/DtA+el5OloRQ2t7Al4CUK/m/tddYC8HGEtzd9nTarz0=")
+//                    .build();
+//            builder.certificatePinner(certPinner);
+//        }
+//        return builder.build();
+//    }
 
     public static String ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(JSONObject jsonData, String appUrl, String webMethod, String matchKeyId, String roleID) {
 
