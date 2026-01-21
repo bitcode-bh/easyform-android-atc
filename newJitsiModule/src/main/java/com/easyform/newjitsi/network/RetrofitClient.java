@@ -1,5 +1,12 @@
 package com.easyform.newjitsi.network;
 
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -13,8 +20,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitClient {
     private static Retrofit retrofit;
     private static Retrofit retrofit1;
-    private static final String BASE_URL = "https://development.easyform.in/coreapi/api/JwtToken/";
-    private static final String USER_URL = "https://development.easyform.in/coreapi/api/";
+    private static final String BASE_URL = "https://mwfm-uat.altiusinfra.com/coreapi/api/JwtToken/";
+    private static final String USER_URL = "https://mwfm-uat.altiusinfra.com/coreapi/api/";
 
 
     private static Retrofit getRetrofitClient() {

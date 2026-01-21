@@ -10,6 +10,8 @@ import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 
 import com.easyform.newjitsi.App;
@@ -66,31 +68,37 @@ public class LoadingActivity extends AppCompatActivity {
             editor = sharedPreferences.edit();
             editor.putString("isclick","true");
             editor.commit();
-            mLoadingViewModel.getJwtToken(extras,LoadingActivity.this);
+           // mLoadingViewModel.getJwtToken(extras,LoadingActivity.this);
         }
-        mLoadingViewModel.allNotificationSend.observe(this, aBoolean -> {
-            mLoadingViewModel.getJwtToken(extras,LoadingActivity.this);
-        });
-        mLoadingViewModel.jwtTokenResponse.observe(this, jwtTokenResponse -> {
-            if (jwtTokenResponse != null) {
-                if (extras.containsKey(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA) && extras.containsKey(Utils.BroadcastActionExtrasKeys.NOTIFICATION_ID)) {
-                    String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
-                    FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
 
-                    Utils.clearNotification(LoadingActivity.this, extras.getInt(Utils.BroadcastActionExtrasKeys.NOTIFICATION_ID, -2));
+        if (extras.containsKey(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA) && extras.containsKey(Utils.BroadcastActionExtrasKeys.NOTIFICATION_ID)) {
+            String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+            FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
 
-                    CustomJitsiMeetActivity.customLaunch(LoadingActivity.this, mFirebaseRequestData.getRoomName(), mUserData,mOtherData, extras);
-                    LoadingActivity.this.finish();
-                } else {
-                    SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("Jitsi_roomname", MODE_PRIVATE);
-                    String roomname = sharedPreferences.getString("Roomname","");
-                    CustomJitsiMeetActivity.customLaunch(LoadingActivity.this, roomname, mUserData,mOtherData, extras);
-                    LoadingActivity.this.finish();
-                }
-            } else {
-              //  Toast.makeText(LoadingActivity.this, "jwtToken is Null", Toast.LENGTH_SHORT).show();
-            }
-        });
+            Utils.clearNotification(LoadingActivity.this, extras.getInt(Utils.BroadcastActionExtrasKeys.NOTIFICATION_ID, -2));
+
+            CustomJitsiMeetActivity.customLaunch(LoadingActivity.this, mFirebaseRequestData.getRoomName(), mUserData,mOtherData, extras);
+            LoadingActivity.this.finish();
+        } else {
+            final Handler handler = new Handler(Looper.getMainLooper());
+            handler.postDelayed(() -> {
+                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("Jitsi_roomname", MODE_PRIVATE);
+                String roomname = sharedPreferences.getString("Roomname","");
+                CustomJitsiMeetActivity.customLaunch(LoadingActivity.this, roomname, mUserData,mOtherData, extras);
+                LoadingActivity.this.finish();
+            }, 1500);
+        }
+
+//        mLoadingViewModel.allNotificationSend.observe(this, aBoolean -> {
+//            mLoadingViewModel.getJwtToken(extras,LoadingActivity.this);
+//        });
+//        mLoadingViewModel.jwtTokenResponse.observe(this, jwtTokenResponse -> {
+//            if (jwtTokenResponse != null) {
+//
+//            } else {
+//                Toast.makeText(LoadingActivity.this, "jwtToken is Null", Toast.LENGTH_SHORT).show();
+//            }
+//        });
     }
 
     private static final int PERMISSIONS_REQUEST_CODE = 1001;
