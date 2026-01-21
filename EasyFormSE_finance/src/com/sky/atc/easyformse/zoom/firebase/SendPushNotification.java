@@ -12,6 +12,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.datautils.CheckAuthOfApplication;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
+import com.sky.atc.easyformse.datautils.SecurePrefs;
 import com.sky.atc.easyformse.plugins.ZoomMeetingPlugin;
 import com.sky.atc.easyformse.sqlitewraper;
 import com.sky.atc.easyformse.zoom.screenshare.Utils;
@@ -94,8 +95,10 @@ public class SendPushNotification {
             notifcationBody.put("role", "0");
             notifcationBody.put("devicetype", "android");
 
-            SharedPreferences sharedPreferences = sqlitewraper.context.getSharedPreferences("FCMTOKEN", Context.MODE_PRIVATE);
-            String remoteToken = (sharedPreferences.getString("fcmtoken", "NA"));
+//            SharedPreferences sharedPreferences = sqlitewraper.context.getSharedPreferences("FCMTOKEN", Context.MODE_PRIVATE);
+//            String remoteToken = (sharedPreferences.getString("fcmtoken", "NA"));
+            String remoteToken = SecurePrefs.get(sqlitewraper.context).getString("fcmtoken", "NA");
+
             notifcationBody.put("remotetoken", remoteToken);
 
 //            for (int i = 0; i < listOfOpponentToken.size(); i++) {
@@ -267,8 +270,10 @@ public class SendPushNotification {
             notifcationBody.put("role", "0");
             notifcationBody.put("devicetype", "android");
 
-            SharedPreferences sharedPreferences = sqlitewraper.context.getSharedPreferences("FCMTOKEN", Context.MODE_PRIVATE);
-            String remoteToken = (sharedPreferences.getString("fcmtoken", "NA"));
+//            SharedPreferences sharedPreferences = sqlitewraper.context.getSharedPreferences("FCMTOKEN", Context.MODE_PRIVATE);
+//            String remoteToken = (sharedPreferences.getString("fcmtoken", "NA"));
+            String remoteToken = SecurePrefs.get(sqlitewraper.context).getString("fcmtoken", "NA");
+
             notifcationBody.put("remotetoken", remoteToken);
 
             //notification.put("to", userToken);

@@ -584,7 +584,7 @@ public class f_upload_new_structure extends WakefulIntentService {
                             int count2 = cuser.getCount();
                             cuser.moveToLast();
                             username = cuser.getString(0);
-
+                            cuser.close();
                         }
 
                         Cursor cuser = database.rawQuery(

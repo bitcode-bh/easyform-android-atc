@@ -24,7 +24,7 @@
             android:label="@string/this_app_name"
             android:icon="@drawable/ic_launcher"
             android:theme="@style/ZMTheme.MainWindow"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -35,7 +35,7 @@
             android:label="@string/this_app_name"
             android:icon="@drawable/ic_launcher"
             android:theme="@style/ZMTheme.MainWindow"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -56,7 +56,7 @@
             android:label="@string/this_app_name"
             android:icon="@drawable/ic_launcher"
             android:theme="@style/ZMTheme.MainWindow"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -163,7 +163,7 @@
             android:exported="false"/>
 
         <receiver android:name="com.example.easyformzoom.broadcast_receiver.Zoom_Broadcast"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.example.easyformzoom.DeviceUtilsdata" />
                 <action android:name="com.example.easyformzoom.DisplayRemoteUtils" />

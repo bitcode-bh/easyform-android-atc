@@ -6,6 +6,7 @@ import android.util.Log;
 
 
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
+import com.sky.atc.easyformse.datautils.SecurePrefs;
 import com.sky.atc.easyformse.sqlitewraper;
 
 import org.json.JSONArray;
@@ -21,8 +22,9 @@ public class ScreenARPushUtils {
         JSONArray jsonArrayEvent = new JSONArray();
         try {
 
-            SharedPreferences sharedPreferences = sqlitewraper.context.getSharedPreferences("FCMTOKEN", Context.MODE_PRIVATE);
-            String remoteToken = (sharedPreferences.getString("fcmtoken", "NA"));
+//            SharedPreferences sharedPreferences = sqlitewraper.context.getSharedPreferences("FCMTOKEN", Context.MODE_PRIVATE);
+//            String remoteToken = (sharedPreferences.getString("fcmtoken", "NA"));
+            String remoteToken = SecurePrefs.get(sqlitewraper.context).getString("fcmtoken", "NA");
 
             motionevent.put("screenshare", "start");
             motionevent.put("fcmtoken", remoteToken);

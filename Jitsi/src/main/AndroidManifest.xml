@@ -8,7 +8,7 @@
     <application>
         <activity
             android:name=".ui.activitys.CameraPreviewActivity"
-            android:exported="true">
+            android:exported="false">
 
             <intent-filter>
                 <action android:name="com.jitsi.finish" />

@@ -24,6 +24,8 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.sky.atc.easyformse.MainActivity;
 import com.sky.atc.easyformse.R;
 import com.sky.atc.easyformse.attendance.NotificationClickReceiver;
+import com.sky.atc.easyformse.datautils.SecurePrefs;
+import com.sky.atc.easyformse.sqlitewraper;
 import com.sky.atc.easyformse.zoom.firebase.ScreenARPushUtils;
 import com.sky.atc.easyformse.zoom.firebase.SendPushNotification;
 
@@ -79,8 +81,9 @@ public class MessageReceivedUtils {
                     JSONArray screenshareEventObj = jsonObject.getJSONArray("shareevent");
                     JSONObject screenshareEventO = screenshareEventObj.getJSONObject(0);
                     String screenshareEvent = screenshareEventO.getString("screenshare");
+                    String remoteToken = SecurePrefs.get(sqlitewraper.context).getString("fcmtoken", "NA");
 
-                    String fcmToken = screenshareEventO.getString("fcmtoken");
+                    String fcmToken = remoteToken;
                     String deviceype = screenshareEventO.getString("devicetype");
 
                     Utils.screenRemoteToken = fcmToken;

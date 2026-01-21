@@ -17,6 +17,7 @@ import com.google.firebase.iid.FirebaseInstanceIdService;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+import com.sky.atc.easyformse.datautils.SecurePrefs;
 
 @StringFogIgnore
 //Class extending FirebaseInstanceIdService to receive token
@@ -34,10 +35,14 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         //Getting registration token
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
 
-        SharedPreferences sharedpreferences = getApplicationContext().getSharedPreferences("FCMTOKEN", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor1 = sharedpreferences.edit();
-        editor1.putString("fcmtoken", refreshedToken);
-        editor1.apply();
+//        SharedPreferences sharedpreferences = getApplicationContext().getSharedPreferences("FCMTOKEN", Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor1 = sharedpreferences.edit();
+//        editor1.putString("fcmtoken", refreshedToken);
+//        editor1.apply();
+
+
+        SharedPreferences prefs = SecurePrefs.get(sqlitewraper.context);
+        prefs.edit().putString("fcmtoken", refreshedToken).apply();
 
         Log.d("TEST_TEST", "refreshedToken : " + refreshedToken);
         Cursor c2 = database.rawQuery("select username,company_id from Login_Master",
@@ -101,7 +106,8 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         //Displaying token on logcat
         Log.d(TAG, "Refreshed token: " + refreshedToken);
 //      SharedPreferences.Editor editor = getSharedPreferences(TOKEN_ID, MODE_PRIVATE).edit();
-        MySharedPreferences editor= sqlitewraper.getSecureShared(TOKEN_ID);
-        editor.putString("token",refreshedToken);
+//        MySharedPreferences meditor= sqlitewraper.getSecureShared(TOKEN_ID);
+//        meditor.putString("token",refreshedToken);
+        prefs.edit().putString("token", refreshedToken).apply();
     }
 }

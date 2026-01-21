@@ -26,6 +26,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -36,7 +38,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
+@StringFogIgnore
 public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInfoListener {
 
     private Camera myCamera;
@@ -272,13 +274,15 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
         }.start();
 
 
-        File sdcard = Environment.getExternalStorageDirectory();
+//        File sdcard = Environment.getExternalStorageDirectory();
+        File sdcard = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+
         f_file_new = new File(sdcard + "/Video_EasyForm");
         f_file_new.mkdir();
 
 
-        String dst = Environment.getExternalStorageDirectory().getAbsolutePath();
-
+//        String dst = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File dst = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
         final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         final String fileName = "VID_" + timeStamp + "_" + imei + ".mp4";
         String filePath = dst + "/Video_EasyForm/" + fileName;

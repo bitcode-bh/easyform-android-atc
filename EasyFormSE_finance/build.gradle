@@ -89,9 +89,9 @@ android {
         config {
             keyAlias 'key'
             keyPassword 'skypatel7'
-            storeFile file('E:/Android_Studio/key')
+            storeFile file('E:/Android_Studio/key1')
             storePassword 'skypatel7'
-            v1SigningEnabled true
+            v1SigningEnabled false
             v2SigningEnabled true
             enableV3Signing true
             enableV4Signing true
@@ -153,6 +153,9 @@ android {
         noCompress 'tflite'
     }
     packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
        // exclude("META-INF/DEPENDENCIES")
         /*exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/LICENSE'
@@ -163,6 +166,17 @@ android {
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/ASL2.0'
         exclude("META-INF/*.kotlin_module")*/
+
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+
+        // ✅ Add these lines to fix libfbjni.so conflict
+        pickFirst 'lib/armeabi-v7a/libfbjni.so'
+        pickFirst 'lib/arm64-v8a/libfbjni.so'
+        pickFirst 'lib/x86/libfbjni.so'
+        pickFirst 'lib/x86_64/libfbjni.so'
     }
 
 }
@@ -223,6 +237,9 @@ dependencies {
     // @StringFogIgnore annotation on class name
     implementation 'com.github.megatronking.stringfog:xor:5.0.0'
   //  implementation "com.google.auth:google-auth-library-oauth2-http:1.3.0" // get google access token
+
+    implementation "androidx.security:security-crypto:1.1.0-alpha06"
+
 
     // implementation project(path: ':Jitsi')
    // implementation project(path: ':newJitsiModule')

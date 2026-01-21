@@ -18,13 +18,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-
+@StringFogIgnore
 public class VideoActivity extends AppCompatActivity {
 
 
@@ -173,7 +175,8 @@ public class VideoActivity extends AppCompatActivity {
     private void setPath(String videopath) {
 
 
-        File sdcard = Environment.getExternalStorageDirectory();
+//        File sdcard = Environment.getExternalStorageDirectory();
+        File sdcard = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
         File f_file = new File(sdcard + "/Video_EasyForm/thumbnail");
         f_file.mkdir();
 

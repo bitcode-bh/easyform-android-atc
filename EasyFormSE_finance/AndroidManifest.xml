@@ -70,7 +70,6 @@
         android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme"
         tools:node="merge"
-        android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup,android:icon,android:theme">
         <activity
             android:name=".NewCameraActivity"
@@ -192,7 +191,7 @@
         <receiver
             android:name=".ShutdownReceiver"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
                 <action android:name="android.intent.action.QUICKBOOT_POWEROFF" />
@@ -288,7 +287,7 @@
         <receiver android:name=".touch_current" /> <!-- Comware location poller SDK -->
         <receiver android:name="commonsware.cwac.LocationPoller" />
 
-        <service android:name="commonsware.cwac.LocationPollerService" android:exported="true"/>
+        <service android:name="commonsware.cwac.LocationPollerService" android:exported="false"/>
 
         <receiver android:name=".UpdateReceiver" >
             <intent-filter>
@@ -366,12 +365,12 @@
 
         <activity
             android:name=".BiometricLogin"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/AppTheme.NoActionBar"/>
 
         <activity
             android:name=".CameraAITextActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/AppTheme.NoActionBar"/>
 
 
@@ -380,12 +379,12 @@
         <service android:name=".newfused_gps" />
         <service android:name=".newfused" />
         <service android:name=".resume_wake" />
-        <service android:name=".MyFirebaseMessagingService" android:exported="true">
+        <service android:name=".MyFirebaseMessagingService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".MyFirebaseInstanceIDService" android:exported="true">
+        <service android:name=".MyFirebaseInstanceIDService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
@@ -394,8 +393,8 @@
         <service android:name=".AutoTripStopService" />
         <service android:name=".GpsReceiverService" />
         <service android:name=".geofencenew.GeofenceTrasitionService" />
-        <service android:name=".geofencenew.GeofenceTrasitionServicenew"  android:exported="true" />
-        <service android:name=".geofencenew.GeofenceDownlodService" android:exported="true" />
+        <service android:name=".geofencenew.GeofenceTrasitionServicenew"  android:exported="false" />
+        <service android:name=".geofencenew.GeofenceDownlodService" android:exported="false" />
 
         <receiver android:name=".phoneon" >
             <intent-filter>
@@ -493,16 +492,16 @@
             android:supportsPictureInPicture="true"
             android:taskAffinity=".trip.TripBackgroundMapActivity"
             android:theme="@style/AppTheme.NoActionBar"
-            android:exported="true"/>
+            android:exported="false"/>
 
         <activity
             android:name=".VideoActivity"
-            android:exported="true"/>
+            android:exported="false"/>
 
         <service
             android:name=".trip.FloatingBubbleService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
 <!--        <service-->
 <!--            android:name=".trip.TripMapFloatingBubbleService"-->
@@ -537,7 +536,7 @@
         <receiver android:name=".zoom.screenshare.NotificationUtils$ActionReceiver" />
         <receiver
             android:name=".PowerSaveModeReceiver"
-            android:exported="true"
+            android:exported="false"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.os.action.POWER_SAVE_MODE_CHANGED"/>
