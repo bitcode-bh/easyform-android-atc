@@ -2528,9 +2528,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:888205988954:android:f1accd745a2e0b37f97463",
+        "mobilesdk_app_id": "1:888205988954:android:0d82327a086d84a8f97463",
         "android_client_info": {
-          "package_name": "com.easyfrom.altiusinfra"
+          "package_name": "com.easyform.altiusinfra"
         }
       },
       "oauth_client": [
