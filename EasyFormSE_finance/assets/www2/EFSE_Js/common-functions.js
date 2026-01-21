@@ -4086,7 +4086,7 @@ download_n_share_safety_passport_pdf = () => {
         element_html = element_html.replace(/(\r\n|\n|\r)/gm, '');
         element_html = element_html.replace(/(\r\n|\n|\r|\t)/gm, ' ').replace(/\s+/g, ' ');
 
-        let custom_style = '<style>.passport-card{margin:16px;border-radius:14px;background:linear-gradient(135deg,#0a3d91,#06275e);color:#fff;}.passport-header{display:flex;align-items:center;margin-bottom:5px;}.passport-photo img{width:50px;height:50px;border-radius:4px;/*border:2pxsolid#fff;*/}.passport-title{margin-left:35px;text-align:center;}.passport-title .country{font-size:13px;font-weight:bold;letter-spacing:1px;opacity:0.7;text-transform:uppercase;}.passport-title .doctype{font-size:18px;margin-top:4px;font-weight:bold;}.passport-badge{position:absolute;top:16px;right:16px;}.passport-badge img{width:50px;height:50px;}.passport-body .label{font-size:10px;opacity:0.7;text-transform:uppercase;}.passport-body .value{font-size:12px;font-weight:600;margin-bottom:7px;}.passport-body .value span{min-height:14px;display:block;}.passport-body .row:last-child .value{margin-bottom:0px;}.passport-back img{width:100%;height:75px;margin:5px0px;}.card{width:400px;font-family:Roboto,Noto,Helvetica,Arial,sans-serif;position:relative;font-size:14px;}.card-content{position:relative;}.card-content-inner{padding:16px;position:relative;}.row{display:flex;-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between;-moz-box-lines:multiple;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start;}.col-50{width:50%;}.row > [class*=col-]{box-sizing:border-box;}</style>';
+        let custom_style = '<style>.passport-card{margin:16px;border-radius:14px;background:linear-gradient(135deg,#0a3d91,#06275e);color:#fff;}.passport-header{display:flex;align-items:center;margin-bottom:5px;}.passport-photo img{width:50px;height:50px;border-radius:4px;/*border:2pxsolid#fff;*/}.passport-title{margin-left:35px;text-align:center;}.passport-title .country{font-size:13px;font-weight:bold;letter-spacing:1px;opacity:0.7;text-transform:uppercase;}.passport-title .doctype{font-size:18px;margin-top:4px;font-weight:bold;}.passport-badge{position:absolute;top:16px;right:16px;}.passport-badge img{width:50px;height:50px;}.passport-body .label{font-size:10px;opacity:0.7;text-transform:uppercase;}.passport-body .value, .tbl-type22 td{font-size:12px;font-weight:600;margin-bottom:7px;}.passport-body .value span, .tbl-type22 td{min-height:14px;display:block; color: white}.passport-body .row:last-child .value{margin-bottom:0px;}.passport-back img{width:100%;height:75px;margin:5px0px;}.card{width:400px;font-family:Roboto,Noto,Helvetica,Arial,sans-serif;position:relative;font-size:14px;}.card-content{position:relative;}.card-content-inner{padding:16px;position:relative;}.row{display:flex;-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between;-moz-box-lines:multiple;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start;}.col-50{width:50%;}.row > [class*=col-]{box-sizing:border-box;}</style>';
 
         element_html = custom_style + element_html;
 
@@ -4115,7 +4115,7 @@ function imgToBase64(img) {
 
 function convertAndReplaceImages(containerSelector, done) {
 
-    var $imgs = $(containerSelector).find('img');
+    var $imgs = $(containerSelector).find('#img_sp_profilephoto');
     var total = $imgs.length;
     var completed = 0;
 
@@ -4134,7 +4134,7 @@ function convertAndReplaceImages(containerSelector, done) {
         else {
             imgToBase64(img);
         }
-        
+
         completed++;
 
         if (completed === total) {
