@@ -167,10 +167,10 @@ public class ScreenshotBroadcastReceiver extends BroadcastReceiver {
                 utcmi = utcCalculationOffset(millisecond);
                 String timezone = utcmi.get(1);
                 String utcmilliseconds = utcmi.get(0);
-                Uri uri = Uri.parse(p_url);
-                String  realpath = uri.getPath();
-                realpath = realpath.replace("external_files", Environment.getExternalStorageDirectory().toString());
-                FileInputStream fis = new FileInputStream(realpath);
+//                Uri uri = Uri.parse(p_url);
+//                String  realpath = uri.getPath();
+//                realpath = realpath.replace("external_files", Environment.getExternalStorageDirectory().toString());
+                FileInputStream fis = new FileInputStream(imageFile);
 
                 Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fis.getFD(),
                         null, options);
