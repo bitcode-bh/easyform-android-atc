@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
@@ -29,9 +30,12 @@ import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by NareshChocha on 4/6/2022.
@@ -82,29 +86,15 @@ public class AttendanceUtil {
         }
         mTaskData.setCheckSheetId(attendanceData.getChecksheetId());
         SQLiteDatabase database = sqlitewraper.getDatabase();
-//        Cursor flowMasterCursor = database
-//                .rawQuery("select module_name from flow_master where moduleid=" + mTaskData.getModuleId(), null);
-//        flowMasterCursor.moveToLast();
-//        int count = flowMasterCursor.getCount();
-//        if (count > 0) {
-//            mTaskData.setModuleName(flowMasterCursor.getString(0));
-//        } else {
-//            mTaskData.setModuleName("null");
-//            LogUtils.writeAttendanceLogToFile("attendanceData : " + attendanceData + "\n flow_master is null", "setAttendanceNotificationAlarm");
-//        }
-        if(attendanceData.getFlow_name() == null || attendanceData.getFlow_name().equalsIgnoreCase("null") )
-        {
+        if (attendanceData.getFlow_name() == null || attendanceData.getFlow_name().equalsIgnoreCase("null")) {
             mTaskData.setModuleName(attendanceData.getKey());
-        }
-        else {
+        } else {
             mTaskData.setModuleName(attendanceData.getFlow_name());
         }
 
-        if(attendanceData.getFacedetection() == null || attendanceData.getFacedetection().equalsIgnoreCase("null") || attendanceData.getFacedetection().equalsIgnoreCase("true"))
-        {
+        if (attendanceData.getFacedetection() == null || attendanceData.getFacedetection().equalsIgnoreCase("null") || attendanceData.getFacedetection().equalsIgnoreCase("true")) {
             mTaskData.setFacedetection("true");
-        }
-        else {
+        } else {
             mTaskData.setFacedetection(attendanceData.getFacedetection());
         }
 
@@ -113,19 +103,15 @@ public class AttendanceUtil {
         mTaskData.setUserId(DeviceEventsUtils.getLoginDetails().get(0));
         mTaskData.setCheckOutBtn(attendanceData.getChekOutBtn());
         mTaskData.setCheckInBtn(attendanceData.getChekInBtn());
-        if(attendanceData.getPunchin_Status() == null || attendanceData.getPunchin_Status().equalsIgnoreCase("null"))
-        {
+        if (attendanceData.getPunchin_Status() == null || attendanceData.getPunchin_Status().equalsIgnoreCase("null")) {
             mTaskData.setPunchin_Status("1");
-        }
-        else {
+        } else {
             mTaskData.setPunchin_Status(attendanceData.getPunchin_Status());
         }
 
-        if(attendanceData.getPunchout_Status() == null || attendanceData.getPunchout_Status().equalsIgnoreCase("null"))
-        {
+        if (attendanceData.getPunchout_Status() == null || attendanceData.getPunchout_Status().equalsIgnoreCase("null")) {
             mTaskData.setPunchout_Status("2");
-        }
-        else {
+        } else {
             mTaskData.setPunchout_Status(attendanceData.getPunchout_Status());
         }
 
@@ -155,50 +141,33 @@ public class AttendanceUtil {
 
         if (!AttendanceTaskUtil.isAttendanceDone(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId(), "2")) {
 
-                if(mTaskData.getCheckInBtn().equalsIgnoreCase("false"))
-                {
+            if (mTaskData.getCheckInBtn().equalsIgnoreCase("false")) {
 
-                }
-                else {
-                    notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckIn));
-                    notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
-                    CheckInNotiid = (mTaskData.getModuleName() + "_CheckIn_").hashCode();
-                    notificationShowIntent.putExtra("Notificationid", CheckInNotiid);
+            } else {
+                notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckIn));
+                notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+                CheckInNotiid = (mTaskData.getModuleName() + "_CheckIn_").hashCode();
+                notificationShowIntent.putExtra("Notificationid", CheckInNotiid);
 
-                    if (isNotificationActive(sqlitewraper.context, CheckInNotiid)) {
-                        // Check-In notification already active
-                    } else {
 
-                        PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                    PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-                        setAlarmNotification(sqlitewraper.context,
-                                dayTime.get(0)
-                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckIn));
+                    setAlarmNotification(sqlitewraper.context,
+                            dayTime.get(0), dayTime.get(1)
+                            , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckIn), notificationShowIntent, CheckInNotiid);
 
-                    }
 
-                }
+            }
 
 
             // sqlitewraper.context.sendBroadcast(intent);
-        }
-        else {
+        } else {
             String tid = AttendanceTaskUtil.getTaskMasterTid(database, mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId());
 
             if (!tid.equalsIgnoreCase("")) {
-//                SQLiteDatabase mSqLiteDatabase = sqlitewraper.getDatabase();
-//                Cursor c3 = mSqLiteDatabase.rawQuery(
-//                                "SELECT username,company_id,user_id FROM  Login_Master",
-//                                null);
-//                c3.moveToLast();
-//                int company_id = 0;
-//                if (c3.getCount() > 0) {
-//                    String username = c3.getString(0);
-//                    company_id = c3.getInt(1);
-//                    int user_id = c3.getInt(2);
-//
-//                    c3.close();
-//                }
+
+//                timer cancel when today attendance already done
+                cancelAttendanceAlarm(sqlitewraper.context,notificationShowIntent,CheckInNotiid);
 //               check out btn true hide checkout notification
                 if(mTaskData.getCheckOutBtn() == null ||  mTaskData.getCheckOutBtn().equalsIgnoreCase("false"))
                 {
@@ -226,20 +195,16 @@ public class AttendanceUtil {
                             CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
                             notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
 
-                            if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
-                                // Check-In notification already active
-                            } else {
 
                                 PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
                                 setAlarmNotification(sqlitewraper.context,
-                                        dayTime.get(1)
-                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
-                            }
+                                        dayTime.get(0), dayTime.get(1)
+                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut), notificationShowIntent, CheckOutNotiID);
+
 
                         }
-                    }
-                    else {
+                    } else {
 
                         if(istripstart)
                         {
@@ -248,16 +213,13 @@ public class AttendanceUtil {
                             CheckOutNotiID = (mTaskData.getModuleName() + "_CheckOut_").hashCode();
                             notificationShowIntent.putExtra("Notificationid", CheckOutNotiID);
 
-                            if (isNotificationActive(sqlitewraper.context, CheckOutNotiID)) {
-                                // Check-In notification already active
-                            } else {
 
                                 PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
                                 setAlarmNotification(sqlitewraper.context,
-                                        dayTime.get(1)
-                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
-                            }
+                                        dayTime.get(0), dayTime.get(1)
+                                        , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut), notificationShowIntent, CheckOutNotiID);
+
                         }
 
 //                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
@@ -468,14 +430,15 @@ public class AttendanceUtil {
 //                        }
 //                    }
 //
-////                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
-////                        notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
-////
-////                        PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-////
-////                        setAlarmNotification(sqlitewraper.context,
-////                                dayTime.get(1)
-////                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
+
+    /// /                        notificationShowIntent.putExtra(AttendanceNotificationShow.notificationTypeKey, String.valueOf(NotificationType.CheckOut));
+    /// /                        notificationShowIntent.putExtra(AttendanceNotificationShow.taskDataKey, new Gson().toJson(mTaskData));
+    /// /
+    /// /                        PendingIntent attendanceNotificationShowPendingIntent = PendingIntent.getBroadcast(sqlitewraper.context, 1899, notificationShowIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    /// /
+    /// /                        setAlarmNotification(sqlitewraper.context,
+    /// /                                dayTime.get(1)
+    /// /                                , dayOfWeek, attendanceNotificationShowPendingIntent, String.valueOf(NotificationType.CheckOut));
 //                }
 //
 //            }
@@ -485,48 +448,151 @@ public class AttendanceUtil {
 //}
 
     //Set alarm for Notification as per time slot
-    public static void setAlarmNotification(Context context, String startTime, int dayCount, PendingIntent attendanceNotificationShowPendingIntent,String notificationtype) {
-       try{
-           Calendar now = Calendar.getInstance();
-           if(notificationtype.equalsIgnoreCase("CheckIn"))
-           {
-               Calendar calendar = Calendar.getInstance();
-               String[] separated = startTime.split(":");
-               calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(separated[0])); // hour 0
-               calendar.set(Calendar.MINUTE, Integer.parseInt(separated[1])); // minute 1
-               calendar.set(Calendar.DAY_OF_WEEK, dayCount);
-               long currentTimeInMillis = calendar.getTimeInMillis();
+    // old function notification send every login time as per time slot
+//    public static void setAlarmNotification(Context context, String startTime, int dayCount, PendingIntent attendanceNotificationShowPendingIntent,String notificationtype) {
+//       try{
+//           Calendar now = Calendar.getInstance();
+//           if(notificationtype.equalsIgnoreCase("CheckIn"))
+//           {
+//               Calendar calendar = Calendar.getInstance();
+//               String[] separated = startTime.split(":");
+//               calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(separated[0])); // hour 0
+//               calendar.set(Calendar.MINUTE, Integer.parseInt(separated[1])); // minute 1
+//               calendar.set(Calendar.DAY_OF_WEEK, dayCount);
+//               long currentTimeInMillis = calendar.getTimeInMillis();
+//
+//               Log.e("attendanceDataList : ", "currentTimeInMillis " + currentTimeInMillis);
+//               AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+//               if (alarmManager != null) {
+//                   alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, currentTimeInMillis, attendanceNotificationShowPendingIntent);
+//               } else {
+//                   LogUtils.writeAttendanceLogToFile("alarmManager : Null ", "NotificationReceiver");
+//               }
+//           }
+//           else {
+//               Calendar punchOutTime = Calendar.getInstance();
+//               String[] separated = startTime.split(":");
+//               punchOutTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(separated[0])); // hour 0
+//               punchOutTime.set(Calendar.MINUTE, Integer.parseInt(separated[1])); // minute 1
+//               punchOutTime.set(Calendar.DAY_OF_WEEK, dayCount);
+//               long currentTimeInMillis = punchOutTime.getTimeInMillis();
+//
+//                   AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+//                   if (alarmManager != null) {
+//                       alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, currentTimeInMillis, attendanceNotificationShowPendingIntent);
+//                   } else {
+//                       LogUtils.writeAttendanceLogToFile("alarmManager : Null ", "NotificationReceiver");
+//                   }
+//           }
+//
+//       }
+//       catch (Exception e)
+//       {
+//           Log.d("Exception Attandeance",e.toString());
+//       }
+//
+//    }
 
-               Log.e("attendanceDataList : ", "currentTimeInMillis " + currentTimeInMillis);
-               AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-               if (alarmManager != null) {
-                   alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, currentTimeInMillis, attendanceNotificationShowPendingIntent);
-               } else {
-                   LogUtils.writeAttendanceLogToFile("alarmManager : Null ", "NotificationReceiver");
-               }
-           }
-           else {
-               Calendar punchOutTime = Calendar.getInstance();
-               String[] separated = startTime.split(":");
-               punchOutTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(separated[0])); // hour 0
-               punchOutTime.set(Calendar.MINUTE, Integer.parseInt(separated[1])); // minute 1
-               punchOutTime.set(Calendar.DAY_OF_WEEK, dayCount);
-               long currentTimeInMillis = punchOutTime.getTimeInMillis();
+//Set alarm for Notification as per time slot
+    private static Calendar getTimeCalendar(String time) {
+        String[] split = time.split(":");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(split[0]));
+        cal.set(Calendar.MINUTE, Integer.parseInt(split[1]));
+        cal.set(Calendar.SECOND, 0);
+        return cal;
+    }
 
-                   AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-                   if (alarmManager != null) {
-                       alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, currentTimeInMillis, attendanceNotificationShowPendingIntent);
-                   } else {
-                       LogUtils.writeAttendanceLogToFile("alarmManager : Null ", "NotificationReceiver");
-                   }
-           }
 
-       }
-       catch (Exception e)
-       {
-           Log.d("Exception Attandeance",e.toString());
-       }
+    private static final String PREF_NAME = "attendance_noti_pref";
+    private static final String KEY_LAST_NOTI_TIME = "last_noti_time_";
+    private static final long TWO_HOURS_MILLIS = 2 * 60 * 60 * 1000;
+    private static final String KEY_NEXT_ALARM_TIME = "Next_noti_date_";
+    // notification send in Every 2 hours after the first notification send  22012026
+    public static void setAlarmNotification(Context context, String startTime, String endtime, int dayCount, PendingIntent attendanceNotificationShowPendingIntent, String notificationtype, Intent notificationIntent,
+                                            int notificationId) {
 
+        try {
+
+            Calendar startCal = getTimeCalendar(startTime);
+            Calendar endCal = getTimeCalendar(endtime);
+            Calendar now = Calendar.getInstance();
+            if (now.before(startCal) || now.after(endCal)) {
+                return;
+            }
+            SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            String timeKey = KEY_NEXT_ALARM_TIME + notificationId;
+            String dateKey = KEY_LAST_NOTI_TIME + notificationId;
+
+            long nextAlarmTime = prefs.getLong(timeKey, 0);
+            String savedDate = prefs.getString(dateKey, "");
+
+            String todayDate = new SimpleDateFormat("yyyyMMdd", Locale.US)
+                    .format(new Date());
+
+            if (!todayDate.equals(savedDate)) {
+                nextAlarmTime = 0;
+                prefs.edit()
+                        .remove(timeKey)
+                        .putString(dateKey, todayDate)
+                        .apply();
+            }
+            long currentTime = System.currentTimeMillis();
+
+            if (nextAlarmTime == 0 ) {
+                context.sendBroadcast(notificationIntent);
+            }
+            else if (currentTime < nextAlarmTime) {
+                return;
+            }
+
+            Calendar nextAlarm = (Calendar) now.clone();
+            nextAlarm.setTimeInMillis(currentTime + TWO_HOURS_MILLIS);
+//            nextAlarm.add(Calendar.MINUTE, 3);
+            if (nextAlarm.after(endCal)) {
+                return;
+            }
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager != null) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextAlarm.getTimeInMillis(), pendingIntent);
+            }
+
+            prefs.edit().putLong(timeKey, nextAlarm.getTimeInMillis()).apply();
+
+        } catch (Exception e) {
+
+        }
+
+    }
+
+    // cancel alarm notification when already attendance done
+    public static void cancelAttendanceAlarm(Context context,
+                                             Intent intent,
+                                             int notificationId) {
+
+        PendingIntent pi = PendingIntent.getBroadcast(
+                context,
+                notificationId,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        AlarmManager alarmManager =
+                (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        if (alarmManager != null) {
+            alarmManager.cancel(pi);
+        }
+
+        // Also clear saved next alarm time
+        SharedPreferences prefs =
+                context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+
+        prefs.edit()
+                .remove(KEY_NEXT_ALARM_TIME + notificationId)
+                .remove(KEY_LAST_NOTI_TIME + notificationId)
+                .apply();
     }
 
 
