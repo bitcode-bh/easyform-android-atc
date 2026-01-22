@@ -85,10 +85,10 @@ public class HtmlToPdfEmailPlugin extends CordovaPlugin {
 
             WebView webView = new WebView(sqlitewraper.context);
 
-            webView.setLayoutParams(new ViewGroup.LayoutParams(800, 1200)); // set size as per need
-            webView.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+            webView.setLayoutParams(new ViewGroup.LayoutParams(900, 1200)); // set size as per need
+            webView.measure(View.MeasureSpec.makeMeasureSpec(900, View.MeasureSpec.EXACTLY),
                     View.MeasureSpec.makeMeasureSpec(1200, View.MeasureSpec.EXACTLY));
-            webView.layout(0, 0, 800, 1200);
+            webView.layout(0, 0, 900, 1200);
             html = makeXhtmlSafe(html);
             webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
 
