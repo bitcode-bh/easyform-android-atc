@@ -14,6 +14,8 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,6 +26,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +34,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
@@ -85,6 +89,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -807,12 +812,23 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
 //        File dir_image = new File(Environment.getExternalStorageDirectory() + "/VideoScreenshots");
 //        dir_image.mkdirs();
 
-        File photoFile;
-        File myDir = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), ".myDirectory");
-        if (!myDir.exists()) myDir.mkdirs();
-
+        String dir = Environment.getExternalStorageDirectory()
+                + File.separator + "/VideoScreenshots";
+        // create folder
+        File folder = new File(dir); // folder name
+        folder.mkdirs();
+        // create file
         String fname = "IMG" + System.currentTimeMillis() + ".jpeg";
-        photoFile = new File(myDir, fname);
+        File photoFile = new File(dir, fname);
+
+
+
+//        File photoFile;
+//        File myDir = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), ".myDirectory");
+//        if (!myDir.exists()) myDir.mkdirs();
+//
+//        String fname = "IMG" + System.currentTimeMillis() + ".jpeg";
+//        photoFile = new File(myDir, fname);
 
         Bitmap thumbnail = createThumbnail(bitmap, 200);
         mImageViewLoading.setVisibility(View.GONE);
@@ -822,22 +838,27 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
 
         try {
 //            File tmpFile = new File(myDir, photoFile);
-            FileOutputStream fos = new FileOutputStream(photoFile);
+//            FileOutputStream fos = new FileOutputStream(photoFile);
+//
+//            byte[] buf = new byte[1024];
+//            int len;
+//            while ((len = fis.read(buf)) > 0) {
+//                fos.write(buf, 0, len);
+//            }
+//            fis.close();
+//            fos.close();
+//
+//            MediaScannerConnection.scanFile(
+//                    context,
+//                    new String[]{photoFile.getAbsolutePath()},
+//                    new String[]{"image/jpeg"},
+//                    null
+//            );
 
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = fis.read(buf)) > 0) {
-                fos.write(buf, 0, len);
-            }
-            fis.close();
-            fos.close();
+             FileOutputStream fos = new FileOutputStream(photoFile);
+             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+             fos.flush();
 
-            MediaScannerConnection.scanFile(
-                    context,
-                    new String[]{photoFile.getAbsolutePath()},
-                    new String[]{"image/jpeg"},
-                    null
-            );
 
             camera.startPreview();
             Handler mainHandler = new Handler();
