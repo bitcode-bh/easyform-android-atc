@@ -191,6 +191,7 @@ function back_button(page) {
     var notification_popup = $('.popup-notifications.modal-in:visible');
     var task_create_popup = $('.popup-new-task-create.modal-in:visible');
     var pinch_zoom_popup = $('.pinch-zoom-container:visible');
+    var safety_passport_popup = $('.popup-safety-passport:visible');
 
     if (popups.length > 0) {
         // profile photo from profile menu popup is open
@@ -229,6 +230,12 @@ function back_button(page) {
     else if (pinch_zoom_popup.length > 0) {
         // pinch zoom popup is open
         close_zoom();
+        return false;
+    }
+    else if (safety_passport_popup.length > 0) {
+        // safety passport popup is open
+        myApp.closeModal('.popup-safety-passport.modal-in');
+        $('.popup-safety-passport').hide();
         return false;
     }
     else {
@@ -4150,3 +4157,89 @@ function checkCall() {
     var is_jitsi_plugin_call = AndroidCallChecker.isJitsiCallRunning();
     return is_jitsi_plugin_call;
 }
+
+function open_pinch_zoom_div_safety_passport() {
+
+    if (typeof html2canvas === 'undefined') {
+        // script is not loaded
+        
+        loadScriptOnce('Plugin_Js/pinch-zoom.umd.js', () => {
+            // script loaded
+
+            loadScriptOnce('js/html2canvas.js', () => {
+                // script loaded
+                open_pinch_zoom_div_safety_passport();
+            });
+        });
+
+    }
+
+    if (typeof html2canvas !== 'undefined') {
+        // scripts are loaded
+
+        let element_html = $(".popup-safety-passport .page-content");
+        //const originalBg = element_html.style.background;
+        //element_html.style.background = '#0b3a7e'; // solid blue
+        $(".passport-body .fa.fa-share-alt").hide();
+
+        html2canvas(element_html, {
+            useCORS: true,
+            allowTaint: false,
+            scale: 2,
+            backgroundColor: 'white',
+            removeContainer: true,
+            logging: false
+        }).then(canvas => {
+            //element_html.style.background = originalBg;
+            $(".passport-body .fa.fa-share-alt").show();
+
+            const imgSrc = canvas.toDataURL('image/png');
+
+            $(".pinch-zoom-container").remove();
+            $(".pinch_close").remove();
+            let zoom_str = '<div class="pinch-zoom"><i id="pinch_close" class="fa fa-times-circle text-danger" onclick="close_zoom()"></i><img src = "' + imgSrc + '" /></div>';
+            $("body").prepend(zoom_str);
+
+            new PinchZoom.default(document.querySelector('.pinch-zoom'), {
+                minZoom: 1,
+                maxZoom: 4
+            });
+
+            $(".pinch-zoom-container").css({ "z-index": "11001", "background": "white" });
+
+        });
+    }
+
+   
+
+}
+
+function close_zoom() {
+    $(".pinch-zoom-container").remove();
+    $(".pinch-zoom").hide();
+}
+
+// for safety passport view from profile menu
+function loadScriptOnce(src, callback) {
+    if (document.querySelector(`script[src*="${src}"]`)) {
+        //console.log('Already loaded');
+        callback && callback();
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+
+    script.onload = () => {
+        //console.log('Script loaded ✅', src);
+        callback && callback();
+    };
+
+    script.onerror = () => {
+        //console.error('Failed to load ❌', src);
+    };
+
+    document.head.appendChild(script);
+}
+

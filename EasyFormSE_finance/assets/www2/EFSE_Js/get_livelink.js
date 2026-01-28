@@ -155,7 +155,3 @@ function open_pinch_zoom_div(t_src) {
 
 }
 
-function close_zoom() {
-    $(".pinch-zoom-container").remove();
-    $(".pinch-zoom").hide();
-}

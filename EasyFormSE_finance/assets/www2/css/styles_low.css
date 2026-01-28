@@ -2820,7 +2820,8 @@ li.w-75-25 {
 .passport-card {
     margin: 16px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #0a3d91, #06275e);
+    /*background: linear-gradient(135deg, #0a3d91, #06275e);*/
+    background: #06275e;
     color: #fff;
 }
 
@@ -2898,7 +2899,14 @@ li.w-75-25 {
     position: absolute;
     top: 10px;
     right: 5px;
-    font-size: 30px;
+    font-size: 40px;
     z-index: 9999;
     color: red;
+}
+
+.navbar-fixed .page-content {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
 }
