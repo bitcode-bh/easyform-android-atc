@@ -124,6 +124,7 @@ public class ScreenshotBroadcastReceiver extends BroadcastReceiver {
                 int pid = c.getInt(0);
                 String p_name = c.getString(1);
                 String p_url = c.getString(2);
+                String p_key = c.getString(3);
                 String p_type = c.getString(5);
                 String it_id = c.getString(6);
                 int que_id = c.getInt(7);
@@ -216,7 +217,7 @@ public class ScreenshotBroadcastReceiver extends BroadcastReceiver {
                 String u_c1 = b.GetValue();
                 if(!u_c1.equalsIgnoreCase("NA"))
                 {
-                    int photoId = UploadUtils.uploadPhotoResumable(p_url, companyID, "0", String.valueOf(p_checksheetid), String.valueOf(que_id), String.valueOf(0), p_type, ph_id, it_id, p_url, taskid);
+                    int photoId = UploadUtils.uploadPhotoResumable(p_url, companyID, "0", String.valueOf(p_checksheetid), String.valueOf(que_id), String.valueOf(p_key), p_type, ph_id, it_id, p_url, taskid);
                     if (photoId > 0) {
                         update_pid(pid, "p_master", Integer.parseInt(taskid), millisecond);
 

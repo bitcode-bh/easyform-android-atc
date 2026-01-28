@@ -164,6 +164,11 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastScreenShearReceiver);
         super.onDestroy();
+        if (camera != null) {
+            camera.stopPreview();
+            camera.release();
+            camera = null;
+        }
     }
 
     @SuppressLint("MissingInflatedId")
@@ -286,7 +291,7 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
                     toggleFlashlightIntent.setAction("com.easyform.newjitsi.Flash_light");
                     toggleFlashlightIntent.putExtra("isFlashlightOn", "[\"on\"]");
                     sendBroadcast(toggleFlashlightIntent);
-                    mFlashOff.setVisibility(View.VISIBLE);
+                    mFlashOff.setVisibility(View.GONE);
                     mFlashOn.setVisibility(View.GONE);
 //                    }
                 } else {
@@ -311,7 +316,7 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
                     toggleFlashlightIntent.putExtra("isFlashlightOn", "[\"off\"]");
                     sendBroadcast(toggleFlashlightIntent);
                     mFlashOff.setVisibility(View.GONE);
-                    mFlashOn.setVisibility(View.VISIBLE);
+                    mFlashOn.setVisibility(View.GONE);
                 }
                 else {
                     turnFlashlightOff();
@@ -766,7 +771,7 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
             camera.setParameters(parameters);
             isFlashlightOn = true;
-            mFlashOff.setVisibility(View.VISIBLE);
+            mFlashOff.setVisibility(View.GONE);
             mFlashOn.setVisibility(View.GONE);
         }
     }
@@ -778,7 +783,7 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
             camera.setParameters(parameters);
             isFlashlightOn = false;
             mFlashOff.setVisibility(View.GONE);
-            mFlashOn.setVisibility(View.VISIBLE);
+            mFlashOn.setVisibility(View.GONE);
         }
     }
 
@@ -1046,8 +1051,8 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
 
     public static void backfroncamera(String cameratype)
     {
+        camera.stopPreview();
         camera.release();
-        camera = null;
 
         try {
             JSONArray jsonArray = new JSONArray(cameratype);
@@ -1056,10 +1061,10 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
             if (keyname.equalsIgnoreCase("front")) {
                 currentCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
                 FrontCamera.setVisibility(View.GONE);
-                 BackCamera.setVisibility(View.VISIBLE);
+                 BackCamera.setVisibility(View.GONE);
             } else {
                 currentCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
-                FrontCamera.setVisibility(View.VISIBLE);
+                FrontCamera.setVisibility(View.GONE);
                 BackCamera.setVisibility(View.GONE);
             }
 
@@ -1074,8 +1079,8 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
         catch (Exception e)
         {
             camerastart();
+            camera.stopPreview();
             camera.release();
-            camera = null;
             camera = Camera.open(currentCameraId);
         }
         try {
