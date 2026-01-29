@@ -130,7 +130,7 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
             }
             //timer1 = setTimeout(networkerror, timeout);
 
-            // retry last reqest for 3 times in case of network timeout 06042023 
+            // retry last request for 3 times in case of network timeout 06042023 
             timer1 = setTimeout(function () {
                 if (req_count >= 3) {
                     networkerror();
@@ -162,9 +162,10 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
             //alert(invocation.status);
 
             clearTimeout(timer1);
-            req_count = 0;
+            //req_count = 0;
 
             if (invocation.status == 200) {
+                req_count = 0;
 
                 var myArray = JSON.parse(invocation.responseText);
 
@@ -226,18 +227,78 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
             }
             else {
 
-                var Authorization = localStorage.getItem('Authorization');
-                if (Authorization == "" || Authorization == null || Authorization == undefined) {
-                    failcallback("Network Error Please try again");
+                //var Authorization = localStorage.getItem('Authorization');
+                //if (Authorization == "" || Authorization == null || Authorization == undefined) {
+                //    failcallback("Network Error Please try again");
+                //}
+                //else {
+                //    failcallback(invocation);
+                //}
+
+                if (req_count >= 3) {
+                    // final failed
+
+                    req_count = 0;
+
+                    var Authorization = localStorage.getItem('Authorization');
+                    if (Authorization == "" || Authorization == null || Authorization == undefined) {
+                        failcallback("Network Error Please try again");
+                    }
+                    else {
+                        failcallback(invocation);
+                    }
+
                 }
                 else {
-                    failcallback(invocation);
+                    // retry last request for 3 times in case of network failed - mk - 29012026 
+
+                    req_count++;
+                    invocation.abort();
+                    mk_notify("Network Failed! Retrying...");
+                    var t_getdata = new Webservicecall_REST(url1, params, sucesscallback, failcallback);
+                    t_getdata.callOtherDomain();
                 }
+
+
+                
             }
         }
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // old rest function 28092020
