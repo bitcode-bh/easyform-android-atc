@@ -3,8 +3,7 @@ function check_last_dummy_entry_jitsi() {
     try {
         //var query = "select tid, checksheetid, moduleid, task_id from task_master where username = '" + username + "' ORDER BY tid desc limit 1";
 
-        var selected_module_id = JSON.parse(storage.getItem('wayflow'));
-        var query = "select tid, checksheetid, moduleid, task_id from task_master where username = '" + username + "' and moduleid='" + selected_module_id + "' and server_task_id=0 ORDER BY tid desc limit 1";
+        var query = "select tid, checksheetid, moduleid, task_id from task_master where server_task_id = '" + jitsi_server_task_id + "'";
 
         var q_jsonobj = [];
         q_jsonobj.push({
@@ -22,27 +21,7 @@ function onsuccess_check_last_dummy_entry_jitsi(e) {
     try {
         var myArray = JSON.parse(e);
         if (myArray.length > 0) {
-            var task_id = myArray[0].task_id;
-            if (task_id == '' || task_id == null || task_id == undefined || task_id == 'Unknown') {
-                // last entry is dummy
-
-                var moduleid = myArray[0].moduleid;
-                var selected_module_id = JSON.parse(storage.getItem('wayflow'));
-
-                if (selected_module_id == moduleid) {
-                    // last dummy entry is with same moduleid
-                    onsuccess_get_tid_from_task_jitsi(e);     // use this dummy task for creation
-                }
-                else {
-                    // last dummy entry is with different moduleid
-                    insert_new_dummy_entry_jitsi();
-                }
-
-            }
-            else {
-                // last entry is not dummy
-                insert_new_dummy_entry_jitsi();
-            }
+            onsuccess_get_tid_from_task_jitsi(e);     // use this dummy task for creation
         }
         else {
             // task_master is blank (no row found)
@@ -107,12 +86,14 @@ function insert_new_dummy_entry_post_jitsi() {
     var selected_module_id = JSON.parse(storage.getItem('wayflow'));
     var server_task_id = jitsi_server_task_id;                             //static server_task_id=0 for dummy task entry
 
-    var status_array = list_data[0].status;
-    if (status_array.length == 1) {
-        var status_t = status_array[0];
-    } else {
-        var status_t = 0;
-    }
+    //var status_array = list_data[0].status;
+    //if (status_array.length == 1) {
+    //    var status_t = status_array[0];
+    //} else {
+    //    var status_t = 0;
+    //}
+
+    var status_t = jitsi_task_status;
 
     var query = "INSERT INTO task_master (user_id, username, checksheetid, moduleid, match_temp_id, p_match_temp_id, server_task_id, status) VALUES('" + user_id + "','" + user_name + "','" + checksheetid + "', '" + selected_module_id + "','" + match_temp_id + "','" + p_match_temp_id + "','" + server_task_id + "','" + status_t + "');";
     var q_jsonobj = [];

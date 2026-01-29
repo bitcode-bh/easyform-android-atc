@@ -108,6 +108,7 @@
 
         var form_flag;
         var jitsi_server_task_id = 0;
+        var jitsi_task_status = 0;
 
         // set blank checksheet dependency for class(show/hide elements in all the steps)
         var checksheet_dependency = [];
@@ -216,8 +217,10 @@
                     }
                     else {
                         //for open checksheet page from jitsi meeting [FT-23122025]
+                        let t_status = urlParams.get('status');
                         jitsi_server_task_id = task_id;
-                        check_last_dummy_entry_jitsi(task_id);
+                        jitsi_task_status = t_status;
+                        check_last_dummy_entry_jitsi(task_id, t_status);
                     }
                 }
                 else {
