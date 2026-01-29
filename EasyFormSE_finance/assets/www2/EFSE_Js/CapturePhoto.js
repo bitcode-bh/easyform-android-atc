@@ -1292,6 +1292,9 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                 $("#popover_editphoto").parent().hide();
             }
             else {
+                $("#popover_re_capture").parent().show();
+                $("#popover_editphoto").parent().show();
+
                 let is_autofilled = $("#" + img_div + "").attr("autofill");
                 if (is_autofilled == "true") {
                     // hide re capture in case of searchable autofill image - mk - 07012026 
