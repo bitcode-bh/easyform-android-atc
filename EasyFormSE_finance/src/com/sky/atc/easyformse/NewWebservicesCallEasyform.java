@@ -472,7 +472,8 @@ public class NewWebservicesCallEasyform {
         }
         builder.connectTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS);
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .addInterceptor(new RetryConnectInterceptor(3));
 
         if (isSSL.equalsIgnoreCase("true")) {
             String appURL;

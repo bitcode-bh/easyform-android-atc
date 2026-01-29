@@ -30,8 +30,11 @@ import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.NewWebservicesCallEasyform;
 import com.sky.atc.easyformse.PeerCertificateExtractor;
 import com.sky.atc.easyformse.R;
+import com.sky.atc.easyformse.RetryConnectInterceptor;
+import com.sky.atc.easyformse.SampleActivity;
 import com.sky.atc.easyformse.sqlitewraper;
 import com.sky.atc.easyformse.utils.LogUtils;
+import com.sky.atc.easyformse.utils.UnsafeOkHttpClient;
 import com.sky.atc.easyformse.utils.Utils;
 
 import net.sqlcipher.database.SQLiteDatabase;
@@ -64,25 +67,41 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 import okhttp3.CertificatePinner;
 import okhttp3.Connection;
+import okhttp3.ConnectionPool;
+import okhttp3.ConnectionSpec;
+import okhttp3.Dispatcher;
+import okhttp3.Dns;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.TlsVersion;
+import okio.Buffer;
 
 @StringFogIgnore
 public class UploadUtils {
@@ -268,11 +287,263 @@ public class UploadUtils {
     }
 
 
-    //upload photo using resumable
-    public static int uploadPhotoResumable(String path, String CompanyId, String CustomerUniq, String checksheetid_new, String que_id, String step_No, String type, String Ph_id, String it_id, String th_path, String sid) throws IOException {
+    //upload photo using resumable httpclient use
+//    public static int uploadPhotoResumable(String path, String CompanyId, String CustomerUniq, String checksheetid_new, String que_id, String step_No, String type, String Ph_id, String it_id, String th_path, String sid) throws IOException {
+//
+////        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+////        StrictMode.setThreadPolicy(policy);
+//
+//        ch_number = 0;
+//
+//        String name_file = changeFileName(path);
+//        String l_name = path.substring(path.lastIndexOf("."));
+//        name_file = name_file + l_name;
+//        String ext = l_name.substring(l_name.lastIndexOf(".") + 1);
+//        type = ext;
+//
+//        HttpClient httpclient = new DefaultHttpClient();
+//        //txt file upload issue so change video url to use resumbale url 05-03-2024
+//        String appURL;
+//        String targetUrl;
+//        appURL = sqlitewraper.context.getResources().getString(R.string.App_URL).split("/")[2].trim();
+//        if(appURL.equalsIgnoreCase("login.easyform.in"))
+//        {
+//            // for login url
+//             targetUrl = context.getResources().getString(R.string.Resumable_URL) + "flowupload";
+//        }
+//        else {
+//            // for other url
+//             targetUrl = context.getResources().getString(R.string.Video_URL) + "api/flowupload";
+//        }
+//
+//        int photoID = 0;
+//        double totalbytes;
+//        int final_total_ch;
+//        HttpPost httppost = new HttpPost(targetUrl);
+//
+//        File f = new File(path);
+//        if (f.exists()) {
+//            System.out.print("dsds");
+//        } else {
+//            return 1;
+//        }
+//
+//        double f_legnth = f.length();
+//        int in_buffer_legnth = 1024 * 1024;
+//        double total_chunk = f_legnth / in_buffer_legnth;
+//        int total_ch = (int) f_legnth / in_buffer_legnth;
+//        totalbytes = f_legnth;
+//        if (total_chunk - total_ch > 0) {
+//            final_total_ch = total_ch + 1;
+//        } else {
+//            final_total_ch = total_ch;
+//        }
+//
+//        if (track_byte_g > 0) {
+//            totalbytes = track_byte_g;
+//        }
+//
+//
+//        String size = getFileSize((long) f_legnth);
+//
+//        sizeofFile = size;
+//
+//        FileBody bin = new FileBody(f);
+//
+//        FileBody cbFile = new FileBody(f, "application/" + ext + "");
+//        cbFile.getMediaType();
+//        StringBody comment = new StringBody("A binary file of some kind");
+//
+//        for (int i = 0; i < final_total_ch; i++) {
+//
+//            Log.d("##ACHUNNK_NUMBER", "CH:" + i + "FINAL:" + final_total_ch);
+//
+//            if (CustomerUniq.equals("null") || CustomerUniq == null) {
+//                CustomerUniq = "0";
+//            }
+//
+//            String sizekb = VideoSizeConverter(size);
+//
+//            MultipartEntity reqEntity = new MultipartEntity();
+//            reqEntity.addPart("flowChunkNumber",
+//                    new StringBody(String.valueOf(i + 1)));
+//            reqEntity.addPart("flowChunkSize",
+//                    new StringBody(String.valueOf(1024 * 1024)));
+//            reqEntity.addPart("flowCurrentChunkSize",
+//                    new StringBody(String.valueOf(1024 * 1024)));
+//            reqEntity.addPart("flowTotalSize",
+//                    new StringBody(String.valueOf(Math.round(f_legnth))));
+//            reqEntity.addPart("flowIdentifier",
+//                    new StringBody(String.valueOf(name_file)));
+//            reqEntity.addPart("flowFilename",
+//                    new StringBody(String.valueOf(name_file)));
+//            reqEntity.addPart("flowRelativePath",
+//                    new StringBody(String.valueOf(name_file)));
+//            reqEntity.addPart("flowTotalChunks",
+//                    new StringBody(String.valueOf(final_total_ch)));
+//            reqEntity.addPart("CompanyId",
+//                    new StringBody(CompanyId));
+//            reqEntity.addPart("CustomerUniq",
+//                    new StringBody(CustomerUniq));
+//
+//            reqEntity.addPart("checksheetid",
+//                    new StringBody(String.valueOf(checksheetid_new)));
+//            reqEntity.addPart("que_id",
+//                    new StringBody(String.valueOf(que_id)));
+//            reqEntity.addPart("appid",
+//                    new StringBody(String.valueOf(DeviceEventsUtils.getLoginDetails().get(2))));
+//
+//
+//            if (step_No == null) {
+//                step_No = "0";
+//            }
+//            reqEntity.addPart("step_No",
+//                    new StringBody(step_No));
+//            reqEntity.addPart("type",
+//                    new StringBody(type));
+//            reqEntity.addPart("Ph_id",
+//                    new StringBody(Ph_id));
+//            reqEntity.addPart("it_id",
+//                    new StringBody(it_id));
+//            reqEntity.addPart("size",
+//                    new StringBody("0"));
+//            reqEntity.addPart("size_kb",
+//                    new StringBody(sizekb));
+//            reqEntity.addPart("th_path",
+//                    new StringBody(th_path));
+//            reqEntity.addPart("sid",
+//                    new StringBody(String.valueOf(sid)));
+//
+//
+//            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//            byte[] data = bos.toByteArray();
+//
+//            System.out.println("executing request "
+//                    + httppost.getRequestLine());
+//
+//            Writer writer = new StringWriter();
+//
+//            FileInputStream fileInputStream = new FileInputStream(
+//                    new File(path));
+//
+//            StringBuffer fileContent = new StringBuffer("");
+//            // bufferSize = 1024 * 1024;
+//            if (totalbytes > (1024 * 1024)) {
+//                bufferSize = 1024 * 1024;
+//                totalbytes = totalbytes - bufferSize;
+//
+//            } else {
+//                bufferSize = (int) totalbytes;
+//            }
+//
+//            byte[] buffer = new byte[bufferSize];
+//
+//            int n = fileInputStream.read(buffer);
+//
+//            if (i == 0) {
+//
+//                fileContent.append(new String(buffer, 0, n));
+//                offset = +n;
+//
+//            } else if (i + 1 != final_total_ch) {
+//                try {
+//
+//                    RandomAccessFile raf = new RandomAccessFile(f,
+//                            "r");
+//                    raf.seek(offset);
+//                    raf.readFully(buffer);
+//                    fileContent.append(new String(buffer));
+//                    offset = offset + (1024 * 1024);
+//
+//                } catch (Exception e) {
+//                    throw e;
+//
+//                }
+//
+//            } else if ((i + 1) == final_total_ch) {
+//                RandomAccessFile raf = new RandomAccessFile(f, "r");
+//                raf.seek(offset);
+//                raf.readFully(buffer);
+//                fileContent.append(new String(buffer));
+//            }
+//            ByteArrayBody imageByte = new ByteArrayBody(buffer, name_file);
+//            reqEntity.addPart("file", imageByte);
+//
+//            B_new b = new B_new();
+//            String u_c1 = b.GetValue();
+//
+//            if (!u_c1.equalsIgnoreCase("NA")) {
+//
+//                httppost.setEntity(reqEntity);
+//                try {
+//                    boolean mStringLogWrite = sharedPreferences.getBoolean("isLogWrite",false);
+//                    mStringLogWrite = true;
+//                    if (mStringLogWrite)
+//                        reqEntity.writeTo(new FileOutputStream(Utils.getRootFolderFile(sqlitewraper.context) + "/" + LogUtils.LogFolderName + "/" + "output.txt"));
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//               // HttpConnectionParams.setSoTimeout((HttpParams) reqEntity, 6000);
+//
+//               try{
+//                   HttpResponse response = httpclient.execute(httppost);
+//
+//
+//                   if (response.getStatusLine().getStatusCode() == HttpsURLConnection.HTTP_OK) {
+//                       System.out.print("dsd");
+//                       String responseString = new BasicResponseHandler().handleResponse(response);
+//                       Log.d("##AA", responseString);
+//
+//                       try {
+//                           JSONArray jsonArray = new JSONArray(responseString);
+//                           JSONObject jsonObject = jsonArray.getJSONObject(0);
+//                           photoID = Integer.parseInt(jsonObject.getString("Photo_id"));
+//
+//
+//                       } catch (JSONException e) {
+//                           LogUtils.writeApiCallLogToFile( reqEntity +  "\n response parse: " + responseString + e, targetUrl,"","1");
+//                           e.printStackTrace();
+//                       }
+//
+//
+//                   } else {
+//                       new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                           public void run() {
+//                               Toast.makeText(context, "Photo upload process \nResponse code: " +  response.getStatusLine().getStatusCode() +"\nUrl: "+targetUrl, Toast.LENGTH_LONG).show();
+//                           }
+//                       });
+//                       LogUtils.writeApiCallLogToFile( reqEntity +  "\n response code: " + response.getStatusLine().getStatusCode() , targetUrl,"","1");
+//                       return 0;
+//                   }
+//
+//                   HttpEntity resEntity = response.getEntity();
+//                   track_chnumber = i;
+//                   track_offset = offset;
+//
+//                   track_bytes = totalbytes;
+//               }
+//               catch (Exception e)
+//               {
+//                   System.out.println("Response content: " + e.toString());
+//               }
+//            } else {
+//                return 0;
+//            }
+//
+//            System.out.println("Response content: " + writer.toString());
+//        }
+//
+//        return photoID;
+//    }
 
-//        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-//        StrictMode.setThreadPolicy(policy);
+
+// upload photo using resumable use okhttp
+public static int uploadPhotoResumable(String path, String CompanyId, String CustomerUniq,
+                                       String checksheetid_new, String que_id, String step_No,
+                                       String type, String Ph_id, String it_id,
+                                       String th_path, String sid) throws IOException {
+
+    int photoID = 0;
 
         ch_number = 0;
 
@@ -282,30 +553,21 @@ public class UploadUtils {
         String ext = l_name.substring(l_name.lastIndexOf(".") + 1);
         type = ext;
 
-        HttpClient httpclient = new DefaultHttpClient();
-        //txt file upload issue so change video url to use resumbale url 05-03-2024
         String appURL;
         String targetUrl;
-        appURL = sqlitewraper.context.getResources().getString(R.string.App_URL).split("/")[2].trim();
-        if(appURL.equalsIgnoreCase("login.easyform.in"))
-        {
-            // for login url
-             targetUrl = context.getResources().getString(R.string.Resumable_URL) + "flowupload";
-        }
-        else {
-            // for other url
-             targetUrl = context.getResources().getString(R.string.Video_URL) + "api/flowupload";
+        appURL = context.getResources().getString(R.string.App_URL).split("/")[2].trim();
+        if (appURL.equalsIgnoreCase("login.easyform.in")) {
+            targetUrl = context.getResources().getString(R.string.Resumable_URL) + "flowupload";
+        } else {
+            targetUrl = context.getResources().getString(R.string.Video_URL) + "api/flowupload";
         }
 
-        int photoID = 0;
+
         double totalbytes;
         int final_total_ch;
-        HttpPost httppost = new HttpPost(targetUrl);
 
         File f = new File(path);
-        if (f.exists()) {
-            System.out.print("dsds");
-        } else {
+        if (!f.exists()) {
             return 1;
         }
 
@@ -314,6 +576,7 @@ public class UploadUtils {
         double total_chunk = f_legnth / in_buffer_legnth;
         int total_ch = (int) f_legnth / in_buffer_legnth;
         totalbytes = f_legnth;
+
         if (total_chunk - total_ch > 0) {
             final_total_ch = total_ch + 1;
         } else {
@@ -324,153 +587,100 @@ public class UploadUtils {
             totalbytes = track_byte_g;
         }
 
-
         String size = getFileSize((long) f_legnth);
-
         sizeofFile = size;
 
-        FileBody bin = new FileBody(f);
+        Dispatcher dispatcher = new Dispatcher();
+        dispatcher.setMaxRequests(16);
+        dispatcher.setMaxRequestsPerHost(6);
 
-        FileBody cbFile = new FileBody(f, "application/" + ext + "");
-        cbFile.getMediaType();
-        StringBody comment = new StringBody("A binary file of some kind");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .dispatcher(dispatcher)
+                .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES))
+                .retryOnConnectionFailure(true)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .addInterceptor(new RetryConnectInterceptor(3))
+                .build();
 
         for (int i = 0; i < final_total_ch; i++) {
 
             Log.d("##ACHUNNK_NUMBER", "CH:" + i + "FINAL:" + final_total_ch);
 
-            if (CustomerUniq.equals("null") || CustomerUniq == null) {
+            if (CustomerUniq == null || CustomerUniq.equals("null")) {
                 CustomerUniq = "0";
             }
 
             String sizekb = VideoSizeConverter(size);
 
-            MultipartEntity reqEntity = new MultipartEntity();
-            reqEntity.addPart("flowChunkNumber",
-                    new StringBody(String.valueOf(i + 1)));
-            reqEntity.addPart("flowChunkSize",
-                    new StringBody(String.valueOf(1024 * 1024)));
-            reqEntity.addPart("flowCurrentChunkSize",
-                    new StringBody(String.valueOf(1024 * 1024)));
-            reqEntity.addPart("flowTotalSize",
-                    new StringBody(String.valueOf(Math.round(f_legnth))));
-            reqEntity.addPart("flowIdentifier",
-                    new StringBody(String.valueOf(name_file)));
-            reqEntity.addPart("flowFilename",
-                    new StringBody(String.valueOf(name_file)));
-            reqEntity.addPart("flowRelativePath",
-                    new StringBody(String.valueOf(name_file)));
-            reqEntity.addPart("flowTotalChunks",
-                    new StringBody(String.valueOf(final_total_ch)));
-            reqEntity.addPart("CompanyId",
-                    new StringBody(CompanyId));
-            reqEntity.addPart("CustomerUniq",
-                    new StringBody(CustomerUniq));
-
-            reqEntity.addPart("checksheetid",
-                    new StringBody(String.valueOf(checksheetid_new)));
-            reqEntity.addPart("que_id",
-                    new StringBody(String.valueOf(que_id)));
-            reqEntity.addPart("appid",
-                    new StringBody(String.valueOf(DeviceEventsUtils.getLoginDetails().get(2))));
-
-
-            if (step_No == null) {
-                step_No = "0";
-            }
-            reqEntity.addPart("step_No",
-                    new StringBody(step_No));
-            reqEntity.addPart("type",
-                    new StringBody(type));
-            reqEntity.addPart("Ph_id",
-                    new StringBody(Ph_id));
-            reqEntity.addPart("it_id",
-                    new StringBody(it_id));
-            reqEntity.addPart("size",
-                    new StringBody("0"));
-            reqEntity.addPart("size_kb",
-                    new StringBody(sizekb));
-            reqEntity.addPart("th_path",
-                    new StringBody(th_path));
-            reqEntity.addPart("sid",
-                    new StringBody(String.valueOf(sid)));
-
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] data = bos.toByteArray();
-
-            System.out.println("executing request "
-                    + httppost.getRequestLine());
-
-            Writer writer = new StringWriter();
-
-            FileInputStream fileInputStream = new FileInputStream(
-                    new File(path));
-
-            StringBuffer fileContent = new StringBuffer("");
-            // bufferSize = 1024 * 1024;
             if (totalbytes > (1024 * 1024)) {
                 bufferSize = 1024 * 1024;
                 totalbytes = totalbytes - bufferSize;
-
             } else {
                 bufferSize = (int) totalbytes;
             }
 
             byte[] buffer = new byte[bufferSize];
 
-            int n = fileInputStream.read(buffer);
-
             if (i == 0) {
-
-                fileContent.append(new String(buffer, 0, n));
-                offset = +n;
-
-            } else if (i + 1 != final_total_ch) {
-                try {
-
-                    RandomAccessFile raf = new RandomAccessFile(f,
-                            "r");
-                    raf.seek(offset);
-                    raf.readFully(buffer);
-                    fileContent.append(new String(buffer));
-                    offset = offset + (1024 * 1024);
-
-                } catch (Exception e) {
-                    throw e;
-
-                }
-
-            } else if ((i + 1) == final_total_ch) {
+                FileInputStream fis = new FileInputStream(f);
+                fis.read(buffer);
+                fis.close();
+                offset = buffer.length;
+            } else {
                 RandomAccessFile raf = new RandomAccessFile(f, "r");
                 raf.seek(offset);
                 raf.readFully(buffer);
-                fileContent.append(new String(buffer));
+                raf.close();
+                offset = offset + buffer.length;
             }
-            ByteArrayBody imageByte = new ByteArrayBody(buffer, name_file);
-            reqEntity.addPart("file", imageByte);
 
-            B_new b = new B_new();
-            String u_c1 = b.GetValue();
+            RequestBody fileBody = RequestBody.create(
+                    buffer,
+                    MediaType.parse("application/octet-stream")
+            );
 
-            if (!u_c1.equalsIgnoreCase("NA")) {
+            MultipartBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("flowChunkNumber", String.valueOf(i + 1))
+                    .addFormDataPart("flowChunkSize", String.valueOf(1024 * 1024))
+                    .addFormDataPart("flowCurrentChunkSize", String.valueOf(buffer.length))
+                    .addFormDataPart("flowTotalSize", String.valueOf(Math.round(f_legnth)))
+                    .addFormDataPart("flowIdentifier", name_file)
+                    .addFormDataPart("flowFilename", name_file)
+                    .addFormDataPart("flowRelativePath", name_file)
+                    .addFormDataPart("flowTotalChunks", String.valueOf(final_total_ch))
+                    .addFormDataPart("CompanyId", CompanyId)
+                    .addFormDataPart("CustomerUniq", CustomerUniq)
+                    .addFormDataPart("checksheetid", checksheetid_new)
+                    .addFormDataPart("que_id", que_id)
+                    .addFormDataPart("appid", DeviceEventsUtils.getLoginDetails().get(2))
+                    .addFormDataPart("step_No", step_No == null ? "0" : step_No)
+                    .addFormDataPart("type", type)
+                    .addFormDataPart("Ph_id", Ph_id)
+                    .addFormDataPart("it_id", it_id)
+                    .addFormDataPart("size", "0")
+                    .addFormDataPart("size_kb", sizekb)
+                    .addFormDataPart("th_path", th_path)
+                    .addFormDataPart("sid", sid)
+                    .addFormDataPart("file", name_file, fileBody)
+                    .build();
 
-                httppost.setEntity(reqEntity);
-                try {
-                    boolean mStringLogWrite = sharedPreferences.getBoolean("isLogWrite",false);
-                    if (mStringLogWrite)
-                        reqEntity.writeTo(new FileOutputStream(Utils.getRootFolderFile(sqlitewraper.context) + "/" + LogUtils.LogFolderName + "/" + "output.txt"));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-               // HttpConnectionParams.setSoTimeout((HttpParams) reqEntity, 6000);
 
-                HttpResponse response = httpclient.execute(httppost);
+            Request request = new Request.Builder()
+                    .url(targetUrl)
+                    .post(requestBody)
+                    .build();
 
+            Response response = null;
+            String body = "";
+            try{
+                response = client.newCall(request).execute();
 
-                if (response.getStatusLine().getStatusCode() == HttpsURLConnection.HTTP_OK) {
-                    System.out.print("dsd");
-                    String responseString = new BasicResponseHandler().handleResponse(response);
+                if (response.isSuccessful()) {
+                    body = getBodyParameters(request);
+                    String responseString = response.body().string();
                     Log.d("##AA", responseString);
 
                     try {
@@ -478,38 +688,59 @@ public class UploadUtils {
                         JSONObject jsonObject = jsonArray.getJSONObject(0);
                         photoID = Integer.parseInt(jsonObject.getString("Photo_id"));
 
-
                     } catch (JSONException e) {
-                        LogUtils.writeApiCallLogToFile( reqEntity +  "\n response parse: " + responseString + e, targetUrl,"","1");
-                        e.printStackTrace();
+                        
+                        LogUtils.writeApiCallLogToFile(body + "\n response parse: " + responseString + e,
+                                targetUrl, "", "1");
                     }
 
+                    track_chnumber = i;
+                    track_offset = offset;
+                    track_bytes = totalbytes;
 
                 } else {
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        public void run() {
-                            Toast.makeText(context, "Photo upload process \nResponse code: " +  response.getStatusLine().getStatusCode() +"\nUrl: "+targetUrl, Toast.LENGTH_LONG).show();
-                        }
-                    });
-                    LogUtils.writeApiCallLogToFile( reqEntity +  "\n response code: " + response.getStatusLine().getStatusCode() , targetUrl,"","1");
+                    Log.d("##AA", String.valueOf(response.code()));
+                    Response finalResponse = response;
+                    new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(
+                            context,
+                            "Photo upload process \nResponse code: " + finalResponse.code() + "\nUrl: " + targetUrl,
+                            Toast.LENGTH_LONG
+                    ).show());
+                    
+                    LogUtils.writeApiCallLogToFile(body + "\n response code: " + response.code(),
+                            targetUrl, "", "1");
                     return 0;
                 }
+            } catch (Exception e) {
 
-                HttpEntity resEntity = response.getEntity();
-                track_chnumber = i;
-                track_offset = offset;
-
-                track_bytes = totalbytes;
-            } else {
+                LogUtils.writeApiCallLogToFile("Exception parse: " +  e,
+                        targetUrl, "", "1");
                 return 0;
             }
+            finally {
+                if (response != null) {
+                    response.close();
+                }
+            }
 
-            System.out.println("Response content: " + writer.toString());
         }
 
         return photoID;
     }
 
+    private static String getBodyParameters(Request request) {
+        try {
+            final Request copy = request.newBuilder().build();
+            final Buffer buffer = new Buffer();
+            if (copy.body() != null) {
+                copy.body().writeTo(buffer);
+                return buffer.readUtf8(); // Returns the raw form-data or JSON string
+            }
+        } catch (final IOException e) {
+            return "Error reading body";
+        }
+        return "";
+    }
     //upload photo using resumable
     public static int uploadPhotoNewResumable(String path, String CompanyId, String CustomerUniq, String checksheetid_new, String que_id, String step_No, String type, String Ph_id, String it_id, String th_path, String sid) throws IOException {
         final String targetUrl = context.getResources().getString(R.string.Video_URL) + "api/flowupload";

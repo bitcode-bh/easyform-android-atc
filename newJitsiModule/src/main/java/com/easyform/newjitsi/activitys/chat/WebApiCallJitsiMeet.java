@@ -16,10 +16,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 
+import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -175,10 +177,39 @@ public class WebApiCallJitsiMeet {
 
         builder.connectTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS);
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .addInterceptor(new RetryConnectInterceptor(3));
 
 
         return builder.build();
+    }
+
+    static class RetryConnectInterceptor implements Interceptor {
+        private final int maxRetries;
+        RetryConnectInterceptor(int maxRetries) { this.maxRetries = maxRetries; }
+
+        @Override public Response intercept(Chain chain) throws IOException {
+            Request req = chain.request();
+            long waitMs = 300;
+
+            for (int attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    return chain.proceed(req);
+                } catch (IOException e) {
+                    boolean connectRefused =
+                            (e instanceof java.net.ConnectException) ||
+                                    String.valueOf(e.getMessage()).contains("ECONNREFUSED") ||
+                                    String.valueOf(e.getMessage()).contains("Connection refused") ||
+                                    String.valueOf(e.getMessage()).contains("Failed to connect");
+
+                    if (!connectRefused || attempt == maxRetries) throw e;
+
+                    try { Thread.sleep(waitMs); } catch (InterruptedException ignored) {}
+                    waitMs = Math.min(waitMs * 2, 2000);
+                }
+            }
+            return chain.proceed(req);
+        }
     }
 
 }
