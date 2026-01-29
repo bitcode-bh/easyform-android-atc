@@ -31,7 +31,6 @@ import com.sky.atc.easyformse.NewWebservicesCallEasyform;
 import com.sky.atc.easyformse.PeerCertificateExtractor;
 import com.sky.atc.easyformse.R;
 import com.sky.atc.easyformse.RetryConnectInterceptor;
-import com.sky.atc.easyformse.SampleActivity;
 import com.sky.atc.easyformse.sqlitewraper;
 import com.sky.atc.easyformse.utils.LogUtils;
 import com.sky.atc.easyformse.utils.UnsafeOkHttpClient;
