@@ -510,13 +510,13 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
         if (currentAPIVersion >= Build.VERSION_CODES.M) {
             ArrayList<String> permissionsNotGranted = new ArrayList<>();
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            {
-                neededPermissions =  new String[]{CAMERA, Manifest.permission.READ_MEDIA_VIDEO,Manifest.permission.READ_MEDIA_IMAGES , RECORD_AUDIO};
-            }
-            else {
-                neededPermissions =  new String[]{CAMERA, WRITE_EXTERNAL_STORAGE , RECORD_AUDIO};
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+//            {
+//                neededPermissions =  new String[]{CAMERA, Manifest.permission.READ_MEDIA_VIDEO,Manifest.permission.READ_MEDIA_IMAGES , Manifest.permission.RECORD_AUDIO};
+//            }
+//            else {
+//            }
+            neededPermissions =  new String[]{CAMERA, WRITE_EXTERNAL_STORAGE , RECORD_AUDIO};
             for (String permission : neededPermissions) {
                 if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                     permissionsNotGranted.add(permission);
