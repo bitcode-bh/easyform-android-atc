@@ -1933,6 +1933,10 @@ public class f_upload_new_structure extends WakefulIntentService {
             data1.put("tower", tower_type);
             data1.put("check_type", checksheetid);
             data1.put("u_c", u_c);
+            if(siteid == null)
+            {
+                siteid = "0";
+            }
             data1.put("siteid", siteid);
             data1.put("servertaskid", server_task_id);
             data1.put("status", status);
