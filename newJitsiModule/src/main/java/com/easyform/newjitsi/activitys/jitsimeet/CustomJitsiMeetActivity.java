@@ -1768,6 +1768,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 String status = null;
                 String message = null;
                 JSONArray jsonArray1 = new JSONArray(responsetxt);
+
                 Checksheetnamelist = new ArrayList<>();
                 for (int k = 0; k < jsonArray1.length(); k++) {
                     JSONObject jsonObject = jsonArray1.getJSONObject(0);
@@ -1784,6 +1785,8 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
 
                         }
                         else {
+                            int found = 0;
+                            String start_status = "";
                             JSONArray mJsonArray = new JSONArray(DataArray);
 
                             for (int i = 0; i < mJsonArray.length(); i++) {
@@ -1803,13 +1806,18 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                                     }
                                     else {
 
-                                        String start_status =  dataItem.getString("start_status");
+                                        start_status =  dataItem.getString("start_status");
                                         if(mOtherData.getStart_status().equalsIgnoreCase(start_status)) {
+                                            found++;
                                             Checksheetnamelist.add(new ChecklistItem(cName, checksheetId, 0));
                                         }
                                     }
                                 }
 
+                                if(found == 0)
+                                {
+                                    showerrormsg("Checksheet mapping not found start status is" + start_status);
+                                }
                             }
 
                             if (!Checksheetnamelist.isEmpty()) {
@@ -1841,7 +1849,15 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         }
     }
 
+    private void showerrormsg(String Msg) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Checklist");
+        builder.setCancelable(false);
+        builder.setMessage(Msg);
 
+        builder.setPositiveButton("Close", null);
+        builder.show();
+    }
     private void showChecklistDialog(List<ChecklistItem> checklistItems,UserData mUserData,OtherData mOtherData) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select Checklist");

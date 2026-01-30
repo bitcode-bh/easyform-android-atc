@@ -103,7 +103,7 @@ public class WebDialogFragment extends DialogFragment {
 
 
 
-        String url = "file:///android_asset/www2/viewsitelist_pm_grouplist.html?task_id=" + taskId;
+        String url = "file:///android_asset/www2/viewsitelist_pm_grouplist.html?task_id=" + taskId + "&status=" + start_status;
         Log.d("Webviewurl", url);
 
         cordovaWebView.loadUrl(url);

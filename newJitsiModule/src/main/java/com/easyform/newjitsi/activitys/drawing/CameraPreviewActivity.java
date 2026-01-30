@@ -512,10 +512,10 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             {
-                neededPermissions =  new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_VIDEO,Manifest.permission.READ_MEDIA_IMAGES ,Manifest.permission.RECORD_AUDIO};
+                neededPermissions =  new String[]{CAMERA, Manifest.permission.READ_MEDIA_VIDEO,Manifest.permission.READ_MEDIA_IMAGES , RECORD_AUDIO};
             }
             else {
-                neededPermissions =  new String[]{Manifest.permission.CAMERA, WRITE_EXTERNAL_STORAGE ,Manifest.permission.RECORD_AUDIO};
+                neededPermissions =  new String[]{CAMERA, WRITE_EXTERNAL_STORAGE , RECORD_AUDIO};
             }
             for (String permission : neededPermissions) {
                 if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
@@ -954,7 +954,14 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
             Log.d("##PREVIEW_ONTOUCH", String.valueOf(event.getAction()));
 
             // Get the pointer ID
-            final Camera.Parameters params = camera.getParameters();
+             Camera.Parameters params = null;
+            try {
+                params = camera.getParameters();
+            } catch (Exception e) {
+                // Some devices throw internally
+                params = null;
+            }
+
             int action = event.getAction();
 
             try {
@@ -971,11 +978,12 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
                     if (action == MotionEvent.ACTION_UP) {
                         try {
                             final Handler handler = new Handler();
+                            Camera.Parameters finalParams = params;
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
                                     try {
-                                        handleFocus(event, params);
+                                        handleFocus(event, finalParams);
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
@@ -1152,7 +1160,11 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
             camera.setDisplayOrientation(90);
             try {
                 camera.setPreviewDisplay(surfaceHolder);
-                camera.startPreview();
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    try {
+                        camera.startPreview();
+                    } catch (Exception ignored) {}
+                }, 200);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1202,7 +1214,8 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
                         }
                         else {
                             JSONArray mJsonArray = new JSONArray(DataArray);
-
+                            int found = 0;
+                            String start_status = "";
                             for (int i = 0; i < mJsonArray.length(); i++) {
                                 JSONObject mjsonObject = mJsonArray.getJSONObject(i);
 
@@ -1220,15 +1233,20 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
                                     }
                                     else {
 
-                                        String start_status =  dataItem.getString("start_status");
+                                         start_status =  dataItem.getString("start_status");
                                         if(mOtherData.getStart_status().equalsIgnoreCase(start_status)) {
+                                            found++;
                                             Checksheetnamelist.add(new ChecklistItem(cName, checksheetId, 0));
                                         }
                                     }
                                 }
+                                if(found == 0)
+                                {
+                                    showerrormsg("Checksheet mapping not found start status is " + start_status);
+
+                                }
 
                             }
-
                             if (!Checksheetnamelist.isEmpty()) {
                                 showChecklistDialog(Checksheetnamelist);
                             } else {
@@ -1282,6 +1300,16 @@ public class CameraPreviewActivity extends AppCompatActivity implements SurfaceH
         builder.show();
     }
 
+
+    private void showerrormsg(String Msg) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Checklist");
+        builder.setCancelable(false);
+        builder.setMessage(Msg);
+
+        builder.setPositiveButton("Close", null);
+        builder.show();
+    }
 
     List<ChecklistItem> mChecklistItems;
     public void WCF_GetCheckSheetData_Port(String selectedChecksheetId)
