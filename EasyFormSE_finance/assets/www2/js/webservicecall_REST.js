@@ -254,7 +254,7 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
 
                     req_count++;
                     invocation.abort();
-                    mk_notify("Network Failed! Retrying...");
+                    //mk_notify("Network Failed! Retrying...");
                     var t_getdata = new Webservicecall_REST(url1, params, sucesscallback, failcallback);
                     t_getdata.callOtherDomain();
                 }
