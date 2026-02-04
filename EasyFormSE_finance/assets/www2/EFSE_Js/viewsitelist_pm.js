@@ -1674,7 +1674,7 @@ function onsuccess_get_list_of_pm_sites(e) {
 
                     let trip_found = 0;
                     if (trip_New_Array.length > 0) {
-                        for (let t = 0; trip_New_Array.length; t++) {
+                        for (let t = 0; t < trip_New_Array.length; t++) {
                             let trip_tid = trip_New_Array[t].tid;
                             if (trip_tid == tid) {
                                 trip_found = 1;
