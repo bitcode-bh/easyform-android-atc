@@ -1581,8 +1581,9 @@ MkControls.prototype.build_type_40_livelink = function () {
             str += '</video>';
             str += '<p id="livelink_status_' + this.new_id + '">' + watch_status + '</p>';
 
+            // hide video download button as not required currently - mk - 04022026
             let download_str = "download_livelink_doc('" + doc_url + "')"
-            str += '<p id="livelink_download_' + this.new_id + '" onclick="' + download_str + '" style="float:right"><i class="fa fa-download"></i> Download</p>';
+            str += '<p id="livelink_download_' + this.new_id + '" onclick="' + download_str + '" style="float:right; display: none"><i class="fa fa-download"></i> Download</p>';
             str += '</div>';
         }
 
