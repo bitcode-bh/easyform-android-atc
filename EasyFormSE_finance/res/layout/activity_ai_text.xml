@@ -9,6 +9,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:id="@+id/framlayout"
+        android:visibility="visible"
         android:layout_height="match_parent">
      <TextureView
             android:id="@+id/textureView"
@@ -27,107 +28,167 @@
             />
 
         <ImageView
-                android:id="@+id/captureFront"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="center|bottom"
-                android:padding="2dp"
-                android:layout_marginBottom="20dp"
-                android:src="@drawable/cameraclick_foreground" />
+            android:id="@+id/captureFront"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center|bottom"
+            android:layout_marginBottom="20dp"
+            android:padding="2dp"
+            android:src="@drawable/cameraclick_foreground" />
 
 
     </FrameLayout>
     <!-- Header -->
     <LinearLayout
+        android:id="@+id/linearsecond"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bottom_background_ai"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:id="@+id/linearmain"
-        android:visibility="gone"
-        android:padding="15dp">
+        android:visibility="gone">
 
-        <TextView
-            android:id="@+id/text_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginBottom="5sp"
-            android:text="AI Chat"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
-    <ScrollView
+    <androidx.cardview.widget.CardView
+        android:id="@+id/mainCard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:id="@+id/scrollview"
-        android:visibility="gone"
-        android:fillViewport="true">
+        android:layout_height="match_parent"
+        android:layout_margin="5dp"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="#F4F6FB"
+        app:cardUseCompatPadding="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
+            android:id="@+id/linearmain"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="40dp"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/text_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="5sp"
+                android:text="AI Image Prompt"
+                android:textColor="#3b5dce"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5sp"
-                android:layout_marginRight="5sp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:gravity="center"
                 android:elevation="2dp"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
 
-                <ImageView
-                    android:id="@+id/imageView"
-                    android:layout_width="250sp"
-                    android:layout_height="250sp"
-                    android:layout_gravity="end"
-                    android:src="@drawable/atc_logo"
-                    android:visibility="gone" />
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/gradient_border"
+                    android:layout_margin="15dp"
+                    android:padding="3dp">
 
-                <TextView
-                    android:id="@+id/pdftext"
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/white_inner"
+                        android:padding="2dp">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#FFFFFF"
+                            app:cardCornerRadius="18dp"
+                            app:cardElevation="0dp"
+                            app:cardUseCompatPadding="true">
+
+                            <ImageView
+                                android:id="@+id/imageView"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/atc_logo"
+                                android:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/pdftext"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="end"
+                                android:layout_marginTop="8sp"
+                                android:layout_marginRight="10sp"
+                                android:background="@drawable/image_background"
+                                android:gravity="end"
+                                android:padding="7sp"
+                                android:text="sample_file.pdf"
+                                android:textColor="@color/black"
+                                android:visibility="gone" />
+
+                        </androidx.cardview.widget.CardView>
+                    </FrameLayout>
+                </FrameLayout>
+
+
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/promptCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="230dp"
+                    android:background="#FFFFFF"
+                    app:cardCornerRadius="20dp"
+                    android:layout_marginBottom="30dp"
+                    android:layout_margin="10dp"
+                    app:cardElevation="6dp"
+                    app:cardUseCompatPadding="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PROMPT :"
+                            android:textColor="#000000"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/PromptText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:lineSpacingExtra="3dp"
+                            android:maxLines="15"
+                            android:text="Prompt text will show here..."
+                            android:textColor="#333333"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_marginTop="8sp"
-                    android:layout_marginRight="10sp"
-                    android:background="@drawable/image_background"
-                    android:gravity="end"
-                    android:padding="7sp"
-                    android:text="sample_file.pdf"
-                    android:textColor="@color/black"
-                    android:visibility="gone" />
-
-                <!-- Prompt Text -->
-                <TextView
-                    android:id="@+id/PromptText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginRight="10sp"
-                    android:background="@drawable/image_background"
-                    android:padding="10sp"
-                    android:singleLine="false"
-                    android:text=""
-                    android:textColor="#444"
-                    android:textSize="15sp"
+                    android:layout_gravity="center"
                     android:visibility="gone" />
             </LinearLayout>
 
             <!-- Progress Bar -->
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone" />
+
 
             <LinearLayout
                 android:id="@+id/responselayout"
@@ -136,10 +197,10 @@
                 android:layout_marginStart="5sp"
                 android:layout_marginTop="15sp"
                 android:layout_marginRight="40dp"
-                android:visibility="gone"
                 android:background="@drawable/text_background"
                 android:elevation="2dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <TextView
                     android:id="@+id/textOutput"
@@ -158,14 +219,16 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
                     android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5sp"
                     android:layout_marginRight="2sp"
+                    android:layout_marginBottom="5sp"
                     android:backgroundTint="#000000"
                     android:text="DONE"
                     android:textAllCaps="true"
                     android:textColor="#FFFFFF"
                     android:visibility="gone" />
             </LinearLayout>
-        </LinearLayout>
-    </ScrollView>
+
+
+    </androidx.cardview.widget.CardView>
+    </LinearLayout>
 </LinearLayout>

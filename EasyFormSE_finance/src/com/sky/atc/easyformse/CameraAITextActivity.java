@@ -109,8 +109,7 @@ public class CameraAITextActivity extends AppCompatActivity {
     private CaptureRequest.Builder previewRequestBuilder;
     ImageView CaptureImage,BrowseImage;
     FrameLayout mFrameLayout;
-    ScrollView mScrollView;
-    LinearLayout mLinearLayoutmain;
+    LinearLayout mLinearLayoutmain,linearsecond;
     int rot = 0;
     @SuppressLint("MissingInflatedId")
     @Override
@@ -127,7 +126,7 @@ public class CameraAITextActivity extends AppCompatActivity {
         mLinearLayout = findViewById(R.id.responselayout);
         CaptureImage = findViewById(R.id.captureFront);
         mFrameLayout = findViewById(R.id.framlayout);
-        mScrollView = findViewById(R.id.scrollview);
+        linearsecond = findViewById(R.id.linearsecond);
         textureView = findViewById(R.id.textureView);
         mLinearLayoutmain = findViewById(R.id.linearmain);
         BrowseImage = findViewById(R.id.browseimage);
@@ -174,7 +173,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                     captureImage();
                 }
             });
-            mButtonDone.setOnClickListener(v -> SendPluginSuccess());
+//            mButtonDone.setOnClickListener(v -> SendPluginSuccess());
 
             BrowseImage.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -252,7 +251,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                 public void onError(@NonNull CameraDevice camera, int error) {
                     camera.close();
                     cameraDevice = null;
-                    Toast.makeText(CameraAITextActivity.this, "Camera error: " + error, Toast.LENGTH_SHORT).show();
+                    // Toast.makeText(CameraAITextActivity.this, "Camera error: " + error, Toast.LENGTH_SHORT).show();
                 }
             }, null);
         } catch (Exception e) {
@@ -327,7 +326,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                     // Update UI
                     mFrameLayout.setVisibility(View.GONE);
                     mLinearLayoutmain.setVisibility(View.VISIBLE);
-                    mScrollView.setVisibility(View.VISIBLE);
+                    linearsecond.setVisibility(View.VISIBLE);
                     imageView.setVisibility(View.VISIBLE);
                     imageView.setImageBitmap(selectedBitmap);
                     PromptText.setVisibility(View.VISIBLE);
@@ -527,9 +526,9 @@ public class CameraAITextActivity extends AppCompatActivity {
                             }
                             mFrameLayout.setVisibility(View.GONE);
                             mLinearLayoutmain.setVisibility(View.VISIBLE);
-                            mScrollView.setVisibility(View.VISIBLE);
+                            linearsecond.setVisibility(View.VISIBLE);
                             imageView.setVisibility(View.VISIBLE);
-                            pdftext.setVisibility(View.VISIBLE);
+                            pdftext.setVisibility(View.GONE);
                             pdftext.setText(filename);
                             PromptText.setVisibility(View.VISIBLE);
                             PromptText.setText(promttext);
@@ -645,10 +644,11 @@ public class CameraAITextActivity extends AppCompatActivity {
                                 .getAsJsonArray("parts")
                                 .get(0).getAsJsonObject()
                                 .get("text").getAsString();
-                        mLinearLayout.setVisibility(View.VISIBLE);
-                        textOutput.setVisibility(View.VISIBLE);
+                        mLinearLayout.setVisibility(View.GONE);
+                        textOutput.setVisibility(View.GONE);
                         textOutput.setText(result);
-                        mButtonDone.setVisibility(View.VISIBLE);
+//                        mButtonDone.setVisibility(View.VISIBLE);
+                        SendPluginSuccess();
                     } catch (Exception e) {
                         textOutput.setText("Failed to parse response");
                     }
