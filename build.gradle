@@ -55,7 +55,7 @@ buildscript {
         }
 
         project.ext {
-            minSdk = 29
+            minSdk = 26
             targetSdk = 29
             compileSdk = 34
         }
