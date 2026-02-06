@@ -4823,6 +4823,11 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             url = global_wcf_url + url;
                         }
 
+                        if (url == "" || url == null || url == undefined) { }
+                        else {
+                            url = url.replace("atcmwfm.americantower.com", "mwfm.altiusinfra.com");
+                        }
+
                         if (read_only == true) {
                             let summary_str = get_summary_str(new_id, prop_name, old_ans, check_type, que_id);
                             newdiv += summary_str;

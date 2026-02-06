@@ -1520,6 +1520,11 @@ MkControls.prototype.build_type_40_livelink = function () {
         let doc_type = value[0].doc_type;
         let doc_url = value[0].doc_url;      // configured live path
 
+        if (doc_url == "" || doc_url == null || doc_url == undefined) { }
+        else {
+            doc_url = doc_url.replace("atcmwfm.americantower.com", "mwfm.altiusinfra.com");
+        }
+
         if (doc_type == "image") {
             var str = '';
             str += '<div class="item-input item-input-field form-div" ' + this.enable_disable + '>';

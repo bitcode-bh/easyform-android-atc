@@ -3093,6 +3093,11 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             url = global_wcf_url + url;
                         }
 
+                        if (url == "" || url == null || url == undefined) { }
+                        else {
+                            url = url.replace("atcmwfm.americantower.com", "mwfm.altiusinfra.com");
+                        }
+
                         var T30_Obj = {
                             new_id: new_id,
                             que_id: jsonObj[i].que_id,
