@@ -184,7 +184,8 @@ function onsuccess_get_download_counter(e) {
             //}
         }
         else {
-            $("#btn_skip").hide();
+            //$("#btn_skip").hide();
+            $("#btn_skip").show();
             $('#refresh_chk').css('visibility', 'visible');
             $('#refresh_task').css('visibility', 'hidden');
         }

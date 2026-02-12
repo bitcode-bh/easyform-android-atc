@@ -79,12 +79,18 @@ function data_to_read_task_Post() {
         var crash_status = JSON.parse(storage.getItem('crash_status'));
         if (crash_status == 6 || crash_status == 7) {
             var cam_crash_data = JSON.parse(storage.getItem('cam_crash_data'));
-            var heading = cam_crash_data[0].heading;
-            var check_type = cam_crash_data[0].check_type;
-            var step = cam_crash_data[0].step;
-            var data = cam_crash_data[0].data;
-            var buttons = cam_crash_data[0].buttons;
-            read_dynamic_surveydata(heading, check_type, step, data, buttons, 6, 0);
+            if (cam_crash_data == "" || cam_crash_data == null || cam_crash_data == undefined) {
+                storage.setItem('crash_status', JSON.stringify('0'));
+                data_to_read_task_Post();
+            }
+            else {
+                var heading = cam_crash_data[0].heading;
+                var check_type = cam_crash_data[0].check_type;
+                var step = cam_crash_data[0].step;
+                var data = cam_crash_data[0].data;
+                var buttons = cam_crash_data[0].buttons;
+                read_dynamic_surveydata(heading, check_type, step, data, buttons, 6, 0);
+            }
         }
         else {
             var data_json = JSON.parse(storage.getItem('list_json'));

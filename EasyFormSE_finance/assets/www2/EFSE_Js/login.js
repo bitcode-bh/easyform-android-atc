@@ -2487,6 +2487,7 @@ function clear_localStorage() {
     let username = JSON.parse(storage.getItem('username'));
     let last_username = JSON.parse(storage.getItem('last_username'));
     let crash_status = JSON.parse(storage.getItem('crash_status'));
+    let cam_crash_data = JSON.parse(storage.getItem('cam_crash_data'));
     let data_json = JSON.parse(storage.getItem('list_json'));
 
     let viewsite_btn_color = JSON.parse(storage.getItem('viewsite_btn_color'));
@@ -2551,6 +2552,7 @@ function clear_localStorage() {
     storage.setItem('username', JSON.stringify(username));
     storage.setItem('last_username', JSON.stringify(last_username));
     storage.setItem('crash_status', JSON.stringify(crash_status));
+    storage.setItem('cam_crash_data', JSON.stringify(cam_crash_data));
     storage.setItem('data_json', JSON.stringify(data_json));
 
     storage.setItem('viewsite_btn_color', JSON.stringify(viewsite_btn_color));
