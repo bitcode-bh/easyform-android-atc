@@ -273,6 +273,10 @@
         <param name="android-package" value="com.sky.atc.easyformse.plugins.HtmlToPdfEmailPlugin" />
     </feature>
 
+    <feature name="TwoFAWithFaceDetectionPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.TwoFAWithFaceDetectionPlugin"/>
+    </feature>
+
     <allow-intent href="http://*/*"></allow-intent>
     <allow-intent href="https://*/*"></allow-intent>
     <platform name="android">

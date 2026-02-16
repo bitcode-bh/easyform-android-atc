@@ -50,7 +50,7 @@ public class FaceRecognizerActivity extends AppCompatActivity {
     CameraSelector cameraSelector;
     Executor executor = Executors.newFixedThreadPool(2);
     private int lensFacing = CameraSelector.LENS_FACING_FRONT;
-
+    String Is2FA = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,10 +59,12 @@ public class FaceRecognizerActivity extends AppCompatActivity {
         mActivityRecognizerFaceBinding = ActivityRecognizerFaceBinding.inflate(getLayoutInflater());
         setContentView(mActivityRecognizerFaceBinding.getRoot());
         String imageFilePath = "";
+
         if (getIntent().getExtras() != null) {
             // getExternalFilesDir(null).getAbsolutePath() + "/1.jpg"
             imageFilePath = getIntent().getExtras().getString("imageFilePathKey", "");
             Utils.writeLogToFile(this, "FilePath : " + imageFilePath, "getExtras ");
+            Is2FA = getIntent().getExtras().getString("Is2FA","false");
         }
         if (!imageFilePath.isEmpty()) {
             if ((new File(imageFilePath)).exists()) {
@@ -177,9 +179,16 @@ public class FaceRecognizerActivity extends AppCompatActivity {
             }
         });
         mFaceRecognizerViewModel.detectedFile.observe(this, file -> {
-            if (file != null) {
-                setResultSucceededData(file);
+            if (file == null) {
+                // 2FA case (no file saved)
+                if (Is2FA.equalsIgnoreCase("true")) {
+                    TwoFASendOnlySuccess();
+                }
+                return;
             }
+
+            setResultSucceededData(file);
+
         });
     }
 
@@ -193,6 +202,12 @@ public class FaceRecognizerActivity extends AppCompatActivity {
         finish();
     }
 
+    private void TwoFASendOnlySuccess()
+    {
+        Intent resultintent = new Intent();
+        setResult(RESULT_OK, resultintent);
+        finish();
+    }
 
     private void setResultErrorData(String errorMessage) {
         Intent resultIntent = new Intent();
@@ -320,7 +335,7 @@ public class FaceRecognizerActivity extends AppCompatActivity {
                             .build();
             mFaceRecognizerViewModel.startRecognizeImageSave(2000);
 
-            imageAnalysis.setAnalyzer(executor, imageProxy -> mFaceRecognizerViewModel.recognizeImageFromCamera(imageProxy));
+            imageAnalysis.setAnalyzer(executor, imageProxy -> mFaceRecognizerViewModel.recognizeImageFromCamera(imageProxy, Is2FA));
             cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview);
         }
         catch (Exception e)

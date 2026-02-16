@@ -339,7 +339,7 @@ public class FaceRecognizerViewModel extends ViewModel {
     }
 
 
-    public void recognizeImage(final Bitmap bitmap, Face face) {
+    public void recognizeImage(final Bitmap bitmap, Face face,String Is2FA) {
         //mExecutorService.execute(() -> {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
@@ -399,7 +399,7 @@ public class FaceRecognizerViewModel extends ViewModel {
 
                             if (startImageSave) {
                                 startImageSave = false;
-                                createDirectoryAndSaveFile(bitmap);
+                                createDirectoryAndSaveFile(bitmap,Is2FA);
                             }
                         } else {
                             Map<Boolean, String> stringMap = new HashMap<>();
@@ -494,37 +494,45 @@ public class FaceRecognizerViewModel extends ViewModel {
     }
 
 
-    public void createDirectoryAndSaveFile(Bitmap imageToSave) {
+    public void createDirectoryAndSaveFile(Bitmap imageToSave,String Is2FA) {
+        File detectionFile = null;
+        if(Is2FA.equalsIgnoreCase("true"))
+        {
+            _detectedFile.postValue(null);
+        }
+        else {
+            File direct = new File(Utils.getDownloadPathFile(mContext).getAbsolutePath() + "/FaceDetection", "/EasyFromFace");
 
-        File direct = new File(Utils.getDownloadPathFile(mContext).getAbsolutePath() + "/FaceDetection", "/EasyFromFace");
-
-        if (!direct.exists()) {
-            if (!direct.mkdirs()) {
-                return;
-            }
-        } /*else {
+            if (!direct.exists()) {
+                if (!direct.mkdirs()) {
+                    return;
+                }
+            } /*else {
             //   Log.d("detectionFile", direct.getAbsolutePath() + " " + direct.exists());
         }*/
-        String fileName = System.currentTimeMillis() + ".jpg";
-        File detectionFile = new File(direct.getAbsoluteFile(), fileName);
+            String fileName = System.currentTimeMillis() + ".jpg";
+             detectionFile = new File(direct.getAbsoluteFile(), fileName);
 
-        if (detectionFile.exists()) {
-            if (!detectionFile.delete()) {
-                return;
+            if (detectionFile.exists()) {
+                if (!detectionFile.delete()) {
+                    return;
+                }
+            }
+            Utils.writeLogToFile(mContext, detectionFile.getAbsolutePath(), "createDirectoryAndSaveFile File Path Line: 235");
+            try {
+                FileOutputStream out = new FileOutputStream(detectionFile);
+                imageToSave.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                out.flush();
+                out.close();
+            } catch (Exception e) {
+                Utils.writeLogToFile(mContext, e.toString(), "createDirectoryAndSaveFile Line: 248");
+            }
+            if (detectionFile.exists() && detectionFile.isFile()) {
+                _detectedFile.postValue(detectionFile);
             }
         }
-        Utils.writeLogToFile(mContext, detectionFile.getAbsolutePath(), "createDirectoryAndSaveFile File Path Line: 235");
-        try {
-            FileOutputStream out = new FileOutputStream(detectionFile);
-            imageToSave.compress(Bitmap.CompressFormat.JPEG, 100, out);
-            out.flush();
-            out.close();
-        } catch (Exception e) {
-            Utils.writeLogToFile(mContext, e.toString(), "createDirectoryAndSaveFile Line: 248");
-        }
-        if (detectionFile.exists() && detectionFile.isFile()) {
-            _detectedFile.postValue(detectionFile);
-        }
+        
+
     }
 
 
@@ -629,7 +637,7 @@ public class FaceRecognizerViewModel extends ViewModel {
     }
 
 
-    public void recognizeImageFromCamera(ImageProxy imageProxy) {
+    public void recognizeImageFromCamera(ImageProxy imageProxy,String Is2FA) {
         mExecutorService.execute(() -> {
 
             try{
@@ -661,7 +669,7 @@ public class FaceRecognizerViewModel extends ViewModel {
                                             cropped_face = rotateBitmap(cropped_face, 0, false, false);
                                             Bitmap scaled = getResizedBitmap(cropped_face, AppConstants.modelInputSize, AppConstants.modelInputSize);
 
-                                            recognizeImage(scaled, face); //Send scaled bitmap to create face embeddings.
+                                            recognizeImage(scaled, face,Is2FA); //Send scaled bitmap to create face embeddings.
                                         } else {
                                             Map<Boolean, String> stringMap = new HashMap<>();
                                             //when face not detected remove green mark and set red mark text (09-0-2024)

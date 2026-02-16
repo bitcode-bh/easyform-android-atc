@@ -458,6 +458,9 @@ public class login_plug implements Runnable {
                                     if (filename == null || filename.isEmpty()) {
                                         filename = "" + user_id + System.currentTimeMillis() + ".jpeg";
                                     }
+                                    pref.putString("filename",filename);
+                                    pref.putString("user_id",user_id);
+                                    pref.commit();
                                     // get filename from login response and set it
                                     fullPath = Utils.getDownloadPathFile(context).getAbsolutePath() + "/" + filename;
                                     context.startService(new Intent(context, ImageDownloadService.class)

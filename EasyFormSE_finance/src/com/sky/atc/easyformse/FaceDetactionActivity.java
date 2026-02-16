@@ -37,6 +37,7 @@ public class FaceDetactionActivity extends AppCompatActivity {
     String WithoutTaskAttendance;
     MySharedPreferences pref;
     String IsCheckInNoti;
+    String Is2FA;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +48,7 @@ public class FaceDetactionActivity extends AppCompatActivity {
         if(mBundle != null ) {
             WithoutTaskAttendance = mBundle.getString(AttendancePlugin.WithoutTaskAttendanceKey, "");
             IsCheckInNoti = mBundle.getString("IsCheckInNoti","false");
+            Is2FA = mBundle.getString("Is2FA","false");
         }
         pref = sqlitewraper.getSecureShared("MyPref");
         try {
@@ -77,7 +79,27 @@ public class FaceDetactionActivity extends AppCompatActivity {
                     }
                 }
             } else {
-                LogUtils.writeAttendanceLogToFile("mBundle is null ", "onCreate FaceDetactionActivity");
+                if(Is2FA.equalsIgnoreCase("true"))
+                {
+                    String fullFilePath = PreferencesUtil.getPreferences(this).getString(PreferencesKey.fileFullPath, "");
+                    if (fullFilePath.isEmpty()) {
+//                        Toast.makeText(this, "Profile photo is not set.!", Toast.LENGTH_LONG).show();
+                        MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
+                        String imageUrl = pref.getString("image_url","");
+                        String filename = pref.getString("filename","");
+                        String user_id = pref.getString("user_id","");
+//                        fullPath = Utils.getDownloadPathFile(context).getAbsolutePath() + "/" + filename;
+                        startService(new Intent(context, ImageDownloadService.class)
+                                .putExtra("imageUrl", imageUrl)
+                                .putExtra(ImageDownloadService.fromPluginKey, true)
+                                .putExtra(ImageDownloadService.useridKey, user_id)
+                                .putExtra("FileName", filename));
+                        waitForImageDownload("");
+                    } else {
+                        startFaceRecognizerActivity(fullFilePath);
+                    }
+                }
+                //LogUtils.writeAttendanceLogToFile("mBundle is null ", "onCreate FaceDetactionActivity");
             }
         } catch (Exception e) {
             LogUtils.writeAttendanceLogToFile("Exception : " + e.toString(), "onCreate FaceDetactionActivity");
@@ -154,6 +176,11 @@ public class FaceDetactionActivity extends AppCompatActivity {
                         this.finish();
 
                     }
+                    // TwoFactorAuthentication with Face detection send only plugin success after face match
+                    else if(Is2FA.equalsIgnoreCase("true"))
+                    {
+                        setSuccessResult();
+                    }
 //                    insert into task master
                     else {
                         AttendanceTaskUtil.insertIntoTaskmaster(sqlitewraper.getDatabase(),
@@ -186,6 +213,10 @@ public class FaceDetactionActivity extends AppCompatActivity {
                         pref.putString("task_checksheet_id", "");
                         pref.commit();
                     }
+                    else if(Is2FA.equalsIgnoreCase("true"))
+                    {
+                        setErrorResult("");
+                    }
                     resetAttendanceNotificationAlarm();
                 } else {
                     if(IsCheckInNoti.equalsIgnoreCase("true"))
@@ -205,6 +236,7 @@ public class FaceDetactionActivity extends AppCompatActivity {
         try {
             faceRecognizerIntent = new Intent(this, Class.forName("com.nareshchocha.facerecognition.ui.activitys.FaceRecognizerActivity"));
             faceRecognizerIntent.putExtra("imageFilePathKey", filePath);
+            faceRecognizerIntent.putExtra("Is2FA",Is2FA);
             faceRecognizerActivityResult.launch(faceRecognizerIntent);
         } catch (ClassNotFoundException e) {
             LogUtils.writeAttendanceLogToFile("ClassNotFoundException " + e.toString(), "startFaceRecognizerActivity FaceDetactionActivity");
