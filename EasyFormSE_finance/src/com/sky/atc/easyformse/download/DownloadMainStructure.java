@@ -54,6 +54,11 @@ import java.util.Date;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+
 @StringFogIgnore
 class DownloadMainStructure {
 
@@ -278,25 +283,33 @@ class DownloadMainStructure {
             if(appURL.equalsIgnoreCase("login.easyform.in"))
             {
                 // for login url
-                 url = DownloadConstant.DOWNLOAD_URL + DownloadConstant.METHOD_USERDEFINE_FLOWMASTER_NEW + "?Data=";
+                url = DownloadConstant.DOWNLOAD_URL + DownloadConstant.METHOD_USERDEFINE_FLOWMASTER_NEW + "?Data=";
             }
             else {
                 // for other url
-                 url = DownloadConstant.DOWNLOAD_URL + DownloadConstant.METHOD_USERDEFINE_FLOWMASTER + "?Data=";
+                url = DownloadConstant.DOWNLOAD_URL + DownloadConstant.METHOD_USERDEFINE_FLOWMASTER + "?Data=";
             }
 
 
 //            String url = sqlitewraper.context.getResources().getString(R.string.TASKDOWNLOADURL) + "/Services/Download_For_Mobile.asmx/DataStreaming_EF_0_1_0_0?Data=";
             String da = URLEncoder.encode(jsds.toString(), "UTF-8");
             url = url + da;
-            HttpResponse response = downloadWithStreming(url, data1);
-            if (response != null) {
 
-                //if server returns status 2 than 2 will be retuned else 1 will be return
+            Response response = downloadWithStremingokhhtp(url, data1);
+
+            if (response != null) {
                 k = insertIntoUserDefine(response);
             } else {
                 k = 1;
             }
+//            HttpResponse response = downloadWithStreming(url, data1);
+//            if (response != null) {
+//
+//                //if server returns status 2 than 2 will be retuned else 1 will be return
+//                k = insertIntoUserDefine(response);
+//            } else {
+//                k = 1;
+//            }
         } catch (Exception e) {
             k = 1;
             writeLogToFile(e.getMessage(), "USER_FLOW_MASTER_DOWNLOAD");
@@ -305,175 +318,181 @@ class DownloadMainStructure {
     }
 
     //Insert in to user Define database
-    private int insertIntoUserDefine(HttpResponse response) {
+    private int insertIntoUserDefine(Response response) {
+
         int d = 0;
+        JsonReader reader = null;
+        InputStreamReader streamReader = null;
+
         try {
-            StatusLine statusLine = response.getStatusLine();
-            int statusCode = statusLine.getStatusCode();
+            int statusCode = response.code();
 
             if (statusCode == 200) {
 
-                HttpEntity entity = response.getEntity();
-                InputStream content = entity.getContent();
-                Reader streamReader = new InputStreamReader(content);
-                JsonReader reader = new JsonReader(streamReader);
+                ResponseBody body = response.body();
+                if (body == null) return 1;
+
+                InputStream content = body.byteStream();
+                streamReader = new InputStreamReader(content);
+                reader = new JsonReader(streamReader);
                 reader.setLenient(true);
+
                 try {
-                    while (reader.hasNext() && (!(reader.peek() == JsonToken.END_DOCUMENT))) {
+                    while (reader.hasNext() && reader.peek() != JsonToken.END_DOCUMENT) {
 
                         String status1 = "";
                         String message = "";
 
-                        if (!(reader.peek() == JsonToken.END_DOCUMENT)) {
-                            reader.beginObject();
-                            String status = reader.nextName();
-                            if (status.equals("status")) {
+                        reader.beginObject();
+
+                        while (reader.hasNext()) {
+                            String name = reader.nextName();
+
+                            if ("status".equals(name)) {
                                 status1 = reader.nextString();
-                            }
-
-                            String message1 = reader.nextName();
-                            if (message1.equals("message")) {
+                            } else if ("message".equals(name)) {
                                 message = reader.nextString();
+                            } else {
+                                reader.skipValue();
                             }
-
-                            if (status1.equalsIgnoreCase("2")) {
-
-                                String t1;
-                                t1 = "_id = 3";
-                                ContentValues cv2 = new ContentValues();
-                                cv2.put("status", "2");
-                                long temp12 = database.update("download_counter", cv2, t1, null);
-                                d = 2;
-                            }
-
-                            if (status1.equalsIgnoreCase("1")) {
-
-                                int flow_id, id, p_id, level_position, company_id, rollid, flag;
-                                String flow_name, flow_name1, type, data, millisecond;
-                                String matchCondition;
-                                String isDeleted;
-
-                                JSONArray innerdata = new JSONArray(message);
-
-                                //insert udf data into delete_old_task for new udf
-                                deleteoldtask(innerdata);
-
-                                for (int i = 0; i < innerdata.length(); i++) {
-
-                                    JSONObject innerdatobj = innerdata.getJSONObject(i);
-                                    flag = innerdatobj.getInt("flag");
-                                    id = innerdatobj.getInt("id");
-                                    rollid = innerdatobj.getInt("role_id");
-                                    flow_id = innerdatobj.getInt("flow_id");
-                                    p_id = innerdatobj.getInt("p_id");
-                                    level_position = innerdatobj.getInt("level_position");
-                                    company_id = innerdatobj.getInt("company_id");
-
-                                    flow_name = innerdatobj.getString("name");
-                                    flow_name1 = innerdatobj.getString("flowname");
-                                    millisecond = innerdatobj.getString("millisecond");
-
-                                    type = innerdatobj.getString("type");
-                                    data = innerdatobj.getString("data");
-
-                                    if(innerdatobj.has("is_delete")){
-                                         isDeleted = innerdatobj.getString("is_delete");
-                                    }else {
-                                         isDeleted = "0";
-                                    }
-
-//                                  matchCondition = innerdatobj.getString("matchcondition");
-
-
-                                    String t1;
-                                    t1 = "_id = 3";
-                                    ContentValues cv2 = new ContentValues();
-
-                                    cv2.put("counter", userDefinecount);
-
-                                    long temp1 = database.update("download_counter", cv2,
-                                            t1, null);
-
-                                    generateNotification(3, null);
-
-                                    ContentValues cv = new ContentValues();
-                                    cv.put("id", id);
-                                    cv.put("flow_id", flow_id);
-                                    cv.put("p_id", p_id);
-                                    cv.put("rollid", rollid);
-                                    cv.put("level_position", level_position);
-                                    cv.put("company_id", company_id);
-                                    cv.put("flow_name", flow_name);
-                                    cv.put("flow_name1", flow_name1);
-                                    cv.put("type", type);
-                                    cv.put("data", data);
-                                    cv.put("millisecond", millisecond);
-                                    cv.put("isflag", flag);
-                                    cv.put("is_delete", isDeleted);
-//                                    cv.put("matchcondition", matchCondition);
-
-                                    Cursor c1 = database.rawQuery(
-                                            "select isflag from User_Define_Flow_Master where id="
-                                                    + id, null);
-                                    if (c1.getCount() > 0) {
-
-                                        c1.moveToFirst();
-                                        int flag_inst = c1.getInt(0);
-
-                                        //if flag is different from server than redownload all the task
-                                        if (flag != flag_inst) {
-                                            cv.put("task_millisecond", "0");
-                                        }
-
-                                        cursorClose(c1);
-
-                                        String cnd;
-                                        cnd = "id=" + id;
-                                        long temp = database.update(
-                                                "User_Define_Flow_Master", cv, cnd, null);
-                                    } else {
-                                        cv.put("task_millisecond", "0");
-
-                                        long temp = database.insert(
-                                                "User_Define_Flow_Master", null, cv);
-                                    }
-                                    c1.close();
-
-
-                                    userDefinecount++;
-                                    flagUserDefine = 0;
-                                }
-                                d = 1;
-                            }
-                            if (status1.equalsIgnoreCase("5")) {
-                                d = 1;
-                            }
-
-                            Log.d("##QQ", reader.toString());
-                            reader.endObject();
-
-                        } else {
-                            reader.close();
-                            reader = null;
-                            streamReader.close();
                         }
+
+                        // ===== status = 2 =====
+                        if (status1.equalsIgnoreCase("2")) {
+
+                            ContentValues cv2 = new ContentValues();
+                            cv2.put("status", "2");
+
+                            database.update(
+                                    "download_counter",
+                                    cv2,
+                                    "_id = 3",
+                                    null
+                            );
+                            d = 2;
+                        }
+
+                        // ===== status = 1 =====
+                        if (status1.equalsIgnoreCase("1")) {
+
+                            JSONArray innerdata = new JSONArray(message);
+
+                            // insert udf data into delete_old_task
+                            deleteoldtask(innerdata);
+
+                            for (int i = 0; i < innerdata.length(); i++) {
+
+                                JSONObject innerdatobj = innerdata.getJSONObject(i);
+
+                                int flag = innerdatobj.getInt("flag");
+                                int id = innerdatobj.getInt("id");
+                                int rollid = innerdatobj.getInt("role_id");
+                                int flow_id = innerdatobj.getInt("flow_id");
+                                int p_id = innerdatobj.getInt("p_id");
+                                int level_position = innerdatobj.getInt("level_position");
+                                int company_id = innerdatobj.getInt("company_id");
+
+                                String flow_name = innerdatobj.getString("name");
+                                String flow_name1 = innerdatobj.getString("flowname");
+                                String millisecond = innerdatobj.getString("millisecond");
+                                String type = innerdatobj.getString("type");
+                                String data = innerdatobj.getString("data");
+
+                                String isDeleted = innerdatobj.has("is_delete")
+                                        ? innerdatobj.getString("is_delete")
+                                        : "0";
+
+                                ContentValues cv2 = new ContentValues();
+                                cv2.put("counter", userDefinecount);
+
+                                database.update(
+                                        "download_counter",
+                                        cv2,
+                                        "_id = 3",
+                                        null
+                                );
+
+                                generateNotification(3, null);
+
+                                ContentValues cv = new ContentValues();
+                                cv.put("id", id);
+                                cv.put("flow_id", flow_id);
+                                cv.put("p_id", p_id);
+                                cv.put("rollid", rollid);
+                                cv.put("level_position", level_position);
+                                cv.put("company_id", company_id);
+                                cv.put("flow_name", flow_name);
+                                cv.put("flow_name1", flow_name1);
+                                cv.put("type", type);
+                                cv.put("data", data);
+                                cv.put("millisecond", millisecond);
+                                cv.put("isflag", flag);
+                                cv.put("is_delete", isDeleted);
+
+                                Cursor c1 = database.rawQuery(
+                                        "select isflag from User_Define_Flow_Master where id=" + id,
+                                        null
+                                );
+
+                                if (c1.getCount() > 0) {
+                                    c1.moveToFirst();
+                                    int flag_inst = c1.getInt(0);
+
+                                    if (flag != flag_inst) {
+                                        cv.put("task_millisecond", "0");
+                                    }
+
+                                    database.update(
+                                            "User_Define_Flow_Master",
+                                            cv,
+                                            "id=" + id,
+                                            null
+                                    );
+                                } else {
+                                    cv.put("task_millisecond", "0");
+                                    database.insert(
+                                            "User_Define_Flow_Master",
+                                            null,
+                                            cv
+                                    );
+                                }
+
+                                cursorClose(c1);
+                                userDefinecount++;
+                                flagUserDefine = 0;
+                            }
+
+                            d = 1;
+                        }
+
+                        // ===== status = 5 =====
+                        if (status1.equalsIgnoreCase("5")) {
+                            d = 1;
+                        }
+
+                        reader.endObject();
                     }
-                    reader.close();
-                    streamReader.close();
 
                     if (taskdownloadflag != 0) {
                         return 1;
                     }
+
                 } catch (Exception e) {
-                    reader.close();
-                    streamReader.close();
+                    d = 1;
+                } finally {
+                    if (reader != null) reader.close();
+                    if (streamReader != null) streamReader.close();
+                    body.close();
                 }
+
             } else {
                 return 1;
             }
+
         } catch (Exception e) {
             d = 1;
         }
+
         return d;
     }
 
@@ -550,7 +569,15 @@ class DownloadMainStructure {
 //            String url = sqlitewraper.context.getResources().getString(R.string.TASKDOWNLOADURL) + "/Services/Download_For_Mobile.asmx/DataStreaming_EF_0_1_0_0?Data=";
             String da = URLEncoder.encode(jsds.toString(), "UTF-8");
             url = url + da;
-            HttpResponse response = downloadWithStreming(url, data1);
+//            HttpResponse response = downloadWithStreming(url, data1);
+//            if (response != null) {
+//                k = insertIntoChecksheet(response);
+//            } else {
+//                k = 1;
+//            }
+
+            Response response = downloadWithStremingokhhtp(url, data1);
+
             if (response != null) {
                 k = insertIntoChecksheet(response);
             } else {
@@ -566,150 +593,176 @@ class DownloadMainStructure {
     }
 
     //Insert into Checksheet master table
-    private int insertIntoChecksheet(HttpResponse response) {
+    private int insertIntoChecksheet(Response response) {
+
         int d = 0;
+        JsonReader reader = null;
+        InputStreamReader streamReader = null;
+
         try {
-            StatusLine statusLine = response.getStatusLine();
-            int statusCode = statusLine.getStatusCode();
+            int statusCode = response.code();
 
             if (statusCode == 200) {
-                HttpEntity entity = response.getEntity();
-                InputStream content = entity.getContent();
-                Reader streamReader = new InputStreamReader(content);
-                JsonReader reader = new JsonReader(streamReader);
+
+                ResponseBody body = response.body();
+                if (body == null) return 1;
+
+                InputStream content = body.byteStream();
+                streamReader = new InputStreamReader(content);
+                reader = new JsonReader(streamReader);
                 reader.setLenient(true);
+
                 try {
-                    while (reader.hasNext() && (!(reader.peek() == JsonToken.END_DOCUMENT))) {
+                    while (reader.hasNext() && reader.peek() != JsonToken.END_DOCUMENT) {
 
                         String status1 = "";
                         String message = "";
 
-                        if (!(reader.peek() == JsonToken.END_DOCUMENT)) {
-                            reader.beginObject();
-                            String status = reader.nextName();
-                            if (status.equals("status")) {
+                        reader.beginObject();
+
+                        while (reader.hasNext()) {
+                            String name = reader.nextName();
+
+                            if (name.equals("status")) {
                                 status1 = reader.nextString();
-                            }
-                            String message1 = reader.nextName();
-                            if (message1.equals("message")) {
+                            } else if (name.equals("message")) {
                                 message = reader.nextString();
+                            } else {
+                                reader.skipValue();
                             }
-
-                            if (status1.equalsIgnoreCase("1")) {
-
-                                int checksheetid, c_type;
-                                String c_name, moduleid, module_name, moduledef, buttons, date;
-
-                                JSONArray innerdata = new JSONArray(message);
-                                int length = innerdata.length();
-                                for (int j = 0; j < length; j++) {
-//                                    JSONArray innerdata1 = innerdata.getJSONObject(j);
-
-
-                                    JSONObject innerdatobj = innerdata
-                                            .getJSONObject(j);
-
-                                    checksheetid = innerdatobj.getInt("checksheetid");
-                                    c_type = innerdatobj.getInt("c_type");
-                                    c_name = innerdatobj.getString("c_name");
-                                    moduleid = innerdatobj.getString("moduleid");
-                                    module_name = innerdatobj.getString("module_name");
-                                    moduledef = innerdatobj.getString("moduledef");
-                                    buttons = innerdatobj.getString("buttons");
-                                    date = innerdatobj.getString("updateddate");
-
-                                    String step = innerdatobj.getString("stepno");
-                                    String subcategory = innerdatobj
-                                            .getString("subcategory");
-                                    String data_1 = innerdatobj.getString("data");
-                                    String milli = innerdatobj.getString("millisecond");
-                                    String step_short_name = innerdatobj.getString("step_short_name");
-                                    String stepId = innerdatobj.getString("step_id");
-
-                                    String t1;
-                                    t1 = "_id = 1";
-                                    ContentValues cv2 = new ContentValues();
-
-                                    cv2.put("counter", counterChecksheet);
-
-                                    long temp1 = database.update("download_counter",
-                                            cv2, t1, null);
-
-                                    generateNotification(1, null);
-
-                                    Cursor c1 = database.rawQuery(
-                                            "select * from checksheet where checksheetid='"
-                                                    + checksheetid + "' and step='"
-                                                    + step + "'", null);
-                                    if (c1.getCount() > 0) {
-
-                                        updateChecksheet(checksheetid, c_name, data_1,
-                                                buttons, step, subcategory, date,
-                                                milli, c_type, step_short_name, "checksheet",stepId);
-
-                                    } else {
-                                        ContentValues cv1 = new ContentValues();
-                                        cv1.put("checksheetid", checksheetid);
-                                        cv1.put("c_name", c_name);
-                                        cv1.put("data", data_1);
-                                        cv1.put("c_type", c_type);
-
-                                        cv1.put("buttons", buttons);
-                                        cv1.put("step", step);
-                                        cv1.put("subcategory", subcategory);
-                                        cv1.put("date", date);
-                                        cv1.put("millisecond", milli);
-                                        cv1.put("step_short_name", step_short_name);
-                                        cv1.put("stepid", stepId);
-                                        long temp = database.insert("checksheet", null,
-                                                cv1);
-                                    }
-                                    counterChecksheet++;
-                                    flagChecksheet = 0;
-                                    cursorClose(c1);
-
-                                }
-                                d = 1;
-                            }
-                            if (status1.equalsIgnoreCase("2")) {
-                                String t1;
-                                t1 = "_id = 1";
-                                ContentValues cv2 = new ContentValues();
-                                cv2.put("status", "2");
-                                long temp1 = database.update("download_counter", cv2, t1,
-                                        null);
-                                d = 2;
-                            }
-
-                            if (status1.equalsIgnoreCase("5")) {
-                                d = 1;
-                            }
-
-                            Log.d("##QQ", reader.toString());
-                            reader.endObject();
-
-                        } else {
-                            reader.close();
-                            reader = null;
-                            streamReader.close();
                         }
+
+                        // ===== status = 1 =====
+                        if (status1.equalsIgnoreCase("1")) {
+
+                            JSONArray innerdata = new JSONArray(message);
+                            int length = innerdata.length();
+
+                            for (int j = 0; j < length; j++) {
+
+                                JSONObject innerdatobj = innerdata.getJSONObject(j);
+
+                                int checksheetid = innerdatobj.getInt("checksheetid");
+                                int c_type = innerdatobj.getInt("c_type");
+                                String c_name = innerdatobj.getString("c_name");
+                                String moduleid = innerdatobj.getString("moduleid");
+                                String module_name = innerdatobj.getString("module_name");
+                                String moduledef = innerdatobj.getString("moduledef");
+                                String buttons = innerdatobj.getString("buttons");
+                                String date = innerdatobj.getString("updateddate");
+
+                                String step = innerdatobj.getString("stepno");
+                                String subcategory = innerdatobj.getString("subcategory");
+                                String data_1 = innerdatobj.getString("data");
+                                String milli = innerdatobj.getString("millisecond");
+                                String step_short_name = innerdatobj.getString("step_short_name");
+                                String stepId = innerdatobj.getString("step_id");
+
+                                ContentValues cv2 = new ContentValues();
+                                cv2.put("counter", counterChecksheet);
+
+                                database.update(
+                                        "download_counter",
+                                        cv2,
+                                        "_id = 1",
+                                        null
+                                );
+
+                                generateNotification(1, null);
+
+                                Cursor c1 = database.rawQuery(
+                                        "select * from checksheet where checksheetid='"
+                                                + checksheetid + "' and step='" + step + "'",
+                                        null
+                                );
+
+                                if (c1.getCount() > 0) {
+
+                                    updateChecksheet(
+                                            checksheetid,
+                                            c_name,
+                                            data_1,
+                                            buttons,
+                                            step,
+                                            subcategory,
+                                            date,
+                                            milli,
+                                            c_type,
+                                            step_short_name,
+                                            "checksheet",
+                                            stepId
+                                    );
+
+                                } else {
+
+                                    ContentValues cv1 = new ContentValues();
+                                    cv1.put("checksheetid", checksheetid);
+                                    cv1.put("c_name", c_name);
+                                    cv1.put("data", data_1);
+                                    cv1.put("c_type", c_type);
+                                    cv1.put("buttons", buttons);
+                                    cv1.put("step", step);
+                                    cv1.put("subcategory", subcategory);
+                                    cv1.put("date", date);
+                                    cv1.put("millisecond", milli);
+                                    cv1.put("step_short_name", step_short_name);
+                                    cv1.put("stepid", stepId);
+
+                                    database.insert("checksheet", null, cv1);
+                                }
+
+                                counterChecksheet++;
+                                flagChecksheet = 0;
+                                cursorClose(c1);
+                            }
+
+                            d = 1;
+                        }
+
+                        // ===== status = 2 =====
+                        if (status1.equalsIgnoreCase("2")) {
+
+                            ContentValues cv2 = new ContentValues();
+                            cv2.put("status", "2");
+
+                            database.update(
+                                    "download_counter",
+                                    cv2,
+                                    "_id = 1",
+                                    null
+                            );
+
+                            d = 2;
+                        }
+
+                        // ===== status = 5 =====
+                        if (status1.equalsIgnoreCase("5")) {
+                            d = 1;
+                        }
+
+                        reader.endObject();
                     }
-                    reader.close();
-                    streamReader.close();
 
                     if (taskdownloadflag != 0) {
                         return 1;
                     }
+
                 } catch (Exception e) {
-                    reader.close();
-                    streamReader.close();
+                    d = 1;
+                } finally {
+                    if (reader != null) reader.close();
+                    if (streamReader != null) streamReader.close();
+                    body.close();
                 }
+
             } else {
                 return 1;
             }
+
         } catch (Exception e) {
             d = 1;
         }
+
         return d;
     }
 
@@ -799,13 +852,20 @@ class DownloadMainStructure {
             String url = DownloadConstant.DOWNLOAD_URL + DownloadConstant.METHOD_FLOWMASTER + "?Data=";
             String da = URLEncoder.encode(jsds.toString(), "UTF-8");
             url = url + da;
+            Response response = downloadWithStremingokhhtp(url, data1);
 
-            HttpResponse response = downloadWithStreming(url, data1);
             if (response != null) {
                 k = insertIntoFlowMaster(response);
             } else {
                 k = 1;
             }
+
+//            HttpResponse response = downloadWithStreming(url, data1);
+//            if (response != null) {
+//                k = insertIntoFlowMaster(response);
+//            } else {
+//                k = 1;
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -815,146 +875,159 @@ class DownloadMainStructure {
         return k;
     }
 
-    private int insertIntoFlowMaster(HttpResponse response) {
+
+    private int insertIntoFlowMaster(Response response) {
 
         int d = 0;
+        JsonReader reader = null;
+        InputStreamReader streamReader = null;
+
         try {
-            StatusLine statusLine = response.getStatusLine();
-            int statusCode = statusLine.getStatusCode();
+            int statusCode = response.code();
 
             if (statusCode == 200) {
-                HttpEntity entity = response.getEntity();
-                InputStream content = entity.getContent();
-                Reader streamReader = new InputStreamReader(content);
-                JsonReader reader = new JsonReader(streamReader);
+
+                ResponseBody body = response.body();
+                if (body == null) return 1;
+
+                InputStream content = body.byteStream();
+                streamReader = new InputStreamReader(content);
+                reader = new JsonReader(streamReader);
                 reader.setLenient(true);
+
                 try {
-                    while (reader.hasNext() && (!(reader.peek() == JsonToken.END_DOCUMENT))) {
+                    while (reader.hasNext() && reader.peek() != JsonToken.END_DOCUMENT) {
 
                         String status1 = "";
                         String message = "";
 
-                        if (!(reader.peek() == JsonToken.END_DOCUMENT)) {
-                            reader.beginObject();
-                            String status = reader.nextName();
-                            if (status.equals("status")) {
+                        reader.beginObject();
+
+                        while (reader.hasNext()) {
+                            String name = reader.nextName();
+
+                            if (name.equals("status")) {
                                 status1 = reader.nextString();
-                            }
-                            String message1 = reader.nextName();
-                            if (message1.equals("message")) {
+                            } else if (name.equals("message")) {
                                 message = reader.nextString();
+                            } else {
+                                reader.skipValue();
                             }
-
-                            if (status1.equalsIgnoreCase("2")) {
-
-                                String t1;
-                                t1 = "_id = 4";
-                                ContentValues cv2 = new ContentValues();
-
-                                cv2.put("status", "2");
-
-                                long temp12 = database.update("download_counter", cv2, t1,
-                                        null);
-
-                                //generateNotification(4, null);
-                                d = 2;
-                            }
-
-                            if (status1.equalsIgnoreCase("1")) {
-                                JSONArray innerdata = new JSONArray(message);
-                                int length = innerdata.length();
-
-                                for (int j = 0; j < length; j++) {
-
-                                    JSONObject innerdatobj = innerdata.getJSONObject(j);
-
-                                    int moduleid = innerdatobj.getInt("moduleid");
-                                    String module_name = innerdatobj
-                                            .getString("module_name");
-                                    String millisecond = innerdatobj
-                                            .getString("millisecond");
-                                    int company_id1 = innerdatobj.getInt("company_id");
-                                    int checksheet_id = innerdatobj.getInt("checksheet_id");
-                                    String checklist_data = innerdatobj.getString("data");
-
-                                    String t1;
-                                    t1 = "_id = 4";
-                                    ContentValues cv2 = new ContentValues();
-
-                                    cv2.put("counter", counterFlowMaster);
-
-                                    long temp1 = database.update("download_counter", cv2,
-                                            t1, null);
-
-                                    generateNotification(4, null); //flow_master downloading start show notification 12062024
-
-                                    Cursor c4 = database.rawQuery(
-                                            "SELECT * FROM  flow_master WHERE   moduleid ="
-                                                    + moduleid, null);
-                                    c4.moveToFirst();
-
-                                    ContentValues cv1 = new ContentValues();
-                                    cv1.put("moduleid", moduleid);
-                                    cv1.put("module_name", module_name);
-                                    cv1.put("millisecond", millisecond);
-                                    cv1.put("company_id", company_id1);
-                                    cv1.put("checksheet_id", checksheet_id);
-                                    cv1.put("data", checklist_data);
-                                    if (c4.getCount() > 0) {
-                                        String t;
-                                        t = "moduleid =" + moduleid;
-
-                                        long temp = database.update("flow_master", cv1, t,
-                                                null);
-
-                                        if (!isFirsttime) {
-                                            counterFlowMaster++;
-                                        }
-
-                                    } else {
-
-                                        long temp = database.insert("flow_master", null,
-                                                cv1);
-                                        counterFlowMaster++;
-
-                                    }
-                                    d = 1;
-                                    cursorClose(c4);
-                                }
-                                flagFlowMaster = 0;
-                            }
-
-                            if (status1.equalsIgnoreCase("5")) {
-                                d = 1;
-                            }
-
-                            Log.d("##QQ", reader.toString());
-                            reader.endObject();
-
-                        } else {
-                            reader.close();
-                            reader = null;
-                            streamReader.close();
                         }
+
+                        // ===== status = 2 =====
+                        if (status1.equalsIgnoreCase("2")) {
+
+                            ContentValues cv2 = new ContentValues();
+                            cv2.put("status", "2");
+
+                            database.update(
+                                    "download_counter",
+                                    cv2,
+                                    "_id = 4",
+                                    null
+                            );
+
+                            d = 2;
+                        }
+
+                        // ===== status = 1 =====
+                        if (status1.equalsIgnoreCase("1")) {
+
+                            JSONArray innerdata = new JSONArray(message);
+                            int length = innerdata.length();
+
+                            for (int j = 0; j < length; j++) {
+
+                                JSONObject innerdatobj = innerdata.getJSONObject(j);
+
+                                int moduleid = innerdatobj.getInt("moduleid");
+                                String module_name = innerdatobj.getString("module_name");
+                                String millisecond = innerdatobj.getString("millisecond");
+                                int company_id1 = innerdatobj.getInt("company_id");
+                                int checksheet_id = innerdatobj.getInt("checksheet_id");
+                                String checklist_data = innerdatobj.getString("data");
+
+                                ContentValues cv2 = new ContentValues();
+                                cv2.put("counter", counterFlowMaster);
+
+                                database.update(
+                                        "download_counter",
+                                        cv2,
+                                        "_id = 4",
+                                        null
+                                );
+
+                                generateNotification(4, null);
+
+                                Cursor c4 = database.rawQuery(
+                                        "SELECT * FROM flow_master WHERE moduleid = " + moduleid,
+                                        null
+                                );
+                                c4.moveToFirst();
+
+                                ContentValues cv1 = new ContentValues();
+                                cv1.put("moduleid", moduleid);
+                                cv1.put("module_name", module_name);
+                                cv1.put("millisecond", millisecond);
+                                cv1.put("company_id", company_id1);
+                                cv1.put("checksheet_id", checksheet_id);
+                                cv1.put("data", checklist_data);
+
+                                if (c4.getCount() > 0) {
+                                    database.update(
+                                            "flow_master",
+                                            cv1,
+                                            "moduleid = " + moduleid,
+                                            null
+                                    );
+
+                                    if (!isFirsttime) {
+                                        counterFlowMaster++;
+                                    }
+                                } else {
+                                    database.insert("flow_master", null, cv1);
+                                    counterFlowMaster++;
+                                }
+
+                                d = 1;
+                                cursorClose(c4);
+                            }
+
+                            flagFlowMaster = 0;
+                        }
+
+                        // ===== status = 5 =====
+                        if (status1.equalsIgnoreCase("5")) {
+                            d = 1;
+                        }
+
+                        reader.endObject();
                     }
-                    reader.close();
-                    streamReader.close();
 
                     if (taskdownloadflag != 0) {
                         return 1;
                     }
+
                 } catch (Exception e) {
-                    reader.close();
-                    streamReader.close();
+                    d = 1;
+                } finally {
+                    if (reader != null) reader.close();
+                    if (streamReader != null) streamReader.close();
+                    body.close();
                 }
+
             } else {
                 return 1;
             }
+
         } catch (Exception e) {
             d = 1;
         }
+
         return d;
     }
+
 
 
     //TASK DOWNLOAD
@@ -1246,74 +1319,152 @@ class DownloadMainStructure {
         return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
     }
 
-    //STREAMING DOWNLOAD CALL
-    private HttpResponse downloadWithStreming(String url, JSONObject data) throws Exception {
+    //STREAMING DOWNLOAD CALL with httpclient
+//    private HttpResponse downloadWithStreming(String url, JSONObject data) throws Exception {
+//
+//        taskdownloadflag = 0;
+//
+//        HttpResponse httpResponse = null;
+//        try {
+//            HttpClient client = new DefaultHttpClient();
+//            HttpGet httpGet = new HttpGet(url);
+//
+//            JSONObject data2 = null;
+//            String u_c = null;
+//            String username = null;
+//            try {
+//                database = sqlitewraper.getDatabase();
+//                Cursor c3 = database.rawQuery("SELECT username,u_c,company_id,appid,user_id FROM Login_Master",
+//                        null);
+//                c3.moveToLast();
+//                username = c3.getString(0);
+//                u_c = c3.getString(1);
+//                int company_id = c3.getInt(2);
+//                String appid = c3.getString(3);
+//                String UserId = c3.getString(4);
+//                c3.close();
+//
+//                data2 = new JSONObject();
+//                data2.put("username", username);
+//                data2.put("u_c", u_c);
+//                data2.put("appid", appid);
+//                data2.put("user_id", UserId);
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//
+//            MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+//            String roleid = prefs.getString("authroleidn", "0");
+//            String companyFeatureid = prefs.getString("authcompanyfid", "0");
+//
+//            if( companyFeatureid == null || companyFeatureid.equalsIgnoreCase("") || companyFeatureid.equalsIgnoreCase("0") )
+//            {
+//                return null;
+//            }
+//            else {
+//                httpGet.addHeader("auth1", data2.toString());
+//                httpGet.addHeader("uname", username);
+//                httpGet.addHeader("u_c", u_c);
+//                httpGet.addHeader("Role_Id", roleid);
+//                httpGet.addHeader("Company_Feature_Id", companyFeatureid);
+//
+//                JSONArray jsds = new JSONArray();
+//                jsds.put(data);
+////            httpGet.setEntity(new StringEntity(jsds.toString(), HTTP.UTF_8));
+//                HttpResponse response = client.execute(httpGet);
+//                StatusLine statusLine = response.getStatusLine();
+//                int statusCode = statusLine.getStatusCode();
+//                httpResponse = response;
+//
+//            }
+//
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return httpResponse;
+//    }
+
+    //STREAMING DOWNLOAD CALL with okhttp
+    private Response downloadWithStremingokhhtp(String url, JSONObject data) {
 
         taskdownloadflag = 0;
+        Response httpResponse = null;
 
-        HttpResponse httpResponse = null;
         try {
-            HttpClient client = new DefaultHttpClient();
-            HttpGet httpGet = new HttpGet(url);
-
             JSONObject data2 = null;
             String u_c = null;
             String username = null;
+
             try {
                 database = sqlitewraper.getDatabase();
-                Cursor c3 = database.rawQuery("SELECT username,u_c,company_id,appid,user_id FROM Login_Master",
-                        null);
-                c3.moveToLast();
-                username = c3.getString(0);
-                u_c = c3.getString(1);
-                int company_id = c3.getInt(2);
-                String appid = c3.getString(3);
-                String UserId = c3.getString(4);
-                c3.close();
+                Cursor c3 = database.rawQuery(
+                        "SELECT username,u_c,company_id,appid,user_id FROM Login_Master",
+                        null
+                );
 
-                data2 = new JSONObject();
-                data2.put("username", username);
-                data2.put("u_c", u_c);
-                data2.put("appid", appid);
-                data2.put("user_id", UserId);
+                if (c3.moveToLast()) {
+                    username = c3.getString(0);
+                    u_c = c3.getString(1);
+                    String appid = c3.getString(3);
+                    String UserId = c3.getString(4);
+
+                    data2 = new JSONObject();
+                    data2.put("username", username);
+                    data2.put("u_c", u_c);
+                    data2.put("appid", appid);
+                    data2.put("user_id", UserId);
+                }
+                c3.close();
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-
             MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
             String roleid = prefs.getString("authroleidn", "0");
             String companyFeatureid = prefs.getString("authcompanyfid", "0");
 
-            if( companyFeatureid == null || companyFeatureid.equalsIgnoreCase("") || companyFeatureid.equalsIgnoreCase("0") )
-            {
-                    return null;
-            }
-            else {
-                httpGet.addHeader("auth1", data2.toString());
-                httpGet.addHeader("uname", username);
-                httpGet.addHeader("u_c", u_c);
-                httpGet.addHeader("Role_Id", roleid);
-                httpGet.addHeader("Company_Feature_Id", companyFeatureid);
-
-                JSONArray jsds = new JSONArray();
-                jsds.put(data);
-//            httpGet.setEntity(new StringEntity(jsds.toString(), HTTP.UTF_8));
-                HttpResponse response = client.execute(httpGet);
-                StatusLine statusLine = response.getStatusLine();
-                int statusCode = statusLine.getStatusCode();
-                httpResponse = response;
-
+            if (companyFeatureid == null ||
+                    companyFeatureid.equalsIgnoreCase("") ||
+                    companyFeatureid.equalsIgnoreCase("0")) {
+                return null;
             }
 
+            OkHttpClient okHttpClient = NewWebservicesCallEasyform.getOkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .get()
+                    .addHeader("auth1", data2.toString())
+                    .addHeader("uname", username)
+                    .addHeader("u_c", u_c)
+                    .addHeader("Role_Id", roleid)
+                    .addHeader("Company_Feature_Id", companyFeatureid)
+                    .build();
+
+            String forErrorLog = "\nauth1 :" + data2.toString() + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
+                    "matchId" + "0" + "\nBody :" + data;
+
+
+            httpResponse = okHttpClient.newCall(request).execute();
+
+            int statusCode = httpResponse.code();  // Same as getStatusCode()
+            httpResponse = httpResponse;
+            if (statusCode != 200) {
+                LogUtils.writeApiCallLogToFile("Response code: " + statusCode
+                        + "\nJsonData: " + forErrorLog + "Auth1: " + data2.toString(),url, "downloadWithStreming","1");
+
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return httpResponse;
     }
-
     private boolean isFirsttime() {
 
         Cursor c2 = database.rawQuery(
@@ -1341,27 +1492,17 @@ class DownloadMainStructure {
         return isFirst;
     }
 
-    //task download with Streaming
-
+    //task download with Streaming with okhttp
     public int taskDownloadingwithStreaming(String url, String json, int id, int flow_id) {
 
         taskdownloadflag = 0;
         int k = 0;
+
+        okhttp3.Response response = null;
+
         try {
-            ArrayList<NameValuePair> postParameters;
-            postParameters = new ArrayList<NameValuePair>();
-            postParameters.add(new BasicNameValuePair("Data", json));
 
-            StringBuilder builder = new StringBuilder();
-            HttpClient client = new DefaultHttpClient();
-            HttpGet httpGet = new HttpGet(url);
-
-
-            HttpPost post = new HttpPost("/Services/Download_For_Mobile.asmx/DataStreaming");
-            post.setHeader("host", sqlitewraper.context.getResources().getString(R.string.App_URL));
-
-            StringEntity se = new StringEntity(URLEncoder.encode(json, "UTF-8"));
-            post.setEntity(new UrlEncodedFormEntity(postParameters));
+            OkHttpClient okHttpClient = NewWebservicesCallEasyform.getOkHttpClient();
 
             int parent_flow_id = 0, subflow_id = 0;
 
@@ -1369,9 +1510,11 @@ class DownloadMainStructure {
             String u_c = null;
             String username = null;
             String userId = null;
+
             try {
                 database = sqlitewraper.getDatabase();
-                android.database.Cursor c3 = database.rawQuery("SELECT username,u_c,company_id,appid,user_id FROM Login_Master",
+                Cursor c3 = database.rawQuery(
+                        "SELECT username,u_c,company_id,appid,user_id FROM Login_Master",
                         null);
                 c3.moveToLast();
                 username = c3.getString(0);
@@ -1388,43 +1531,50 @@ class DownloadMainStructure {
                 data2.put("user_id", userId);
 
             } catch (Exception e) {
-                ////e.printStackTrace()();
             }
 
             MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
             String roleid = prefs.getString("authroleidn", "0");
             String companyFeatureid = prefs.getString("authcompanyfid", "0");
 
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("auth1", data2.toString())
+                    .addHeader("uname", username)
+                    .addHeader("u_c", u_c)
+                    .addHeader("user_id", userId)
+                    .addHeader("Role_Id", roleid)
+                    .addHeader("Company_Feature_Id", companyFeatureid)
+                    .get()
+                    .build();
 
-            httpGet.addHeader("auth1", data2.toString());
-            httpGet.addHeader("uname", username);
-            httpGet.addHeader("u_c", u_c);
-            httpGet.addHeader("user_id", userId);
-            httpGet.addHeader("Role_Id", roleid);
-            httpGet.addHeader("Company_Feature_Id", companyFeatureid);
 
-            HttpResponse response = client.execute(httpGet);
-            StatusLine statusLine = response.getStatusLine();
-            int statusCode = statusLine.getStatusCode();
+            response = okHttpClient.newCall(request).execute();
+
+            String forErrorLog = "\nauth1 :" + data2.toString() + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
+                    "matchId" + "0" ;
+
+            int statusCode = response.code();
 
             if (statusCode != 200) {
                 k = 0;
-                return k;
+                LogUtils.writeApiCallLogToFile("\nJsonData: " + forErrorLog + "url: " + url,  "", "taskDownload","0");
 
+                return k;
             }
 
             if (statusCode == 200) {
-                HttpEntity entity = response.getEntity();
-                InputStream content = entity.getContent();
+
+                InputStream content = response.body().byteStream();
                 Reader streamReader = new InputStreamReader(content);
 
                 JsonReader reader = new JsonReader(streamReader);
                 reader.setLenient(true);
 
-
                 try {
 
-                    while (reader.hasNext() && (!(reader.peek() == JsonToken.END_DOCUMENT))) {
+                    while (reader.hasNext() &&
+                            (!(reader.peek() == JsonToken.END_DOCUMENT))) {
 
                         if (!(reader.peek() == JsonToken.END_DOCUMENT)) {
                             reader.beginObject();
@@ -1433,7 +1583,6 @@ class DownloadMainStructure {
                                 parent_flow_id = reader.nextInt();
                             }
                             String sub_id = reader.nextName();
-
                             if (sub_id.equals("sub_flow_id")) {
                                 subflow_id = reader.nextInt();
                             }
@@ -1446,11 +1595,6 @@ class DownloadMainStructure {
                             String name = reader.nextName();
                             if (name.equals("table_type")) {
 
-
-                                //table type Under-standing
-
-
-
                                 String table_type = reader.nextString();
                                 String millisecond_val = "0";
                                 String id_val = "";
@@ -1460,21 +1604,14 @@ class DownloadMainStructure {
                                 }
 
                                 String millisecond = reader.nextName();
-
                                 if (millisecond.equals("millisecond")) {
                                     millisecond_val = reader.nextString();
-
                                 }
+
                                 String alldata = reader.nextName();
 
-
-                                //Only Table Type 0,1 will come from server side
-
-                                //table_type=0 main task
-                                //table type=1 sub task
-
-
                                 if (alldata.equals("alldata")) {
+
                                     String task_data = reader.nextString();
 
                                     if (table_type.equals("-1")) {
@@ -1482,27 +1619,40 @@ class DownloadMainStructure {
                                     }
 
                                     if (table_type.equals("6")) {
-//                                        Not called for New Download Structure
                                         updateTaskDown(ref_id, "0", 0, 0);
                                         k = 2;
                                     }
+
                                     if (table_type.equals("0") || table_type.equals("2")) {
-                                        //insert into task master
 
-                                        k = insertIntoTaskmaster(task_data, "task_master", id, millisecond_val, table_type, id_val, flow_id);
+                                        k = insertIntoTaskmaster(task_data,
+                                                "task_master",
+                                                id,
+                                                millisecond_val,
+                                                table_type,
+                                                id_val,
+                                                flow_id);
+
                                         if (table_type.equals("2")) {
-                                            //update task download
-//                                            Not called for New Download Structure
-                                            updateTaskDown(ref_id, "0", parent_flow_id, subflow_id);
-
+                                            updateTaskDown(ref_id, "0",
+                                                    parent_flow_id,
+                                                    subflow_id);
                                         }
                                     }
 
                                     if (table_type.equals("1") || table_type.equals("3")) {
-                                        k = insertIntoQuestionlog(task_data, table_type, id_val, millisecond_val, id, flow_id);
+
+                                        k = insertIntoQuestionlog(task_data,
+                                                table_type,
+                                                id_val,
+                                                millisecond_val,
+                                                id,
+                                                flow_id);
+
                                         if (table_type.equals("3")) {
-//                                            Not called for New Download Structure
-                                            updateTaskDown(ref_id, "0", parent_flow_id, subflow_id);
+                                            updateTaskDown(ref_id, "0",
+                                                    parent_flow_id,
+                                                    subflow_id);
                                         }
                                     }
 
@@ -1514,41 +1664,246 @@ class DownloadMainStructure {
 
                                 reader.endObject();
                             }
-                        } else {
-                            reader.close();
-                            reader = null;
-                            streamReader.close();
-
                         }
-
-
                     }
+
                     reader.close();
                     streamReader.close();
+                    content.close();
 
-                    //Download Question log parellel with task download.
                     if (taskdownloadflag != 0) {
                         k = 1;
                         Intent i_ch = new Intent(sqlitewraper.context,
                                 DowoloadQuestionLogService.class);
-                        WakefulIntentService.sendWakefulWork(sqlitewraper.context,
-                                i_ch);
+                        WakefulIntentService.sendWakefulWork(
+                                sqlitewraper.context, i_ch);
                     }
+
                 } catch (Exception e) {
-                    if (reader != null) {
-                        reader.close();
-                    }
+
+                    if (reader != null) reader.close();
                     streamReader.close();
+                    content.close();
                 }
             }
-        } catch (Exception e) {
-            ////e.printStackTrace()();
-            return k;
 
+        } catch (Exception e) {
+            return k;
+        } finally {
+            if (response != null) response.close();  // IMPORTANT
         }
 
         return k;
     }
+
+
+    //task download with Streaming with httpclinet
+//    public int taskDownloadingwithStreaming(String url, String json, int id, int flow_id) {
+//
+//        taskdownloadflag = 0;
+//        int k = 0;
+//        try {
+//            ArrayList<NameValuePair> postParameters;
+//            postParameters = new ArrayList<NameValuePair>();
+//            postParameters.add(new BasicNameValuePair("Data", json));
+//
+//            StringBuilder builder = new StringBuilder();
+//            HttpClient client = new DefaultHttpClient();
+//            HttpGet httpGet = new HttpGet(url);
+//
+//
+//            HttpPost post = new HttpPost("/Services/Download_For_Mobile.asmx/DataStreaming");
+//            post.setHeader("host", sqlitewraper.context.getResources().getString(R.string.App_URL));
+//
+//            StringEntity se = new StringEntity(URLEncoder.encode(json, "UTF-8"));
+//            post.setEntity(new UrlEncodedFormEntity(postParameters));
+//
+//            int parent_flow_id = 0, subflow_id = 0;
+//
+//            JSONObject data2 = null;
+//            String u_c = null;
+//            String username = null;
+//            String userId = null;
+//            try {
+//                database = sqlitewraper.getDatabase();
+//                android.database.Cursor c3 = database.rawQuery("SELECT username,u_c,company_id,appid,user_id FROM Login_Master",
+//                        null);
+//                c3.moveToLast();
+//                username = c3.getString(0);
+//                u_c = c3.getString(1);
+//                int company_id = c3.getInt(2);
+//                String appid = c3.getString(3);
+//                userId = c3.getString(4);
+//                c3.close();
+//
+//                data2 = new JSONObject();
+//                data2.put("username", username);
+//                data2.put("u_c", u_c);
+//                data2.put("appid", appid);
+//                data2.put("user_id", userId);
+//
+//            } catch (Exception e) {
+//                ////e.printStackTrace()();
+//            }
+//
+//            MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+//            String roleid = prefs.getString("authroleidn", "0");
+//            String companyFeatureid = prefs.getString("authcompanyfid", "0");
+//
+//
+//            httpGet.addHeader("auth1", data2.toString());
+//            httpGet.addHeader("uname", username);
+//            httpGet.addHeader("u_c", u_c);
+//            httpGet.addHeader("user_id", userId);
+//            httpGet.addHeader("Role_Id", roleid);
+//            httpGet.addHeader("Company_Feature_Id", companyFeatureid);
+//
+//            HttpResponse response = client.execute(httpGet);
+//            StatusLine statusLine = response.getStatusLine();
+//            int statusCode = statusLine.getStatusCode();
+//
+//            if (statusCode != 200) {
+//                k = 0;
+//                return k;
+//
+//            }
+//
+//            if (statusCode == 200) {
+//                HttpEntity entity = response.getEntity();
+//                InputStream content = entity.getContent();
+//                Reader streamReader = new InputStreamReader(content);
+//
+//                JsonReader reader = new JsonReader(streamReader);
+//                reader.setLenient(true);
+//
+//
+//                try {
+//
+//                    while (reader.hasNext() && (!(reader.peek() == JsonToken.END_DOCUMENT))) {
+//
+//                        if (!(reader.peek() == JsonToken.END_DOCUMENT)) {
+//                            reader.beginObject();
+//                            String parent_id = reader.nextName();
+//                            if (parent_id.equals("parent_flow_id")) {
+//                                parent_flow_id = reader.nextInt();
+//                            }
+//                            String sub_id = reader.nextName();
+//
+//                            if (sub_id.equals("sub_flow_id")) {
+//                                subflow_id = reader.nextInt();
+//                            }
+//
+//                            String ref_task_id = reader.nextName();
+//                            int ref_id = -3;
+//                            if (ref_task_id.equals("ref_task_id")) {
+//                                ref_id = reader.nextInt();
+//                            }
+//                            String name = reader.nextName();
+//                            if (name.equals("table_type")) {
+//
+//
+//                                //table type Under-standing
+//
+//
+//
+//                                String table_type = reader.nextString();
+//                                String millisecond_val = "0";
+//                                String id_val = "";
+//                                String id_n = reader.nextName();
+//                                if (id_n.equals("id")) {
+//                                    id_val = reader.nextString();
+//                                }
+//
+//                                String millisecond = reader.nextName();
+//
+//                                if (millisecond.equals("millisecond")) {
+//                                    millisecond_val = reader.nextString();
+//
+//                                }
+//                                String alldata = reader.nextName();
+//
+//
+//                                //Only Table Type 0,1 will come from server side
+//
+//                                //table_type=0 main task
+//                                //table type=1 sub task
+//
+//
+//                                if (alldata.equals("alldata")) {
+//                                    String task_data = reader.nextString();
+//
+//                                    if (table_type.equals("-1")) {
+//                                        k = 2;
+//                                    }
+//
+//                                    if (table_type.equals("6")) {
+////                                        Not called for New Download Structure
+//                                        updateTaskDown(ref_id, "0", 0, 0);
+//                                        k = 2;
+//                                    }
+//                                    if (table_type.equals("0") || table_type.equals("2")) {
+//                                        //insert into task master
+//
+//                                        k = insertIntoTaskmaster(task_data, "task_master", id, millisecond_val, table_type, id_val, flow_id);
+//                                        if (table_type.equals("2")) {
+//                                            //update task download
+////                                            Not called for New Download Structure
+//                                            updateTaskDown(ref_id, "0", parent_flow_id, subflow_id);
+//
+//                                        }
+//                                    }
+//
+//                                    if (table_type.equals("1") || table_type.equals("3")) {
+//                                        k = insertIntoQuestionlog(task_data, table_type, id_val, millisecond_val, id, flow_id);
+//                                        if (table_type.equals("3")) {
+////                                            Not called for New Download Structure
+//                                            updateTaskDown(ref_id, "0", parent_flow_id, subflow_id);
+//                                        }
+//                                    }
+//
+//                                    if (table_type.equals("5")) {
+//                                        updateTaskDown(ref_id, "1", 0, 0);
+//                                        k = 2;
+//                                    }
+//                                }
+//
+//                                reader.endObject();
+//                            }
+//                        } else {
+//                            reader.close();
+//                            reader = null;
+//                            streamReader.close();
+//
+//                        }
+//
+//
+//                    }
+//                    reader.close();
+//                    streamReader.close();
+//
+//                    //Download Question log parellel with task download.
+//                    if (taskdownloadflag != 0) {
+//                        k = 1;
+//                        Intent i_ch = new Intent(sqlitewraper.context,
+//                                DowoloadQuestionLogService.class);
+//                        WakefulIntentService.sendWakefulWork(sqlitewraper.context,
+//                                i_ch);
+//                    }
+//                } catch (Exception e) {
+//                    if (reader != null) {
+//                        reader.close();
+//                    }
+//                    streamReader.close();
+//                }
+//            }
+//        } catch (Exception e) {
+//            ////e.printStackTrace()();
+//            return k;
+//
+//        }
+//
+//        return k;
+//    }
 
     //update task download to userDefine flow master(Not called for New Download Structure)
     private void updateTaskDown(int sid, String down, int parent_id, int sub_id) {
@@ -1985,7 +2340,7 @@ class DownloadMainStructure {
         t2 = "server_task_id='" + server_task_id + "'";
         ContentValues cv1 = new ContentValues();
 
-       // cv1.put("flag", "0");
+        // cv1.put("flag", "0");
         cv1.put("p_server_task_id", p_server_task_id);
         cv1.put("user_id", user_id);
         cv1.put("username", username);
@@ -2046,7 +2401,7 @@ class DownloadMainStructure {
                 if (istaskupdate)
                     temp = database.update(t_name, cv1, t2, null);
 
-                    Log.d("##TASK_DOWNLOADUPDATE","TEMP ID:"+temp+"SID:"+server_task_id);
+                Log.d("##TASK_DOWNLOADUPDATE","TEMP ID:"+temp+"SID:"+server_task_id);
             } else {
                 //Call the web service to swap the task to server side
                 temp = database.update(t_name, cv2, t2, null);
@@ -2432,7 +2787,7 @@ class DownloadMainStructure {
                         }
                     }
                 }
-
+                c1.close();
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -2517,13 +2872,20 @@ class DownloadMainStructure {
             String da = URLEncoder.encode(jsds.toString(), "UTF-8");
             url = url + da;
 
-            HttpResponse response = downloadWithStreming(url, data1);
+//            HttpResponse response = downloadWithStreming(url, data1);
+//            if (response != null) {
+//                k = insertIntoThreshold(response);
+//            } else {
+//                k = 1;
+//            }
+
+            Response response = downloadWithStremingokhhtp(url, data1);
+
             if (response != null) {
                 k = insertIntoThreshold(response);
             } else {
                 k = 1;
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             writeLogToFile(e.getMessage(), "Threshold_New_DOWNLOAD");
@@ -2533,53 +2895,54 @@ class DownloadMainStructure {
     }
 
 
-
-    private int insertIntoThreshold(HttpResponse response) {
+    private int insertIntoThreshold(Response response) {
 
         int d = 0;
+
         try {
-            StatusLine statusLine = response.getStatusLine();
-            int statusCode = statusLine.getStatusCode();
+
+            int statusCode = response.code();   // Replace getStatusCode()
 
             if (statusCode == 200) {
-                HttpEntity entity = response.getEntity();
-                InputStream content = entity.getContent();
+
+                InputStream content = response.body().byteStream();  // Replace getEntity().getContent()
+
                 Reader streamReader = new InputStreamReader(content);
                 JsonReader reader = new JsonReader(streamReader);
                 reader.setLenient(true);
+
                 try {
-                    while (reader.hasNext() && (!(reader.peek() == JsonToken.END_DOCUMENT))) {
+
+                    while (reader.hasNext() &&
+                            (!(reader.peek() == JsonToken.END_DOCUMENT))) {
 
                         String status1 = "";
                         String message = "";
 
                         if (!(reader.peek() == JsonToken.END_DOCUMENT)) {
+
                             reader.beginObject();
+
                             String status = reader.nextName();
                             if (status.equals("status")) {
                                 status1 = reader.nextString();
                             }
+
                             String message1 = reader.nextName();
                             if (message1.equals("message")) {
                                 message = reader.nextString();
                             }
 
+                            // ===== STATUS 2 =====
                             if (status1.equalsIgnoreCase("2")) {
-
-//                                String t1;
-//                                t1 = "_id = 4";
-//                                ContentValues cv2 = new ContentValues();
-//
-//                                cv2.put("status", "2");
-//
-//                                long temp12 = database.update("download_counter", cv2, t1,
-//                                        null);
 
                                 generateNotification(5, null);
                                 d = 2;
                             }
 
+                            // ===== STATUS 1 =====
                             if (status1.equalsIgnoreCase("1")) {
+
                                 JSONArray innerdata = new JSONArray(message);
                                 int length = innerdata.length();
 
@@ -2587,7 +2950,6 @@ class DownloadMainStructure {
 
                                     JSONObject innerdatobj = innerdata.getJSONObject(j);
 
-                                   // int threshold_id = innerdatobj.getInt("threshold_id");
                                     String speed = innerdatobj.getString("Speed");
                                     String millisecond = innerdatobj.getString("millisecond");
                                     String normal_acc = innerdatobj.getString("Normal_ACC");
@@ -2599,22 +2961,9 @@ class DownloadMainStructure {
                                     String territory = innerdatobj.getString("territory");
                                     String vehicle_type = innerdatobj.getString("vehicle_type");
 
-//                                    String t1;
-//                                    t1 = "_id = 5";
-//                                    ContentValues cv2 = new ContentValues();
-//                                    cv2.put("counter", counterFlowMaster);
-//                                    long temp1 = database.update("download_counter", cv2,
-//                                            t1, null);
-
-                                    generateNotification(5, null); //Threshold downloading start show notification
-
-//                                    Cursor c4 = database.rawQuery(
-//                                            "SELECT * FROM  Thresold_New WHERE threshold_id ="
-//                                                    + threshold_id, null);
-//                                    c4.moveToFirst();
+                                    generateNotification(5, null);
 
                                     ContentValues cv1 = new ContentValues();
-//                                    cv1.put("threshold_id", threshold_id);
                                     cv1.put("speed", speed);
                                     cv1.put("millisecond", millisecond);
                                     cv1.put("normal_acc", normal_acc);
@@ -2626,61 +2975,194 @@ class DownloadMainStructure {
                                     cv1.put("territory", territory);
                                     cv1.put("vehicle_type", vehicle_type);
 
+                                    long temp = database.insert("Thresold_New", null, cv1);
+                                    counterThreshold++;
 
-//
-//                                    if (c4.getCount() > 0) {
-//                                        String t;
-//                                        t = "threshold_id =" + threshold_id;
-//
-//                                        long temp = database.update("Thresold_New", cv1, t,
-//                                                null);
-//
-//                                        if (!isFirsttime) {
-//                                            counterThreshold++;
-//                                        }
-//
-//                                    } else {
-
-                                        long temp = database.insert("Thresold_New", null,
-                                                cv1);
-                                        counterThreshold++;
-
-//                                    }
                                     d = 1;
-                                   // cursorClose(c4);
                                 }
+
                                 flagThreshold = 0;
                             }
 
+                            // ===== STATUS 5 =====
                             if (status1.equalsIgnoreCase("5")) {
                                 d = 1;
                             }
 
-                            Log.d("##QQ", reader.toString());
                             reader.endObject();
-
-                        } else {
-                            reader.close();
-                            reader = null;
-                            streamReader.close();
                         }
                     }
+
                     reader.close();
                     streamReader.close();
+                    content.close();
 
-//                    if (taskdownloadflag != 0) {
-//                        return 1;
-//                    }
                 } catch (Exception e) {
                     reader.close();
                     streamReader.close();
+                    content.close();
                 }
+
             } else {
                 return 1;
             }
+
         } catch (Exception e) {
             d = 1;
         }
+
         return d;
     }
+
+
+
+//    private int insertIntoThreshold(HttpResponse response) {
+//
+//        int d = 0;
+//        try {
+//            StatusLine statusLine = response.getStatusLine();
+//            int statusCode = statusLine.getStatusCode();
+//
+//            if (statusCode == 200) {
+//                HttpEntity entity = response.getEntity();
+//                InputStream content = entity.getContent();
+//                Reader streamReader = new InputStreamReader(content);
+//                JsonReader reader = new JsonReader(streamReader);
+//                reader.setLenient(true);
+//                try {
+//                    while (reader.hasNext() && (!(reader.peek() == JsonToken.END_DOCUMENT))) {
+//
+//                        String status1 = "";
+//                        String message = "";
+//
+//                        if (!(reader.peek() == JsonToken.END_DOCUMENT)) {
+//                            reader.beginObject();
+//                            String status = reader.nextName();
+//                            if (status.equals("status")) {
+//                                status1 = reader.nextString();
+//                            }
+//                            String message1 = reader.nextName();
+//                            if (message1.equals("message")) {
+//                                message = reader.nextString();
+//                            }
+//
+//                            if (status1.equalsIgnoreCase("2")) {
+//
+////                                String t1;
+////                                t1 = "_id = 4";
+////                                ContentValues cv2 = new ContentValues();
+////
+////                                cv2.put("status", "2");
+////
+////                                long temp12 = database.update("download_counter", cv2, t1,
+////                                        null);
+//
+//                                generateNotification(5, null);
+//                                d = 2;
+//                            }
+//
+//                            if (status1.equalsIgnoreCase("1")) {
+//                                JSONArray innerdata = new JSONArray(message);
+//                                int length = innerdata.length();
+//
+//                                for (int j = 0; j < length; j++) {
+//
+//                                    JSONObject innerdatobj = innerdata.getJSONObject(j);
+//
+//                                    // int threshold_id = innerdatobj.getInt("threshold_id");
+//                                    String speed = innerdatobj.getString("Speed");
+//                                    String millisecond = innerdatobj.getString("millisecond");
+//                                    String normal_acc = innerdatobj.getString("Normal_ACC");
+//                                    String normal_deacc = innerdatobj.getString("Normal_DEACC");
+//                                    String hard_acc = innerdatobj.getString("Hard_ACC");
+//                                    String hard_deacc = innerdatobj.getString("Hard_DEACC");
+//                                    String gap_milli = innerdatobj.getString("Gap_Milli");
+//                                    String speed_violation_time = innerdatobj.getString("Speed_Violation_Time");
+//                                    String territory = innerdatobj.getString("territory");
+//                                    String vehicle_type = innerdatobj.getString("vehicle_type");
+//
+////                                    String t1;
+////                                    t1 = "_id = 5";
+////                                    ContentValues cv2 = new ContentValues();
+////                                    cv2.put("counter", counterFlowMaster);
+////                                    long temp1 = database.update("download_counter", cv2,
+////                                            t1, null);
+//
+//                                    generateNotification(5, null); //Threshold downloading start show notification
+//
+////                                    Cursor c4 = database.rawQuery(
+////                                            "SELECT * FROM  Thresold_New WHERE threshold_id ="
+////                                                    + threshold_id, null);
+////                                    c4.moveToFirst();
+//
+//                                    ContentValues cv1 = new ContentValues();
+////                                    cv1.put("threshold_id", threshold_id);
+//                                    cv1.put("speed", speed);
+//                                    cv1.put("millisecond", millisecond);
+//                                    cv1.put("normal_acc", normal_acc);
+//                                    cv1.put("normal_deacc", normal_deacc);
+//                                    cv1.put("hard_acc", hard_acc);
+//                                    cv1.put("hard_deacc", hard_deacc);
+//                                    cv1.put("gap_milli", gap_milli);
+//                                    cv1.put("speed_violation_time", speed_violation_time);
+//                                    cv1.put("territory", territory);
+//                                    cv1.put("vehicle_type", vehicle_type);
+//
+//
+////
+////                                    if (c4.getCount() > 0) {
+////                                        String t;
+////                                        t = "threshold_id =" + threshold_id;
+////
+////                                        long temp = database.update("Thresold_New", cv1, t,
+////                                                null);
+////
+////                                        if (!isFirsttime) {
+////                                            counterThreshold++;
+////                                        }
+////
+////                                    } else {
+//
+//                                    long temp = database.insert("Thresold_New", null,
+//                                            cv1);
+//                                    counterThreshold++;
+//
+////                                    }
+//                                    d = 1;
+//                                    // cursorClose(c4);
+//                                }
+//                                flagThreshold = 0;
+//                            }
+//
+//                            if (status1.equalsIgnoreCase("5")) {
+//                                d = 1;
+//                            }
+//
+//                            Log.d("##QQ", reader.toString());
+//                            reader.endObject();
+//
+//                        } else {
+//                            reader.close();
+//                            reader = null;
+//                            streamReader.close();
+//                        }
+//                    }
+//                    reader.close();
+//                    streamReader.close();
+//
+////                    if (taskdownloadflag != 0) {
+////                        return 1;
+////                    }
+//                } catch (Exception e) {
+//                    reader.close();
+//                    streamReader.close();
+//                }
+//            } else {
+//                return 1;
+//            }
+//        } catch (Exception e) {
+//            d = 1;
+//        }
+//        return d;
+//    }
 }
