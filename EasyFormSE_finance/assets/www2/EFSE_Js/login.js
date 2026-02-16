@@ -1641,15 +1641,15 @@ function get_blank_user_checksheet() {
                     }
 
                     localStorage.setItem("allow_profile_change", allow_profile_change);
-                    //changeurl("selection.html");
-                    changeurl("download_status.html");
+
+                    check_2FA_with_face_detection();
                 }
             }
             else {
                 loading_hide();
                 alert(responseText[0].message);
-                //changeurl("selection.html");
-                changeurl("download_status.html");
+
+                check_2FA_with_face_detection();
             }
         }, onfail);
         getdata.callOtherDomain();
@@ -1657,6 +1657,29 @@ function get_blank_user_checksheet() {
     catch (e) {
         alert(e + '_get_blank_user_checksheet()');
         loading_hide();
+    }
+}
+
+function check_2FA_with_face_detection() {
+
+    if (FaceDetection == "true") {
+        var q_jsonobj = [];
+        cordova.exec(function (e) {
+            // onsuccess
+
+            changeurl("download_status.html");
+
+        }, function (e) {
+            // onfail / back button from face detection
+
+            myApp.setProgressbar('#login_progressbar', 0);
+            myApp.closeModal('.popover-login');
+
+        }, 'TwoFAWithFaceDetectionPlugin', 'anAction', q_jsonobj);
+    }
+    else {
+        // redirect to download page
+        changeurl("download_status.html");
     }
 }
 
