@@ -1497,7 +1497,12 @@ function show_checksheet_progress_popup() {
 //toggle skip download flag
 function toggle_skip_download_flag(chk) {
     var chk_skip_down = $(chk).is(':checked');
-    storage.setItem('chk_skip_down', JSON.stringify(chk_skip_down));
+    if (chk_skip_down == true) {
+        storage.setItem('chk_skip_down', JSON.stringify('true'));
+    }
+    else {
+        storage.setItem('chk_skip_down', JSON.stringify('false'));
+    }
 }
 
 function get_internet_status_F7() {

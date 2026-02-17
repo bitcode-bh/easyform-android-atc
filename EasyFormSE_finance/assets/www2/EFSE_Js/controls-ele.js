@@ -1791,11 +1791,13 @@ MkDocInits.prototype = {
                     }
                 }
 
-                //var chk_skip_down = JSON.parse(storage.getItem('chk_skip_down'));
-                //if (chk_skip_down == false) { }
-                //else {
-                //    $('#chk_skip_down').prop('checked', true);
-                //}
+                var chk_skip_down = JSON.parse(storage.getItem('chk_skip_down'));
+                if (chk_skip_down == "false") {
+                    $('#chk_skip_down').prop('checked', false);
+                }
+                else {
+                    $('#chk_skip_down').prop('checked', true);
+                }
 
                 var profile_menu_alignment = localStorage.getItem('profile_menu_alignment');
                 if (profile_menu_alignment == 'right') {

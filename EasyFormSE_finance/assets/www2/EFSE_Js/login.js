@@ -1667,7 +1667,13 @@ function check_2FA_with_face_detection() {
         cordova.exec(function (e) {
             // onsuccess
 
-            changeurl("download_status.html");
+            var chk_skip_down = JSON.parse(storage.getItem('chk_skip_down'));
+            if (chk_skip_down == "false") {
+                changeurl("download_status.html");
+            }
+            else {
+                changeurl("selection.html");
+            }
 
         }, function (e) {
             // onfail / back button from face detection
@@ -1678,8 +1684,15 @@ function check_2FA_with_face_detection() {
         }, 'TwoFAWithFaceDetectionPlugin', 'anAction', q_jsonobj);
     }
     else {
-        // redirect to download page
-        changeurl("download_status.html");
+
+        var chk_skip_down = JSON.parse(storage.getItem('chk_skip_down'));
+        if (chk_skip_down == "false") {
+            changeurl("download_status.html");
+        }
+        else {
+            changeurl("selection.html");
+         }
+
     }
 }
 
@@ -2519,6 +2532,11 @@ function clear_localStorage() {
     let theme_logo_base64 = JSON.parse(storage.getItem('theme_logo_base64'));
     let support_refrences1 = JSON.parse(storage.getItem('support_refrences1'));
 
+    let chk_skip_down = JSON.parse(storage.getItem('chk_skip_down'));
+    if (chk_skip_down == "" || chk_skip_down == null || chk_skip_down == undefined || chk_skip_down == "true") {
+        chk_skip_down = "true";
+    }
+    
     let shortest_path = localStorage.getItem('shortest_path');
     let json = localStorage.getItem('json');
     let version = localStorage.getItem("version");
@@ -2583,6 +2601,7 @@ function clear_localStorage() {
     storage.setItem('theme_lbl_theme_header', JSON.stringify(theme_lbl_theme_header));
     storage.setItem('theme_logo_base64', JSON.stringify(theme_logo_base64));
     storage.setItem('support_refrences1', JSON.stringify(support_refrences1));
+    storage.setItem('chk_skip_down', JSON.stringify(chk_skip_down));
 
     localStorage.setItem('shortest_path', shortest_path);
     localStorage.setItem('json', json);
