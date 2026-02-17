@@ -1660,6 +1660,7 @@ function get_blank_user_checksheet() {
     }
 }
 
+var FaceDetection;
 function check_2FA_with_face_detection() {
 
     if (FaceDetection == "true") {
