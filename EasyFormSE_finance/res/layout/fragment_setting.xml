@@ -34,6 +34,23 @@
             android:layout_gravity="center|top"
             android:text="Show attendace Details  " />
 
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/apitoastenble"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Api Toast Enable"
+            android:layout_marginTop="10dp"
+            android:textSize="15dp" />
+
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/apilogwrite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Api Log Enable"
+            android:layout_marginTop="10dp"
+            android:textSize="15dp" />
+
     </LinearLayout>
 
 

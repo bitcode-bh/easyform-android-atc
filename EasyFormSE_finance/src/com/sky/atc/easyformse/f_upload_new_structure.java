@@ -72,6 +72,15 @@ import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 import static com.sky.atc.easyformse.DeviceEventsUtils.VideoSizeConverter;
 import static com.sky.atc.easyformse.sqlitewraper.context;
 
+import okhttp3.ConnectionPool;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+
 /**
  * updated by NareshChocha on 11/03/2022.
  *
@@ -2293,11 +2302,9 @@ public class f_upload_new_structure extends WakefulIntentService {
 
     }
 
-
-    //VIDEO OR DOCUMENT UPLOAD TO SERVER IN CHUNKS
+    //VIDEO OR DOCUMENT UPLOAD TO SERVER IN CHUNKS with okhttp
     public int sendFileToServer1(String filename, String targetUrl,
                                  String file_name, int ch_number, String CompanyId, String CustomerUniq, int offset, double track_byte_g, int checksheetid_new, int que_id, String step_No, String type, String size, String Ph_id, String it_id, String th_path, int sid, String ext, String app_id, String username, String u_c, String devicetype, String appversion) throws IOException {
-        HttpClient httpclient = new DefaultHttpClient();
 
         final int ret_err = 0;
         try {
@@ -2305,12 +2312,9 @@ public class f_upload_new_structure extends WakefulIntentService {
             double totalbytes;
             double remaining_bytes;
             int final_total_ch;
-            HttpPost httppost = new HttpPost(targetUrl);
 
             File f = new File(filename);
-            if (f.exists()) {
-                System.out.print("dsds");
-            } else {
+            if (!f.exists()) {
                 return 1;
             }
 
@@ -2319,6 +2323,7 @@ public class f_upload_new_structure extends WakefulIntentService {
             double total_chunk = f_legnth / in_buffer_legnth;
             int total_ch = (int) f_legnth / in_buffer_legnth;
             totalbytes = f_legnth;
+
             if (total_chunk - total_ch > 0) {
                 final_total_ch = total_ch + 1;
             } else {
@@ -2329,183 +2334,323 @@ public class f_upload_new_structure extends WakefulIntentService {
                 totalbytes = track_byte_g;
             }
 
-            // not using so comments
-            // FileBody bin = new FileBody(f);
-
-            FileBody cbFile = new FileBody(f, "application/" + ext + "");
-            cbFile.getMediaType();
-            StringBody comment = new StringBody("A binary file of some kind");
+            OkHttpClient client = NewWebservicesCallEasyform.getOkHttpClient();
 
             for (int i = ch_number; i < final_total_ch; i++) {
 
-                if (CustomerUniq.equals("null") || CustomerUniq == null) {
+                if (CustomerUniq == null || CustomerUniq.equals("null")) {
                     CustomerUniq = "0";
                 }
 
                 String sizekb = VideoSizeConverter(size);
 
-                MultipartEntity reqEntity = new MultipartEntity();
-                reqEntity.addPart("flowChunkNumber",
-                        new StringBody(String.valueOf(i + 1)));
-                reqEntity.addPart("flowChunkSize",
-                        new StringBody(String.valueOf(1024 * 1024)));
-                reqEntity.addPart("flowCurrentChunkSize",
-                        new StringBody(String.valueOf(1024 * 1024)));
-                reqEntity.addPart("flowTotalSize",
-                        new StringBody(String.valueOf(Math.round(f_legnth))));
-                reqEntity.addPart("flowIdentifier",
-                        new StringBody(String.valueOf(file_name)));
-                reqEntity.addPart("flowFilename",
-                        new StringBody(String.valueOf(file_name)));
-                reqEntity.addPart("flowRelativePath",
-                        new StringBody(String.valueOf(file_name)));
-                reqEntity.addPart("flowTotalChunks",
-                        new StringBody(String.valueOf(final_total_ch)));
-                reqEntity.addPart("CompanyId",
-                        new StringBody(CompanyId));
-                reqEntity.addPart("CustomerUniq",
-                        new StringBody(CustomerUniq));
+                MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
 
-                reqEntity.addPart("checksheetid",
-                        new StringBody(String.valueOf(checksheetid_new)));
-                reqEntity.addPart("que_id",
-                        new StringBody(String.valueOf(que_id)));
-                reqEntity.addPart("appid",
-                        new StringBody(String.valueOf(app_id)));
-
+                builder.addFormDataPart("flowChunkNumber", String.valueOf(i + 1));
+                builder.addFormDataPart("flowChunkSize", String.valueOf(1024 * 1024));
+                builder.addFormDataPart("flowCurrentChunkSize", String.valueOf(1024 * 1024));
+                builder.addFormDataPart("flowTotalSize", String.valueOf(Math.round(f_legnth)));
+                builder.addFormDataPart("flowIdentifier", file_name);
+                builder.addFormDataPart("flowFilename", file_name);
+                builder.addFormDataPart("flowRelativePath", file_name);
+                builder.addFormDataPart("flowTotalChunks", String.valueOf(final_total_ch));
+                builder.addFormDataPart("CompanyId", CompanyId);
+                builder.addFormDataPart("CustomerUniq", CustomerUniq);
+                builder.addFormDataPart("checksheetid", String.valueOf(checksheetid_new));
+                builder.addFormDataPart("que_id", String.valueOf(que_id));
+                builder.addFormDataPart("appid", String.valueOf(app_id));
 
                 if (step_No == null) {
                     step_No = "0";
                 }
-                reqEntity.addPart("step_No",
-                        new StringBody(step_No));
-                reqEntity.addPart("type",
-                        new StringBody(type));
-                reqEntity.addPart("Ph_id",
-                        new StringBody(Ph_id));
-                reqEntity.addPart("it_id",
-                        new StringBody(it_id));
-//                reqEntity.addPart("size",     // change for offline login url upload issue 07-05-2024
-//                        new StringBody("size"));
-                reqEntity.addPart("size",
-                        new StringBody("0"));
-                reqEntity.addPart("size_kb",
-                        new StringBody(sizekb));
-                reqEntity.addPart("th_path",
-                        new StringBody(th_path));
-                reqEntity.addPart("sid",
-                        new StringBody(String.valueOf(sid)));
 
+                builder.addFormDataPart("step_No", step_No);
+                builder.addFormDataPart("type", type);
+                builder.addFormDataPart("Ph_id", Ph_id);
+                builder.addFormDataPart("it_id", it_id);
+                builder.addFormDataPart("size", "0");
+                builder.addFormDataPart("size_kb", sizekb);
+                builder.addFormDataPart("th_path", th_path);
+                builder.addFormDataPart("sid", String.valueOf(sid));
 
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                byte[] data = bos.toByteArray();
+                FileInputStream fileInputStream = new FileInputStream(new File(filename));
 
-                System.out.println("executing request "
-                        + httppost.getRequestLine());
-
-
-                // not using so comments
-                // Writer writer = new StringWriter();
-                // Reader reader;
-                try {
-
-                    FileInputStream fileInputStream = new FileInputStream(
-                            new File(filename));
-
-
-                    StringBuffer fileContent = new StringBuffer("");
-                    // bufferSize = 1024 * 1024;
-                    if (totalbytes > (1024 * 1024)) {
-                        bufferSize = 1024 * 1024;
-                        totalbytes = totalbytes - bufferSize;
-
-                    } else {
-                        bufferSize = (int) totalbytes;
-                    }
-
-                    byte[] buffer = new byte[bufferSize];
-
-                    int n = fileInputStream.read(buffer);
-
-                    if (i == 0) {
-
-                        fileContent.append(new String(buffer, 0, n));
-                        offset = +n;
-
-                    } else if (i + 1 != final_total_ch) {
-                        try {
-
-                            RandomAccessFile raf = new RandomAccessFile(f,
-                                    "r");
-                            raf.seek(offset);
-                            raf.readFully(buffer);
-                            fileContent.append(new String(buffer));
-                            offset = offset + (1024 * 1024);
-
-                        } catch (Exception e) {
-
-                            throw e;
-
-                        }
-
-                    } else if ((i + 1) == final_total_ch) {
-                        RandomAccessFile raf = new RandomAccessFile(f, "r");
-                        raf.seek(offset);
-                        raf.readFully(buffer);
-                        fileContent.append(new String(buffer));
-                    }
-
-                    ByteArrayBody imageByte = new ByteArrayBody(buffer,
-                            name_file);
-//                    reqEntity.addPart("FileData", imageByte); // change for offline login url upload issue 07-05-2024
-                    reqEntity.addPart("file", imageByte);
-
-                    String u_c1 = b.GetValue();
-
-                    if (!u_c1.equalsIgnoreCase("NA")) {
-
-                        httppost.setEntity(reqEntity);
-                        // log write
-                        try {
-                            boolean mStringLogWrite = sharedPreferences.getBoolean("isLogWrite", false);
-                            if (mStringLogWrite)
-                                reqEntity.writeTo(new FileOutputStream(Utils.getRootFolderFile(sqlitewraper.context) + "/" + LogUtils.LogFolderName + "/" + "output.txt"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        HttpResponse response = httpclient.execute(httppost);
-                        if (response.getStatusLine().getStatusCode() == HttpsURLConnection.HTTP_OK) {
-                            System.out.print("dsd");
-
-                        } else {
-
-                            LogUtils.writeUploadLogToFile(String.valueOf(response.getStatusLine().getStatusCode()), "", "UPLLOAD_VIDEO");
-                            return 1;
-
-
-                        }
-
-                        HttpEntity resEntity = response.getEntity();
-                        track_chnumber = i;
-                        track_offset = offset;
-
-                        track_bytes = totalbytes;
-                    } else {
-
-                        return 1;
-                    }
-
-                } catch (Exception e) {
-
-                    throw e;
-
+                if (totalbytes > (1024 * 1024)) {
+                    bufferSize = 1024 * 1024;
+                    totalbytes = totalbytes - bufferSize;
+                } else {
+                    bufferSize = (int) totalbytes;
                 }
+
+                byte[] buffer = new byte[bufferSize];
+
+                int n = fileInputStream.read(buffer);
+
+                if (i == 0) {
+                    offset = +n;
+                } else if (i + 1 != final_total_ch) {
+                    RandomAccessFile raf = new RandomAccessFile(f, "r");
+                    raf.seek(offset);
+                    raf.readFully(buffer);
+                    offset = offset + (1024 * 1024);
+                    raf.close();
+                } else if ((i + 1) == final_total_ch) {
+                    RandomAccessFile raf = new RandomAccessFile(f, "r");
+                    raf.seek(offset);
+                    raf.readFully(buffer);
+                    raf.close();
+                }
+
+                RequestBody fileBody = RequestBody.create(
+                        buffer,
+                        MediaType.parse("application/" + ext)
+                );
+
+                builder.addFormDataPart("file", name_file, fileBody);
+
+                Request request = new Request.Builder()
+                        .url(targetUrl)
+                        .post(builder.build())
+                        .build();
+
+                Response  response = client.newCall(request).execute();
+
+                if (response.isSuccessful()) {
+
+                    track_chnumber = i;
+                    track_offset = offset;
+                    track_bytes = totalbytes;
+
+                } else {
+
+                    LogUtils.writeUploadLogToFile(String.valueOf(response.code()), "", "UPLLOAD_VIDEO");
+                    return 1;
+                }
+
+                response.close();
+                fileInputStream.close();
             }
+
         } catch (Exception e) {
             throw e;
         }
+
         return ret_err;
     }
+
+
+//    //VIDEO OR DOCUMENT UPLOAD TO SERVER IN CHUNKS httpclient
+//    public int sendFileToServer1(String filename, String targetUrl,
+//                                 String file_name, int ch_number, String CompanyId, String CustomerUniq, int offset, double track_byte_g, int checksheetid_new, int que_id, String step_No, String type, String size, String Ph_id, String it_id, String th_path, int sid, String ext, String app_id, String username, String u_c, String devicetype, String appversion) throws IOException {
+//        HttpClient httpclient = new DefaultHttpClient();
+//
+//        final int ret_err = 0;
+//        try {
+//
+//            double totalbytes;
+//            double remaining_bytes;
+//            int final_total_ch;
+//            HttpPost httppost = new HttpPost(targetUrl);
+//
+//            File f = new File(filename);
+//            if (f.exists()) {
+//                System.out.print("dsds");
+//            } else {
+//                return 1;
+//            }
+//
+//            double f_legnth = f.length();
+//            int in_buffer_legnth = 1024 * 1024;
+//            double total_chunk = f_legnth / in_buffer_legnth;
+//            int total_ch = (int) f_legnth / in_buffer_legnth;
+//            totalbytes = f_legnth;
+//            if (total_chunk - total_ch > 0) {
+//                final_total_ch = total_ch + 1;
+//            } else {
+//                final_total_ch = total_ch;
+//            }
+//
+//            if (track_byte_g > 0) {
+//                totalbytes = track_byte_g;
+//            }
+//
+//            // not using so comments
+//            // FileBody bin = new FileBody(f);
+//
+//            FileBody cbFile = new FileBody(f, "application/" + ext + "");
+//            cbFile.getMediaType();
+//            StringBody comment = new StringBody("A binary file of some kind");
+//
+//            for (int i = ch_number; i < final_total_ch; i++) {
+//
+//                if (CustomerUniq.equals("null") || CustomerUniq == null) {
+//                    CustomerUniq = "0";
+//                }
+//
+//                String sizekb = VideoSizeConverter(size);
+//
+//                MultipartEntity reqEntity = new MultipartEntity();
+//                reqEntity.addPart("flowChunkNumber",
+//                        new StringBody(String.valueOf(i + 1)));
+//                reqEntity.addPart("flowChunkSize",
+//                        new StringBody(String.valueOf(1024 * 1024)));
+//                reqEntity.addPart("flowCurrentChunkSize",
+//                        new StringBody(String.valueOf(1024 * 1024)));
+//                reqEntity.addPart("flowTotalSize",
+//                        new StringBody(String.valueOf(Math.round(f_legnth))));
+//                reqEntity.addPart("flowIdentifier",
+//                        new StringBody(String.valueOf(file_name)));
+//                reqEntity.addPart("flowFilename",
+//                        new StringBody(String.valueOf(file_name)));
+//                reqEntity.addPart("flowRelativePath",
+//                        new StringBody(String.valueOf(file_name)));
+//                reqEntity.addPart("flowTotalChunks",
+//                        new StringBody(String.valueOf(final_total_ch)));
+//                reqEntity.addPart("CompanyId",
+//                        new StringBody(CompanyId));
+//                reqEntity.addPart("CustomerUniq",
+//                        new StringBody(CustomerUniq));
+//
+//                reqEntity.addPart("checksheetid",
+//                        new StringBody(String.valueOf(checksheetid_new)));
+//                reqEntity.addPart("que_id",
+//                        new StringBody(String.valueOf(que_id)));
+//                reqEntity.addPart("appid",
+//                        new StringBody(String.valueOf(app_id)));
+//
+//
+//                if (step_No == null) {
+//                    step_No = "0";
+//                }
+//                reqEntity.addPart("step_No",
+//                        new StringBody(step_No));
+//                reqEntity.addPart("type",
+//                        new StringBody(type));
+//                reqEntity.addPart("Ph_id",
+//                        new StringBody(Ph_id));
+//                reqEntity.addPart("it_id",
+//                        new StringBody(it_id));
+////                reqEntity.addPart("size",     // change for offline login url upload issue 07-05-2024
+////                        new StringBody("size"));
+//                reqEntity.addPart("size",
+//                        new StringBody("0"));
+//                reqEntity.addPart("size_kb",
+//                        new StringBody(sizekb));
+//                reqEntity.addPart("th_path",
+//                        new StringBody(th_path));
+//                reqEntity.addPart("sid",
+//                        new StringBody(String.valueOf(sid)));
+//
+//
+//                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//                byte[] data = bos.toByteArray();
+//
+//                System.out.println("executing request "
+//                        + httppost.getRequestLine());
+//
+//
+//                // not using so comments
+//                // Writer writer = new StringWriter();
+//                // Reader reader;
+//                try {
+//
+//                    FileInputStream fileInputStream = new FileInputStream(
+//                            new File(filename));
+//
+//
+//                    StringBuffer fileContent = new StringBuffer("");
+//                    // bufferSize = 1024 * 1024;
+//                    if (totalbytes > (1024 * 1024)) {
+//                        bufferSize = 1024 * 1024;
+//                        totalbytes = totalbytes - bufferSize;
+//
+//                    } else {
+//                        bufferSize = (int) totalbytes;
+//                    }
+//
+//                    byte[] buffer = new byte[bufferSize];
+//
+//                    int n = fileInputStream.read(buffer);
+//
+//                    if (i == 0) {
+//
+//                        fileContent.append(new String(buffer, 0, n));
+//                        offset = +n;
+//
+//                    } else if (i + 1 != final_total_ch) {
+//                        try {
+//
+//                            RandomAccessFile raf = new RandomAccessFile(f,
+//                                    "r");
+//                            raf.seek(offset);
+//                            raf.readFully(buffer);
+//                            fileContent.append(new String(buffer));
+//                            offset = offset + (1024 * 1024);
+//
+//                        } catch (Exception e) {
+//
+//                            throw e;
+//
+//                        }
+//
+//                    } else if ((i + 1) == final_total_ch) {
+//                        RandomAccessFile raf = new RandomAccessFile(f, "r");
+//                        raf.seek(offset);
+//                        raf.readFully(buffer);
+//                        fileContent.append(new String(buffer));
+//                    }
+//
+//                    ByteArrayBody imageByte = new ByteArrayBody(buffer,
+//                            name_file);
+////                    reqEntity.addPart("FileData", imageByte); // change for offline login url upload issue 07-05-2024
+//                    reqEntity.addPart("file", imageByte);
+//
+//                    String u_c1 = b.GetValue();
+//
+//                    if (!u_c1.equalsIgnoreCase("NA")) {
+//
+//                        httppost.setEntity(reqEntity);
+//                        // log write
+//                        try {
+//                            boolean mStringLogWrite = sharedPreferences.getBoolean("isLogWrite", false);
+//                            if (mStringLogWrite)
+//                                reqEntity.writeTo(new FileOutputStream(Utils.getRootFolderFile(sqlitewraper.context) + "/" + LogUtils.LogFolderName + "/" + "output.txt"));
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                        HttpResponse response = httpclient.execute(httppost);
+//                        if (response.getStatusLine().getStatusCode() == HttpsURLConnection.HTTP_OK) {
+//                            System.out.print("dsd");
+//
+//                        } else {
+//
+//                            LogUtils.writeUploadLogToFile(String.valueOf(response.getStatusLine().getStatusCode()), "", "UPLLOAD_VIDEO");
+//                            return 1;
+//
+//
+//                        }
+//
+//                        HttpEntity resEntity = response.getEntity();
+//                        track_chnumber = i;
+//                        track_offset = offset;
+//
+//                        track_bytes = totalbytes;
+//                    } else {
+//
+//                        return 1;
+//                    }
+//
+//                } catch (Exception e) {
+//
+//                    throw e;
+//
+//                }
+//            }
+//        } catch (Exception e) {
+//            throw e;
+//        }
+//        return ret_err;
+//    }
 
 
     protected int upload_video(int tid, String siteid, int checksheetid, int step,

@@ -20,10 +20,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
@@ -43,6 +45,8 @@ public class SettingFragment extends Fragment {
     MaterialButton mbtnCheckDeveloper;
     MaterialButton mbtnAttendancevalue;
     MaterialButton mbtnshowpermission;
+    SwitchCompat mbtnApiToast;
+    SwitchCompat mCompatApiLogEnable;
     boolean settingEnabled;
     int result;
     String ischeckdontkeepsetting;
@@ -61,6 +65,56 @@ public class SettingFragment extends Fragment {
         mbtnCheckDeveloper = view.findViewById(R.id.mbtcheckdeveloper);
         mbtnAttendancevalue = view.findViewById(R.id.mbtncheckattendance);
         mbtnshowpermission = view.findViewById(R.id.mbtnshowpermission);
+        mbtnApiToast = view.findViewById(R.id.apitoastenble);
+        mCompatApiLogEnable = view.findViewById(R.id.apilogwrite);
+
+        MySharedPreferences editor = sqlitewraper.getSecureShared("isApiToast");
+
+        boolean isApiToast = editor.getBoolean("isApiToast",false);
+        if(isApiToast)
+        {
+            mbtnApiToast.setChecked(true);
+        }
+
+        mbtnApiToast.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked)
+                {
+                    editor.putBoolean("isApiToast", true);
+                    editor.commit();
+                }
+                else {
+
+                    editor.putBoolean("isApiToast", false);
+                    editor.commit();
+                }
+            }
+        });
+
+        MySharedPreferences mySharedPreferences = sqlitewraper.getSecureShared("isApiLog");
+
+        boolean isApiLog = mySharedPreferences.getBoolean("isApiLog",false);
+        if(isApiLog)
+        {
+            mCompatApiLogEnable.setChecked(true);
+        }
+
+        mCompatApiLogEnable.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked)
+                {
+                    mySharedPreferences.putBoolean("isApiLog", true);
+                    mySharedPreferences.commit();
+                }
+                else {
+
+                    mySharedPreferences.putBoolean("isApiLog", false);
+                    mySharedPreferences.commit();
+                }
+            }
+        });
 
         mbtnshowpermission.setOnClickListener(new View.OnClickListener() {
             @Override

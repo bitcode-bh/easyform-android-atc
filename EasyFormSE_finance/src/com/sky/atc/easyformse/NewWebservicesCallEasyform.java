@@ -34,6 +34,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import okhttp3.CertificatePinner;
+import okhttp3.ConnectionPool;
+import okhttp3.Dispatcher;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -158,6 +160,13 @@ public class NewWebservicesCallEasyform {
                 String forErrorLog = "\nauth1 :" + auth1 + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
                         "matchId" + "0" + "\nBody :" + jsds;
 
+                long startTime = System.currentTimeMillis();
+                //  LogUtils.writeApilistLogToFile(webMethod, startTime,0,context);
+
+                String str = "Api -" + webMethod;
+                DeviceEventsUtils.showToast(str);
+
+
                 Log.d("##WEBSERVICE1", webMethod);
 
                 if (!auth1.equalsIgnoreCase("")) {
@@ -167,6 +176,8 @@ public class NewWebservicesCallEasyform {
                     try {
                         jsonResponse = response.body().string();
                         jsonResponse = jsonResponse.replaceAll("(\r\n|\n)", "");
+                        long endTime = System.currentTimeMillis();
+                        LogUtils.writeApilistLogToFile(webMethod, startTime,endTime,context);
                         after_response(jsonResponse, webMethod, forErrorLog,companyFeatureid,appUrl);
                     } catch (Exception e) {
                         LogUtils.writeApiCallLogToFile(e +
@@ -221,6 +232,11 @@ public class NewWebservicesCallEasyform {
                 else {
                     status = jsonObject.getString("Status");
                 }
+
+                String str = "Status -"+ status;
+                DeviceEventsUtils.showToast(str);
+
+
                 message = jsonObject.getString("message");
 
                 if (status.equals("1") || status.equals("2") ) {
@@ -364,6 +380,12 @@ public class NewWebservicesCallEasyform {
                         "matchId" + "0" + "\nBody :" + jsds;
                 Log.d("##WEBSERVICEUPLOAD1", webMethod);
 
+                long startTime = System.currentTimeMillis();
+//                LogUtils.writeApilistLogToFile(webMethod, startTime,0,context);
+                String str = "Api - " + webMethod;
+                DeviceEventsUtils.showToast(str);
+
+
                 if (!auth1.equalsIgnoreCase("")) {
 
                     Response response = okHttpClient.newCall(request).execute();
@@ -372,6 +394,8 @@ public class NewWebservicesCallEasyform {
                     try {
                         jsonResponse = response.body().string();
                         jsonResponse = jsonResponse.replaceAll("(\r\n|\n)", "");
+                        long endTime = System.currentTimeMillis();
+                        LogUtils.writeApilistLogToFile(webMethod, startTime,endTime,context);
                         after_response(jsonResponse, webMethod, forErrorLog,companyFeatureid,appUrl);
                     } catch (Exception e) {
                         Toast.makeText(context, e + "\n" + appUrl, Toast.LENGTH_SHORT).show();
@@ -470,10 +494,17 @@ public class NewWebservicesCallEasyform {
             //  wfmtest.grameenphone.com url is not working in android same ssl problem as per discuss with sir we skip the check ssl
             builder = UnsafeOkHttpClient.getUnsafeOkHttpClient();
         }
+        Dispatcher dispatcher = new Dispatcher();
+        dispatcher.setMaxRequests(16);
+        dispatcher.setMaxRequestsPerHost(6);
+
         builder.connectTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(60, TimeUnit.SECONDS)
-                .addInterceptor(new RetryConnectInterceptor(3));
+                .retryOnConnectionFailure(true)
+                .addInterceptor(new RetryConnectInterceptor(3))
+                .dispatcher(dispatcher)
+                .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES));
 
         if (isSSL.equalsIgnoreCase("true")) {
             String appURL;
@@ -564,6 +595,12 @@ public class NewWebservicesCallEasyform {
 
                 Log.d("##WEBSERVICEUPLOAD1", webMethod);
 
+                String str = "Api -"+ appUrl;
+                DeviceEventsUtils.showToast(str);
+
+                long startTime = System.currentTimeMillis();
+//                LogUtils.writeApilistLogToFile(webMethod, startTime,0,context);
+
                 if (!auth1.equalsIgnoreCase("")) {
 
                     Response response = okHttpClient.newCall(request).execute();
@@ -571,6 +608,8 @@ public class NewWebservicesCallEasyform {
                     try {
                         jsonResponse = response.body().string();
                         jsonResponse = jsonResponse.replaceAll("(\r\n|\n)", "");
+                        long endTime = System.currentTimeMillis();
+                        LogUtils.writeApilistLogToFile(webMethod, startTime,endTime,context);
                         after_response(jsonResponse, webMethod, forErrorLog,companyFeatureid,appUrl);
                     } catch (Exception e) {
                         LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + auth1 + "\nResponse parse: " + e, appUrl,"ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload","0");

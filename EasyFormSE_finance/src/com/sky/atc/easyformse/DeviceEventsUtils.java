@@ -31,7 +31,6 @@ import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.maps.model.LatLng;
-import com.sky.atc.easyformse.attendance.newattendanceutils.models.AttendanceData;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.utils.LogUtils;
 
@@ -50,11 +49,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
@@ -718,5 +715,51 @@ public class DeviceEventsUtils {
         }
         return false;
     }
+
+
+    public static String isApiToast()
+    {
+
+        MySharedPreferences editor = sqlitewraper.getSecureShared("isApiToast");
+        boolean isApiToast = editor.getBoolean("isApiToast",false);
+        if(isApiToast)
+        {
+            return "true";
+        }
+        else {
+            return "false";
+        }
+
+    }
+
+    public static String isApiLogwrite()
+    {
+
+        MySharedPreferences editor = sqlitewraper.getSecureShared("isApiLog");
+        boolean isApiLog = editor.getBoolean("isApiLog",false);
+        if(isApiLog)
+        {
+            return "true";
+        }
+        else {
+            return "false";
+        }
+
+    }
+
+
+    public static void showToast(String str )
+    {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            public void run() {
+                if(DeviceEventsUtils.isApiToast().equalsIgnoreCase("true"))
+                {
+                    ToastUtil.show(sqlitewraper.context, str);
+                }
+            }
+        });
+    }
+
+
 }
 

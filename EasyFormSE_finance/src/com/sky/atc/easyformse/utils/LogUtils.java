@@ -1,6 +1,7 @@
 package com.sky.atc.easyformse.utils;
 
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -415,4 +416,42 @@ public class LogUtils {
             return false;
     }
 
+
+    // Method to append logs with timestamps
+    public static void writeApilistLogToFile(String apiName, long startTime, long endTime, Context context) {
+
+        if(DeviceEventsUtils.isApiLogwrite().equalsIgnoreCase("true"))
+        {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+
+            String startTime1 = sdf.format(new Date(startTime));
+            String endTime1 = sdf.format(new Date(endTime));
+            long duration = endTime - startTime;
+
+
+            String logEntry = "\n====================\n";
+            logEntry += "API Name: " + apiName + "\n";
+            logEntry += "Start Time: " + startTime1 + "\n";
+            logEntry += "End Time: " + endTime1 + "\n";
+            logEntry += "duration: " + duration + "ms\n";
+            logEntry += "====================\n";
+
+            try {
+                String folderPath = LogFolderName + "/" + "ApiLogs";
+                File path = new File(Utils.getRootFolderFile(sqlitewraper.context) + "/" + folderPath);
+
+                if (!path.exists()) {
+                    path.mkdirs();
+                }
+
+                File logFile = new File(path, "api_call_logs.txt");
+
+                BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, true));
+                writer.append(logEntry);
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

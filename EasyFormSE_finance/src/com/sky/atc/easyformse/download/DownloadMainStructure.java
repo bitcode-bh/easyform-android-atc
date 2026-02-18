@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.Log;
@@ -22,6 +24,7 @@ import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.MyObject;
 import com.sky.atc.easyformse.NewWebservicesCallEasyform;
 import com.sky.atc.easyformse.R;
+import com.sky.atc.easyformse.ToastUtil;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.ph_s;
 import com.sky.atc.easyformse.sqlitewraper;
@@ -295,7 +298,7 @@ class DownloadMainStructure {
             String da = URLEncoder.encode(jsds.toString(), "UTF-8");
             url = url + da;
 
-            Response response = downloadWithStremingokhhtp(url, data1);
+            Response response = downloadWithStremingokhhtp(url, data1,DownloadConstant.METHOD_USERDEFINE_FLOWMASTER);
 
             if (response != null) {
                 k = insertIntoUserDefine(response);
@@ -356,6 +359,10 @@ class DownloadMainStructure {
                                 reader.skipValue();
                             }
                         }
+
+                        String str = "status -"+ status1;
+                        DeviceEventsUtils.showToast(str);
+
 
                         // ===== status = 2 =====
                         if (status1.equalsIgnoreCase("2")) {
@@ -576,7 +583,7 @@ class DownloadMainStructure {
 //                k = 1;
 //            }
 
-            Response response = downloadWithStremingokhhtp(url, data1);
+            Response response = downloadWithStremingokhhtp(url, data1,DownloadConstant.METHOD_CHECKSHEET);
 
             if (response != null) {
                 k = insertIntoChecksheet(response);
@@ -631,6 +638,9 @@ class DownloadMainStructure {
                                 reader.skipValue();
                             }
                         }
+
+                        String str = "status -"+ status1;
+                        DeviceEventsUtils.showToast(str);
 
                         // ===== status = 1 =====
                         if (status1.equalsIgnoreCase("1")) {
@@ -852,7 +862,7 @@ class DownloadMainStructure {
             String url = DownloadConstant.DOWNLOAD_URL + DownloadConstant.METHOD_FLOWMASTER + "?Data=";
             String da = URLEncoder.encode(jsds.toString(), "UTF-8");
             url = url + da;
-            Response response = downloadWithStremingokhhtp(url, data1);
+            Response response = downloadWithStremingokhhtp(url, data1,DownloadConstant.METHOD_FLOWMASTER);
 
             if (response != null) {
                 k = insertIntoFlowMaster(response);
@@ -914,6 +924,9 @@ class DownloadMainStructure {
                                 reader.skipValue();
                             }
                         }
+
+                        String str = "status -"+ status1;
+                        DeviceEventsUtils.showToast(str);
 
                         // ===== status = 2 =====
                         if (status1.equalsIgnoreCase("2")) {
@@ -1388,7 +1401,7 @@ class DownloadMainStructure {
 //    }
 
     //STREAMING DOWNLOAD CALL with okhttp
-    private Response downloadWithStremingokhhtp(String url, JSONObject data) {
+    private Response downloadWithStremingokhhtp(String url, JSONObject data,String webmethod) {
 
         taskdownloadflag = 0;
         Response httpResponse = null;
@@ -1448,11 +1461,18 @@ class DownloadMainStructure {
             String forErrorLog = "\nauth1 :" + data2.toString() + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
                     "matchId" + "0" + "\nBody :" + data;
 
+            long startTime = System.currentTimeMillis();
+
+            String str = "Api -"+ webmethod;
+            DeviceEventsUtils.showToast(str);
 
             httpResponse = okHttpClient.newCall(request).execute();
 
             int statusCode = httpResponse.code();  // Same as getStatusCode()
             httpResponse = httpResponse;
+
+            long endTime = System.currentTimeMillis();
+            LogUtils.writeApilistLogToFile(webmethod, startTime,endTime,sqlitewraper.context);
             if (statusCode != 200) {
                 LogUtils.writeApiCallLogToFile("Response code: " + statusCode
                         + "\nJsonData: " + forErrorLog + "Auth1: " + data2.toString(),url, "downloadWithStreming","1");
@@ -1498,7 +1518,7 @@ class DownloadMainStructure {
         taskdownloadflag = 0;
         int k = 0;
 
-        okhttp3.Response response = null;
+        Response response = null;
 
         try {
 
@@ -2879,7 +2899,7 @@ class DownloadMainStructure {
 //                k = 1;
 //            }
 
-            Response response = downloadWithStremingokhhtp(url, data1);
+            Response response = downloadWithStremingokhhtp(url, data1,DownloadConstant.METHOD_THRESHOLD_NEW);
 
             if (response != null) {
                 k = insertIntoThreshold(response);
@@ -2932,6 +2952,9 @@ class DownloadMainStructure {
                             if (message1.equals("message")) {
                                 message = reader.nextString();
                             }
+
+                            String str = "Status -"+ status1;
+                            DeviceEventsUtils.showToast(str);
 
                             // ===== STATUS 2 =====
                             if (status1.equalsIgnoreCase("2")) {
