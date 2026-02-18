@@ -1231,7 +1231,7 @@ function onsuccess_get_my_offline_task(e) {
         }
     }
 
-    get_counter_for_online_flow_profile();
+    //get_counter_for_online_flow_profile();
 }
 
 function onfail_get_my_offline_task(e) { }

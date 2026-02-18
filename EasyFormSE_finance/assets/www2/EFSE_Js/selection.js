@@ -908,7 +908,7 @@ function SuccessCallBack_get_modules(e) {
             }
 
             compare_time_for_user_notification();
-            compare_time_for_online_count();
+            //compare_time_for_online_count();
             get_today_attendance_for_notification();
         }
 
@@ -2019,7 +2019,7 @@ function get_list_of_modules_online() {
                 });
 
                 compare_time_for_user_notification();
-                compare_time_for_online_count();
+                //compare_time_for_online_count();
                 get_today_attendance_for_notification();
 
                 localStorage.setItem('last_modulelist_count', module_count);
