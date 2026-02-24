@@ -1473,6 +1473,7 @@ class DownloadMainStructure {
 
             long endTime = System.currentTimeMillis();
             LogUtils.writeApilistLogToFile(webmethod, startTime,endTime,sqlitewraper.context);
+            LogUtils.writeAllApiCallLog( "Request : " + forErrorLog  + "\n\n\nResponse : " + httpResponse   , url , "");
             if (statusCode != 200) {
                 LogUtils.writeApiCallLogToFile("Response code: " + statusCode
                         + "\nJsonData: " + forErrorLog + "Auth1: " + data2.toString(),url, "downloadWithStreming","1");

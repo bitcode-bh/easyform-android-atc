@@ -30,10 +30,17 @@
             android:id="@+id/switchLogBackup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enable Log for Services"
+            android:text="Enable Log for Error Services"
             android:layout_marginTop="10dp"
             android:textSize="15dp" />
 
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchLogAllservices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enable Log for All Services"
+            android:layout_marginTop="10dp"
+            android:textSize="15dp" />
 
 
     </LinearLayout>

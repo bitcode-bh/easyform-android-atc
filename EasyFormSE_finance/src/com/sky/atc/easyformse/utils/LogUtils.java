@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.sky.atc.easyformse.BuildConfig;
 import com.sky.atc.easyformse.DeviceEventsUtils;
+import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.sqlitewraper;
 
 import java.io.BufferedWriter;
@@ -454,4 +455,41 @@ public class LogUtils {
             }
         }
     }
+
+
+    public static void writeAllApiCallLog(String error, String Method,String ClassName) {
+        executorService.execute(() -> {
+            try {
+                MySharedPreferences mySharedPreferences = sqlitewraper.getSecureShared("isAllServiceLog");
+                boolean isAllServiceLog = mySharedPreferences.getBoolean("isAllServiceLog",false);
+
+                if(isAllServiceLog)
+                {
+                    File path = null;
+
+                    String folderPath = LogFolderName + "/" + "AllApiLog";
+                    File folderFile = new File(Utils.getRootFolderFile(sqlitewraper.context) + "/" + folderPath);
+                    path = new File(folderFile.getAbsolutePath());
+
+                    if (!path.exists()) {
+                        path.mkdirs();
+                    }
+                    Date currentData = new Date();
+                    String pattern = "MM_dd_yyyy";
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern, Locale.getDefault());
+                    String fileName = "AllApiCallLogs_" + simpleDateFormat.format(currentData) + ".txt";
+                    File logFile = new File(path, fileName);
+
+                    String time = currentData.toString();
+                    writLogFile(error, Method, logFile, time,ClassName);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+    }
+
+
 }

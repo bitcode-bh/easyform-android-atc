@@ -202,10 +202,10 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 //            showAlertDialogAutostartalldevices();
 //        }
 //              logwrite tag set value false
-                    SharedPreferences sharedPreferences= sqlitewraper.context.getSharedPreferences("LogWrite",0);
-                    SharedPreferences.Editor mEditor = sharedPreferences.edit();
-                    mEditor.putBoolean("isLogWrite",false);  // saving string
-                    mEditor.apply();
+//                    SharedPreferences sharedPreferences= sqlitewraper.context.getSharedPreferences("LogWrite",0);
+//                    SharedPreferences.Editor mEditor = sharedPreferences.edit();
+//                    mEditor.putBoolean("isLogWrite",false);  // saving string
+//                    mEditor.apply();
 
 
 

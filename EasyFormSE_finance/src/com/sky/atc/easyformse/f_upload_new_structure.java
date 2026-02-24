@@ -79,6 +79,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.Buffer;
 
 
 /**
@@ -2415,8 +2416,11 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                 Response  response = client.newCall(request).execute();
 
+                String body = "";
                 if (response.isSuccessful()) {
-
+                    body = getBodyParameters(request);
+                    String responseString = response.body().string();
+                    LogUtils.writeAllApiCallLog( "Request : " + body  + "\n\n\nResponse : " + responseString   , targetUrl , "");
                     track_chnumber = i;
                     track_offset = offset;
                     track_bytes = totalbytes;
@@ -2437,7 +2441,19 @@ public class f_upload_new_structure extends WakefulIntentService {
 
         return ret_err;
     }
-
+    private static String getBodyParameters(Request request) {
+        try {
+            final Request copy = request.newBuilder().build();
+            final Buffer buffer = new Buffer();
+            if (copy.body() != null) {
+                copy.body().writeTo(buffer);
+                return buffer.readUtf8(); // Returns the raw form-data or JSON string
+            }
+        } catch (final IOException e) {
+            return "Error reading body";
+        }
+        return "";
+    }
 
 //    //VIDEO OR DOCUMENT UPLOAD TO SERVER IN CHUNKS httpclient
 //    public int sendFileToServer1(String filename, String targetUrl,

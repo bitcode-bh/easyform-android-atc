@@ -179,6 +179,8 @@ public class NewWebservicesCallEasyform {
                         long endTime = System.currentTimeMillis();
                         LogUtils.writeApilistLogToFile(webMethod, startTime,endTime,context);
                         after_response(jsonResponse, webMethod, forErrorLog,companyFeatureid,appUrl);
+                        LogUtils.writeAllApiCallLog( "Request : " + forErrorLog  + "\n\n\nResponse : " + jsonResponse   , appUrl , "");
+
                     } catch (Exception e) {
                         LogUtils.writeApiCallLogToFile(e +
                                 "\nJsonData: " + jsonData + "Auth1: " + auth1,  appUrl, "ExecuteNetworkHTTPPostRequest","0");
@@ -397,6 +399,8 @@ public class NewWebservicesCallEasyform {
                         long endTime = System.currentTimeMillis();
                         LogUtils.writeApilistLogToFile(webMethod, startTime,endTime,context);
                         after_response(jsonResponse, webMethod, forErrorLog,companyFeatureid,appUrl);
+                        LogUtils.writeAllApiCallLog( "Request : " + forErrorLog  + "\n\n\nResponse : " + jsonResponse   , appUrl , "");
+
                     } catch (Exception e) {
                         Toast.makeText(context, e + "\n" + appUrl, Toast.LENGTH_SHORT).show();
                         LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + auth1 + "\nResponse parse: " + e, appUrl,"ExecuteNetworkHTTPPostRequestfile","0");
@@ -611,6 +615,8 @@ public class NewWebservicesCallEasyform {
                         long endTime = System.currentTimeMillis();
                         LogUtils.writeApilistLogToFile(webMethod, startTime,endTime,context);
                         after_response(jsonResponse, webMethod, forErrorLog,companyFeatureid,appUrl);
+                        LogUtils.writeAllApiCallLog( "Request : " + forErrorLog  + "\n\n\nResponse : " + jsonResponse   , appUrl , "");
+
                     } catch (Exception e) {
                         LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + auth1 + "\nResponse parse: " + e, appUrl,"ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload","0");
                         //e.printStackTrace()();

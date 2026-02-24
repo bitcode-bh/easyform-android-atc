@@ -681,7 +681,7 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
                     body = getBodyParameters(request);
                     String responseString = response.body().string();
                     Log.d("##AA", responseString);
-
+                    LogUtils.writeAllApiCallLog( "Request : " + body  + "\n\n\nResponse : " + responseString   , targetUrl , "");
                     try {
                         JSONArray jsonArray = new JSONArray(responseString);
                         JSONObject jsonObject = jsonArray.getJSONObject(0);

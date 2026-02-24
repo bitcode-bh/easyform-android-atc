@@ -43,6 +43,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 //to Export DB
 @StringFogIgnore
@@ -59,6 +60,8 @@ public class BackupFragment extends Fragment {
     LocationManager locationManager;
     String  mlat;
     String  mlon;
+    SwitchCompat mCompatAllServiceLog;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -74,6 +77,8 @@ public class BackupFragment extends Fragment {
         MaterialButton mbtBackup = view.findViewById(R.id.mbtBackup);
         mbtnLogBackup = view.findViewById(R.id.mbtLogBackup);
         SwitchCompat mSwitchLogback = view.findViewById(R.id.switchLogBackup);
+        mCompatAllServiceLog = view.findViewById(R.id.switchLogAllservices);
+
         reqLocation();
         mbtBackup.setOnClickListener(v -> {
             exportDB(view);
@@ -112,6 +117,32 @@ public class BackupFragment extends Fragment {
            // mbtnLogBackup.setVisibility(View.GONE);
             mSwitchLogback.setChecked(false);
         }
+
+
+        MySharedPreferences mySharedPreferences = sqlitewraper.getSecureShared("isAllServiceLog");
+
+        boolean isAllServiceLog = mySharedPreferences.getBoolean("isAllServiceLog",false);
+
+        if(isAllServiceLog)
+        {
+            mCompatAllServiceLog.setChecked(true);
+        }
+
+        mCompatAllServiceLog.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if(isChecked)
+                {
+                    mySharedPreferences.putBoolean("isAllServiceLog",true);
+                    mySharedPreferences.commit();
+                }
+                else {
+                    mySharedPreferences.putBoolean("isAllServiceLog",false);
+                    mySharedPreferences.commit();
+                }
+            }
+        });
     }
 
     private void exportDB(View view) {
