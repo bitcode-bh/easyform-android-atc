@@ -3571,7 +3571,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                     }
                                     else {
                                         var img_src = img_ary[0];
-                                        if (img_src == "" || img_src == null || img_src == undefined) {
+                                        if (img_src == "" || img_src == null || img_src == undefined || img_src == "test_image_name") {
                                             // photo is not exist in original entity - mk - 10072025
                                             $("#" + curr_box_id + "").attr("src", "images/camera.png");
                                         }
