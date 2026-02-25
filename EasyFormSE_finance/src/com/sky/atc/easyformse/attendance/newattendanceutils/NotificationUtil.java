@@ -40,7 +40,7 @@ public class NotificationUtil {
                 .setSmallIcon(R.drawable.atc_logo)
                 .setAutoCancel(false)
                 .setOngoing(false)
-                .setContentTitle("Ready to Begin Your Daily Trip?")
+                .setContentTitle("Ready to Begin Your Daily Work Trip?")
                 .setContentText(contentText)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setContentIntent(actionPendingIntent)
