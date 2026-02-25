@@ -3841,6 +3841,19 @@ function set_common_localStorage(key_name, key_value) {
 function get_safety_passport() {
     myApp.popup('.popup-safety-passport');
 
+    // dynamic url in case domain is changed in future - mk - 25022026
+    $(".popup-safety-passport .passport-card img").not("#img_sp_profilephoto").each(function () {
+        var src = $(this).attr("src");
+        let hostname = new URL(global_wcf_url).hostname;
+
+        if (src) {
+            var url = new URL(src, window.location.origin);
+            url.hostname = hostname;
+            
+            $(this).attr("src", url.toString());
+        }
+    });
+
     loading();
 
     let user_id = JSON.parse(storage.getItem('user_id'));
