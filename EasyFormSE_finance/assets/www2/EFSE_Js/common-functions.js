@@ -4059,6 +4059,7 @@ function build_user_safety_passport(user_data) {
             }
             else if (que_id == 10021) {
                 // Role List
+                value = value.replaceAll("Vender Technician", "Vendor Technician");
                 role_name = value;
             }
             else if (que_id == 42) {
