@@ -64,6 +64,7 @@ var MkControls = function (obj) {
 
     // Type 6
     this.chk_Array = obj.chk_Array;
+    this.option_valid = obj.option_valid;
 
     // Type 7
     this.index = obj.index;
@@ -497,6 +498,11 @@ MkControls.prototype.build_type_6_checkbox = function () {
             var temp_Array = this.ans;
         }
 
+        let option_valid_Array = this.option_valid;
+        if (option_valid_Array == "" || option_valid_Array == null || option_valid_Array == undefined) {
+            option_valid_Array = [];
+        }
+
         str += '<div class="list-block form-div"><ul>';
         for (var c = 0; c < this.chk_Array.length; c++) {
             if (this.weightage_Array == '' || this.weightage_Array == null || this.weightage_Array == undefined) {
@@ -525,7 +531,23 @@ MkControls.prototype.build_type_6_checkbox = function () {
             str += '<input type="checkbox" ' + checked_str + ' onchange="' + this.param + '" name="chkgroup_' + this.new_id + '" id="chk_' + this.new_id + '_' + c + '" alt="' + weightage
                 + '" value="' + this.chk_Array[c] + '" ' + this.enable_disable + '>';
             str += '<div class="item-media"><i class="icon icon-form-checkbox"></i></div>';
-            str += '<div class="item-inner"><div class="item-title">' + this.chk_Array[c] + '</div></div></label></li>';
+            str += '<div class="item-inner">';
+
+            if (option_valid_Array.length > 0) {
+                // optionwise validation found
+                let op_valid = option_valid_Array[c];
+                if (op_valid == "1") {
+                    str += '<div class="item-title">' + this.chk_Array[c] + ' <img src="images/mendatory.gif"></div>';
+                }
+                else {
+                    str += '<div class="item-title">' + this.chk_Array[c] + '</div>';
+                }
+            }
+            else {
+                str += '<div class="item-title">' + this.chk_Array[c] + '</div>';
+            }
+
+            str += '</div></label></li>';
         }
         str += '</ul></div>';
         return str;
@@ -1819,7 +1841,7 @@ MkDocInits.prototype = {
             else if (cls == 'panel-pro') {
                 $('#lblusername_my').html(username);
 
-                let role_name = JSON.parse(storage.getItem('role_name')); 
+                let role_name = JSON.parse(storage.getItem('role_name'));
                 $('#lbluserrole_my').html(role_name);
 
                 var smallImage = document.getElementById("img_my_profile");

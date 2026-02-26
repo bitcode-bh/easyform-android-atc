@@ -1054,10 +1054,39 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     if (dep_res == "valid") {
                         var checkbox = document.getElementsByName('chkgroup_' + new_id + '');
                         var checked_box = 0;
-                        for (j = 0; j < checkbox.length; j++) {
-                            if (checkbox[j].checked) {
-                                answer.push(checkbox[j].value);
-                                checked_box++;
+
+                        var option_valid = jsonObj[i].prop[0].option_valid;
+                        if (option_valid == "" || option_valid == null || option_valid == undefined) {
+                            option_valid = [];
+                        }
+
+                        if (option_valid.length > 0) {
+                            // optionwise validation - mk - 25022026
+
+                            for (let j = 0; j < checkbox.length; j++) {
+                                if (checkbox[j].checked) {
+                                    answer.push(checkbox[j].value);
+                                    checked_box++;
+                                }
+                                else {
+
+                                    let op_valid = option_valid[j];
+                                    if (op_valid == "1") {
+                                        // optionwise validation breach
+                                        checked_box = 0;
+                                        break;
+                                    }
+
+                                }
+                            }
+                        }
+                        else {
+                            // normal validation
+                            for (let j = 0; j < checkbox.length; j++) {
+                                if (checkbox[j].checked) {
+                                    answer.push(checkbox[j].value);
+                                    checked_box++;
+                                }
                             }
                         }
 
@@ -4503,6 +4532,9 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
     } catch (e) {
         alert1(e + ': type = ' + jsonObj[i].type + ' of index = ' + i + ' validate_and_submit_surveydata()');
         loading_hide();
+
+        $("#container_btn_div").find('a').css({ 'cursor': "initial", 'pointer-events': 'initial' });
+        $("#container_btn_div").find('a').removeClass('active-state');
     }
     return false;
 }

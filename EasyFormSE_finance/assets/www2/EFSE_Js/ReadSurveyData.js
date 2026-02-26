@@ -1250,6 +1250,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         //var selected_Array = jsonObj[i].ans;
                         var chk_Array = jsonObj[i].value;
                         var weightage_Array = jsonObj[i].prop[0].weightage;
+                        var option_valid = jsonObj[i].prop[0].option_valid;
                         var misc_Array = jsonObj[i].prop[0].misc_data;
                         var view_type = misc_Array[0].view_type;
 
@@ -1283,6 +1284,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             param: param,
                             chk_Array: chk_Array,
                             weightage_Array: weightage_Array,
+                            option_valid: option_valid,
                             br_str: br_str
                         }
 
