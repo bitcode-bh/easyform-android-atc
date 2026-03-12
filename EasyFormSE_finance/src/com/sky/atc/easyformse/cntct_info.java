@@ -169,9 +169,9 @@ public class cntct_info implements Runnable {
                 lHashMap.put("TASKDOWNLOAD_ATER_USERSWAP",WCFUrl+"Wcf_Off_Download_task_master_After_UserSwap_HV_New");
                 lHashMap.put("TASKMASTERDOWNLOAD",WCFUrl+"DowanloadStreammingTaskAndSubTaskWithFlowList  (GET Method)");
 
-                lHashMap.put("TECHNICIAN_UPLOAD",sqlitewraper.context.getResources().getString(R.string.UPLOADWCFURL)+"WCFTechnicianDataUpload");
-                lHashMap.put("QuestionMaster_log",sqlitewraper.context.getResources().getString(R.string.UPLOADWCFURL)+"WCF_InsertQuestionMaster_Log_EF_1_0_0_0");
-                lHashMap.put("InsertUpdtae_maintask",sqlitewraper.context.getResources().getString(R.string.UPLOADWCFURL)+"InsertUpdateDelete_MainAndSub_Task");
+                lHashMap.put("TECHNICIAN_UPLOAD",sqlitewraper.context.getResources().getString(R.string.UploadTechnician)+"WCFTechnicianDataUpload");
+                lHashMap.put("QuestionMaster_log",sqlitewraper.context.getResources().getString(R.string.UploadQuestionLog)+"WCF_InsertQuestionMaster_Log_EF_1_0_0_0");
+                lHashMap.put("InsertUpdtae_maintask",sqlitewraper.context.getResources().getString(R.string.UploadTask)+"InsertUpdateDelete_MainAndSub_Task");
                 lHashMap.put("Insert_Update_Punchmaster",sqlitewraper.context.getResources().getString(R.string.UPLOADWCFURL)+"WCF_Insert_Update_Delete_Punch_Master");
 
                 PackageManager pm = sqlitewraper.context.getPackageManager();
