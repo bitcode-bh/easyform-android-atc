@@ -506,6 +506,10 @@
                 menu_smallImage.src = pro_pic_path;
             }
 
+            setTimeout(function () {
+                $("#btn_refresh").show();
+            }, 5000);
+
             if (F7_device == "ios") {
                 $(".panel-nav-ios").show();
                 $(".panel-nav").hide();
@@ -875,6 +879,7 @@
                                 </div>
                                 <div class="right">
                                     <!--<a href="#" class="open-panel link icon-only"><i class="icon icon-bars"></i></a>-->
+                                    <a href="#"  id="btn_refresh" class="open-panel link icon-only" onclick="location.reload()" style="display:none"><i class="icon fa fa-refresh"></i></a>
                                     <a href="#" id="btn_advanced_search" class="link icon-only open-popup" data-popup=".popup-advance-search-online" onclick="advance_column_search('btn_click');return false;"><i class="fa fa fa-search-plus" style="color: white"></i></a>
                                     <a href="#" class="open-panel link icon-only"><img id="menu_img_profile" src="images/profile_pic.png" /></a>
                                 </div>
