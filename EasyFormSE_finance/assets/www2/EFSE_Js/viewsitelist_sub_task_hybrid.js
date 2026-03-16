@@ -175,7 +175,9 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                     "tat_type": checksheet_list[j].tat_type,
                     "dependent": checksheet_list[j].dependent,
                     "before_days": checksheet_list[j].before_days,
-                    "gap_days": checksheet_list[j].gap_days
+                    "gap_days": checksheet_list[j].gap_days,
+                    "start_time": checksheet_list[j].start_time,
+                    "duration": checksheet_list[j].duration
                 });
             }
         }
@@ -230,7 +232,9 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                         "tat_type": checksheet_list[j].tat_type,
                         "dependent": checksheet_list[j].dependent,
                         "before_days": checksheet_list[j].before_days,
-                        "gap_days": checksheet_list[j].gap_days
+                        "gap_days": checksheet_list[j].gap_days,
+                        "start_time": checksheet_list[j].start_time,
+                        "duration": checksheet_list[j].duration
                     });
                 }
             } else {
@@ -276,6 +280,8 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                             old_checksheet_list[m].dependent = checksheet_list[k].dependent;
                             old_checksheet_list[m].before_days = checksheet_list[k].before_days;
                             old_checksheet_list[m].gap_days = checksheet_list[k].gap_days;
+                            old_checksheet_list[m].start_time = checksheet_list[k].start_time;
+                            old_checksheet_list[m].duration = checksheet_list[k].duration;
                             loc_chk_found++;
                             break;
                         }
@@ -332,7 +338,9 @@ function onsuccess_get_list_of_pm_subflow_hybrid(e) {
                             "tat_type": checksheet_list[k].tat_type,
                             "dependent": checksheet_list[k].dependent,
                             "before_days": checksheet_list[k].before_days,
-                            "gap_days": checksheet_list[k].gap_days
+                            "gap_days": checksheet_list[k].gap_days,
+                            "start_time": checksheet_list[k].start_time,
+                            "duration": checksheet_list[k].duration
                         });
                     }
                 }
@@ -660,42 +668,42 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
                                 var dyn_class = '';
                             }
 
-                        var list_item = '';
+                            var list_item = '';
 
-                        /////////////create checksheet group button/////////
-                        var group_name = new_checksheet_list[i].Group_Name;
-                        if (group_name == "" || group_name == null || group_name == undefined) {
-                            group_name = "";
-                            var checksheet_disp = '';
-                        }
-                        else {
-                            group_btn_color_array.push(back_color);
-
-                            var checksheet_group_name = localStorage.getItem('checksheet_group_name');
-                            if (checksheet_group_name != "" && (curr_btn_mode == "back" || curr_btn_mode == "updatetasknsubmit" || curr_btn_mode == "submit" || curr_btn_mode == "reject")) {
-                                var checksheet_disp = 'display:block;';
-                                $("#icon_group_checksheet").attr('class', 'fa fa-minus-square-o');
+                            /////////////create checksheet group button/////////
+                            var group_name = new_checksheet_list[i].Group_Name;
+                            if (group_name == "" || group_name == null || group_name == undefined) {
+                                group_name = "";
+                                var checksheet_disp = '';
                             }
                             else {
-                                var checksheet_disp = 'display:none;';
-                            }
+                                group_btn_color_array.push(back_color);
 
-                            //if (group_name.indexOf(group_name_array[0]) > -1) {
-                            if ($.inArray(group_name, group_name_array) !== -1) { }
+                                var checksheet_group_name = localStorage.getItem('checksheet_group_name');
+                                if (checksheet_group_name != "" && (curr_btn_mode == "back" || curr_btn_mode == "updatetasknsubmit" || curr_btn_mode == "submit" || curr_btn_mode == "reject")) {
+                                    var checksheet_disp = 'display:block;';
+                                    $("#icon_group_checksheet").attr('class', 'fa fa-minus-square-o');
+                                }
+                                else {
+                                    var checksheet_disp = 'display:none;';
+                                }
+
+                                //if (group_name.indexOf(group_name_array[0]) > -1) {
+                                if ($.inArray(group_name, group_name_array) !== -1) { }
+                                else {
+                                    group_name_array.push(group_name);
+                                    list_item += '<li class="list_grp_checksheet" group_ico="' + group_name + '" onclick="show_hide_group_checksheet(this)" style="font-weight:bold;border-right: 15px solid #2196f3;"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i id="icon_group_checksheet_' + group_name + '" class="fa fa-plus-square-o" style="color: #000;font-size:18px;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + group_name + '</div></div></a></li>';
+                                }
+                            }
+                            //////////////////////
+
+                            var icon_base64 = new_checksheet_list[i].Checksheet_Icon;
+                            if (icon_base64 == '' || icon_base64 == null || icon_base64 == undefined) {
+                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-check-square-o"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                            }
                             else {
-                                group_name_array.push(group_name);
-                                list_item += '<li class="list_grp_checksheet" group_ico="' + group_name + '" onclick="show_hide_group_checksheet(this)" style="font-weight:bold;border-right: 15px solid #2196f3;"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i id="icon_group_checksheet_' + group_name + '" class="fa fa-plus-square-o" style="color: #000;font-size:18px;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + group_name + '</div></div></a></li>';
+                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
                             }
-                        }
-                        //////////////////////
-
-                        var icon_base64 = new_checksheet_list[i].Checksheet_Icon;
-                        if (icon_base64 == '' || icon_base64 == null || icon_base64 == undefined) {
-                            list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-check-square-o"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
-                        }
-                        else {
-                            list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
-                        }
 
                             var Background_Image = new_checksheet_list[i].Background_Image;
                             if (Background_Image == '' || Background_Image == null || Background_Image == undefined) {
@@ -776,6 +784,25 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
                         if (is_disabled == 2) {
                             // 2 = hidden               [FT-18102024]
                             display_str = 'display: none;';
+                        }
+
+                        let start_time = new_checksheet_list[i].start_time;
+                        if (start_time == "" || start_time == null || start_time == undefined || start_time == "00:00:00") { }
+                        else {
+                            let duration = new_checksheet_list[i].duration;
+                            if (duration == "" || duration == null || duration == undefined || duration == "0") { }
+                            else {
+                                duration = parseInt(duration);
+                            }
+
+                            if (isCurrentTimeInSlot(start_time, duration)) {
+                                //console.log("Current time is inside slot");
+                            } else {
+                                //console.log("Outside slot");
+
+                                // hide sub flow if outside time slot
+                                display_str = 'display: none;';
+                            }
                         }
 
                         var list_item = '<li id=' + t_id + ' onclick =' + param + ' style="border-right: 8px solid ' + back_color + ';' + display_str + '"><a href="#" class="item-content button" style="padding-left:20px"><div class="item-media">' + list_ico + '</div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + name + '</div>';

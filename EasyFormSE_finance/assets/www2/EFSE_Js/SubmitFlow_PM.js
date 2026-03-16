@@ -368,8 +368,36 @@ function check_all_checksheet_status() {
                         // is_disabled == 1 (checksheet should be in read only mode)
                     }
                     else {
-                        pending++;
-                        break;
+
+                      
+                        let start_time = new_checksheet_list[i].start_time;
+                        if (start_time == "" || start_time == null || start_time == undefined || start_time == "00:00:00") {
+                            pending++;
+                            break;
+                        }
+                        else {
+                            let duration = new_checksheet_list[i].duration;
+                            if (duration == "" || duration == null || duration == undefined || duration == "0") {
+                                pending++;
+                                break;
+                            }
+                            else {
+                                duration = parseInt(duration);
+                            }
+
+                            if (isCurrentTimeInSlot(start_time, duration)) {
+                                //console.log("Current time is inside slot");
+                                pending++;
+                                break;
+
+                            } else {
+                                //console.log("Outside slot");
+
+                                // do not validation sub flow if outside time slot
+                                
+                            }
+                        }
+                                            
                     }
                 }
                 else if (is_submited == 2) {

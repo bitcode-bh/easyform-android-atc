@@ -4262,3 +4262,16 @@ function loadScriptOnce(src, callback) {
     document.head.appendChild(script);
 }
 
+function isCurrentTimeInSlot(startTime, hoursToAdd) {
+
+    const now = new Date();
+
+    const start = new Date();
+    const [h, m] = startTime.split(":");
+    start.setHours(h, m, 0);
+
+    const end = new Date(start);
+    end.setHours(end.getHours() + hoursToAdd);
+
+    return now >= start && now <= end;
+}
