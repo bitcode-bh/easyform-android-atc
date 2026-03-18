@@ -45,6 +45,7 @@ import com.easyform.newjitsi.network.requests.notifcation.FirebaseRequest;
 import com.easyform.newjitsi.network.requests.notifcation.FirebaseRequestData;
 import com.easyform.newjitsi.network.response.notifcation.FirebaseResponse;
 import com.easyform.newjitsi.utils.FCMNotificationApiCall;
+import com.easyform.newjitsi.utils.JitsiMeetBroadcastUtils;
 import com.easyform.newjitsi.utils.NotificationUtils;
 import com.easyform.newjitsi.utils.Utils;
 
@@ -548,6 +549,20 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
         if (CameraPreviewActivity.mActivity != null) {
             CameraPreviewActivity.mActivity.finish();
         }
+
+        JitsiMeetBroadcastUtils.endMeeting(context);
+
+        sharedPreferences = context.getSharedPreferences("Jitsiuser", MODE_PRIVATE);
+        SharedPreferences.Editor  editor = sharedPreferences.edit();
+        editor.clear().commit();
+
+        sharedPreferences = context.getSharedPreferences("Jitsi_roomname", MODE_PRIVATE);
+        SharedPreferences.Editor  meditor = sharedPreferences.edit();
+        meditor.clear().commit();
+
+        sharedPreferences = context.getSharedPreferences("Jitsiscreen",MODE_PRIVATE);
+        SharedPreferences.Editor mEditor1 = sharedPreferences.edit();
+        mEditor1.clear().commit();
     }
 
     CustomJitsiMeetViewModel meetViewModel;

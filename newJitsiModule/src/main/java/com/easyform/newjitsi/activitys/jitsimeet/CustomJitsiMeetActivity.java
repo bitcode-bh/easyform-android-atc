@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.PictureInPictureParams;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -29,6 +30,7 @@ import android.os.Looper;
 import android.os.StrictMode;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Rational;
 import android.util.Size;
 import android.util.TypedValue;
 import android.view.Display;
@@ -189,6 +191,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                     Log.d("JitsiScreenShare", "Ignored duplicate screen share request");
                     return;
                 } else {
+                    exitPipAndShowFullScreen();
                     JitsiMeetBroadcastUtils.screenShareToggle(context, shareToggle);
                 }
             }
@@ -1174,6 +1177,24 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 }
             });
 
+
+        mActivityCustomJitsiMeetBinding.jitsiRequestPiP.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                    PictureInPictureParams.Builder builder =
+                            new PictureInPictureParams.Builder();
+
+                    // Optional: set aspect ratio (16:9)
+                    builder.setAspectRatio(new Rational(16, 9));
+
+                    enterPictureInPictureMode(builder.build());
+                }
+            }
+        });
+
+
             if(!task_id.equalsIgnoreCase("0")) {
                 mActivityCustomJitsiMeetBinding.jitsiRequestChat.setVisibility(View.GONE);
             }
@@ -1720,6 +1741,13 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         super.onPictureInPictureModeChanged(isInPictureInPictureMode);
 
         Log.d(TAG, "Is in picture-in-picture mode: " + isInPictureInPictureMode);
+        if (isInPictureInPictureMode) {
+            // Hide your bottom UI
+            findViewById(R.id.jitsiRequestPiP).setVisibility(View.GONE);
+        } else {
+            // Show UI again
+            findViewById(R.id.jitsiRequestPiP).setVisibility(View.VISIBLE);
+        }
     }
 
 
@@ -2057,7 +2085,15 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
 
     }
 
+    private void exitPipAndShowFullScreen() {
 
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (isInPictureInPictureMode()) {
+                Intent intent = new Intent(this, CustomJitsiMeetActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+            }
+        }
+    }
 
 }

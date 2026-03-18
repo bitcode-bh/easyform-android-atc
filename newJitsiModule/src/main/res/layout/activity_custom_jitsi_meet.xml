@@ -51,6 +51,16 @@
             android:visibility="gone"
             android:src="@drawable/chat"
             android:tint="@color/white" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/jitsiRequestPiP"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="10dp"
+            android:background="?selectableItemBackground"
+            android:padding="5dp"
+            android:src="@drawable/pip_icon"
+            android:tint="@color/white" />
     </LinearLayout>
 
     <FrameLayout
