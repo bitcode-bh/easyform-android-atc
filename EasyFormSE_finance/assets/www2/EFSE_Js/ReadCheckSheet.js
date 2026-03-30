@@ -1380,7 +1380,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             target_class = "";
                         }
                         else {
-                            Show_class_Array.push(target_class);
+                            // don't show Ai below textbox in page load
+                            //Show_class_Array.push(target_class);
                         }
 
                         if (old_photo_class == '' || old_photo_class == null || old_photo_class == undefined) {

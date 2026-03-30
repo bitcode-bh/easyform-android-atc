@@ -551,6 +551,7 @@ function check_photo_entry_with_reading(e) {
             var target_class = $("#" + img_div + "").attr('target_class');
             if (target_class == "" || target_class == null || target_class == undefined) { }
             else {
+                $("." + target_class + "").show();
                 let responsetext = myArray[0].responsetext;
                 responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
 
@@ -575,6 +576,7 @@ function check_photo_entry_with_reading(e) {
         var target_class = $("#" + img_div + "").attr('target_class');
         if (target_class == "" || target_class == null || target_class == undefined) { }
         else {
+            $("." + target_class + "").show();
             var where_box_id = $("." + target_class + " :input[type=number]").attr("id");
             $("#" + where_box_id + "").val(reading);
 
@@ -671,6 +673,7 @@ function onPhotoDataSuccess() {
                 var target_class = $("#" + img_div + "").attr('target_class');
                 if (target_class == "" || target_class == null || target_class == undefined) { }
                 else {
+                    $("." + target_class + "").show();
                     var where_box_id = $("." + target_class + " :input[type=number]").attr("id");
                     $("#" + where_box_id + "").val(selected_text);
 
@@ -711,6 +714,7 @@ function onPhotoDataSuccess() {
             var target_class = $("#" + img_div + "").attr('target_class');
             if (target_class == "" || target_class == null || target_class == undefined) { }
             else {
+                $("." + target_class + "").show();
                 var where_box_id = $("." + target_class + " :input[type=number]").attr("id");
                 $("#" + where_box_id + "").val(selected_text);
             }
@@ -1603,6 +1607,7 @@ function onsuccess_CaptureClick_Customer(e) {
                 // response is in JSON
                 $.each(responseJSON, function (key, value) {
                     let qid_class = key;
+                    $("." + qid_class + "").show();
                     let where_box_id = $("." + qid_class + " :input").attr("id");
                     let tagName = $("#" + where_box_id + "").prop("tagName");
                     if (tagName == "TEXTAREA") {
