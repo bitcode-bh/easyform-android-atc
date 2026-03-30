@@ -52,7 +52,16 @@ public class AttendanceNotificationAction extends BroadcastReceiver {
                 }
                 pref.commit();
 
-                if(mAttendanceData.getFacedetection() == null || mAttendanceData.getFacedetection().equalsIgnoreCase("null") || mAttendanceData.getFacedetection().equalsIgnoreCase("true"))
+                if(mAttendanceData.getFacedetection() == null || mAttendanceData.getFacedetection().equalsIgnoreCase("null"))
+                {
+                    mAttendanceData.setFacedetection("false");
+                }
+                else {
+                    mAttendanceData.setFacedetection(mAttendanceData.getFacedetection());
+                }
+
+
+                if(mAttendanceData.getFacedetection().equalsIgnoreCase("true"))
                 {
                     Intent faceRecognizerActivityIntent = new Intent(context, FaceDetactionActivity.class);
                     faceRecognizerActivityIntent.putExtras(myBundle);
