@@ -48,6 +48,8 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
@@ -70,6 +72,7 @@ public class GeofenceDownlaod {
     private static final String APPURL = sqlitewraper.context.getResources().getString(R.string.TASKDOWNLOADURL);
 
     private static final String METHOD_NAME_corner = "WCF_Insertinto_geofence_uploaddata";
+    private static final String METHOD_NAME_InOut = "InsertUpdate_Geofence_Active_Master";
     private static final String NAMESPACE = "http://tempuri.org/";
     private String isSSL = sqlitewraper.context.getResources().getString(R.string.SSL);
     boolean isShowNoti = false;
@@ -618,4 +621,117 @@ public class GeofenceDownlaod {
         }
     }
 
+
+
+
+// when trip running and user enter geofence in entry upload and exit geofence out entry upload
+    public static int uploadGeofenceINOutTracking() {
+
+        int k = 0;
+
+        Cursor c = database
+                .rawQuery(
+                        "select user_id,place_id,in_time,out_time,duration,id,flowid,appid,service_outage,event from geofence_user_tracking_In_Out where is_send='0' and place_id != 'BIG'", null);
+
+        c.moveToFirst();
+        int j = c.getCount();
+        for (int i = 0; i < c.getCount(); i++) {
+            try {
+
+                String user_id = c.getString(0);
+                String place_id = c.getString(1);
+                String in_time = c.getString(2);
+                String out_time = c.getString(3);
+                String duration = c.getString(4);
+                String id = c.getString(5);
+                String flowid = c.getString(6);
+                String appid = c.getString(7);
+                String service_outage = c.getString(8);
+                String event = c.getString(9);
+
+                if (service_outage == null) {
+                    service_outage = "";
+                }
+
+                if (user_id.equalsIgnoreCase("")) {
+                    user_id = DeviceEventsUtils.getLoginDetails().get(0);
+                }
+
+                if (appid.equalsIgnoreCase("")) {
+                    appid = DeviceEventsUtils.getLoginDetails().get(2);
+                }
+
+
+                Cursor c3 = database.rawQuery("SELECT username FROM Login_Master",
+                        null);
+                c3.moveToLast();
+                String username = c3.getString(0);
+                c3.close();
+
+                MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+                String roleid = prefs.getString("authroleidn", "0");
+
+                JSONObject data2 = new JSONObject();
+                data2.put("user_ID", user_id);
+                data2.put("userName", username);
+                data2.put("Site_ID", place_id);
+                data2.put("In_time_ms", in_time);
+                data2.put("Out_time_ms", out_time);
+                data2.put("Role_Id", roleid);
+                data2.put("event",event);
+
+
+
+                if (user_id == null || user_id.equalsIgnoreCase("")) {
+
+                } else {
+                    String resString = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data2, UPLOADWCFURL, METHOD_NAME_InOut, data2);
+                    JSONArray jsonArray = new JSONArray(resString);
+
+                    for (int k1 = 0; k1 < jsonArray.length(); k1++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(0);
+                        String status = jsonObject.getString("status");
+                        String message = "";
+                        if (jsonObject.has("message")) {
+                            message = jsonObject.getString("message");
+                        }
+                        if (status.equalsIgnoreCase("1")) {
+                            updateGeofenceINoutflag(Integer.parseInt(id));
+                        }
+                        else if(status.equalsIgnoreCase("3"))
+                        {
+                            LogUtils.writeUploadLogToFile( "Status:" +status + " ( " + message + " ) " +"\n" + data2.toString() ,METHOD_NAME_corner , "uploadGeofenceTracking");
+                        }
+                        else if (status.equalsIgnoreCase("4")) {
+                            Utils.logoutUser(message);
+
+                        } else {
+                            k++;
+                        }
+                    }
+
+                }
+
+            } catch (final Exception e) {
+                LogUtils.writeUploadLogToFile(e.toString(),"", "uploadGeofenceTracking");
+                k++;
+            }
+            c.moveToNext();
+        }
+        c.close();
+        return k;
+    }
+
+
+    private static void updateGeofenceINoutflag(int id) {
+
+
+        String cnd;
+        cnd = "id=" + id;
+        ContentValues c_path = new ContentValues();
+        c_path.put("is_send", "1");
+        long temp = database.update("geofence_user_tracking_In_Out",
+                c_path, cnd, null);
+
+    }
 }
