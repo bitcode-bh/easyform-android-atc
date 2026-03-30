@@ -71,7 +71,15 @@ public class AttendancePendingPlugin extends CordovaPlugin {
             else {
                 mTaskData.setPunchout_Status(mAttendanceData.getPunchout_Status());
             }
-            mTaskData.setFacedetection(mAttendanceData.getFacedetection());
+
+            if(mAttendanceData.getFacedetection() ==  null || mAttendanceData.getFacedetection().equalsIgnoreCase("null"))
+            {
+                mTaskData.setFacedetection("false");
+            }
+            else {
+                mTaskData.setFacedetection(mAttendanceData.getFacedetection());
+            }
+
 
             MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
             pref.putString("task_checksheet_id", mAttendanceData.getChecksheetId());
@@ -90,7 +98,7 @@ public class AttendancePendingPlugin extends CordovaPlugin {
             pref.commit();
 
 
-            if(mAttendanceData.getFacedetection() == null || mAttendanceData.getFacedetection().equalsIgnoreCase("null") || mAttendanceData.getFacedetection().equalsIgnoreCase("true"))
+            if(mTaskData.getFacedetection() == null || mTaskData.getFacedetection().equalsIgnoreCase("null") || mTaskData.getFacedetection().equalsIgnoreCase("true"))
             {
                // if (!AttendanceTaskUtil.isAttendanceDone(sqlitewraper.getDatabase(), mTaskData.getModuleId(), mTaskData.getModuleName(), mTaskData.getUsername(), mTaskData.getUserId(), "1")) {
 
