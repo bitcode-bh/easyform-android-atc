@@ -1019,6 +1019,7 @@ function updateuniquecode_android(invocation, res_type) {
                 Threshold = '';
                 Barcode = '';
                 Scanner = '';
+                FaceDetection = '';
                 var role_id = 0;
                 var role_name = '';
             } else {
@@ -1027,6 +1028,7 @@ function updateuniquecode_android(invocation, res_type) {
                 Scanner = result[0].Scanner;
                 Video = result[0].Video;
                 Meter_Reading = result[0].Meter_Reading;
+                FaceDetection = result[0].FaceDetection;
                 RF_Tracking = result[0].RF_Tracking;
                 var role_id = parseInt(result[0].role_id);
                 var role_name = result[0].role_name;
@@ -1663,7 +1665,7 @@ function get_blank_user_checksheet() {
 var FaceDetection;
 function check_2FA_with_face_detection() {
 
-    if (FaceDetection == "true") {
+    if (FaceDetection == "True") {
         var q_jsonobj = [];
         cordova.exec(function (e) {
             // onsuccess
