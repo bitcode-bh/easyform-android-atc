@@ -47,7 +47,7 @@ public class TwoFAWithFaceDetectionPlugin  extends CordovaPlugin {
                 }
             }
             else {
-                this.callbackContext.error("");
+                this.callbackContext.success("success");
             }
         }
     }
