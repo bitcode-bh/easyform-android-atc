@@ -31,6 +31,7 @@ public class Utils {
 
         public static final String JITSI_CALL_Get_PhotoId = "com.easyform.newjitsi.Get_PhotoId";
         public static final String JITSI_CALL_webviewload = "com.easyform.newjitsi.Webviewload";
+        public static final String JITSI_CALL_screenshot = "com.easyform.newjitsi.ScreenShot";
 
     }
 

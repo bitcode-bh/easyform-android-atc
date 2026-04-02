@@ -99,7 +99,7 @@ public class FCMNotificationApiCall {
         {
             dataPayload.put("screenShear", data.getScreenShear().toString());
         }
-        if(data.getVideocallType().equalsIgnoreCase("ARDAW") || data.getVideocallType().equalsIgnoreCase("jitsicallPhotoId"))
+        if(data.getVideocallType().equalsIgnoreCase("ARDAW") || data.getVideocallType().equalsIgnoreCase("jitsicallPhotoId") || data.getVideocallType().equalsIgnoreCase("screenshot"))
         {
             dataPayload.put("keytype", data.getKeyType());
             dataPayload.put("jsonData", data.getJsonData());

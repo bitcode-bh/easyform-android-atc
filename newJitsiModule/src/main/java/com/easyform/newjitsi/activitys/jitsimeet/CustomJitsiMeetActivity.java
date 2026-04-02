@@ -1,6 +1,7 @@
 package com.easyform.newjitsi.activitys.jitsimeet;
 
 import static com.easyform.newjitsi.App.context;
+import static com.easyform.newjitsi.App.getContext;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -11,23 +12,29 @@ import android.app.Dialog;
 import android.app.PictureInPictureParams;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Insets;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Rational;
@@ -37,6 +44,9 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.PixelCopy;
+import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -105,7 +115,10 @@ import org.json.JSONObject;
 import org.michaelbel.bottomsheet.BottomSheet;
 import org.michaelbel.bottomsheet.BottomSheetCallback;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -603,6 +616,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
 
 
     Bundle extras = null;
+   static Bundle mBundle = null;
    public static List<EasyFromUserItem> easyFromUserItemList;
     List<EasyFromUser> screenShearEasyFromUserList;
 
@@ -612,7 +626,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
 
     private void iniUi() {
         extras = getIntent().getExtras();
-
+        mBundle = getIntent().getExtras();
         mCustomJitsiMeetViewModel.easyFromUserItemList.observe(this, easyFromUserItems -> {
             this.easyFromUserItemList = easyFromUserItems;
         });
@@ -661,11 +675,12 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 .setFeatureFlag("welcomepage.enabled", false)
                 .setFeatureFlag("desktop-sharing.enabled", true)
                 .setFeatureFlag("android.screensharing.enabled", true)
-                .setFeatureFlag("pip.enabled", true)
-
-
+                .setFeatureFlag("pip.enabled", false)
+                .setFeatureFlag("pinSelf",true)
+//                .setFeatureFlag("tile-view.enabled", true)
+//                .setFeatureFlag("filmstrip.enabled", false)
                 .setAudioMuted(true)
-                .setVideoMuted(true)
+                .setVideoMuted(false)
                 .build();
 
         CustomJitsiMeetActivity.launch(context, options, extras);
@@ -722,6 +737,15 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                     mActivityCustomJitsiMeetBinding.llUserActions.setVisibility(View.VISIBLE);
                     this.onConferenceJoined(event.getData());
                     isCallRunning = true;
+                    sharedPreferences = getApplicationContext().getSharedPreferences("Jitsiuser", MODE_PRIVATE);
+                    String IspluginClick = sharedPreferences.getString("IsPluginClick","false");
+                    if(!IspluginClick.equalsIgnoreCase("true"))
+                    {
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            forceSelfViewFullScreen();
+                        }, 3000);
+                    }
+
                     break;
                 }
                 case CONFERENCE_TERMINATED: {
@@ -738,6 +762,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 }
                 case PARTICIPANTS_INFO_RETRIEVED: {
                     this.onParticipantsInfoRetrieved(event.getData());
+
                     break;
                 }
                 case PARTICIPANT_JOINED: {
@@ -806,8 +831,46 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
             }
         }
     }
+    private void forceSelfViewFullScreen() {
+        try {
+            View root = getWindow().getDecorView();
 
+            View target = findSelfView(root);
 
+            if (target != null) {
+                Log.d("JITSI_FIX", "Self view found, clicking...");
+                target.performClick();
+            } else {
+                Log.e("JITSI_FIX", "Self view NOT found");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private View findSelfView(View view) {
+
+        if (view == null) return null;
+
+        // 🔥 More flexible condition
+        if (view.getWidth() > 100 && view.getWidth() < 500
+                && view.getHeight() > 100 && view.getHeight() < 500
+                && view.isClickable()) {
+
+            return view;
+        }
+
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View result = findSelfView(group.getChildAt(i));
+                if (result != null) return result;
+            }
+        }
+
+        return null;
+    }
     public void startRingtone(Context context) {
         if (chatSound != null && chatSound.isPlaying()) return;
 
@@ -1056,7 +1119,16 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
     }
 
 
+    public void pinSelf(String participantId) {
+        Bundle data = new Bundle();
+        data.putString("participantId", participantId);
 
+        Intent intent = new Intent("org.jitsi.meet.EXECUTE_COMMAND");
+        intent.putExtra("command", "pinParticipant");
+        intent.putExtra("data", data);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
 
     Gson mGson = new Gson();
 
@@ -1108,6 +1180,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                         MultiChoiceDialogFragment multiChoiceDialogFragment = new MultiChoiceDialogFragment("Invite", allEasyFromUserList,participantList, true,extras, new MultiChoiceDialogFragment.MultiChoiceDialogFragmentResult() {
                             @Override
                             public void onMultiChoiceResult(List<EasyFromUser> easyFromUserList) {
+                                CustomJitsiMeetActivity.this.screenShearEasyFromUserList = allEasyFromUserList;
                                 mCustomJitsiMeetViewModel.sendNotificationInviteToCall(extras, easyFromUserList,CustomJitsiMeetActivity.this);
                             }
 
@@ -1195,10 +1268,9 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         });
 
 
-            if(!task_id.equalsIgnoreCase("0")) {
-                mActivityCustomJitsiMeetBinding.jitsiRequestChat.setVisibility(View.GONE);
-            }
-        mActivityCustomJitsiMeetBinding.jitsiRequestChat.setOnClickListener(new View.OnClickListener() {
+
+        mActivityCustomJitsiMeetBinding.jitsiRequestChecklist.setVisibility(View.VISIBLE);
+        mActivityCustomJitsiMeetBinding.jitsiRequestChecklist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String loginUserDataString = extras.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");
@@ -1206,31 +1278,8 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 OtherData mOtherData = mGson.fromJson(otherDataString, OtherData.class);
                 UserData mUserData= mGson.fromJson(loginUserDataString,UserData.class);
 
-                String taskId = mOtherData.getServer_task_id();
-                String Url = mOtherData.getClickAction();
-                String roleId = mOtherData.getRole_id();
-                String FlowId = mOtherData.getFlow_id();
-                String start_status = mOtherData.getStart_status();
-                String compnay_id = mUserData.getCompanyId();
-                String UserId = mUserData.getUserid();
-                String site_id = mOtherData.getSite_id();
-                String udf_id = mOtherData.getUdf_id();
-                String feature_id = mUserData.getCompanyFeatureId();
-                String dateformate = mUserData.getDateformate();
-
-                webDialogFragment = new WebDialogFragment(roleId, taskId,Url,FlowId,start_status,compnay_id,UserId,site_id,udf_id,feature_id,dateformate);
-                webDialogFragment.show(getSupportFragmentManager(), "webDialog");
-//
-
-//                mActivityCustomJitsiMeetBinding.jitsicontainer.setVisibility(View.VISIBLE);
-//                CommentFragment commentFragment = CommentFragment.newInstance(0, taskId);
-//
-//                getSupportFragmentManager()
-//                        .beginTransaction()
-//                        .add(R.id.jitsi_container, commentFragment)
-//                        .addToBackStack(null)
-//                        .commit();
-
+                show_CheecksheetList(mUserData,mOtherData);
+               // capturePhoto();
             }
         });
 
@@ -1682,8 +1731,8 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         super.onResume();
         JitsiMeetActivityDelegate.onHostResume(this);
 
-        mActivityCustomJitsiMeetBinding.jitsiRequestScreenShare.setVisibility(View.VISIBLE);
-        mActivityCustomJitsiMeetBinding.jitsiInvite.setVisibility(View.VISIBLE);
+        mActivityCustomJitsiMeetBinding.jitsiRequestScreenShare.setVisibility(View.GONE);
+        mActivityCustomJitsiMeetBinding.jitsiInvite.setVisibility(View.GONE);
         registerReceiver(commentReceiver, new IntentFilter("com.easyform.newjitsi.activitys.jitsimeet.COMMENT_NOTIFICATION"),RECEIVER_EXPORTED);
 
     }
@@ -2081,8 +2130,8 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
 
     public void sendnotification(String jsondata)
     {
-        mCustomJitsiMeetViewModel.sendNotificationScreenShearDrawData(extras, screenShearEasyFromUserList, "screenshot", jsondata.toString(),CustomJitsiMeetActivity.this);
-
+       // mCustomJitsiMeetViewModel.sendNotificationScreenShearDrawData(extras, screenShearEasyFromUserList, "screenshot", jsondata.toString(),CustomJitsiMeetActivity.this);
+        mCustomJitsiMeetViewModel.sendNotificationforviewcapture(extras,  "screenshot", jsondata,CustomJitsiMeetActivity.this);
     }
 
     private void exitPipAndShowFullScreen() {
@@ -2096,4 +2145,110 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         }
     }
 
+    public static View findVideoView(View view) {
+        if (view instanceof SurfaceView || view instanceof TextureView) {
+            return view;
+        }
+
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View result = findVideoView(group.getChildAt(i));
+                if (result != null) return result;
+            }
+        }
+        return null;
+    }
+
+    public static void capturePhoto(Activity activity,String JsonData) {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+
+            View rootView = activity.getWindow().getDecorView();
+
+            View videoView = findVideoView(rootView);
+
+            if (videoView == null) {
+                Log.e("JITSI", "Video view not found!");
+                return;
+            }
+
+            Bitmap bitmap = Bitmap.createBitmap(
+                    videoView.getWidth(),
+                    videoView.getHeight(),
+                    Bitmap.Config.ARGB_8888
+            );
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (videoView instanceof SurfaceView) {
+                    PixelCopy.request((SurfaceView) videoView, bitmap, result -> {
+                        if (result == PixelCopy.SUCCESS) {
+                            saveToGallery(bitmap,JsonData);
+                        }
+                    }, new Handler(Looper.getMainLooper()));
+                } else {
+                    // TextureView fallback
+                    Canvas canvas = new Canvas(bitmap);
+                    videoView.draw(canvas);
+                    saveToGallery(bitmap,JsonData);
+                }
+            }
+
+        }, 2000); // wait for rendering
+    }
+    private static final Gson gson = new Gson();
+    public static void saveToGallery(Bitmap bitmap,String jsonData) {
+        String filename = "Jitsi_" + System.currentTimeMillis() + ".jpg";
+
+        File dir = new File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "Jitsi"
+        );
+
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        File imageFile = new File(dir, filename);
+
+        try {
+            FileOutputStream fos = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+
+            // ✅ Make visible in gallery
+            MediaScannerConnection.scanFile(
+                    context,
+                    new String[]{imageFile.getAbsolutePath()},
+                    new String[]{"image/jpeg"},
+                    null
+            );
+
+            Toast.makeText(getInstance(), "Photo saved to gallery", Toast.LENGTH_SHORT).show();
+
+            String otherDataString  = mBundle.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
+            String  loginUserDataString  = mBundle.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");
+            String  pluginArgsString = mBundle.getString(Utils.BroadcastActionExtrasKeys.JITSI_MEETING_PLUGIN_ARGS, "");
+            String notificationRemoteDataString = mBundle.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+            OtherData mOtherData = gson.fromJson(otherDataString, OtherData.class);
+            UserData mUserData = gson.fromJson(loginUserDataString, UserData.class);
+
+            if(!jsonData.equalsIgnoreCase("")) {
+                Log.d("finalPath", imageFile.getAbsolutePath());
+                Intent intent = new Intent("com.easyfrom.jitsi.SCREENSHOT_SAVED");
+                intent.putExtra("screenshot_path", imageFile.getAbsolutePath());
+                intent.putExtra("photo_name", filename);
+                intent.putExtra("jsonData", jsonData);
+                intent.putExtra("task_id", mOtherData.getServer_task_id());
+                intent.putExtra("LOGIN_USER_DATA",loginUserDataString);
+                intent.putExtra("OTHER_DATA",otherDataString);
+                intent.putExtra("JITSI_MEETING_PLUGIN_ARGS",pluginArgsString);
+                intent.putExtra("NOTIFICATION_REMOTE_DATA",notificationRemoteDataString);
+                getContext().sendBroadcast(intent);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

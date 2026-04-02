@@ -255,6 +255,72 @@ public class CustomJitsiMeetViewModel extends ViewModel {
         });
     }
 
+    public void sendNotificationforviewcapture(Bundle extras, String keyType, String jsonData, Context mContext) {
+
+        mExecutorService.execute(() -> {
+            String loginUserDataString = extras.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");
+            String otherDataString = extras.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
+            //   String pluginArgsString = extras.getString(Utils.BroadcastActionExtrasKeys.JITSI_MEETING_PLUGIN_ARGS, "");
+
+            UserData mUserData = mGson.fromJson(loginUserDataString, UserData.class);
+
+            OtherData mOtherData = mGson.fromJson(otherDataString, OtherData.class);
+
+            List<String> fcmIosIds = new ArrayList<>();
+            List<String> fcmIds = new ArrayList<>();
+
+
+            String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+            if(!notificationRemoteDataString.equalsIgnoreCase("")) {
+                FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+
+                if (mFirebaseRequestData.getDevice_type().matches("ios")) {
+                    fcmIosIds.add(mFirebaseRequestData.getRemotetoken());
+                } else {
+                    fcmIds.add(mFirebaseRequestData.getRemotetoken());
+                }
+            }
+
+            String pluginArgsString = extras.getString(Utils.BroadcastActionExtrasKeys.JITSI_MEETING_PLUGIN_ARGS, "");
+            if(!pluginArgsString.equalsIgnoreCase("")) {
+                Type listType = new TypeToken<List<PluginArgs>>() {
+                }.getType();
+                List<PluginArgs> pluginArgsList = mGson.fromJson(pluginArgsString, listType);
+                for (int i = 0; i < pluginArgsList.get(0).getZoomMeeting().size(); i++) {
+                    ZoomMeetingItem zoomMeetingItem = pluginArgsList.get(0).getZoomMeeting().get(i);
+                    if (zoomMeetingItem.getDeviceType().matches("ios")) {
+                        fcmIosIds.add(zoomMeetingItem.getFcmid());
+                    } else {
+                        fcmIds.add(zoomMeetingItem.getFcmid());
+                    }
+                }
+
+            }
+
+            if (fcmIosIds.isEmpty() && fcmIds.isEmpty()) {
+                return;
+            }
+
+
+            SharedPreferences sharedPreferences = mContext.getSharedPreferences("Jitsi_roomname", MODE_PRIVATE);
+            String roomname = sharedPreferences.getString("Roomname", "");
+            Log.d("jsonData",jsonData);
+            FirebaseRequestData data = new FirebaseRequestData("EASYFORM  screenshot",
+                    "EASYFORM screenshot",
+                    "call", mUserData.getUsername(), roomname,
+                    "screenshot",
+                    "0",
+                    "",
+                    mOtherData.getClickAction() + "",
+                    mOtherData.getWebPush().toString() + "",
+                    mUserData.getDeviceType() + "",
+                    fcmIds.get(0) + "",
+                    mUserData.getUserid() + "", mOtherData.getServer_task_id() + "", "jitsiMeet", keyType, jsonData, false, "",""
+            );
+            callNotificationApi(data, false, fcmIds, fcmIosIds);
+        });
+    }
+
     private void callNotificationApi(FirebaseRequestData data, Boolean isiOS, List<String> fcmIds, List<String> fcmIosIds) {
 
         FirebaseRequest firebaseRequest = new FirebaseRequest();

@@ -103,6 +103,14 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
             } else if (action.matches(Utils.BroadcastAction.JITSI_CALL_Get_PhotoId)) {
                 Get_photoId(context, extras);
             }
+            else if(action.matches(Utils.BroadcastAction.JITSI_CALL_screenshot))
+            {
+                try {
+                    ScreenShots(context,extras);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -488,6 +496,34 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
         }
 
         sendDeleteData();
+    }
+
+    private void ScreenShots(Context context, Bundle extras) throws JSONException
+    {
+        if (!extras.containsKey(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA)) {
+            return;
+        }
+        String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+        FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+
+        TouchEventAR touchEventAR = EventUtils.touchEventAR;
+        String JsonData = null;
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(mFirebaseRequestData.getJsonData());
+            JsonData = jsonObject.getJSONArray(mFirebaseRequestData.getKeyType()).toString();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (mFirebaseRequestData.getKeyType().equalsIgnoreCase("screenshot")) {
+            if (ARDrawActivity.isArSupportedDevice) {
+            } else {
+
+                CustomJitsiMeetActivity.capturePhoto(CustomJitsiMeetActivity.getInstance(), JsonData);
+            }
+        }
     }
 
     void sendDeleteData() {

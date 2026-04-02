@@ -73,6 +73,7 @@ public class JitsiMeetingPlugin extends CordovaPlugin {
                 site_id = zoomMeetingObj.getString("site_id");
                 editor.putString("call_username", username);
                 editor.putString("task_id", task_id);
+                editor.putString("IsPluginClick","true");
                 editor.commit();
             } catch (Exception e) {
                 e.printStackTrace();
