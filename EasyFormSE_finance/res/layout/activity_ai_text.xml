@@ -177,14 +177,16 @@
                             android:textSize="14sp" />
 
                     </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|bottom"
+                        android:visibility="gone" />
                 </androidx.cardview.widget.CardView>
 
-                <ProgressBar
-                    android:id="@+id/progressBar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:visibility="gone" />
+
             </LinearLayout>
 
             <!-- Progress Bar -->
