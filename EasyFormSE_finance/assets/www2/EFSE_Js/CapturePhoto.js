@@ -1597,7 +1597,6 @@ function onsuccess_CaptureClick_Customer(e) {
         if (photo_type == "AI") {
             let responsetext = response[0].responsetext;
             responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
-            alert(responsetext);
             try {
                 let responsetext_new = responsetext.replaceAll('\n', '');
                 responsetext_new = responsetext_new.match(/\{(.*?)\}/);     // extract inner string { }
