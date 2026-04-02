@@ -1614,11 +1614,12 @@ function onsuccess_CaptureClick_Customer(e) {
                     }
                     else {
                         let $input = $("#" + where_box_id + "");
-                        let $textarea = '<textarea cols="20" rows="2" class="form-ele" id="' + where_box_id + '" onkeydown="ResizeBox(event)" value=\'' + value + '\' style="resize:vertical !important; width: 100% !important;" disabled="disabled">' + value + '</textarea>';
+                        let $textarea = '<textarea cols="20" rows="1" class="form-ele" id="' + where_box_id + '" value=\'' + value + '\' style="overflow:hidden; resize:none; width: 100% !important; background-color: #ddd; border-radius: 5px; padding: 5px;" disabled="disabled">' + value + '</textarea>';
                         $input.replaceWith($textarea);
 
                         let t_textarea = document.getElementById(where_box_id);
-                        t_textarea.style.height = t_textarea.scrollHeight + "px";
+                        t_textarea.style.height = "auto";
+                        t_textarea.style.height = t_textarea.scrollHeight + 4 + "px";
                     }
                 });
 
