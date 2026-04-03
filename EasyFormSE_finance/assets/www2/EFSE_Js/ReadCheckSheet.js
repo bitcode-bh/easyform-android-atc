@@ -198,7 +198,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
         set_system_variable();
 
         curr_all_data_20["current_checksheet_id"] = check_type;
-     
+
         var c_is_online = JSON.parse(storage.getItem('c_is_online'));            // 1 = online checksheet, 0 = offline checksheet
         var c_is_disabled = JSON.parse(storage.getItem('c_is_disabled'));
         if (c_is_disabled == 1) { disabled_flag = 1 }
@@ -563,6 +563,17 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
         for (i = 0; i < jsonObj.length; i++) {
             var cnrl_type = jsonObj[i].type;
             var prop_name = jsonObj[i].prop[0].name;
+
+            var language = jsonObj[i].language;
+            if (language == "" || language == null || language == undefined) { }
+            else {
+                language = language[0];
+
+                if (isEmpty(language)) { }
+                else {
+                    prop_name = language['hi'];
+                }
+            }
 
             if (cnrl_type == 10) { }
             else {
@@ -5476,4 +5487,13 @@ function set_system_variable() {
 set_switch_hidden_ans = (t_obj) => {
     let text = $(t_obj).html();
     $(t_obj).parent(".switch-hidden").find(".spn_hdn_switch").text(text);
+}
+
+function isEmpty(obj) {
+    return (
+        obj &&
+        typeof obj === "object" &&
+        !Array.isArray(obj) &&
+        Object.keys(obj).length === 0
+    );
 }

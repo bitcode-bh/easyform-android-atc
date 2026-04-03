@@ -403,6 +403,17 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
             var cnrl_type = jsonObj[i].type;
             var prop_name = jsonObj[i].prop[0].name;
 
+            var language = jsonObj[i].language;
+            if (language == "" || language == null || language == undefined) { }
+            else {
+                language = language[0];
+
+                if (isEmpty(language)) { }
+                else {
+                    prop_name = language['hi'];
+                }
+            }
+
             if (cnrl_type == 10) { }
             else {
                 // objectclass and objectname 09022021
