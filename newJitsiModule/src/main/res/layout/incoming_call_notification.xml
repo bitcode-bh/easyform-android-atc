@@ -1,0 +1,80 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="8dp"
+    android:background="@drawable/bg_call_card"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/mainlinear"
+        android:orientation="vertical"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvTitle"
+            android:text=""
+            android:textStyle="bold"
+            android:layout_marginTop="5dp"
+            android:textSize="15sp"
+            android:textColor="#000"/>
+
+
+    </LinearLayout>
+
+    <!-- Reject Button -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="5dp"
+        android:layout_below="@+id/mainlinear">
+    <LinearLayout
+        android:id="@+id/btnReject"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:background="@drawable/takecallbackground"
+        android:layout_marginEnd="6dp">
+
+
+        <TextView
+            android:id="@+id/rejectBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:src="@drawable/ic_baseline_call_end_24"
+            android:text="Decline"
+            />
+    </LinearLayout>
+
+    <!-- Accept Button -->
+    <LinearLayout
+        android:id="@+id/btnAccept"
+        android:layout_width="120dp"
+        android:background="@drawable/endcallbuttnbackground"
+        android:layout_height="40dp"
+        android:layout_marginStart="130dp"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:src="@drawable/ic_baseline_call_end_24"
+            android:text="Accpet"
+             />
+    </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>

@@ -17,9 +17,11 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Keep;
@@ -27,6 +29,7 @@ import androidx.core.app.NotificationCompat;
 
 
 import com.easyform.newjitsi.R;
+import com.easyform.newjitsi.activitys.call.IncomingCallActivity;
 import com.easyform.newjitsi.activitys.loading.LoadingActivity;
 
 import org.jitsi.meet.sdk.BroadcastIntentHelper;
@@ -53,74 +56,132 @@ public class NotificationUtils {
      * @param title                   pass String to display in notification Title
      * @param text                    pass String to display in notification text
      * @param smallIconId             pass Drawable id for small icon in notification
-     * @apiNote this method is display notification with NOTIFICATION_ID to identify this Notification
+     * @apiNote this method
+     // public static void createNotification(int NOTIFICATION_ID,
+     * //                                          Context context,
+     * //                                          PendingIntent acceptCallPendingIntent,
+     * //                                          PendingIntent rejectCallPendingIntent,
+     * //                                          String title,
+     * //                                          String text,
+     * //                                          @DrawableRes int smallIconId) {
+     * //
+     * ////        Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
+     * ////                context.getPackageName() + "/" + R.raw.ringtone_video_call);
+     * //
+     * //        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+     * //             startRingtone(context); // Start playing ringtone
+     * //        }, 500);
+     * //
+     * //        NotificationManager notificationManager =
+     * //                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+     * //
+     * //        final String CHANNEL_ID = "incoming_call_channel_v2"; // Make sure it's unique
+     * //        final String CHANNEL_NAME = "Incoming Call Notifications";
+     * //
+     * //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+     * //
+     * //            if (notificationManager.getNotificationChannel(CHANNEL_ID) != null) {
+     * //                notificationManager.deleteNotificationChannel(CHANNEL_ID);
+     * //            }
+     * //
+     * ////            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+     * ////                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+     * ////                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+     * ////                    .build();
+     * //
+     * //            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+     * //            channel.enableVibration(true);
+     * //            channel.enableLights(true);
+     * //
+     * //            notificationManager.createNotificationChannel(channel);
+     * //        }
+     * //
+     * ////        Intent loadingActivityIntent = new Intent(context, LoadingActivity.class);
+     * ////        loadingActivityIntent.setAction(Utils.BroadcastAction.JITSI_CALL_ACCEPT);
+     * ////        loadingActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+     * ////        loadingActivityIntent.putExtras(extras);
+     * //
+     * //        @SuppressLint("UnspecifiedImmutableFlag")
+     * //        PendingIntent contentIntent = PendingIntent.getActivity(
+     * //                context,
+     * //                0,
+     * //                new Intent(),
+     * //                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+     * //        );
+     * //
+     * //        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+     * //                .setSmallIcon(smallIconId)
+     * //                .setContentTitle(title)
+     * //                .setContentText(text)
+     * //                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+     * //                .setCategory(NotificationCompat.CATEGORY_CALL)
+     * //                .setAutoCancel(false)
+     * //                .setOngoing(false)
+     * //                .setContentIntent(contentIntent)
+     * //                .addAction(R.drawable.reject_icon, "Reject", rejectCallPendingIntent)
+     * //                .addAction(R.drawable.call_icon, "Accept", acceptCallPendingIntent);
+     * //
+     * //        // ✅ Show notification
+     * //        notificationManager.notify(NOTIFICATION_ID, builder.build());
+     * //    } is display notification with NOTIFICATION_ID to identify this Notification
      */
+
+
     public static void createNotification(int NOTIFICATION_ID,
                                           Context context,
                                           PendingIntent acceptCallPendingIntent,
                                           PendingIntent rejectCallPendingIntent,
                                           String title,
                                           String text,
-                                          @DrawableRes int smallIconId) {
-
-//        Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
-//                context.getPackageName() + "/" + R.raw.ringtone_video_call);
+                                          @DrawableRes int smallIconId, Bundle extras) {
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-             startRingtone(context); // Start playing ringtone
+            startRingtone(context);
         }, 500);
 
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        final String CHANNEL_ID = "incoming_call_channel_v2"; // Make sure it's unique
-        final String CHANNEL_NAME = "Incoming Call Notifications";
 
+        String CHANNEL_ID = "call_channel";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            if (notificationManager.getNotificationChannel(CHANNEL_ID) != null) {
-                notificationManager.deleteNotificationChannel(CHANNEL_ID);
-            }
-
-//            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-//                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-//                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-//                    .build();
-
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
-            channel.enableVibration(true);
-            channel.enableLights(true);
-
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Incoming Call",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             notificationManager.createNotificationChannel(channel);
         }
-
-//        Intent loadingActivityIntent = new Intent(context, LoadingActivity.class);
-//        loadingActivityIntent.setAction(Utils.BroadcastAction.JITSI_CALL_ACCEPT);
-//        loadingActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        loadingActivityIntent.putExtras(extras);
-
-        @SuppressLint("UnspecifiedImmutableFlag")
-        PendingIntent contentIntent = PendingIntent.getActivity(
-                context,
-                0,
-                new Intent(),
+        // Full screen intent
+        Intent intent = new Intent(context, IncomingCallActivity.class);
+        intent.putExtra("Bundle_extras", extras);
+        intent.putExtra("notificationId", NOTIFICATION_ID);
+        intent.putExtra("callfrom", text);
+        PendingIntent fullScreenIntent = PendingIntent.getActivity(
+                context, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
+        // Custom layout
+        RemoteViews rv = new RemoteViews(context.getPackageName(),
+                R.layout.incoming_call_notification);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+        rv.setTextViewText(R.id.tvTitle, text);
+        rv.setOnClickPendingIntent(R.id.btnAccept, acceptCallPendingIntent);
+        rv.setOnClickPendingIntent(R.id.btnReject, rejectCallPendingIntent);
+
+        Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(smallIconId)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setCustomHeadsUpContentView(rv)
+                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setOngoing(true)
                 .setAutoCancel(false)
-                .setOngoing(false)
-                .setContentIntent(contentIntent)
-                .addAction(R.drawable.reject_icon, "Reject", rejectCallPendingIntent)
-                .addAction(R.drawable.call_icon, "Accept", acceptCallPendingIntent);
+                .setFullScreenIntent(fullScreenIntent, true)
+                .build();
 
-        // ✅ Show notification
-        notificationManager.notify(NOTIFICATION_ID, builder.build());
+        notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
 

@@ -138,19 +138,19 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
                     getRejectCallPendingIntent(context, extras, notificationId),
                     "EASYFORM CALL",
                     mFirebaseRequestData.getCallfrom() + " is Inviting you for Meet !",
-                    R.drawable.atc_logo);
+                    R.drawable.atc_logo,extras);
 
             sharedPreferences = context.getSharedPreferences("Jitsiuser", MODE_PRIVATE);
             editor = sharedPreferences.edit();
             editor.putString("call_username", mFirebaseRequestData.getCallfrom());
             editor.commit();
 
-            Intent callIntent = new Intent(context, IncomingCallActivity.class);
-            callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            callIntent.putExtra("Bundle_extras", extras);
-            callIntent.putExtra("notificationId", notificationId);
-            callIntent.putExtra("callfrom", mFirebaseRequestData.getCallfrom() + " is Inviting you for Meet !");
-            context.startActivity(callIntent);
+//            Intent callIntent = new Intent(context, IncomingCallActivity.class);
+//            callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            callIntent.putExtra("Bundle_extras", extras);
+//            callIntent.putExtra("notificationId", notificationId);
+//            callIntent.putExtra("callfrom", mFirebaseRequestData.getCallfrom() + " is Inviting you for Meet !");
+//            context.startActivity(callIntent);
 
         }
     }
