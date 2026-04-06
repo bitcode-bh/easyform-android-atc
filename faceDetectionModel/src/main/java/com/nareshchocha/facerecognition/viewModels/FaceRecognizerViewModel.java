@@ -201,7 +201,7 @@ public class FaceRecognizerViewModel extends ViewModel {
                     } else {
                         // _isLoadingData.postValue(false);
                         Map<Boolean, String> stringMap = new HashMap<>();
-                        stringMap.put(true, "Face is not detected This Image Please Change Image");
+                        stringMap.put(true, "Face is unrecognizable in your current profile photo, Kindly change it.");
                         _messages.postValue(stringMap);
                     }
                 }).addOnFailureListener(e -> {
