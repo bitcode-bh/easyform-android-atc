@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Keep;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.easyform.newjitsi.R;
@@ -137,7 +138,7 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
                     getAcceptCallPendingIntent(context, extras, notificationId),
                     getRejectCallPendingIntent(context, extras, notificationId),
                     "EASYFORM CALL",
-                    mFirebaseRequestData.getCallfrom() + " is Inviting you for Meet !",
+                    mFirebaseRequestData.getCallfrom() + " is Calling !",
                     R.drawable.atc_logo,extras);
 
             sharedPreferences = context.getSharedPreferences("Jitsiuser", MODE_PRIVATE);
@@ -585,7 +586,8 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
         if (CameraPreviewActivity.mActivity != null) {
             CameraPreviewActivity.mActivity.finish();
         }
-
+        NotificationManagerCompat notificationManager1 = NotificationManagerCompat.from(context);
+        notificationManager1.cancel(9999);
         JitsiMeetBroadcastUtils.endMeeting(context);
 
         sharedPreferences = context.getSharedPreferences("Jitsiuser", MODE_PRIVATE);
