@@ -1638,13 +1638,19 @@ function onsuccess_CaptureClick_Customer(e) {
             $("#" + where_box_id + "").val(responsetext);
         }
         else {
-            // textbox found hence convert it to textarea run time - mk - 26072025
-            let $input = $("#" + where_box_id + "");
-            let $textarea = '<textarea cols="20" rows="2" class="form-ele" id="' + where_box_id + '" onkeydown="ResizeBox(event)" value=\'' + responsetext + '\' style="resize:vertical !important; width: 100% !important;" disabled="disabled">' + responsetext + '</textarea>';
-            $input.replaceWith($textarea);
+            if (where_box_id.indexOf("rdo_") > -1) {
+                // radio autoselect
+                $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').prop('checked', true);
+            }
+            else {
+                // textbox found hence convert it to textarea run time - mk - 26072025
+                let $input = $("#" + where_box_id + "");
+                let $textarea = '<textarea cols="20" rows="2" class="form-ele" id="' + where_box_id + '" onkeydown="ResizeBox(event)" value=\'' + responsetext + '\' style="resize:vertical !important; width: 100% !important;" disabled="disabled">' + responsetext + '</textarea>';
+                $input.replaceWith($textarea);
 
-            let t_textarea = document.getElementById(where_box_id);
-            t_textarea.style.height = t_textarea.scrollHeight + "px";
+                let t_textarea = document.getElementById(where_box_id);
+                t_textarea.style.height = t_textarea.scrollHeight + "px";
+            }
         }
     }
 
