@@ -1898,7 +1898,14 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                             }
 
                             if (!Checksheetnamelist.isEmpty()) {
-                                showChecklistDialog(Checksheetnamelist,mUserData,mOtherData);
+                                if(Checksheetnamelist.size() == 1)
+                                {
+                                    open_direct_checksheet(Checksheetnamelist,mUserData,mOtherData);
+                                }
+                                else {
+                                    showChecklistDialog(Checksheetnamelist,mUserData,mOtherData);
+                                }
+
                             } else {
                                 Log.d("MainActivity", "No valid checklist items found.");
                             }
@@ -1973,6 +1980,24 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         builder.show();
     }
 
+
+    private void open_direct_checksheet(List<ChecklistItem> checklistItems,UserData mUserData , OtherData mOtherData)
+    {
+        String taskId = mOtherData.getServer_task_id();
+        String Url = mOtherData.getClickAction();
+        String roleId = mOtherData.getRole_id();
+        String FlowId = mOtherData.getFlow_id();
+        String start_status = mOtherData.getStart_status();
+        String compnay_id = mUserData.getCompanyId();
+        String UserId = mUserData.getUserid();
+        String site_id = mOtherData.getSite_id();
+        String udf_id = mOtherData.getUdf_id();
+        String feature_id = mUserData.getCompanyFeatureId();
+        String dateformate = mUserData.getDateformate();
+
+        webDialogFragment = new WebDialogFragment(roleId, taskId,Url,FlowId,start_status,compnay_id,UserId,site_id,udf_id,feature_id,dateformate);
+        webDialogFragment.show(getSupportFragmentManager(), "webDialog");
+    }
 
     List<ChecklistItem> mChecklistItems;
     public void WCF_GetCheckSheetData_Port(String selectedChecksheetId,UserData mUserData , OtherData mOtherData)
