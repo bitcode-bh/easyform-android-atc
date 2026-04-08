@@ -107,10 +107,12 @@ public class CameraAITextActivity extends AppCompatActivity {
     private CameraDevice cameraDevice;
     private CameraCaptureSession captureSession;
     private CaptureRequest.Builder previewRequestBuilder;
-    ImageView CaptureImage,BrowseImage;
+    ImageView CaptureImage,BrowseImage,switchcamera;
     FrameLayout mFrameLayout;
     LinearLayout mLinearLayoutmain,linearsecond;
     int rot = 0;
+    private boolean isFrontCamera = false;
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +132,7 @@ public class CameraAITextActivity extends AppCompatActivity {
         textureView = findViewById(R.id.textureView);
         mLinearLayoutmain = findViewById(R.id.linearmain);
         BrowseImage = findViewById(R.id.browseimage);
+        switchcamera = findViewById(R.id.switchcamera);
 
         pref = sqlitewraper.getSecureShared("MyPref");
 //        themecolor = pref.getString("themecolor","");
@@ -182,12 +185,57 @@ public class CameraAITextActivity extends AppCompatActivity {
                 }
             });
 
+            switchcamera.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    switchCamera();
+                }
+            });
+
         }
         catch (Exception e)
         {
 
         }
 
+    }
+
+    private void switchCamera() {
+        isFrontCamera = !isFrontCamera;
+
+
+        if (isFrontCamera) {
+            switchcamera.setImageResource(R.drawable.backcamera_foreground);
+            textureView.setScaleX(-1);
+        } else {
+            switchcamera.setImageResource(R.drawable.frontcamera_foreground);
+            textureView.setScaleX(1);
+        }
+
+        closeCamera();
+
+        if (textureView.isAvailable()) {
+            openCamera();
+        } else {
+            startCamera();
+        }
+    }
+
+    private void closeCamera() {
+        try {
+            if (captureSession != null) {
+                captureSession.close();
+                captureSession = null;
+            }
+
+            if (cameraDevice != null) {
+                cameraDevice.close();
+                cameraDevice = null;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void startCamera() {
@@ -208,6 +256,7 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                 @Override
                 public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
+                    closeCamera();
                     return true;
                 }
 
@@ -221,22 +270,35 @@ public class CameraAITextActivity extends AppCompatActivity {
     private void openCamera() {
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
-            String backCameraId = null;
+            String selectedCameraId = null;
+
             for (String id : manager.getCameraIdList()) {
                 CameraCharacteristics chars = manager.getCameraCharacteristics(id);
                 Integer facing = chars.get(CameraCharacteristics.LENS_FACING);
-                if (facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
-                    backCameraId = id;
-                    break;
+
+                if (isFrontCamera) {
+                    if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                        selectedCameraId = id;
+                        break;
+                    }
+                } else {
+                    if (facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
+                        selectedCameraId = id;
+                        break;
+                    }
                 }
             }
-            if (backCameraId == null && manager.getCameraIdList().length > 0) {
-                backCameraId = manager.getCameraIdList()[0]; // fallback
+
+            // fallback
+            if (selectedCameraId == null && manager.getCameraIdList().length > 0) {
+                selectedCameraId = manager.getCameraIdList()[0];
             }
+
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
-            manager.openCamera(backCameraId, new CameraDevice.StateCallback() {
+
+            manager.openCamera(selectedCameraId, new CameraDevice.StateCallback() {
                 @Override
                 public void onOpened(@NonNull CameraDevice camera) {
                     cameraDevice = camera;
