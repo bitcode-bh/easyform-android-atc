@@ -564,16 +564,16 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
             var cnrl_type = jsonObj[i].type;
             var prop_name = jsonObj[i].prop[0].name;
 
-            var language = jsonObj[i].language;
-            if (language == "" || language == null || language == undefined) { }
-            else {
-                language = language[0];
+            //var language = jsonObj[i].language;
+            //if (language == "" || language == null || language == undefined) { }
+            //else {
+            //    language = language[0];
 
-                if (isEmpty(language)) { }
-                else {
-                    prop_name = language['hi'];
-                }
-            }
+            //    if (isEmpty(language)) { }
+            //    else {
+            //        prop_name = language['hi'];
+            //    }
+            //}
 
             if (cnrl_type == 10) { }
             else {
