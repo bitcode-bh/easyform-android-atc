@@ -465,7 +465,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_txt_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_txt_' + new_id + '').css({ "border": "none" });
+                        //$('#div_txt_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_txt_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -553,7 +554,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_txt_' + new_id + '').css({ "border": "none" });
+                        //$('#div_txt_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_txt_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -622,11 +624,13 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                             alert1("Invalid email");
                                         }
                                     }
-                                    mk_animate_border('#div_txt_' + new_id + '', 0, 500, mand_border_color);
+                                    //mk_animate_border('#div_txt_' + new_id + '', 0, 500, mand_border_color);
+                                    add_validation_class('#div_txt_' + new_id + '');
                                     validation++;
                                 }
                                 else {
-                                    $('#div_txt_' + new_id + '').css({ "border": "none" });
+                                    //$('#div_txt_' + new_id + '').css({ "border": "none" });
+                                    remove_validation_class('#div_txt_' + new_id + '');
                                 }
                             }
                             else if (textbox_type == "password") {
@@ -692,10 +696,12 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                             }
                                         }
                                     }
-                                    mk_animate_border('#div_txt_' + new_id + '', 0, 500, mand_border_color);
+                                    //mk_animate_border('#div_txt_' + new_id + '', 0, 500, mand_border_color);
+                                    add_validation_class('#div_txt_' + new_id + '');
                                     validation++;
                                 } else {
-                                    $('#div_txt_' + new_id + '').css({ "border": "none" });
+                                    //$('#div_txt_' + new_id + '').css({ "border": "none" });
+                                    remove_validation_class('#div_txt_' + new_id + '');
                                 }
                             }
                         }
@@ -708,14 +714,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         answer.push(txt_answer);
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_txt_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_txt_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_txt_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_txt_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_txt_' + new_id + '').css({ "border": "none" });
+                                //$('#div_txt_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_txt_' + new_id + '');
                             }
                         }
                         else {
@@ -741,7 +749,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_rdo_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_rdo_' + new_id + '').css({ "border": "none" });
+                        //$('#div_rdo_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_rdo_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -767,9 +776,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                             answer.push("");
                         }
 
-                        $('#div_rdo_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_rdo_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_rdo_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -780,16 +788,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         answer.push(rdo_answer);
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_rdo_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_rdo_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_rdo_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_rdo_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_rdo_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_rdo_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_rdo_' + new_id + '');
                             }
                         }
                         else {
@@ -806,7 +814,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_ddl_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_ddl_' + new_id + '').css({ "border": "none" });
+                        //$('#div_ddl_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_ddl_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -831,9 +840,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_ddl_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_ddl_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_ddl_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -857,16 +865,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (ddl_answer == '' || ddl_answer == null || ddl_answer == undefined || ddl_answer == '--- Select Values ---' || ddl_answer == 'Select Value' || ddl_answer == '--- Select ---') {
-                                mk_animate_border('#div_ddl_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_ddl_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_ddl_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_ddl_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_ddl_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_ddl_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_ddl_' + new_id + '');
                             }
                         }
                         else {
@@ -883,7 +891,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_txtno_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_txtno_' + new_id + '').css({ "border": "none" });
+                        //$('#div_txtno_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_txtno_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -928,9 +937,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_txtno_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_txtno_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_txtno_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -983,16 +991,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         answer.push(txtno_answer);
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_txtno_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_txtno_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_txtno_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_txtno_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_txtno_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_txtno_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_txtno_' + new_id + '');
                             }
                         }
                         else {
@@ -1014,7 +1022,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_chk_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_chk_' + new_id + '').css({ "border": "none" });
+                        //$('#div_chk_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_chk_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -1046,9 +1055,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_chk_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_chk_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_chk_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -1096,7 +1104,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (checked_box < 1) {
-                                mk_animate_border('#div_chk_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_chk_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_chk_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_chk_" + new_id + "");
                                 }
@@ -1104,9 +1113,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                 answer.push("");
                             } else {
                                 filled_mand_count++;
-                                $('#div_chk_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_chk_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_chk_' + new_id + '');
                             }
                         }
                         else {
@@ -1123,7 +1131,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_cbtn_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_cbtn_' + new_id + '').css({ "border": "none" });
+                        //$('#div_cbtn_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_cbtn_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -1165,9 +1174,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_cbtn_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_cbtn_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_cbtn_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -1203,16 +1211,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined || ans_src == "images/no_network1.png" || ans_src == "images/ajax-loader.gif" || ans_src == "images/no_image.png") {
-                                mk_animate_border('#div_cbtn_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_cbtn_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_cbtn_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_cbtn_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_cbtn_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_cbtn_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_cbtn_' + new_id + '');
                             }
                         }
                         else {
@@ -1228,7 +1236,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_cal_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_cal_' + new_id + '').css({ "border": "none" });
+                        //$('#div_cal_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_cal_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -1332,9 +1341,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_cal_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_cal_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_cal_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -1956,16 +1964,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined || cal_answer == '') {
-                                mk_animate_border('#div_cal_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_cal_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_cal_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_cal_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_cal_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_cal_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_cal_' + new_id + '');
                             }
                         }
                         else {
@@ -1982,7 +1990,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_sign_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_sign_' + new_id + '').css({ "border": "none" });
+                        //$('#div_sign_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_sign_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2008,9 +2017,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_sign_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_sign_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_sign_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2022,16 +2030,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         }
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_sign_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_sign_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_sign_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_sign_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_sign_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_sign_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_sign_' + new_id + '');
                             }
                         }
                         else {
@@ -2053,7 +2061,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_cbtnLL_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_cbtnLL_' + new_id + '').css({ "border": "none" });
+                        //$('#div_cbtnLL_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_cbtnLL_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2079,9 +2088,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_cbtnLL_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_cbtnLL_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_cbtnLL_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2093,16 +2101,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         }
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_cbtnLL_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_cbtnLL_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_cbtnLL_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_cbtnLL_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_cbtnLL_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_cbtnLL_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_cbtnLL_' + new_id + '');
                             }
                         }
                         else {
@@ -2119,7 +2127,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_txtrange_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_txtrange_' + new_id + '').css({ "border": "none" });
+                        //$('#div_txtrange_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_txtrange_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2182,9 +2191,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_txtrange_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_txtrange_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_txtrange_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2246,16 +2254,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_txtrange_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_txtrange_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_txtrange_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_txtrange_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_txtrange_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_txtrange_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_txtrange_' + new_id + '');
                             }
                         }
                         else {
@@ -2272,7 +2280,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_LatLong_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_LatLong_' + new_id + '').css({ "border": "none" });
+                        //$('#div_LatLong_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_LatLong_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2301,9 +2310,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_LatLong_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_LatLong_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_LatLong_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2318,16 +2326,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         }
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_LatLong_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_LatLong_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_LatLong_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_LatLong_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_LatLong_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_LatLong_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_LatLong_' + new_id + '');
                             }
                         }
                         else {
@@ -2349,7 +2357,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_MSL_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_MSL_' + new_id + '').css({ "border": "none" });
+                        //$('#div_MSL_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_MSL_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2379,9 +2388,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_MSL_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_MSL_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_MSL_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2397,16 +2405,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         }
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_MSL_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_MSL_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_MSL_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_MSL_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_MSL_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_MSL_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_MSL_' + new_id + '');
                             }
                         }
                         else {
@@ -2423,7 +2431,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_Dist_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_Dist_' + new_id + '').css({ "border": "none" });
+                        //$('#div_Dist_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Dist_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2452,9 +2461,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_Dist_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_Dist_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Dist_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2471,16 +2479,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         if (jsonObj[i].prop[0].valid == "true"
                             && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_Dist_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_Dist_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_Dist_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_Dist_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_Dist_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_Dist_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_Dist_' + new_id + '');
                             }
                         }
                         else {
@@ -2497,7 +2505,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_Calc_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_Calc_' + new_id + '').css({ "border": "none" });
+                        //$('#div_Calc_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Calc_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2551,9 +2560,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_Calc_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_Calc_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Calc_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2584,28 +2592,28 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                         alert1(error_msg);
                                     }
                                 }
-                                mk_animate_border('#div_Calc_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_Calc_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_Calc_' + new_id + '');
                                 validation++;
                             } else {
-                                $('#div_Calc_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_Calc_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_Calc_' + new_id + '');
                             }
                         }
 
                         answer.push(Calc_answer);
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_Calc_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_Calc_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_Calc_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_Calc_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_Calc_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_Calc_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_Calc_' + new_id + '');
                             }
                         }
                         else {
@@ -2623,7 +2631,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_Inv_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_Inv_' + new_id + '').css({ "border": "none" });
+                        //$('#div_Inv_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Inv_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2650,9 +2659,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_Inv_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_Inv_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Inv_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2665,16 +2673,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_Inv_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_Inv_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_Inv_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_Inv_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_Inv_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_Inv_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_Inv_' + new_id + '');
                             }
                         }
                         else {
@@ -2691,7 +2699,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_Search_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_Search_' + new_id + '').css({ "border": "none" });
+                        //$('#div_Search_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Search_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2743,7 +2752,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                     if (search_answer != "") {
                                         //if cell text is changed and + btn is not pressed...[haresh1.vt - 01062021]
                                         validation++;
-                                        mk_animate_border('#div_Search_' + new_id + '', 0, 500, mand_border_color);
+                                        //mk_animate_border('#div_Search_' + new_id + '', 0, 500, mand_border_color);
+                                        add_validation_class('#div_Search_' + new_id + '');
                                         alert1('"' + search_answer + '" cell is not found...');
                                     }
                                 }
@@ -2777,9 +2787,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_Search_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_Search_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Search_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2795,7 +2804,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                 if (search_answer != "") {
                                     //if cell text is changed and + btn is not pressed...[haresh1.vt - 01062021]
                                     validation++;
-                                    mk_animate_border('#div_Search_' + new_id + '', 0, 500, mand_border_color);
+                                    //mk_animate_border('#div_Search_' + new_id + '', 0, 500, mand_border_color);
+                                    add_validation_class('#div_Search_' + new_id + '');
                                     alert1('"' + search_answer + '" cell is not found...');
                                 }
                             }
@@ -2859,16 +2869,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_Search_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_Search_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_Search_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_Search_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_Search_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_Search_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_Search_' + new_id + '');
                             }
                         }
                         else {
@@ -2911,7 +2921,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_S_Search_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_S_Search_' + new_id + '').css({ "border": "none" });
+                        //$('#div_S_Search_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_S_Search_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -2938,9 +2949,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_S_Search_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_S_Search_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_S_Search_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -2954,16 +2964,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined || S_search_name == '0') {
-                                mk_animate_border('#div_S_Search_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_S_Search_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_S_Search_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_S_Search_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_S_Search_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_S_Search_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_S_Search_' + new_id + '');
                             }
                         }
                         else {
@@ -2990,7 +3000,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_Inv_Calculate_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_Inv_Calculate_' + new_id + '').css({ "border": "none" });
+                        //$('#div_Inv_Calculate_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Inv_Calculate_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -3028,9 +3039,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_Inv_Calculate_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_Inv_Calculate_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_Inv_Calculate_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -3152,16 +3162,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_Inv_Calculate_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_Inv_Calculate_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_Inv_Calculate_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_Inv_Calculate_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_Inv_Calculate_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_Inv_Calculate_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_Inv_Calculate_' + new_id + '');
                             }
                         }
                         else {
@@ -3207,7 +3217,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_scn_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_scn_' + new_id + '').css({ "border": "none" });
+                        //$('#div_scn_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_scn_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -3232,9 +3243,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_scn_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_scn_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_scn_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -3245,16 +3255,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         answer.push(scan_answer);
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_scn_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_scn_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_scn_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_scn_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_scn_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_scn_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_scn_' + new_id + '');
                             }
                         }
                         else {
@@ -3271,7 +3281,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_upload_doc_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_upload_doc_' + new_id + '').css({ "border": "none" });
+                        //$('#div_upload_doc_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_upload_doc_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -3307,9 +3318,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         else {
                             answer.push("");
                         }
-                        $('#div_upload_doc_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_upload_doc_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_upload_doc_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -3332,14 +3342,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_upload_doc_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_upload_doc_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_upload_doc_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_upload_doc_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_upload_doc_' + new_id + '').css({ "border": "none" });
+                                //$('#div_upload_doc_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_upload_doc_' + new_id + '');
                             }
                         }
                         else {
@@ -3356,7 +3368,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_pdfviewer_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_pdfviewer_' + new_id + '').css({ "border": "none" });
+                        //$('#div_pdfviewer_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_pdfviewer_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -3382,9 +3395,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_pdfviewer_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_pdfviewer_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_pdfviewer_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -3396,16 +3408,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         }
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_pdfviewer_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_pdfviewer_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_pdfviewer_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_pdfviewer_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_pdfviewer_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_pdfviewer_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_pdfviewer_' + new_id + '');
                             }
                         }
                         else {
@@ -3422,7 +3434,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_video_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_video_' + new_id + '').css({ "border": "none" });
+                        //$('#div_video_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_video_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -3448,9 +3461,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_video_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_video_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_video_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -3462,16 +3474,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         }
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_video_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_video_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_video_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_video_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_video_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_video_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_video_' + new_id + '');
                             }
                         }
                         else {
@@ -3499,7 +3511,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_dynddl_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_dynddl_' + new_id + '').css({ "border": "none" });
+                        //$('#div_dynddl_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_dynddl_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -3545,7 +3558,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         } else {
                             answer.push("");
                         }
-                        $('#div_dynddl_' + new_id + '').css({ "border": "none" });
+                        //$('#div_dynddl_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_dynddl_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -3585,14 +3599,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_dynddl_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_dynddl_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_dynddl_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_dynddl_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_dynddl_' + new_id + '').css({ "border": "none" });
+                                //$('#div_dynddl_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_dynddl_' + new_id + '');
                             }
                         }
                         else {
@@ -3619,7 +3635,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_AutoInc_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_AutoInc_' + new_id + '').css({ "border": "none" });
+                        //$('#div_AutoInc_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_AutoInc_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -3645,9 +3662,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         else {
                             answer.push("");
                         }
-                        $('#div_AutoInc_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_AutoInc_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_AutoInc_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -3658,15 +3674,15 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         answer.push(AI_answer);
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_AutoInc_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_AutoInc_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_AutoInc_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_AutoInc_" + new_id + "");
                                 }
                                 validation++;
                             } else {
-                                $('#div_AutoInc_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_AutoInc_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_AutoInc_' + new_id + '');
                             }
                         }
                     }
@@ -3687,7 +3703,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_chklst_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_chklst_' + new_id + '').css({ "border": "none" });
+                        //$('#div_chklst_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_chklst_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -3747,9 +3764,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                             ans_json[1] = [];
                             answer = ans_json;
                         }
-                        $('#div_chklst_' + new_id + '').css({
-                            "border": "none"
-                        });
+                        //$('#div_chklst_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_chklst_' + new_id + '');
                     }
 
                     if (dep_res == "valid") {
@@ -3797,15 +3813,15 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (checked_box < 1) {
-                                mk_animate_border('#checklist_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#checklist_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#checklist_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#checklist_" + new_id + "");
                                 }
                                 validation++;
                             } else {
-                                $('#checklist_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#checklist_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#checklist_' + new_id + '');
                             }
                         }
                         else {
@@ -3836,7 +3852,8 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                     var is_valid = $('#div_livelink_' + new_id + '').attr('valid');
                     if (is_valid == 'false') {
                         var dep_res = "invalid";
-                        $('#div_livelink_' + new_id + '').css({ "border": "none" });
+                        //$('#div_livelink_' + new_id + '').css({ "border": "none" });
+                        remove_validation_class('#div_livelink_' + new_id + '');
                     }
                     else {
                         var dep_res = "valid";
@@ -3870,16 +3887,16 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
 
                         if (jsonObj[i].prop[0].valid == "true" && curr_btn_mode != "save") {
                             if (answer == '' || answer == null || answer == undefined) {
-                                mk_animate_border('#div_livelink_' + new_id + '', 0, 500, mand_border_color);
+                                //mk_animate_border('#div_livelink_' + new_id + '', 0, 500, mand_border_color);
+                                add_validation_class('#div_livelink_' + new_id + '');
                                 if (validation < 1) {
                                     autoscroll_form_on_submit("#div_livelink_" + new_id + "");
                                 }
                                 validation++;
                             } else {
                                 filled_mand_count++;
-                                $('#div_livelink_' + new_id + '').css({
-                                    "border": "none"
-                                });
+                                //$('#div_livelink_' + new_id + '').css({ "border": "none" });
+                                remove_validation_class('#div_livelink_' + new_id + '');
                             }
                         }
                         else {

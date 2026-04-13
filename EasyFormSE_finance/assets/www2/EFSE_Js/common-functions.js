@@ -3838,6 +3838,34 @@ function set_common_localStorage(key_name, key_value) {
     }
 }
 
+bind_scroll_to_bottom_event = (t_div_obj) => {
+    $(t_div_obj).unbind('scroll');
+    $(t_div_obj).scroll(function () {
+        var offsetHeight = $(t_div_obj)[0].offsetHeight;
+        var scrollTop = $(t_div_obj)[0].scrollTop;
+        var scrollHeight = $(t_div_obj)[0].scrollHeight;
+
+        let result = (parseInt(scrollHeight) - parseInt(offsetHeight) - 1);
+        let margin = result - parseInt(scrollTop);
+        //console.log(margin);
+
+        // added 2nd or condition as show more not callled due to 1 pixel change 29112022
+        if (margin < 20) {
+            $("#btn_ScrollToBottom").css("visibility", "hidden");
+        }
+        else {
+            $("#btn_ScrollToBottom").css("visibility", "visible");
+        }
+
+    });
+}
+
+scroll_to_bottom = (t_div_obj) => {
+    $('.view-main .page-content').animate({
+        scrollTop: $(t_div_obj)[0].scrollHeight
+    }, 500);
+}
+
 function get_safety_passport() {
     myApp.popup('.popup-safety-passport');
 

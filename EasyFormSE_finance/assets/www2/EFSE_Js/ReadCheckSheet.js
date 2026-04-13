@@ -809,7 +809,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         }
 
                         newdiv += '<div id="div_que_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="padding:0; margin:0; font-size: 10pt;' + disp_cntrl + '">';
-                        newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
+                       // newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
 
                         if (jsonObj[i].value == '' || jsonObj[i].value == null || jsonObj[i].value == undefined || jsonObj[i].value == ' ') { }
                         else {
@@ -2275,7 +2275,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             newdiv += '<div class="item-input item-input-field form-div add-cust-outer" style="width:100% !important;">';
                             newdiv += '<input type="text" id="type20_txt_' + new_id + '" onkeyup="' + param_keyup + '" style="width:75% !important;" class="form-ele" placeholder="Add New Cell...">';
                             newdiv += '<i id="addCust_txtbox_' + new_id + '" class="fa form-ico fa-plus" onclick="' + param_cust_add + '" style="margin-right:30px;margin-top:5px;padding:0 10px;display:inline; visibility:visible"></i>';
-                            newdiv += '<i id="searchCust_txtbox_' + new_id + '" class="fa form-ico fa-search" onclick="' + param_cust_search + '" style="padding-left:10px;margin-top:-10%;display:inline; visibility:visible"></i>';
+                            newdiv += '<i id="searchCust_txtbox_' + new_id + '" class="fa form-ico fa-search" onclick="' + param_cust_search + '" style="padding-left:10px;margin-top:-8.5% !important;display:inline; visibility:visible"></i>';
                             newdiv += '</div>';
                             //newdiv += '</div>';
                         }
@@ -2479,7 +2479,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                             var view_style = push_data[0].view_style;
                             if (default_value == '' || default_value == null || default_value == undefined) {
-                                newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + '>' + op_str + '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-10%;"></i></div>';
+                                newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + '>' + op_str + '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5% !important;"></i></div>';
                             }
                             else {
                                 var def_id = default_value[0].id;
@@ -2487,10 +2487,10 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                                 if (def_text == "" || def_text == null || def_text == undefined) {
                                     // default value not found
-                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + '>' + op_str + '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-10%;"></i></div>';
+                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + '>' + op_str + '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5% !important;"></i></div>';
                                 }
                                 else {
-                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + ' default_value="1">' + op_str + '<option selected="selected" value="' + def_id + '">' + def_text + '</option></select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-10%;"></i></div>';
+                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + ' default_value="1">' + op_str + '<option selected="selected" value="' + def_id + '">' + def_text + '</option></select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5% !important;"></i></div>';
                                 }
                             }
 

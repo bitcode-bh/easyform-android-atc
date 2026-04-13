@@ -415,6 +415,9 @@
                 form_has_changed = "true";
                 $(this).closest("div.cntrl_main_div").css("border", "none");
             });
+
+            bind_scroll_to_bottom_event('.view-main .page-content');
+
             setTimeout(function () {
                 //for calender
                 $(document).on('change', 'input[id^=cal]', function () {
@@ -589,7 +592,7 @@
                         <div class="navbar">
                             <div class="navbar-inner">
                                 <div class="left">
-                                    <a onclick='back_button("viewsitedata_task")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="icon icon-back"></i></a>
+                                    <a onclick='back_button("viewsitedata_task")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="fa fa-arrow-left"></i></a>
                                 </div>
                                 <div class="center">
                                     <label id="lbl_theme_header"></label>
@@ -603,6 +606,9 @@
                         <div class="page-content" style="overflow-x: hidden !important">
                             <div class="list-block">
                                 <div id="container_div" style="text-align: left; margin-bottom: 16%; padding-top: 13px; border-radius: 4px"></div>
+                                <a href="#" class="floating-button" id="btn_ScrollToBottom" onclick="scroll_to_bottom('#container_div')">
+                                    <i class="fa fa-angle-double-down"></i>
+                                </a>
                             </div>
                         </div>
                         <div class="toolbar toolbar-bottom">
@@ -757,7 +763,7 @@
                         <div class="toolbar toolbar-bottom">
                             <div class="toolbar-inner footer-type20-add">
                                 <!--<div class="left"><a href="#" class="link" id="btn_">ADD</a></div>
-                            <div class="right"><a href="#" class="link close-popup" onclick="hide_popup_type20_add()">CANCEL</a></div>-->
+                                <div class="right"><a href="#" class="link close-popup" onclick="hide_popup_type20_add()">CANCEL</a></div>-->
                             </div>
                         </div>
                     </div>
@@ -802,14 +808,14 @@
                             </div>
                         </div>
                         <!--                        <div class="toolbar toolbar-bottom " style="background-color: white; border-top: solid 0.5px #c8c7cc; height: 40px;">
-                        <div class="toolbar-inner footer-type20-dropdown">
-                            <div class="left"></div>
-                            <div class="center">
-                                <img id="img1" style="cursor: pointer; width: 30px; height: 20px;" class="show_more" onclick="" src="images/show_more.gif">
+                            <div class="toolbar-inner footer-type20-dropdown">
+                                <div class="left"></div>
+                                <div class="center">
+                                    <img id="img1" style="cursor: pointer; width: 30px; height: 20px;" class="show_more" onclick="" src="images/show_more.gif">
+                                </div>
+                                <div class="right"></div>
                             </div>
-                            <div class="right"></div>
-                        </div>
-                    </div>-->
+                        </div>-->
                     </div>
                 </div>
             </div>
@@ -856,7 +862,7 @@
                         <div class="toolbar toolbar-bottom">
                             <div class="toolbar-inner foooter-type22">
                                 <!--<div class="left"><a href="#" class="link" id="btn_">ADD</a></div>
-                            <div class="right"><a href="#" class="link close-popup" onclick="popup_items_hide_type22(1)">CANCEL</a></div>-->
+                                <div class="right"><a href="#" class="link close-popup" onclick="popup_items_hide_type22(1)">CANCEL</a></div>-->
                             </div>
                         </div>
                     </div>
@@ -976,11 +982,11 @@
                         </div>
 
                         <!--<div class="toolbar toolbar-bottom">
-                        <div class="toolbar-inner">
-                            <div class="left"><input type="text" id="txt_cntrl_comment" class="form-control" placeholder="Add Comment..." onkeyup=""></div>
-                            <div class="right"><a href="#" class="link close-popup" onclick="">Send</a></div>
-                        </div>
-                    </div>-->
+                            <div class="toolbar-inner">
+                                <div class="left"><input type="text" id="txt_cntrl_comment" class="form-control" placeholder="Add Comment..." onkeyup=""></div>
+                                <div class="right"><a href="#" class="link close-popup" onclick="">Send</a></div>
+                            </div>
+                        </div>-->
 
                         <div class="toolbar messagebar" style="">
                             <div class="toolbar-inner" style="">

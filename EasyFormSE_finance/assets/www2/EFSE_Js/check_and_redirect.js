@@ -78,6 +78,23 @@ function mk_animate_border(element, x, time, t_color_name, after_effect) {
     }
 }
 
+function mk_animate_border(element, x, time, t_color_name, after_effect) {
+
+}
+
+function add_validation_class(element) {
+    $(element).find(".item-input").addClass('cls_validation');
+    $(element).find(".list-block").addClass('cls_validation');
+    $(element).find(".switch").addClass('cls_validation');
+    $(element).find("img[id^='video_']").addClass('cls_validation');
+}
+function remove_validation_class(element) {
+    $(element).find(".item-input").removeClass('cls_validation');
+    $(element).find(".list-block").removeClass('cls_validation');
+    $(element).find(".switch").removeClass('cls_validation');
+    $(element).find("img[id^='video_']").removeClass('cls_validation');
+}
+
 //limit characters in input type text/number
 function mk_limitText(ele, maxlength) {
     if (ele.value.length > maxlength) {
@@ -171,7 +188,7 @@ function get_last_photo_path() {
             p: "5" // call for getting last photo path
         });
         cordova.exec(onsuccess_get_last_photo_path, onfail_get_last_photo_path,
-				'SqlitePlugin', 'showValues', q_jsonobj);
+            'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
         alert1(e + '_get_last_photo_path');
         loading_hide();
@@ -185,7 +202,7 @@ function onsuccess_get_last_photo_path(e) {
         var myArray = JSON.parse(e);
         var last_photo_path = myArray[0].path;
         if (last_photo_path == "" || last_photo_path == " "
-				|| last_photo_path == undefined || last_photo_path == null) {
+            || last_photo_path == undefined || last_photo_path == null) {
             // last photo path is not found
             // camera crash before saving photo to device local storage
             storage.setItem('crash_status', JSON.stringify('0'));

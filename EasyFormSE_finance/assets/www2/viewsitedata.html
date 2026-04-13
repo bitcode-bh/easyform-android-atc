@@ -634,6 +634,9 @@
                 form_has_changed = "true";
                 $(this).closest("div.cntrl_main_div").css("border", "none");
             });
+
+            bind_scroll_to_bottom_event('.view-main .page-content');
+
             setTimeout(function () {
                 //for calender
                 $(document).on('change', 'input[id^=cal]', function () {
@@ -872,14 +875,14 @@
                         <div class="navbar">
                             <div class="navbar-inner">
                                 <div class="left">
-                                    <a onclick='back_button("viewsitedata")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="icon icon-back"></i></a>
+                                    <a onclick='back_button("viewsitedata")' id="btn_page_back" style="visibility: hidden; pointer-events: none" class="back link icon-only"><i class="fa fa-arrow-left"></i></a>
                                 </div>
                                 <div class="center">
                                     <label id="lbl_theme_header"></label>
                                 </div>
                                 <div class="right">
                                     <!--<a href="#" class="open-panel link icon-only"><i class="icon icon-bars"></i></a>-->
-                                    <a href="#"  id="btn_refresh" class="open-panel link icon-only" onclick="location.reload()" style="display:none"><i class="icon fa fa-refresh"></i></a>
+                                    <a href="#" id="btn_refresh" class="open-panel link icon-only" onclick="location.reload()" style="display:none"><i class="icon fa fa-refresh"></i></a>
                                     <a href="#" id="btn_advanced_search" class="link icon-only open-popup" data-popup=".popup-advance-search-online" onclick="advance_column_search('btn_click');return false;"><i class="fa fa fa-search-plus" style="color: white"></i></a>
                                     <a href="#" class="open-panel link icon-only"><img id="menu_img_profile" src="images/profile_pic.png" /></a>
                                 </div>
@@ -908,21 +911,24 @@
                                 <div id="container_div" style="text-align: left; margin-bottom: 16%; padding-top: 13px; border-radius: 4px">
 
                                     <!--  <ul>
-                                <li><label class="label-radio item-content">
-                                    <input type="radio"><div class="item-media"><i class="icon icon-form-radio"></i></div>
-                                    <div class="item-inner"><div class="item-title">one</div></div></label></li>
                                     <li><label class="label-radio item-content">
-                                    <input type="radio"><div class="item-media"><i class="icon icon-form-radio"></i></div>
-                                    <div class="item-inner"><div class="item-title">one</div></div></label></li>
+                                        <input type="radio"><div class="item-media"><i class="icon icon-form-radio"></i></div>
+                                        <div class="item-inner"><div class="item-title">one</div></div></label></li>
+                                        <li><label class="label-radio item-content">
+                                        <input type="radio"><div class="item-media"><i class="icon icon-form-radio"></i></div>
+                                        <div class="item-inner"><div class="item-title">one</div></div></label></li>
 
-                                    </ul>-->
+                                        </ul>-->
                                     <!-- <input type="file" style="width: 95%; line-height: 0; padding-top: 6px">
-                                <div class="item-input item-input-field form-div" style="padding-bottom: 8px">
-                                    <a class="button button-fill button-raised form-btn filled-file"></a>
-                                    <input type="file" style="width: 95%; line-height: 0; padding-top: 6px">
-                                </div>-->
+                                    <div class="item-input item-input-field form-div" style="padding-bottom: 8px">
+                                        <a class="button button-fill button-raised form-btn filled-file"></a>
+                                        <input type="file" style="width: 95%; line-height: 0; padding-top: 6px">
+                                    </div>-->
 
                                 </div>
+                                <a href="#" class="floating-button" id="btn_ScrollToBottom" onclick="scroll_to_bottom('#container_div')">
+                                    <i class="fa fa-angle-double-down"></i>
+                                </a>
 
                                 <div class="outer-invoice-task" style="display: none; position: absolute; top: -100%; left: -100%;">
                                     <div id="container_div_invoice"></div>
@@ -937,16 +943,16 @@
 
                         <!-- Show All Product Data type19-->
                         <!--						<div id="popup_outer_div">
-                        <div id="popup_inner_div">
-                            <ul id="popup_product_list" style="width: 99%; padding: 0; background-color: white; text-align: left; border-style: solid; border-width: 1px; border-color: #d21242"></ul>
-                        </div>
-                    </div>-->
+                            <div id="popup_inner_div">
+                                <ul id="popup_product_list" style="width: 99%; padding: 0; background-color: white; text-align: left; border-style: solid; border-width: 1px; border-color: #d21242"></ul>
+                            </div>
+                        </div>-->
 
                         <div class="toolbar toolbar-bottom">
                             <div class="toolbar-inner" id="container_btn_div">
                                 <!--<div class="left"><a class="link btn_progress">Progress</a></div>-->
                                 <!--<div class="left"><a href="#" class="link" id="btn_">ADD</a></div>
-                            <div class="right"><a href="#" class="link close-popup" onclick="popup_items_hide_type22(1)">CANCEL</a></div>-->
+                                <div class="right"><a href="#" class="link close-popup" onclick="popup_items_hide_type22(1)">CANCEL</a></div>-->
                             </div>
                         </div>
                     </div>
@@ -1116,7 +1122,7 @@
                         <div class="toolbar toolbar-bottom">
                             <div class="toolbar-inner footer-type20-add">
                                 <!--<div class="left"><a href="#" class="link" id="btn_">ADD</a></div>
-                            <div class="right"><a href="#" class="link close-popup" onclick="hide_popup_type20_add()">CANCEL</a></div>-->
+                                <div class="right"><a href="#" class="link close-popup" onclick="hide_popup_type20_add()">CANCEL</a></div>-->
                             </div>
                         </div>
                     </div>
@@ -1161,14 +1167,14 @@
                             </div>
                         </div>
                         <!--                        <div class="toolbar toolbar-bottom " style="background-color: white; border-top: solid 0.5px #c8c7cc; height: 40px;">
-                        <div class="toolbar-inner footer-type20-dropdown">
-                            <div class="left"></div>
-                            <div class="center">
-                                <img id="img1" style="cursor: pointer; width: 30px; height: 20px;" class="show_more" onclick="" src="images/show_more.gif">
+                            <div class="toolbar-inner footer-type20-dropdown">
+                                <div class="left"></div>
+                                <div class="center">
+                                    <img id="img1" style="cursor: pointer; width: 30px; height: 20px;" class="show_more" onclick="" src="images/show_more.gif">
+                                </div>
+                                <div class="right"></div>
                             </div>
-                            <div class="right"></div>
-                        </div>
-                    </div>-->
+                        </div>-->
                     </div>
                 </div>
             </div>
@@ -1212,18 +1218,18 @@
                             <div class="list-block">
                                 <div id="div_inv_form" style="text-align: left; margin: 10px; padding-bottom: 13%">
                                     <!--<div class="item-input item-input-field form-div">
-                                    <div>
-                                        <input id="cal123" class="form-ele" type="text" data-field="date"><i class="fa fa-user"></i>=
-                                    </div>
-                                    <div id="dtBox"></div>
-                                </div>-->
+                                        <div>
+                                            <input id="cal123" class="form-ele" type="text" data-field="date"><i class="fa fa-user"></i>=
+                                        </div>
+                                        <div id="dtBox"></div>
+                                    </div>-->
                                 </div>
                             </div>
                         </div>
                         <div class="toolbar toolbar-bottom">
                             <div class="toolbar-inner foooter-type22">
                                 <!--<div class="left"><a href="#" class="link" id="btn_">ADD</a></div>
-                            <div class="right"><a href="#" class="link close-popup" onclick="popup_items_hide_type22(1)">CANCEL</a></div>-->
+                                <div class="right"><a href="#" class="link close-popup" onclick="popup_items_hide_type22(1)">CANCEL</a></div>-->
                             </div>
                         </div>
                     </div>
@@ -1247,7 +1253,7 @@
                             </div>
                         </div>
                         <!--<input type="button" value="UPDATE" onclick="update_collapse_form_data()" class="theme_btn_color" style="margin: 5px 0px; padding: 7px 13px; font-size: 10pt; font-weight: bold; box-shadow: 2px 2px 3px black; border: 2px solid white; border-radius: 5px">
-                    <input type="button" value="CANCEL" onclick="popup_collapse_div_hide_type23()" class="theme_btn_color" style="margin: 5px 0px; margin-left: 10px; padding: 7px 13px; font-size: 10pt; font-weight: bold; box-shadow: 2px 2px 3px black; border: 2px solid white; border-radius: 5px">-->
+                        <input type="button" value="CANCEL" onclick="popup_collapse_div_hide_type23()" class="theme_btn_color" style="margin: 5px 0px; margin-left: 10px; padding: 7px 13px; font-size: 10pt; font-weight: bold; box-shadow: 2px 2px 3px black; border: 2px solid white; border-radius: 5px">-->
                         <div class="toolbar toolbar-bottom">
                             <div class="toolbar-inner">
                                 <div class="left"><a href="#" class="link" onclick="update_collapse_form_data()">UPDATE</a></div>
@@ -1392,11 +1398,11 @@
                         </div>
 
                         <!--<div class="toolbar toolbar-bottom">
-                        <div class="toolbar-inner">
-                            <div class="left"><input type="text" id="txt_cntrl_comment" class="form-control" placeholder="Add Comment..." onkeyup=""></div>
-                            <div class="right"><a href="#" class="link close-popup" onclick="">Send</a></div>
-                        </div>
-                    </div>-->
+                            <div class="toolbar-inner">
+                                <div class="left"><input type="text" id="txt_cntrl_comment" class="form-control" placeholder="Add Comment..." onkeyup=""></div>
+                                <div class="right"><a href="#" class="link close-popup" onclick="">Send</a></div>
+                            </div>
+                        </div>-->
 
                         <div class="toolbar messagebar" style="">
                             <div class="toolbar-inner" style="">

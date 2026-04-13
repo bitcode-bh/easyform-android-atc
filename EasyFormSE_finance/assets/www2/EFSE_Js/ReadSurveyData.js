@@ -679,7 +679,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         newdiv += '<div id="div_que_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="padding:0; margin:0; font-size: 10pt;' + disp_cntrl + '">';
 
                         if (curr_clps_new_id == 0) {
-                            newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
+                           // newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
                             var t_padding = "padding:10px 10px 10px;";
                         }
                         else {
@@ -2590,7 +2590,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             }
 
                             newdiv += '<i id="addCust_txtbox_' + new_id + '" class="fa form-ico fa-plus" onclick="' + param_cust_add + '" style="margin-right:30px;margin-top:5px;padding:0 10px;display:inline; visibility:visible"></i>';
-                            newdiv += '<i id="searchCust_txtbox_' + new_id + '" class="fa form-ico fa-search" onclick="' + param_cust_search + '" style="padding-left:10px;margin-top:-10%;display:inline; visibility:visible"></i>';
+                            newdiv += '<i id="searchCust_txtbox_' + new_id + '" class="fa form-ico fa-search" onclick="' + param_cust_search + '" style="padding-left:10px;margin-top:-8.5%;display:inline; visibility:visible"></i>';
                             newdiv += '</div>';
                             //newdiv += '</div>';
                         }
@@ -2858,7 +2858,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                         }
                                     }
 
-                                    newdiv += '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-10%;"></i></div>';
+                                    newdiv += '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5%;"></i></div>';
                                 }
                                 else {
                                     var ios_device = localStorage.getItem('ios_device');
@@ -2871,7 +2871,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                                     var view_style = push_data[0].view_style;
                                     newdiv += '<select name="1" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000;opacity:1;" view_style="' + view_style + '" disabled="disabled" '
-                                        + enable_disable + '>' + op_str + '<option selected="selected" value="' + ans_id + '" value1="' + ans_id + '">' + ans_value + '</option></select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-10%;"></i></div>';
+                                        + enable_disable + '>' + op_str + '<option selected="selected" value="' + ans_id + '" value1="' + ans_id + '">' + ans_value + '</option></select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5%;"></i></div>';
                                 }
 
                                 newdiv += qr_ico_str;

@@ -70,18 +70,19 @@
     width: 44%;
     display: inline-block !important;
 }
+
 .w-75-25.cntrl_main_div div[id^='div_lbl_'] {
     width: 74%;
     display: inline-block;
 }
 
-.lbl_type5 img[src='images/mendatory.gif'] {
+.lbl_type5 img[src='images/mendatory.gif'], .label-checkbox img[src='images/mendatory.gif'] {
     width: 10px;
     height: 10px;
 }
 
 .cntrl_main_div .form-div {
-    width: 100% !important;
+    width: 98% !important;
 }
 
     .cntrl_main_div .form-div .form-ico {
@@ -122,4 +123,160 @@
         line-height: 30px;
         text-align: center;
         border-bottom: 1px solid rgba(0, 0, 0, .12);
+    }
+
+
+
+/*normal form gray css*/
+.lbl_type5, label[id^='qh_0_'] {
+    color: #6A6C74;
+    font-size: 14px !important;
+}
+
+label[id^='qh_0_'] {
+    background-color: white !important;
+    text-align: center !important;
+    border-bottom: none !important;
+    padding: 5px !important;
+    margin-bottom: 0px !important;
+}
+
+label.label-radio i.icon-form-radio {
+    border: 2px solid #000000;
+    width: 18px;
+    height: 18px;
+}
+
+
+div[id^='div_que_'] {
+    /*background: #ECEDEF;*/
+    margin: 0px !important;
+    border-radius: 10px;
+}
+
+.cntrl_main_div .list-block, .cntrl_main_div .item-input {
+    background: #ECEDEF;
+    border-radius: 10px;
+}
+
+    .cntrl_main_div .list-block ul:after {
+        height: 0px !important;
+    }
+
+    .cntrl_main_div .list-block .item-title {
+        color: #000000;
+        font-size: 14px;
+    }
+
+label.label-radio input[type=checkbox]:checked + .item-media i.icon-form-radio, label.label-radio input[type=checkbox]:checked ~ .item-after i.icon-form-radio, label.label-radio input[type=checkbox]:checked ~ .item-inner i.icon-form-radio, label.label-radio input[type=radio]:checked + .item-media i.icon-form-radio, label.label-radio input[type=radio]:checked ~ .item-after i.icon-form-radio, label.label-radio input[type=radio]:checked ~ .item-inner i.icon-form-radio {
+    border-color: #000000;
+}
+
+    label.label-radio input[type=checkbox]:checked + .item-media i.icon-form-radio:after, label.label-radio input[type=checkbox]:checked ~ .item-after i.icon-form-radio:after, label.label-radio input[type=checkbox]:checked ~ .item-inner i.icon-form-radio:after, label.label-radio input[type=radio]:checked + .item-media i.icon-form-radio:after, label.label-radio input[type=radio]:checked ~ .item-after i.icon-form-radio:after, label.label-radio input[type=radio]:checked ~ .item-inner i.icon-form-radio:after {
+        background-color: #000000;
+    }
+
+label.label-checkbox input[type=checkbox]:checked + .item-media i.icon-form-checkbox, label.label-checkbox input[type=checkbox]:checked ~ .item-after i.icon-form-checkbox, label.label-checkbox input[type=checkbox]:checked ~ .item-inner i.icon-form-checkbox, label.label-checkbox input[type=radio]:checked + .item-media i.icon-form-checkbox, label.label-checkbox input[type=radio]:checked ~ .item-after i.icon-form-checkbox, label.label-checkbox input[type=radio]:checked ~ .item-inner i.icon-form-checkbox {
+    border-color: #000000;
+    background-color: #000000
+}
+
+#div_inv_form {
+    margin: 0px !important;
+}
+
+.cntrl_main_div {
+    margin-bottom: 3px;
+}
+
+    .cntrl_main_div .form-div .form-ico {
+        margin-right: 7px;
+        margin-top: 8px;
+        color: #6A6C74;
+    }
+
+    .cntrl_main_div .list-block, .cntrl_main_div .item-input {
+        padding-left: 7px;
+    }
+
+.button.button-fill {
+    width: auto;
+    height: 24px;
+    line-height: 24px;
+    background-color: #6A6C74;
+    margin-bottom: 0px;
+    margin-top: 6px;
+    border-radius: 8px;
+}
+
+/*.navbar, .toolbar-bottom, .floating-button {
+    background: #6A6C74;
+}*/
+
+.navbar, .subnavbar, .toolbar, .floating-button {
+    background: #ecedef !important;
+}
+
+#menu_img_profile {
+    background: initial !important;
+    border: 1px solid #6A6C74;
+    padding: 2px !important;
+}
+
+.navbar .fa, .navbar a.link span, .navbar .center, .navbar .right span, .toolbar a.link, .tabbar a.link, .tabbar a.tab-link, .floating-button .fa {
+    color: #6A6C74 !important;
+}
+
+.toolbar-bottom {
+    border-top: 1px solid #ddd;
+}
+
+.tabbar a.tab-link.active, .tabbar a.tab-link.active-state, html:not(.watch-active-state) .tabbar a.tab-link:active {
+    border-bottom: 6px solid #6A6C74 !important;
+}
+
+.views .navbar {
+    border-radius: initial !important;
+}
+
+.list-block .swipeout-actions-left, .list-block .swipeout-actions-right {
+    top: 10px !important;
+}
+
+.input-field:after, .item-input-field:after {
+    height: 0px;
+}
+
+.cls_validation {
+    background-color: #ff8a8a !important;
+}
+
+    .cls_validation label.label-radio i.icon-form-radio, .cls_validation label.label-checkbox i.icon-form-checkbox {
+        color: white !important;
+        border: 2px solid white !important;
+    }
+
+    .cls_validation label.label-radio input[type=checkbox]:checked + .item-media i.icon-form-radio:after, .cls_validation label.label-radio input[type=checkbox]:checked ~ .item-after i.icon-form-radio:after, .cls_validation label.label-radio input[type=checkbox]:checked ~ .item-inner i.icon-form-radio:after, .cls_validation label.label-radio input[type=radio]:checked + .item-media i.icon-form-radio:after, .cls_validation label.label-radio input[type=radio]:checked ~ .item-after i.icon-form-radio:after, .cls_validation label.label-radio input[type=radio]:checked ~ .item-inner i.icon-form-radio:after {
+        background-color: white;
+    }
+
+    .cls_validation label.label-checkbox input[type=checkbox]:checked + .item-media i.icon-form-checkbox, .cls_validation label.label-checkbox input[type=checkbox]:checked ~ .item-after i.icon-form-checkbox, .cls_validation label.label-checkbox input[type=checkbox]:checked ~ .item-inner i.icon-form-checkbox, .cls_validation label.label-checkbox input[type=radio]:checked + .item-media i.icon-form-checkbox, .cls_validation label.label-checkbox input[type=radio]:checked ~ .item-after i.icon-form-checkbox, .cls_validation label.label-checkbox input[type=radio]:checked ~ .item-inner i.icon-form-checkbox {
+        background-color: #ff8a8a;
+    }
+
+    .cls_validation .item-title, .cls_validation .form-ico, .cls_validation .switch-label {
+        color: white !important;
+    }
+
+    .cls_validation input[type=time], .cls_validation input[type=number], .cls_validation input[type=search], .cls_validation input[type=text], .cls_validation input[type=password], .cls_validation input[type=email], .cls_validation input[type=tel], .cls_validation input[type=url], .cls_validation input[type=date], .cls_validation input[type=datetime-local], .cls_validation select, .cls_validation textarea {
+        color: white !important;
+    }
+
+    .cls_validation .switch {
+        border: none;
+    }
+
+    .cls_validation .button.button-fill {
+        color: black;
+        background-color: white;
     }
