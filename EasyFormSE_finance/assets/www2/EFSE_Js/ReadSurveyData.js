@@ -403,16 +403,18 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
             var cnrl_type = jsonObj[i].type;
             var prop_name = jsonObj[i].prop[0].name;
 
-            //var language = jsonObj[i].language;
-            //if (language == "" || language == null || language == undefined) { }
-            //else {
-            //    language = language[0];
+            if (user_language != 'en') {
+                var language = jsonObj[i].language;
+                if (language == "" || language == null || language == undefined) { }
+                else {
+                    language = language[0];
 
-            //    if (isEmpty(language)) { }
-            //    else {
-            //        prop_name = language['hi'];
-            //    }
-            //}
+                    if (isEmpty(language)) { }
+                    else {
+                        prop_name = language[user_language];
+                    }
+                }
+            }
 
             if (cnrl_type == 10) { }
             else {
@@ -679,7 +681,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         newdiv += '<div id="div_que_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="padding:0; margin:0; font-size: 10pt;' + disp_cntrl + '">';
 
                         if (curr_clps_new_id == 0) {
-                           // newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
+                            // newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
                             var t_padding = "padding:10px 10px 10px;";
                         }
                         else {
@@ -905,6 +907,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             ans: ans_str,
                             new_id: new_id,
                             value: jsonObj[i].value,
+                            language_value: jsonObj[i].language_value,
                             default_val: default_value,
                             enable_disable: enable_disable,
                             param: param,

@@ -1,5 +1,6 @@
 ﻿// read black checksheet
 var task_creation_date;
+var user_language = "hi";
 
 // increase height of textbox automatically
 function ResizeBox(e) {
@@ -564,17 +565,19 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
             var cnrl_type = jsonObj[i].type;
             var prop_name = jsonObj[i].prop[0].name;
 
-            //var language = jsonObj[i].language;
-            //if (language == "" || language == null || language == undefined) { }
-            //else {
-            //    language = language[0];
+            if (user_language != 'en') {
+                var language = jsonObj[i].language;
+                if (language == "" || language == null || language == undefined) { }
+                else {
+                    language = language[0];
 
-            //    if (isEmpty(language)) { }
-            //    else {
-            //        prop_name = language['hi'];
-            //    }
-            //}
-
+                    if (isEmpty(language)) { }
+                    else {
+                        prop_name = language[user_language];
+                    }
+                }
+            }
+         
             if (cnrl_type == 10) { }
             else {
                 // objectclass and objectname 09022021
@@ -998,6 +1001,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             ans: '',
                             new_id: new_id,
                             value: jsonObj[i].value,
+                            language_value: jsonObj[i].language_value,
                             default_val: default_val,
                             enable_disable: enable_disable,
                             param: param,
@@ -4774,6 +4778,18 @@ function read_dynamic_checksheet_buttons(buttons, Show_class_Array, LL_class_Arr
         for (j = 0; j < btnJsonObj.length; j++) {
 
             var btnName = btnJsonObj[j].name;
+
+            let language = btnJsonObj[j].language;
+            if (language == "" || language == null || language == undefined) { }
+            else {
+                language = language[0];
+
+                if (isEmpty(language)) { }
+                else {
+                    btnName = language[user_language];
+                }
+            }
+
             var subaction = parseInt(btnJsonObj[j].subaction);
             var btn_color = btnJsonObj[j].color;
             if (btn_color == undefined) {

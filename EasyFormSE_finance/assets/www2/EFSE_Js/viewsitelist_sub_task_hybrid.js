@@ -692,17 +692,19 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
                                 if ($.inArray(group_name, group_name_array) !== -1) { }
                                 else {
                                     group_name_array.push(group_name);
-                                    list_item += '<li class="list_grp_checksheet" group_ico="' + group_name + '" onclick="show_hide_group_checksheet(this)" style="font-weight:bold;border-right: 15px solid #2196f3;"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i id="icon_group_checksheet_' + group_name + '" class="fa fa-plus-square-o" style="color: #000;font-size:18px;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + group_name + '</div></div></a></li>';
+                                    list_item += '<li class="list_grp_checksheet" group_ico="' + group_name + '" onclick="show_hide_group_checksheet(this)" style="font-weight:bold;border-right: 0px solid #2196f3;"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i id="icon_group_checksheet_' + group_name + '" class="fa fa-plus-square-o" style="color: #000;font-size:18px;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + group_name + '</div>';
+                                    list_item += '<div class="item-after"><span class="badge" style="border-radius: 50px; width: 20px; height: 20px; background: #2196f3"></span></div>';
+                                    list_item += '</div></a></li> ';
                                 }
                             }
                             //////////////////////
 
                             var icon_base64 = new_checksheet_list[i].Checksheet_Icon;
                             if (icon_base64 == '' || icon_base64 == null || icon_base64 == undefined) {
-                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-check-square-o"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 0px solid ' + back_color + ';' + checksheet_disp + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-file-text-o"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
                             }
                             else {
-                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 8px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 0px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
                             }
 
                             var Background_Image = new_checksheet_list[i].Background_Image;
@@ -717,6 +719,8 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
                             //cl_geofence = 'true';
                             //ref_found = 1;
                             list_item += '<div class="item-after"><div class="item-icon">';
+
+                            list_item += '<span class="badge" style="border-radius: 50px; width: 10px; height: 10px; background: ' + back_color + ' "></span>';
 
                             if (cl_geofence == 'true' && ref_found == 1) {
                                 if (near_site == 1) {
@@ -805,7 +809,8 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
                             }
                         }
 
-                        var list_item = '<li id=' + t_id + ' onclick =' + param + ' style="border-right: 8px solid ' + back_color + ';' + display_str + '"><a href="#" class="item-content button" style="padding-left:20px"><div class="item-media">' + list_ico + '</div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + name + '</div>';
+                        var list_item = '<li id=' + t_id + ' onclick =' + param + ' style="border-right: 0px solid ' + back_color + ';' + display_str + '"><a href="#" class="item-content button" style="padding-left:20px"><div class="item-media">' + list_ico + '</div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + name + '</div>';
+                        list_item += '<div class="item-after"><span class="badge" style="border-radius: 50px; width: 10px; height: 10px; background: ' + back_color + ' "></span></div>';
                         list_item += '</div></a>';
                         list_item += '</li>';
                     }

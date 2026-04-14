@@ -943,7 +943,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                                 }
                                 else {
                                     group_name_array.push(group_name);
-                                    list_item += '<li class="list_grp_checksheet" onclick="show_hide_group_checksheet()" style="font-weight:bold;border-right: 15px solid #2196f3;"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i id="icon_group_checksheet" class="fa fa-plus-square-o" style="color: #000;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + group_name + '</div></div></a></li>';
+                                    list_item += '<li class="list_grp_checksheet" onclick="show_hide_group_checksheet()" style="font-weight:bold;border-right: 0px solid #2196f3;"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i id="icon_group_checksheet" class="fa fa-plus-square-o" style="color: #000;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + group_name + '</div></div></a></li>';
                                 }
                             }
                             //////////////////////
@@ -952,16 +952,16 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                             var curr_checksheet_id = checksheet_list[i].checksheetid;
                             var icon_base64 = checksheet_list[i].Checksheet_Icon;
                             if (icon_base64 == '' || icon_base64 == null || icon_base64 == undefined) {
-                                icon_base64 = "check-square-o";
+                                icon_base64 = "file-text-o";
                             }
 
                             if (icon_base64.indexOf("data:image") > -1) {
                                 //----base64
-                                list_item += '<li id="checksheet_' + curr_checksheet_id + '" class="' + cls_checksheet + '" onclick ="' + param + '" style="border-right: 15px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '"><a class="item-content button" style="padding-left:10px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + checksheet_list[i].c_name + '</div>';
+                                list_item += '<li id="checksheet_' + curr_checksheet_id + '" class="' + cls_checksheet + '" onclick ="' + param + '" style="border-right: 0px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '"><a class="item-content button" style="padding-left:10px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + checksheet_list[i].c_name + '</div>';
                             }
                             else {
                                 //----FA icon
-                                list_item += '<li id="checksheet_' + curr_checksheet_id + '" class="' + cls_checksheet + '" onclick ="' + param + '" style="border-right: 15px solid ' + back_color + ';' + checksheet_disp + '"><a class="item-content button" style="padding-left:12px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-' + icon_base64 + '" style="margin-right:0;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + checksheet_list[i].c_name + '</div>';
+                                list_item += '<li id="checksheet_' + curr_checksheet_id + '" class="' + cls_checksheet + '" onclick ="' + param + '" style="border-right: 0px solid ' + back_color + ';' + checksheet_disp + '"><a class="item-content button" style="padding-left:12px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-' + icon_base64 + '" style="margin-right:0;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + checksheet_list[i].c_name + '</div>';
                             }
 
                             var Background_Image = checksheet_list[i].Background_Image;
@@ -976,6 +976,8 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                             //cl_geofence = 'true';
                             //ref_found = 1;
                             list_item += '<div class="item-after"><div class="item-icon">';
+
+                            list_item += '<span class="badge" style="border-radius: 50px; width: 10px; height: 10px; background: ' + back_color +' "></span>';
 
                             if (cl_geofence == 'true' && ref_found == 1) {
                                 if (near_site == 1) {
