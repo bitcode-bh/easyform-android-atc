@@ -39,6 +39,7 @@ var MkControls = function (obj) {
     this.name = obj.name;
     this.new_id = obj.new_id;
     this.value = obj.value;
+    this.language_value = obj.language_value;
     this.default_val = obj.default_val;
     this.enable_disable = obj.enable_disable;
     this.param = obj.param;
@@ -339,7 +340,29 @@ MkControls.prototype.build_type_2_radio = function () {
                     str += '<div class="item-media"><i class="icon icon-form-radio"></i></div>';
                 }
 
-                str += '<div class="item-inner"><div class="item-title">' + this.rdo_Array[r] + '</div></div></label></li>';
+                let op_text = this.rdo_Array[r];
+
+                if (user_language != 'en') {
+                    let t_language_value = this.language_value;
+                    if (t_language_value == "" || t_language_value == null || t_language_value == undefined) { }
+                    else {
+                        t_language_value = t_language_value[0];
+
+                        if (isEmpty(t_language_value)) { }
+                        else {
+                            t_language_value = t_language_value[op_text][0];
+
+                            if (isEmpty(t_language_value)) { }
+                            else {
+                                op_text = t_language_value[user_language];
+                            }
+                        }
+                    }
+                }
+                
+
+
+                str += '<div class="item-inner"><div class="item-title">' + op_text + '</div></div></label></li>';
             }
             str += '</ul></div>';
         }
