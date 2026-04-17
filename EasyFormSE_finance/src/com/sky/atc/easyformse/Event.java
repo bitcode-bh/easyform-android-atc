@@ -182,9 +182,19 @@ public class Event extends WakefulIntentService {
 //
 //                                tripflag.close();
                            // }
+                            String restext = null;
+                            if(Event_type.equalsIgnoreCase("PowerSavingMode"))
+                            {
+                                if(!Event_end.equalsIgnoreCase("0"))
+                                {
+                                    restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURL, METHOD_NAME_corner13, data1);
 
-                            String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURL, METHOD_NAME_corner13, data1);
+                                }
+                            }
+                            else {
+                                restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestfile(data1, WCFURL, METHOD_NAME_corner13, data1);
 
+                            }
                             if(restext == null)
                             {
 //                                new Handler(Looper.getMainLooper()).post(new Runnable() {

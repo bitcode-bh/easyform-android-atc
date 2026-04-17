@@ -100,7 +100,15 @@ public class UserMapViewPlugin extends CordovaPlugin {
                             return true;
                             //sqlitewraper.context.startActivity(intent);
 
-                        } else {
+                        }
+                        else if(Status.equalsIgnoreCase("2"))
+                        {
+                            String error = jsonObject.getString("data");
+                            Toast.makeText(sqlitewraper.context, error, Toast.LENGTH_SHORT).show();
+                            this.callbackContext.error(error);
+                            return false;
+                        }
+                        else {
                             Toast.makeText(sqlitewraper.context, message, Toast.LENGTH_SHORT).show();
                             this.callbackContext.error(message);
                             return false;
