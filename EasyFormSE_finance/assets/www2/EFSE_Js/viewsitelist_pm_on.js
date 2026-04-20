@@ -1367,10 +1367,16 @@ function onsuccess_get_list_of_pm_sites_online(e) {
             //list_data[0].task_removable = "true";
             //list_data[0].task_editable = "true";
 
-            var staticdata = list_data[0].staticdata;
-            var status_array = list_data[0].status;
             var geofance_flag = list_data[0].geofence[0].value;
             var geofanceradius = parseInt(list_data[0].geofanceradius);
+            var geofance_distance = list_data[0].geofence[0].show_distance;
+            let geofence_by = list_data[0].geofence_by;
+            if (geofence_by == "" || geofence_by == null || geofence_by == undefined) {
+                geofence_by = "customer";
+            }
+
+            var staticdata = list_data[0].staticdata;
+            var status_array = list_data[0].status;
             var geofance_distance = list_data[0].geofence[0].show_distance;
             var task_clickable = list_data[0].task_clickable;
             var weather_display = list_data[0].weather_display;
@@ -1788,10 +1794,10 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                         }
                     }
 
-                    if (user_column == "" || user_column == null || user_column == undefined) {
-                        if (geofance_flag == "true") {
-                            // geofence is true
+                    if (geofance_flag == "true") {
+                        // geofence is true
 
+                        if (geofence_by == "customer" || geofence_by == "task") {
                             var SitewiseRadius = get_sitewise_radius_from_columndata(myArray);
                             if (SitewiseRadius == "" || SitewiseRadius == null || SitewiseRadius == undefined || SitewiseRadius == 0) {
                                 geofanceradius = geofanceradius;
@@ -1811,7 +1817,8 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                                     var param = "redirect_on_transport_site_click('" + siteid + "','" + site_name + "', '" + ser_task_id + "', '" + task_status + "','" + module_id + "', '" + module_name + "','" + task_update + "', '" + site_lat + "', '" + site_long + "', '" + survey_date + "', '" + ser_milli + "')";
                                 }
 
-                            } else {
+                            }
+                            else {
 
                                 var new_column_obj = {
                                     "siteid": siteid,
@@ -1836,55 +1843,65 @@ function onsuccess_get_list_of_pm_sites_online(e) {
                             let distance_str = convert_meter_to_km(distance);
                             if (near_site == 1) {
                                 icon_str += '<span class="distance_badge" style="background-color: #4caf50" onclick="' + alert_param + '">' + distance_str + ' </span>';
-                                /*icon_str += '<i class="fa fa-check-circle cls_task_ico" style="font-size: 30px; color: #4caf50 !important" onclick="' + alert_param + '"></i>';*/
+                                //icon_str += '<i class="fa fa-check-circle cls_task_ico" style="font-size: 30px; color: #4caf50 !important" onclick="' + alert_param + '"></i>';
                             } else {
                                 icon_str += '<span class="distance_badge" style="background-color: #f44336" onclick="' + alert_param + '">' + distance_str + ' </span>';
-                                /*icon_str += '<i class="fa fa-times-circle cls_task_ico" style="font-size: 30px; color: #f44336 !important" onclick="' + alert_param + '"></i>';*/
+                                //icon_str += '<i class="fa fa-times-circle cls_task_ico" style="font-size: 30px; color: #f44336 !important" onclick="' + alert_param + '"></i>';
                             }
                             distance_desplay = distance;
-                        } else {
-                            //if (del_media_str != "" && task_editable == "true") {
-                            if (dlt_media_chksht_type == "5") {
-                                //editable task for task form only
-                                var param = "get_tid_for_task_edit_onlline(" + ser_task_id + ", '" + task_status + "')";
+                        }
+
+                    }
+                    else {
+                        //if (del_media_str != "" && task_editable == "true") {
+                        if (dlt_media_chksht_type == "5") {
+                            //editable task for task form only
+                            var param = "get_tid_for_task_edit_onlline(" + ser_task_id + ", '" + task_status + "')";
+                        }
+                        else {
+                            // geofence is false
+
+                            if (task_listing_url == "" || task_listing_url == null || task_listing_url == undefined) {
+                                var param = "redirect_on_pm_site_click_online('" + siteid + "','" + site_name + "', '" + ser_task_id + "', '" + task_status + "','" + module_id + "', '" + module_name + "','" + task_update + "', '" + site_lat + "', '" + site_long + "', '" + survey_date + "', '" + ser_milli + "')";
                             }
                             else {
-                                // geofence is false
-
-                                if (task_listing_url == "" || task_listing_url == null || task_listing_url == undefined) {
-                                    var param = "redirect_on_pm_site_click_online('" + siteid + "','" + site_name + "', '" + ser_task_id + "', '" + task_status + "','" + module_id + "', '" + module_name + "','" + task_update + "', '" + site_lat + "', '" + site_long + "', '" + survey_date + "', '" + ser_milli + "')";
-                                }
-                                else {
-                                    var param = "redirect_on_transport_site_click('" + siteid + "','" + site_name + "', '" + ser_task_id + "', '" + task_status + "','" + module_id + "', '" + module_name + "','" + task_update + "', '" + site_lat + "', '" + site_long + "', '" + survey_date + "', '" + ser_milli + "')";
-                                }
-                            }
-
-                            if (geofance_distance == 'true') {
-                                let distance_str = convert_meter_to_km(distance);
-                                icon_str += '<span class="distance_badge" style="background-color: gray">' + distance_str + ' </span>';
+                                var param = "redirect_on_transport_site_click('" + siteid + "','" + site_name + "', '" + ser_task_id + "', '" + task_status + "','" + module_id + "', '" + module_name + "','" + task_update + "', '" + site_lat + "', '" + site_long + "', '" + survey_date + "', '" + ser_milli + "')";
                             }
                         }
-                    }
-                    else {                        
-                        //when user_column is defined to get another user lat long
-                        var user_column_obj = {
-                            "siteid": siteid,
-                            "site_name": site_name,
-                            "ser_task_id": ser_task_id,
-                            "task_status": task_status,
-                            "module_id": module_id,
-                            "module_name": module_name,
-                            "task_update": task_update,
-                            "site_lat": site_lat,
-                            "site_long": site_long,
-                            "survey_date": survey_date,
-                            "ser_milli": ser_milli
-                        };
-                        user_column_obj = JSON.stringify(user_column_obj);
-                        var t_user_column_obj = encodeURIComponent(user_column_obj);
-                        var param = "get_current_user_latlong('" + geofance_flag + "', '" + geofanceradius + "', '" + t_user_column_obj + "')";
+
+                        if (geofance_distance == 'true') {
+                            let distance_str = convert_meter_to_km(distance);
+                            icon_str += '<span class="distance_badge" style="background-color: gray">' + distance_str + ' </span>';
+                        }
                     }
 
+
+                    if (geofence_by == "user") {
+                        // userwise geo fence (required user_column)
+                        if (user_column == "" || user_column == null || user_column == undefined) { }
+                        else {
+
+                            //when user_column is defined to get another user lat long
+                            var user_column_obj = {
+                                "siteid": siteid,
+                                "site_name": site_name,
+                                "ser_task_id": ser_task_id,
+                                "task_status": task_status,
+                                "module_id": module_id,
+                                "module_name": module_name,
+                                "task_update": task_update,
+                                "site_lat": site_lat,
+                                "site_long": site_long,
+                                "survey_date": survey_date,
+                                "ser_milli": ser_milli
+                            };
+                            user_column_obj = JSON.stringify(user_column_obj);
+                            var t_user_column_obj = encodeURIComponent(user_column_obj);
+                            var param = "get_current_user_latlong('" + geofance_flag + "', '" + geofanceradius + "', '" + t_user_column_obj + "')";
+
+                        }
+                    }
+     
                     var bgcolor = myArray_main[i].bgcolor;
                     if (color_column == "" || color_column == null || color_column == undefined) { }
                     else {
