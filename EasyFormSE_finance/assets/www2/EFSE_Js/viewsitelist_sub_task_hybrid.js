@@ -851,7 +851,9 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
 
             /////// nokia change - shortcut buttons//////////////
             var buttons = list_data[0].buttons;
-            if (buttons == '' || buttons == null || buttons == undefined || buttons.length == 0) { }
+            if (buttons == '' || buttons == null || buttons == undefined || buttons.length == 0) {
+                $("#buttons_list").hide();
+            }
             else {
                 var siteid = JSON.parse(storage.getItem('siteid'));
                 var tid = JSON.parse(storage.getItem('tid'));

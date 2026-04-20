@@ -35,12 +35,22 @@
         #checksheet_list {
             list-style-type: none;
             text-align: center;
+            padding: 8px;
         }
 
             #checksheet_list li {
                 width: 100%;
-                border-radius: 10px;
+                background: #ECEDEF;
+                margin-bottom: 0px;
             }
+
+                #checksheet_list li:first-child {
+                    border-radius: 10px 10px 0 0;
+                }
+
+                #checksheet_list li:last-child {
+                    border-radius: 0 0 10px 10px;
+                }
 
 
             #checksheet_list .item-media .fa {
