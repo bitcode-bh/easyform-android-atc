@@ -1200,7 +1200,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
 
             /////////////////////////////////
 
-            $("#tbl_chk_details").show();
+            //$("#tbl_chk_details").show();
             var li_length = $("#checksheet_list li").length;
             if (li_length > 5) {
                 $("#txtsearch").show();

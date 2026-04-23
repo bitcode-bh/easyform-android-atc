@@ -49,11 +49,11 @@
 }
 
 .cls_task_ico {
-    color: #3b5dce !important;
+    color: #6A6C74 !important;
 }
 
 .bg-f7 {
-    background-color: #3b5dce !important;
+    background-color: #6A6C74 !important;
 }
 
 .list-block .item-title {
@@ -136,7 +136,7 @@ a, input, select, textarea {
 
 a {
     text-decoration: none;
-    color: #3b5dce
+    color: #6A6C74
 }
 
 p {
@@ -1266,7 +1266,7 @@ p {
     }
 
 .navbar, .subnavbar, .toolbar {
-    background: #3b5dce
+    background: #6A6C74
 }
 
     .navbar a.link, .subnavbar a.link, .toolbar a.link {
@@ -1791,7 +1791,7 @@ p {
 .searchbar {
     height: 48px;
     width: 100%;
-    background: #3b5dce;
+    background: #6A6C74;
     box-sizing: border-box;
     padding: 0 16px;
     overflow: hidden;
@@ -3268,7 +3268,7 @@ html.pixel-ratio-3 .list-block li li:last-child .item-inner:after, html.pixel-ra
 }
 
 .list-block .focus-state .floating-label, .list-block .focus-state .label {
-    color: #3b5dce
+    color: #6A6C74
 }
 
 .input-field, .item-input-field {
@@ -3307,7 +3307,7 @@ html.pixel-ratio-3 .input-field:after, html.pixel-ratio-3 .item-input-field:afte
 }
 
 .focus-state .input-field:after, .focus-state .item-input-field:after, .input-field.focus-state:after, .input-field.not-empty-state:after, .item-input-field.focus-state:after, .item-input-field.not-empty-state:after, .not-empty-state .input-field:after, .not-empty-state .item-input-field:after {
-    background: #3b5dce;
+    background: #6A6C74;
     -webkit-transform: scaleY(2) !important;
     transform: scaleY(2) !important
 }
@@ -3376,7 +3376,7 @@ textarea.resizable {
             .label-switch input[type=checkbox]:checked + .checkbox:after {
                 -webkit-transform: translateX(16px);
                 transform: translateX(16px);
-                background: #3b5dce
+                background: #6A6C74
             }
 
 .item-input .label-switch {
@@ -3384,7 +3384,7 @@ textarea.resizable {
 }
 
 .button {
-    color: #3b5dce;
+    color: #6A6C74;
     text-decoration: none;
     text-align: center;
     display: block;
@@ -3426,7 +3426,7 @@ input[type=submit].button, input[type=button].button {
 }
 
 .button.button-fill {
-    background-color: #3b5dce;
+    background-color: #6A6C74;
     color: #fff
 }
 
@@ -3529,7 +3529,7 @@ input[type=submit].button, input[type=button].button {
             height: 20px;
             width: 20px;
             position: relative;
-            background: #3b5dce;
+            background: #6A6C74;
             border-radius: 20px
         }
 
@@ -3541,7 +3541,7 @@ input[type=submit].button, input[type=button].button {
                 height: 2px;
                 margin-top: -1px;
                 z-index: 1;
-                background: #3b5dce;
+                background: #6A6C74;
                 content: ' '
             }
 
@@ -3563,7 +3563,7 @@ input[type=submit].button, input[type=button].button {
             height: 20px;
             width: 20px;
             position: relative;
-            background: #3b5dce;
+            background: #6A6C74;
             border-radius: 20px
         }
 
@@ -3586,12 +3586,12 @@ input[type=submit].button, input[type=button].button {
             height: 20px;
             width: 20px;
             position: relative;
-            background: #3b5dce;
+            background: #6A6C74;
             border-radius: 20px
         }
 
         .range-slider input[type=range]::-ms-fill-lower {
-            background: #3b5dce
+            background: #6A6C74
         }
 
         .range-slider input[type=range]::-ms-fill-upper {
@@ -3639,8 +3639,8 @@ label.label-checkbox {
     }
 
         label.label-checkbox input[type=checkbox]:checked + .item-media i.icon-form-checkbox, label.label-checkbox input[type=checkbox]:checked ~ .item-after i.icon-form-checkbox, label.label-checkbox input[type=checkbox]:checked ~ .item-inner i.icon-form-checkbox, label.label-checkbox input[type=radio]:checked + .item-media i.icon-form-checkbox, label.label-checkbox input[type=radio]:checked ~ .item-after i.icon-form-checkbox, label.label-checkbox input[type=radio]:checked ~ .item-inner i.icon-form-checkbox {
-            border-color: #3b5dce;
-            background-color: #3b5dce
+            border-color: #6A6C74;
+            background-color: #6A6C74
         }
 
             label.label-checkbox input[type=checkbox]:checked + .item-media i.icon-form-checkbox:after, label.label-checkbox input[type=checkbox]:checked ~ .item-after i.icon-form-checkbox:after, label.label-checkbox input[type=checkbox]:checked ~ .item-inner i.icon-form-checkbox:after, label.label-checkbox input[type=radio]:checked + .item-media i.icon-form-checkbox:after, label.label-checkbox input[type=radio]:checked ~ .item-after i.icon-form-checkbox:after, label.label-checkbox input[type=radio]:checked ~ .item-inner i.icon-form-checkbox:after {
@@ -3671,7 +3671,7 @@ label.label-radio {
             top: 50%;
             margin-left: -5px;
             margin-top: -5px;
-            background-color: #3b5dce;
+            background-color: #6A6C74;
             border-radius: 100%;
             -webkit-transform: scale(0);
             transform: scale(0);
@@ -3684,11 +3684,11 @@ label.label-radio {
     }
 
         label.label-radio input[type=checkbox]:checked + .item-media i.icon-form-radio, label.label-radio input[type=checkbox]:checked ~ .item-after i.icon-form-radio, label.label-radio input[type=checkbox]:checked ~ .item-inner i.icon-form-radio, label.label-radio input[type=radio]:checked + .item-media i.icon-form-radio, label.label-radio input[type=radio]:checked ~ .item-after i.icon-form-radio, label.label-radio input[type=radio]:checked ~ .item-inner i.icon-form-radio {
-            border-color: #3b5dce
+            border-color: #6A6C74
         }
 
             label.label-radio input[type=checkbox]:checked + .item-media i.icon-form-radio:after, label.label-radio input[type=checkbox]:checked ~ .item-after i.icon-form-radio:after, label.label-radio input[type=checkbox]:checked ~ .item-inner i.icon-form-radio:after, label.label-radio input[type=radio]:checked + .item-media i.icon-form-radio:after, label.label-radio input[type=radio]:checked ~ .item-after i.icon-form-radio:after, label.label-radio input[type=radio]:checked ~ .item-inner i.icon-form-radio:after {
-                background-color: #3b5dce;
+                background-color: #6A6C74;
                 -webkit-transform: scale(1);
                 transform: scale(1)
             }
@@ -3731,7 +3731,7 @@ html:not(.watch-active-state) label.label-checkbox:active, html:not(.watch-activ
     border-radius: 50%;
     z-index: 1500;
     box-shadow: 0 10px 20px rgba(0,0,0,.19),0 6px 6px rgba(0,0,0,.23);
-    background-color: #3b5dce;
+    background-color: #6A6C74;
     color: #fff;
     overflow: hidden;
     -webkit-transition-duration: .1s;
@@ -3826,7 +3826,7 @@ html:not(.watch-active-state) label.label-checkbox:active, html:not(.watch-activ
         position: relative;
         z-index: 1;
         overflow: hidden;
-        background-color: #3b5dce;
+        background-color: #6A6C74;
         -webkit-transition-duration: .1s;
         transition-duration: .1s;
         display: -webkit-box;
@@ -4093,7 +4093,7 @@ html.android-4 .accordion-item-content {
     }
 
     .card-footer a.link, .card-header a.link {
-        color: #3b5dce;
+        color: #6A6C74;
         text-decoration: none;
         text-align: center;
         display: block;
@@ -4137,7 +4137,7 @@ input[type=submit].card-footer a.link, input[type=submit].card-header a.link, in
 }
 
 .card-footer a.link.button-fill, .card-header a.link.button-fill {
-    background-color: #3b5dce;
+    background-color: #6A6C74;
     color: #fff
 }
 
@@ -4378,7 +4378,7 @@ html.pixel-ratio-3 .card-footer:before {
         }
 
     .modal-button, .modal-buttons .button {
-        color: #3b5dce;
+        color: #6A6C74;
         text-decoration: none;
         text-align: center;
         display: block;
@@ -4422,7 +4422,7 @@ input[type=submit].modal-button, input[type=submit].modal-buttons .button, input
 }
 
 .modal-button.button-fill, .modal-buttons .button.button-fill {
-    background-color: #3b5dce;
+    background-color: #6A6C74;
     color: #fff
 }
 
@@ -4986,7 +4986,7 @@ html.with-statusbar-overlay .login-screen, html.with-statusbar-overlay .popup.ta
     }
 
     .picker-modal .picker-header {
-        background: #3b5dce
+        background: #6A6C74
     }
 
         .picker-modal .picker-header + .toolbar .toolbar-inner {
@@ -5529,7 +5529,7 @@ html.with-statusbar-overlay body {
     }
 
 .statusbar-overlay {
-    background: #3b5dce;
+    background: #6A6C74;
     z-index: 10000;
     position: absolute;
     left: 0;
@@ -5843,7 +5843,7 @@ html.with-statusbar-overlay body {
     .progressbar span {
         content: '';
         width: 100%;
-        background: #3b5dce;
+        background: #6A6C74;
         height: 100%;
         position: absolute;
         left: 0;
@@ -5865,7 +5865,7 @@ html.with-statusbar-overlay body {
         top: 0;
         width: 100%;
         height: 100%;
-        background: #3b5dce;
+        background: #6A6C74;
         -webkit-transform-origin: left center;
         transform-origin: left center
     }
@@ -6068,7 +6068,7 @@ html.with-statusbar-overlay body > .progressbar {
     }
 
     50% {
-        background-color: #3b5dce
+        background-color: #6A6C74
     }
 
     75% {
@@ -6086,7 +6086,7 @@ html.with-statusbar-overlay body > .progressbar {
     }
 
     50% {
-        background-color: #3b5dce
+        background-color: #6A6C74
     }
 
     75% {
@@ -6107,12 +6107,12 @@ html.with-statusbar-overlay body > .progressbar {
 
     25% {
         -webkit-transform: scaleX(0);
-        background-color: #3b5dce
+        background-color: #6A6C74
     }
 
     49.9% {
         -webkit-transform: scaleX(1);
-        background-color: #3b5dce
+        background-color: #6A6C74
     }
 
     50% {
@@ -6149,12 +6149,12 @@ html.with-statusbar-overlay body > .progressbar {
 
     25% {
         transform: scaleX(0);
-        background-color: #3b5dce
+        background-color: #6A6C74
     }
 
     49.9% {
         transform: scaleX(1);
-        background-color: #3b5dce
+        background-color: #6A6C74
     }
 
     50% {
@@ -7509,11 +7509,11 @@ html.pixel-ratio-3 .picker-center-highlight:after {
     }
 
     .picker-calendar-day.picker-calendar-day-today span {
-        color: #3b5dce
+        color: #6A6C74
     }
 
     .picker-calendar-day.picker-calendar-day-selected span {
-        background: #3b5dce;
+        background: #6A6C74;
         color: #fff
     }
 
@@ -7527,7 +7527,7 @@ html.pixel-ratio-3 .picker-center-highlight:after {
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: #3b5dce;
+    background: #6A6C74;
     position: absolute;
     margin-left: -2px;
     left: 50%;

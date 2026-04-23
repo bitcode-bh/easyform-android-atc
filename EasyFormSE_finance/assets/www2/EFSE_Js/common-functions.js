@@ -3204,7 +3204,7 @@ function get_profile_pic_path_android_ios(page) {
         $("#menu_img_profile").parent("a").append("<span class='tabbar-label'>" + profile_user_name + "</span>")
     }
     else {
-        $(".navbar-fixed .navbar-inner .right").append("<span style='display: block; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
+        //$(".navbar-fixed .navbar-inner .right").append("<span style='display: block; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
     }
 
     $("#menu_img_profile").attr("onerror", "imageError()");
@@ -3877,7 +3877,7 @@ function get_safety_passport() {
         if (src) {
             var url = new URL(src, window.location.origin);
             url.hostname = hostname;
-            
+
             $(this).attr("src", url.toString());
         }
     });
@@ -4209,7 +4209,7 @@ function open_pinch_zoom_div_safety_passport() {
 
     if (typeof html2canvas === 'undefined') {
         // script is not loaded
-        
+
         loadScriptOnce('Plugin_Js/pinch-zoom.umd.js', () => {
             // script loaded
 
@@ -4257,7 +4257,7 @@ function open_pinch_zoom_div_safety_passport() {
         });
     }
 
-   
+
 
 }
 

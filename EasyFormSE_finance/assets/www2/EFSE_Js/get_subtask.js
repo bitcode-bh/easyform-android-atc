@@ -43,6 +43,7 @@ get_type37_udf_data_from_query = (udf_id_ary, t_new_id, listing_udf_id) => {
 
             // Advance filter for subtask listing 05072024 PG
             subflow_udf_id = target_udf_id;
+            $("#btn_advanced_search").show();
             $('#btnAdvSearch').parent().show();
             advance_column_search('');
         }
@@ -127,6 +128,7 @@ get_udf_data_by_id = (t_new_id, sub_udf_id) => {
 
             // Advance filter for subtask listing 05072024 PG
             subflow_udf_id = sub_udf_id;
+            $("#btn_advanced_search").show();
             $('#btnAdvSearch').parent().show();
             advance_column_search('');
         }

@@ -23,13 +23,14 @@
 
     .w-50-50 .item-input {
         text-align: center;
+        background: white !important;
     }
 
         .w-50-50 .item-input img {
             width: 100% !important;
             height: 140px !important;
             margin: 0 !important;
-            border: 1px solid rgba(0, 0, 0, .12);
+            /*border: 1px solid rgba(0, 0, 0, .12);*/
         }
 
             .w-50-50 .item-input img[src='images/camera.png'] {
@@ -56,7 +57,7 @@
     bottom: 0;
     right: auto;
     top: auto;
-    height: 1px;
+    /*height: 1px;*/
     width: 100%;
     background-color: rgba(0, 0, 0, .12);
     display: block;
@@ -90,6 +91,11 @@
         color: #B4B6BA;
         font-size: 20px;
     }
+
+.cntrl_main_div .form-ico {
+    position: relative;
+    color: #6A6C74;
+}
 
 
 .pinch-zoom {
@@ -220,10 +226,9 @@ label.label-checkbox input[type=checkbox]:checked + .item-media i.icon-form-chec
 #menu_img_profile {
     background: initial !important;
     border: 1px solid #6A6C74;
-    padding: 2px !important;
 }
 
-.navbar .fa, .navbar a.link span, .navbar .center, .navbar .right span, .toolbar a.link, .tabbar a.link, .tabbar a.tab-link, .floating-button .fa {
+.navbar .fa, .navbar a.link, .navbar a.link span, .navbar .left, .navbar .center, .navbar .right span, .toolbar a.link, .tabbar a.link, .tabbar a.tab-link, .floating-button .fa {
     color: #6A6C74 !important;
 }
 

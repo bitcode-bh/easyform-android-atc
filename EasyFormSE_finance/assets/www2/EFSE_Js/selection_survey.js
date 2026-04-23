@@ -100,6 +100,7 @@ function create_tabs_by_status() {
 
             if (len == 1) {
                 $("#btn_Create_Task").css("left", "85%");
+                $("#div_tab_bar").parent("div.tabbar").hide();
             }
             else if (len > 2) {
                 // Scroll to the rightmost position in case of > 2 tabs
