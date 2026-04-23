@@ -1,0 +1,214 @@
+<!-- Privacy Policy Start -->
+<style>
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .popup-privacy-policy, b {
+        text-align: justify;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+        .popup-privacy-policy li {
+            list-style: inherit;
+        }
+
+        .popup-privacy-policy td {
+            border: none;
+            vertical-align: middle;
+            padding: 7px;
+        }
+
+    .custom-table td {
+        vertical-align: top;
+        border: 1px solid #ccc;
+    }
+
+    .custom-table ul {
+        margin: 5px 0;
+        padding-left: 10px;
+    }
+
+    .cls-title {
+        font-weight: bold;
+    }
+
+    .popup-privacy-policy .item-media, .popup-privacy-policy .item-inner {
+        display: inline-block;
+    }
+
+    .cls_consent_button {
+        display: none;
+    }
+</style>
+<script>
+    display_consent_button = () => {
+        var checkbox = document.getElementsByName('consent');
+        var checked_box = 0;
+
+        for (let j = 0; j < checkbox.length; j++) {
+            if (checkbox[j].checked) {
+                checked_box++;
+            }
+        }
+
+        if (checked_box == 2) {
+            $(".cls_consent_button").show();
+            let el = $('.popup-privacy-policy .page-content');
+            el.animate({
+                scrollTop: el[0].scrollHeight
+            }, 500);
+        }
+        else {
+            $(".cls_consent_button").hide();
+        }
+    }
+
+    save_consent = () => {
+        localStorage.setItem("user_consent", "true");
+        changeurl("Login.html");
+    }
+</script>
+<div class="popup popup-privacy-policy" style="display: none">
+    <div class="view navbar-fixed">
+        <div class="pages">
+            <div class="page">
+                <div class="navbar">
+                    <div class="navbar-inner">
+                        <div class="center" style="color:black">Privacy Notice</div>
+                        <div class="right"><a href="#" class="link close-popup">CLOSE</a></div>
+                    </div>
+                </div>
+
+                <div class="page-content">
+
+                    <div class="content-block">
+                        <p class="cls-title">Purpose of the Notice:</p>
+                        <p>Altius is committed to ensuring the safety and security of individuals.</p>
+                        <p>To fulfil this commitment, Altius collects limited personal data from individuals for the purposes of user onboarding on MWFM application, driver safety excellence and providing Permit-to-Work (PTW).</p>
+                        <p>Your personal data will be used solely for the purposes mentioned in this privacy.</p>
+                        <p>To enable the provision of these services, Altius, as a Data Fiduciary, and its authorized service providers (if applicable) or third parties, law enforcement agencies or legal and regulatory bodies in limited situations, will process personal data for the purposes described below.</p>
+                    </div>
+
+                    <div class="content-block">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <td style="width: 50%">What data?</td>
+                                    <td>Why?</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <ul>
+                                            <li>
+                                                <span>User & Device Data</span>
+                                                <ul>
+                                                    <li>First name</li>
+                                                    <li>Last name</li>
+                                                    <li>Mobile number</li>
+                                                    <li>IP address of the mobile device</li>
+                                                    <li>IMEI number</li>
+                                                    <li>MAC address of the mobile device</li>
+                                                </ul>
+                                            </li>
+
+                                            <li>
+                                                <span>Operational & Compliance Data</span>
+                                                <ul>
+                                                    <li>Site geo-coordinates</li>
+                                                    <li>Diesel consumption records</li>
+                                                    <li>Energy readings</li>
+                                                    <li>Permit-to-Work records</li>
+                                                </ul>
+                                            </li>
+
+                                            <li>
+                                                <span>Vehicle Data</span>
+                                                <ul>
+                                                    <li>Vehicle number</li>
+                                                    <li>RC validity details</li>
+                                                    <li>Driving license</li>
+                                                    <li>Pollution Under Control (PUC) certificate</li>
+                                                    <li>Vehicle inspection images (two-wheeler/four-wheeler from all angles)</li>
+                                                </ul>
+                                            </li>
+
+                                            <li>
+                                                <span>Personal & Safety Data</span>
+                                                <ul>
+                                                    <li>Educational qualifications</li>
+                                                    <li>Work-related certifications</li>
+                                                    <li>Images of field staff with mandatory safety equipment</li>
+                                                    <li>Safety passport details (post going live)</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </td>
+
+                                    <td>
+                                        <ul>
+                                            <li>Physical tower maintenance/Uptime maintenance/Preventive maintenance/Corrective maintenance performed by Site Engineers</li>
+                                            <li>Equipment and physical site verification</li>
+                                            <li>Safety governance checklist (to ensure vendor-provided safety equipment, vehicle compliance, and physical verification)</li>
+                                            <li>Diesel filling activities (performed either daily or monthly based on site requirements)</li>
+                                            <li>Geo-location tracking (to validate field staff presence at assigned sites)</li>
+                                            <li>Remote verification of field technicians upon request by Circle In-Charge / Heads</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="content-block">
+                        <p class="cls-title">Lawful Basis for Processing:</p>
+                        <p>By providing details in the MWFM application, you acknowledge that you have read and understood this Privacy Notice and consent to the collection and use of your personal data as described above.</p>
+                        <p>Your personal data and consent record will be retained only for the period necessary to comply with all the legal obligations, contractual requirements, and audits. Altius is neither profiling you nor using your personal data for any purposes different from the ones detailed in this Privacy Notice.</p>
+                        <p>Processing is based on your explicit consent, which is freely given, specific, informed, and unambiguous.</p>
+                    </div>
+
+                    <div class="content-block">
+                        <p class="cls-title">Accuracy of Information</p>
+                        <p>You confirm that all the data provided is true, complete, and accurate in all respects. Altius accepts no responsibility for any inaccuracies of the data you provide, or for any direct or indirect loss or damage howsoever caused, resulting from any inaccuracy of such data.</p>
+                    </div>
+
+                    <div class="content-block">
+                        <p class="cls-title">Consent Statement</p>
+                        <p>I hereby acknowledge that I have read and understood this Privacy Notice which explains the purposes for which my personal data will be collected and processed.</p>
+                        <p>I voluntarily consent to Altius for collecting, storing and processing my personal data for the defined purposes.</p>
+                        <p>I understand that:</p>
+
+                        <ol style="padding-left: 25px">
+                            <li>My consent is free, specific, informed, unconditional, and unambiguous.</li>
+                            <li>My data may be shared with authorised third-party service providers under strict confidentiality.</li>
+                            <li>My personal data and consent record will be retained only for as long as necessary to fulfil the purpose or as required by applicable law, after which it will be securely deleted.</li>
+                        </ol>
+
+                        <table>
+                            <tr>
+                                <td style="padding:0"><input type="checkbox" name="consent" onchange="display_consent_button(this)"></td>
+                                <td><b>By ticking this box, I provide my explicit consent to the processing of my personal data for the above stated purposes.</b></td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0"><input type="checkbox" name="consent" onchange="display_consent_button(this)"></td>
+                                <td><b>I consent to sharing of my personal data with third parties.</b></td>
+                            </tr>
+                        </table>
+
+                    </div>
+
+                    <div class="content-block cls_consent_button">
+                        <a href="#" class="button button-fill" onclick="save_consent()">Submit</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Privacy Policy End-->

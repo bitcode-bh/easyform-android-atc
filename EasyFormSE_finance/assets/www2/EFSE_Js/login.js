@@ -1731,6 +1731,7 @@ function onsuccess_check_for_last_user_upload_pending() {
     //alert1("upload not pending and previous database deleted");
     username = JSON.parse(storage.getItem('username'));
     storage.setItem('last_username', JSON.stringify(username));
+    localStorage.setItem("user_consent", "false");
 
     servermilli = 0;
     //appid = 0;
@@ -2570,6 +2571,7 @@ function clear_localStorage() {
     let download_completed = localStorage.getItem('download_completed');
     let redirect_on_module = localStorage.getItem('redirect_on_module');
     let user_list_feature_id = localStorage.getItem("user_list_feature_id");
+    let user_consent = localStorage.getItem("user_consent");
 
     let livelink_watched_Array = localStorage.getItem('livelink_watched_Array');
     if (livelink_watched_Array == "" || livelink_watched_Array == null || livelink_watched_Array == undefined || livelink_watched_Array == "[]") {
@@ -2628,5 +2630,6 @@ function clear_localStorage() {
     localStorage.setItem('last_notification', last_notification);
     localStorage.setItem('redirect_on_module', redirect_on_module);
     localStorage.setItem('user_list_feature_id', user_list_feature_id);
+    localStorage.setItem('user_consent', user_consent);
     localStorage.setItem('livelink_watched_Array', JSON.stringify(livelink_watched_Array));
 }

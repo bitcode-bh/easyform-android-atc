@@ -181,8 +181,16 @@
             pageload_main();
             function pageload_main() {
                 if (typeof (myApp) != "undefined") {
-                    get_imei();
-
+                    let user_consent = localStorage.getItem("user_consent");
+                    if (user_consent != "true") {
+                        setTimeout(function () {
+                            myApp.popup('.popup-privacy-policy');
+                        },500)
+                    }
+                    else {
+                        get_imei();
+                    }
+                    
                     //var rm_username = JSON.parse(storage.getItem('rm_username'));
                     //var rm_password = JSON.parse(storage.getItem('rm_password'));
                     //if (rm_username == null || rm_password == null) {
@@ -209,6 +217,7 @@
             doc._bindBoxInput(document);
             doc._bindBoxCP(document);
             doc._loadFile('panel-otp', 'f7-verify-otp.html');
+            doc._loadFile('panel-privacy-policy', 'f7_privacy_policy.html');
 
             var lbl_header = "";
 
@@ -281,6 +290,7 @@
         <div class="statusbar-overlay"></div>
         <div class="panel-overlay"></div>
         <div class="panel-otp"></div>
+        <div class="panel-privacy-policy"></div>
         <div class="views">
             <div class="view view-main" data-page="list-view">
                 <div class="pages navbar-fixed navbar-through toolbar-through">

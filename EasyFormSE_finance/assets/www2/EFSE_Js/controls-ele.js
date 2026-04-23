@@ -1650,12 +1650,16 @@ var MkDocInits = function () { };
 var allow_str = "Allowed special characters are { [ / ? . , ; : # @ & _ % ÷ * + - ] }";
 MkDocInits.prototype = {
 
-    _initF7: function (doc) {
+    _initF7: function (doc) { 
         doc._bindNoAct("#img_profile_menu");
         doc._loadFile('panel-nav', 'f7_navbar.html');
         doc._loadFile('panel-pro', 'f7_myprofile.html');
         doc._loadFile('panel-faq', 'f7_faq.html');
         doc._loadFile('panel-sp', 'f7_safety_passport.html');
+
+        $(".panel-faq").after('<div class="panel-privacy-policy"></div>');
+        doc._loadFile('panel-privacy-policy', 'f7_privacy_policy.html');
+
         $('body').click(function () {
             session_ms = 0;
             $('[id^=product_list]').empty();
