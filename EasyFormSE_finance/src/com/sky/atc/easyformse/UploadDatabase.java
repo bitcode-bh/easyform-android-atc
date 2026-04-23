@@ -32,6 +32,7 @@ import java.net.HttpURLConnection;
 import javax.net.ssl.HttpsURLConnection;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+import com.sky.atc.easyformse.utils.LogUtils;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -41,6 +42,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.Buffer;
 //to upload database to server
 
 @StringFogIgnore
@@ -325,7 +327,8 @@ public class UploadDatabase {
                         .url(targetUrl)
                         .post(builder.build())
                         .build();
-
+                String body = getBodyParameters(request);
+                LogUtils.writeAllApiCallLog( "Request : " + body  , targetUrl , "");
                 try (Response response = client.newCall(request).execute()) {
 
                     if (response.code() == HttpURLConnection.HTTP_OK) {
@@ -349,4 +352,18 @@ public class UploadDatabase {
         return ret_err;
     }
 
+
+    private static String getBodyParameters(Request request) {
+        try {
+            final Request copy = request.newBuilder().build();
+            final Buffer buffer = new Buffer();
+            if (copy.body() != null) {
+                copy.body().writeTo(buffer);
+                return buffer.readUtf8(); // Returns the raw form-data or JSON string
+            }
+        } catch (final IOException e) {
+            return "Error reading body";
+        }
+        return "";
+    }
 }
