@@ -477,6 +477,38 @@ public class f_upload_new_structure extends WakefulIntentService {
             unique_trip_id = prefs.getString("unique_trip_id", "");//"No name defined" is the default value.
         }
 
+
+        Cursor checksid = database
+                .rawQuery(
+                        "select _id,tid from lat_plug where sid=0 and tid=" + tid,
+                        null);
+        checksid.moveToFirst();
+        if (checksid.getCount() > 0)
+        {
+            Cursor check_taskmaster = database
+                    .rawQuery(
+                            "SELECT server_task_id FROM task_master WHERE tid=" + tid,
+                            null);
+            check_taskmaster.moveToFirst();
+
+            int server_task_id = 0 ;
+            if (check_taskmaster.getCount() > 0) {
+                server_task_id = check_taskmaster.getInt(0);
+            }
+            check_taskmaster.close();
+
+
+            String t;
+            t = "tid='" + tid + "'";
+            ContentValues t_i2 = new ContentValues();
+            t_i2.put("sid", server_task_id);
+            long task2 = database.update("lat_plug", t_i2, t,
+                    null);
+            Log.d("##LatplugUpdateF", String.valueOf(task2) + " SID: " + server_task_id);
+
+
+        }
+
         int k = 0;
         Cursor c = database
                 .rawQuery(
