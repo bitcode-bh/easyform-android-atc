@@ -534,7 +534,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
 
 
             android.database.Cursor c2_n = database.rawQuery(
-                    "Select * from task_master_history where status= " + status
+                    "Select * from task_master_history where status= " + punchoutstatus
                             + "  and tid=" + tid, null);
             c2_n.moveToFirst();
 
