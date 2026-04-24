@@ -554,7 +554,7 @@ function check_photo_entry_with_reading(e) {
                 $("." + target_class + "").show();
                 let responsetext = myArray[0].responsetext;
                 responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
-
+                $("." + target_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
                 let where_box_id = $("." + target_class + " :input").attr("id");
                 let tagName = $("#" + where_box_id + "").prop("tagName");
                 if (tagName == "TEXTAREA") {
@@ -577,6 +577,7 @@ function check_photo_entry_with_reading(e) {
         if (target_class == "" || target_class == null || target_class == undefined) { }
         else {
             $("." + target_class + "").show();
+            $("." + target_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
             var where_box_id = $("." + target_class + " :input[type=number]").attr("id");
             $("#" + where_box_id + "").val(reading);
 
@@ -1607,6 +1608,7 @@ function onsuccess_CaptureClick_Customer(e) {
                 $.each(responseJSON, function (key, value) {
                     let qid_class = key;
                     $("." + qid_class + "").show();
+                    $("." + qid_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
                     let where_box_id = $("." + qid_class + " :input").attr("id");
                     let tagName = $("#" + where_box_id + "").prop("tagName");
                     if (tagName == "TEXTAREA") {
@@ -1639,6 +1641,7 @@ function onsuccess_CaptureClick_Customer(e) {
     else {
         let responsetext = response[0].responsetext;
         responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
+        $("." + target_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
         let where_box_id = $("." + target_class + " :input").attr("id");
         let tagName = $("#" + where_box_id + "").prop("tagName");
         if (tagName == "TEXTAREA") {

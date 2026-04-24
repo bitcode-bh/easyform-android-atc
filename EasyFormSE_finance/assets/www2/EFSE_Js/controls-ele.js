@@ -1311,7 +1311,7 @@ MkControls.prototype.build_type_31_label = function () {
         //str += '<label class="note_type31" style="background-color: #e7f3fe;border: 0.5px solid #2196F3; border-radius: 3px;font-style: italic;padding: 3px 0; display:block; width:92%; word-break: break-word; font-size: 15px; font-family: calibri" id="lbl_' + this.new_id + '"> <i class="fa fa-info-circle" style="display: inline; font-size: 18px; margin: 0 3px; vertical-align: middle;"></i> Please read this Note.</label>';
         //this.value = 'Please read this note. Please read this note. Please read this note. Please read this note. Please read this note.'
         str += '<table style="width: 100%; background-color: #f7f7d6; border-radius: 10px;"><tr>';
-        str += '<td><img src="images/hint_bulb_info.png" style="height:20px; width:20px;display:inline;vertical-align:middle !important;margin:0px 0px 0px 20px;"/></td>';
+        str += '<td style="width: 40px;"><img src="images/hint_bulb_info.png" style="height:20px; width:20px;display:inline;vertical-align:middle !important;margin:0px 0px 0px 20px;"/></td>';
         str += '<td style="text-align: justify;padding: 15px !important;"><label class="note_type31" style="display:block; word-break: break-word; font-size: 13px; font-family: calibri"> ' + this.value + '</label></td>';
         str += '</tr></table>';
 

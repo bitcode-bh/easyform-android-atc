@@ -134,7 +134,7 @@
 
 
 /*normal form gray css*/
-.lbl_type5, label[id^='qh_0_'] {
+.lbl_type5, label[id^='qh_0_'], #tbl_type20_listpopup tr td {
     color: #6A6C74;
     font-size: 14px !important;
 }
@@ -192,7 +192,7 @@ label.label-checkbox input[type=checkbox]:checked + .item-media i.icon-form-chec
 }
 
 .cntrl_main_div {
-    margin-bottom: 3px;
+    margin-bottom: 10px;
 }
 
     .cntrl_main_div .form-div .form-ico {
