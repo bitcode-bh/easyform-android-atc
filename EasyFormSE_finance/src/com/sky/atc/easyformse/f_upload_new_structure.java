@@ -477,7 +477,7 @@ public class f_upload_new_structure extends WakefulIntentService {
             unique_trip_id = prefs.getString("unique_trip_id", "");//"No name defined" is the default value.
         }
 
-
+        // check server task id in lat_plug if it is 0 get from task_master and update in lat_plug 23042026
         Cursor checksid = database
                 .rawQuery(
                         "select _id,tid from lat_plug where sid=0 and tid=" + tid,
