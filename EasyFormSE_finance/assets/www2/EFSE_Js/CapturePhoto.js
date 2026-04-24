@@ -1223,7 +1223,7 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
             var check_type = JSON.parse(storage.getItem('check_type_task'));
             var siteid = 0;
         }
-        else if (form_flag_temp == 12 || (form_flag_temp == 0 && c_is_online == 1)) {
+        else if (form_flag_temp == 12 || (form_flag_temp == 0 && c_is_online == 1) || (form_flag_temp == 1 && c_is_online == 1)) {
             var check_type = JSON.parse(storage.getItem('check_type'));
             var siteid = JSON.parse(storage.getItem('siteid'));
         }
