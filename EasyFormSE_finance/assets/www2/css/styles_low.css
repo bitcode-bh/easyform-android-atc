@@ -1634,7 +1634,7 @@ html.pixel-ratio-3 .timeline-month .timeline-item:before {
     .tbl_read_only tr td {
         width: 50%;
         padding: 0px 2px 3px;
-        border-bottom: solid 1px #eaeaea;
+        /*border-bottom: solid 1px #eaeaea;*/
         vertical-align: middle;
     }
 
@@ -1652,6 +1652,7 @@ html.pixel-ratio-3 .timeline-month .timeline-item:before {
     word-break: break-word;
     vertical-align: middle;
     font-weight: bold;
+    text-align: right;
 }
 
 #lbl_theme_header {

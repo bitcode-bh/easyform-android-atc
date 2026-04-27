@@ -191,6 +191,22 @@ label.label-checkbox input[type=checkbox]:checked + .item-media i.icon-form-chec
     margin: 0px !important;
 }
 
+div[id^='div_step_Col_'] label[id^='qh_0_'] {
+    margin: 0 auto !important;
+    padding: 0px 5px !important;
+    margin-top: 5px !important;
+    border-radius: 5px;
+    width: fit-content;
+}
+
+div[id^='div_step_Col_'] .cntrl_main_div {
+    margin-bottom: 0px;
+}
+
+    div[id^='div_step_Col_'] .cntrl_main_div .list-block, div[id^='div_step_Col_'] .cntrl_main_div .item-input {
+        padding-left: 0px;
+    }
+
 .cntrl_main_div {
     margin-bottom: 10px;
 }

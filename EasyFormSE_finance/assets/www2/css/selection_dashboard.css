@@ -20,7 +20,7 @@
 }
 
     #module_list li:first-child {
-        margin-top: 8px;
+        /*margin-top: 8px;*/
         border-radius: 10px 10px 0px 0px;
     }
 
@@ -58,7 +58,7 @@
 }
 
 
-.list-block #module_list:before {
+.list-block #module_list:before, .list-block #module_list:after {
     height: 0;
 }
 
