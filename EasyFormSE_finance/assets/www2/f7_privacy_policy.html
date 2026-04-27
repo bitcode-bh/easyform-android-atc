@@ -69,7 +69,10 @@
 
     save_consent = () => {
         localStorage.setItem("user_consent", "true");
-        changeurl("Login.html");
+        /*changeurl("Login.html");*/
+
+        myApp.closeModal('.popup-privacy-policy.modal-in');
+        $('.popup-privacy-policy').hide();
     }
 </script>
 <div class="popup popup-privacy-policy" style="display: none">
@@ -78,7 +81,7 @@
             <div class="page">
                 <div class="navbar">
                     <div class="navbar-inner">
-                        <div class="center" style="color:black">Privacy Notice</div>
+                        <div class="center" style="color: #6A6C74">Privacy Notice</div>
                         <div class="right"><a href="#" class="link close-popup">CLOSE</a></div>
                     </div>
                 </div>

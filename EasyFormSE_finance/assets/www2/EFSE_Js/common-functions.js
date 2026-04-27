@@ -4303,3 +4303,20 @@ function isCurrentTimeInSlot(startTime, hoursToAdd) {
 
     return now >= start && now <= end;
 }
+
+
+// privacy policy
+function get_privacy_policy() {
+
+    myApp.popup('.popup-privacy-policy');
+
+    let user_consent = localStorage.getItem("user_consent");
+    if (user_consent != "true") {
+        // consent pending
+    }
+    else {
+        // user has consent privacy policy
+        $(".cls_consent_button").hide();
+        $("input[type='checkbox'][name='consent']").prop("checked", true).prop("disabled", true);;
+    }
+}

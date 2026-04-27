@@ -181,15 +181,18 @@
             pageload_main();
             function pageload_main() {
                 if (typeof (myApp) != "undefined") {
-                    let user_consent = localStorage.getItem("user_consent");
-                    if (user_consent != "true") {
-                        setTimeout(function () {
-                            myApp.popup('.popup-privacy-policy');
-                        },500)
-                    }
-                    else {
-                        get_imei();
-                    }
+
+                    get_imei();
+
+                    //let user_consent = localStorage.getItem("user_consent");
+                    //if (user_consent != "true") {
+                    //    setTimeout(function () {
+                    //        myApp.popup('.popup-privacy-policy');
+                    //    },500)
+                    //}
+                    //else {
+                    //    get_imei();
+                    //}
                     
                     //var rm_username = JSON.parse(storage.getItem('rm_username'));
                     //var rm_password = JSON.parse(storage.getItem('rm_password'));
@@ -279,6 +282,10 @@
             background-size: 100% 100%;
         }
 
+        .list-block ul:before, .list-block ul:after {
+            height: 0;
+        }
+
         /*#app_info table td:nth-child(2) {
                 width: 60%;
             }*/
@@ -295,7 +302,7 @@
             <div class="view view-main" data-page="list-view">
                 <div class="pages navbar-fixed navbar-through toolbar-through">
                     <div data-page="list-view" class="page page-on-center">
-                        <div class="navbar">
+                        <!--<div class="navbar">
                             <div class="navbar-inner">
                                 <div class="left">
                                     <canvas src="" id="header_img_logo" style="vertical-align: middle; height: 35px"></canvas>
@@ -307,7 +314,7 @@
                                     <img src="images/Vodafone_Metal_Idea.png" id="header_right_img_logo" style="vertical-align: middle; height: 35px;" />
                                 </div>
                             </div>
-                        </div>
+                        </div>-->
                         <a href="#" onclick="check_5_times_click()" id="btn_app_info" class="floating-button" style="left: 16px; background: transparent">
                             <i class="icon fa fa-info" style="font-size: 25px; color: white"></i>
                         </a>
