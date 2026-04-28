@@ -1,6 +1,8 @@
 package com.sky.atc.easyformse;
 
 import android.app.ActivityManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
@@ -33,6 +35,11 @@ public class DeviceInformation {
 
         ArCoreApk.Availability arAvailability = ArCoreApk.getInstance().checkAvailability(sqlitewraper.context);
 
+        SensorManager sensorManager = (SensorManager)sqlitewraper.context.getSystemService(sqlitewraper.context.SENSOR_SERVICE);
+
+        Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        Sensor gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
 
         JSONObject jsonDevice = new JSONObject();
         JSONArray jsonArray = new JSONArray();
@@ -41,6 +48,8 @@ public class DeviceInformation {
             jsonDevice.put("BRAND", deviceBrand);
             jsonDevice.put("MODEL", deviceModel);
             jsonDevice.put("ARCORE", arAvailability);
+            jsonDevice.put("Accelerometer",accelerometer != null);
+            jsonDevice.put("Gyroscope",gyroscope != null);
 
         } catch (JSONException e) {
             e.printStackTrace();
