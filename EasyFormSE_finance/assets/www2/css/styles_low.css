@@ -2465,7 +2465,7 @@ div[id^='div_subtask_'] i.fa-search, .columnwise-head-search i.fa-search {
 }
 
 div[id^='div_Search_'] #tbl_type20_listpopup {
-    background-color: #FDE9BE;
+    background-color: #ffeeca;
     border-radius: 10px;
     margin-top: 5px;
 }

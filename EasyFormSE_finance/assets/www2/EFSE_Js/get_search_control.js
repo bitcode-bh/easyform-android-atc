@@ -3727,8 +3727,8 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
             }
             else {
                 // set bg color of autofilled elements
-                $("." + box_class + ".cntrl_main_div").find(".list-block").css("background", "#FDE9BE");        // radio
-                $("." + box_class + ".cntrl_main_div").find(".item-input-field").css("background", "#FDE9BE");  // textbox / dropdown
+                $("." + box_class + ".cntrl_main_div").find(".list-block").css("background", "#ffeeca");        // radio
+                $("." + box_class + ".cntrl_main_div").find(".item-input-field").css("background", "#ffeeca");  // textbox / dropdown
             }
         }
 

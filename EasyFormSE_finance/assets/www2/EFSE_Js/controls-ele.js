@@ -990,7 +990,7 @@ MkControls.prototype.build_type_22_invoice = function () {
 MkControls.prototype.build_type_23_collapse = function () {
     try {
         var str = '';
-        str += '<div class="list-block" style="background: #FDE9BE; padding-left:0"><ul><li class="accordion-item">';
+        str += '<div class="list-block" style="background: #ffeeca; padding-left:0"><ul><li class="accordion-item">';
         //str += '<a id="collapse_panel_' + this.new_id + '" href="#" class="item-link item-content button" onclick="' + this.param + '" style="background: #f6f6f6; color: #000;"><div class="item-media"><i class="fa fa-cog fa-spin" style="color:#000;"></i></div>';
         //str += '<div class="item-inner" style="margin-left: 0; background-image: none;"><div class="item-title"><label name="0" id="lbl_collapse_' + this.new_id + '" for="' + this.step + '"> Click To Show Step </label></div></div></a>';
         str += '<div class="accordion-item-content" style="height:100%;"><div class="content-block" style="padding:0px!important">';
