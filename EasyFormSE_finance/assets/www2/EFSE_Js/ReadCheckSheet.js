@@ -1007,7 +1007,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             param: param,
                             rdo_Array: rdo_Array,
                             weightage_Array: weightage_Array,
-                            view_type: view_type
+                            view_type: view_type,
+                            misc_Array: misc_Array
                         }
 
                         var control = new MkControls(obj);
@@ -3602,6 +3603,9 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     }
 
                     enable_back_button();
+
+                    $("#container_div").append("<center><a href='#' onclick='get_privacy_policy();' style='color:blue'>View Privacy Policy</a></center>");
+
                 }
                 else {
                     // normal task create

@@ -640,19 +640,26 @@ function back_button(page) {
                     storage.setItem('curr_btn_mode', JSON.stringify("back"));
 
                     var flow_Array = JSON.parse(storage.getItem('flow_Array'));
-                    if (flow_Array.length == 1) {
-                        localStorage.setItem('is_subflow', 'false');
-                    } else {
-                        //when press back from sub task creation form [haresh1.vt - 20052021]
-                        var selected_tid = flow_Array[flow_Array.length - 2].tid;
-                        var selected_site = flow_Array[flow_Array.length - 2].siteid;
-                        var selected_start_status = flow_Array[flow_Array.length - 2].start_status;
-                        storage.setItem('tid', JSON.stringify(selected_tid));
-                        storage.setItem('siteid', JSON.stringify(selected_site));
-                        storage.setItem('start_status', JSON.stringify(selected_start_status));
+                    if (flow_Array == "" || flow_Array == null || flow_Array == undefined) {
+                        // start trip from module listing >> task form open > press back button
+                        changeurl("selection.html");
+                    }
+                    else {
+                        if (flow_Array.length == 1) {
+                            localStorage.setItem('is_subflow', 'false');
+                        } else {
+                            //when press back from sub task creation form [haresh1.vt - 20052021]
+                            var selected_tid = flow_Array[flow_Array.length - 2].tid;
+                            var selected_site = flow_Array[flow_Array.length - 2].siteid;
+                            var selected_start_status = flow_Array[flow_Array.length - 2].start_status;
+                            storage.setItem('tid', JSON.stringify(selected_tid));
+                            storage.setItem('siteid', JSON.stringify(selected_site));
+                            storage.setItem('start_status', JSON.stringify(selected_start_status));
+                        }
+                        changeurl("selection_survey.html");
                     }
 
-                    changeurl("selection_survey.html");
+                    
                 }
             }
         }

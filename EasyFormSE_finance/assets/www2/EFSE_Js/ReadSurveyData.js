@@ -913,7 +913,8 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                             param: param,
                             rdo_Array: rdo_Array,
                             weightage_Array: weightage_Array,
-                            view_type: view_type
+                            view_type: view_type,
+                            misc_Array: misc_Array
                         }
 
                         if (read_only == true) {

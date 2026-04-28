@@ -301,6 +301,12 @@ MkControls.prototype.build_type_2_radio = function () {
                 str += '<div class="list-block form-div"><ul>';
             }
 
+            let t_value = itemObj._checkStrObj(this.misc_Array[0].value);
+            let group_controls = t_value[0].group_controls;
+            if (group_controls == "" || group_controls == null || group_controls == undefined) {
+                group_controls = "";
+            }
+
             for (var r = 0; r < this.rdo_Array.length; r++) {
                 if (this.weightage_Array == '' || this.weightage_Array == null
                     || this.weightage_Array == undefined) {
@@ -334,7 +340,7 @@ MkControls.prototype.build_type_2_radio = function () {
                     checked_str = 'checked="checked"';
                 }
                 str += '<input type="radio" ' + checked_str + ' name="rdogroup_' + this.new_id + '" id="rdo_' + this.new_id + '_' + r + '" value="'
-                    + this.rdo_Array[r] + '" ' + this.enable_disable + ' alt="' + weightage + '" onchange="' + this.param + '">';
+                    + this.rdo_Array[r] + '" ' + this.enable_disable + ' alt="' + weightage + '" onchange="' + this.param + '" group_controls="' + group_controls + '">';
 
                 if (F7_device == 'android') {
                     str += '<div class="item-media"><i class="icon icon-form-radio"></i></div>';
@@ -359,7 +365,7 @@ MkControls.prototype.build_type_2_radio = function () {
                         }
                     }
                 }
-                
+
 
 
                 str += '<div class="item-inner"><div class="item-title">' + op_text + '</div></div></label></li>';
@@ -984,7 +990,7 @@ MkControls.prototype.build_type_22_invoice = function () {
 MkControls.prototype.build_type_23_collapse = function () {
     try {
         var str = '';
-        str += '<div class="list-block"><ul><li class="accordion-item">';
+        str += '<div class="list-block" style="background: #FDE9BE; padding-left:0"><ul><li class="accordion-item">';
         //str += '<a id="collapse_panel_' + this.new_id + '" href="#" class="item-link item-content button" onclick="' + this.param + '" style="background: #f6f6f6; color: #000;"><div class="item-media"><i class="fa fa-cog fa-spin" style="color:#000;"></i></div>';
         //str += '<div class="item-inner" style="margin-left: 0; background-image: none;"><div class="item-title"><label name="0" id="lbl_collapse_' + this.new_id + '" for="' + this.step + '"> Click To Show Step </label></div></div></a>';
         str += '<div class="accordion-item-content" style="height:100%;"><div class="content-block" style="padding:0px!important">';
@@ -1650,7 +1656,7 @@ var MkDocInits = function () { };
 var allow_str = "Allowed special characters are { [ / ? . , ; : # @ & _ % ÷ * + - ] }";
 MkDocInits.prototype = {
 
-    _initF7: function (doc) { 
+    _initF7: function (doc) {
         doc._bindNoAct("#img_profile_menu");
         doc._loadFile('panel-nav', 'f7_navbar.html');
         doc._loadFile('panel-pro', 'f7_myprofile.html');
@@ -1665,6 +1671,9 @@ MkDocInits.prototype = {
             $('[id^=product_list]').empty();
         });
 
+        if (username == "" || username == null || username == undefined) {
+            username = "";
+        }
         var short_username = username.substr(0, 10);
         if (F7_device == 'ios') {
             $('.panel-overlay').on('click', function (e) { myApp.closePanel(); });

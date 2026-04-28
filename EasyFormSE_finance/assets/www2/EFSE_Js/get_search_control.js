@@ -3415,7 +3415,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                     var box_id = [];
                     var box_class = Fill_Data[fj].classname;
                     var box_editable = Fill_Data[fj].editable;
-
+                    
                     var ddl_found = $("." + box_class + "").find("select");
                     if (ddl_found.length > 0) {
                         // below dropdown found to fill
@@ -3724,6 +3724,11 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                     var curr_img_box_id = img_box_id[i];
                     $("#" + curr_img_box_id + "").attr('src', 'images/camera.png');
                 }
+            }
+            else {
+                // set bg color of autofilled elements
+                $("." + box_class + ".cntrl_main_div").find(".list-block").css("background", "#FDE9BE");        // radio
+                $("." + box_class + ".cntrl_main_div").find(".item-input-field").css("background", "#FDE9BE");  // textbox / dropdown
             }
         }
 
