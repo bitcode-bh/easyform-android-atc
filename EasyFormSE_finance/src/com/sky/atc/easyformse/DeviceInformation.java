@@ -35,6 +35,7 @@ public class DeviceInformation {
 
         ArCoreApk.Availability arAvailability = ArCoreApk.getInstance().checkAvailability(sqlitewraper.context);
 
+        // add accelerometer and gyroscope sensor value  28042026
         SensorManager sensorManager = (SensorManager)sqlitewraper.context.getSystemService(sqlitewraper.context.SENSOR_SERVICE);
 
         Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
