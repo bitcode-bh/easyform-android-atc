@@ -304,7 +304,10 @@ MkControls.prototype.build_type_2_radio = function () {
             let t_value = itemObj._checkStrObj(this.misc_Array[0].value);
             let group_controls = t_value[0].group_controls;
             if (group_controls == "" || group_controls == null || group_controls == undefined) {
-                group_controls = "";
+                var group_controls_str = '';
+            }
+            else {
+                var group_controls_str = " group_controls='" + JSON.stringify(group_controls) + "'";
             }
 
             for (var r = 0; r < this.rdo_Array.length; r++) {
@@ -340,7 +343,7 @@ MkControls.prototype.build_type_2_radio = function () {
                     checked_str = 'checked="checked"';
                 }
                 str += '<input type="radio" ' + checked_str + ' name="rdogroup_' + this.new_id + '" id="rdo_' + this.new_id + '_' + r + '" value="'
-                    + this.rdo_Array[r] + '" ' + this.enable_disable + ' alt="' + weightage + '" onchange="' + this.param + '" group_controls="' + group_controls + '">';
+                    + this.rdo_Array[r] + '" ' + this.enable_disable + ' alt="' + weightage + '" onchange="' + this.param + '" ' + group_controls_str + '>';
 
                 if (F7_device == 'android') {
                     str += '<div class="item-media"><i class="icon icon-form-radio"></i></div>';

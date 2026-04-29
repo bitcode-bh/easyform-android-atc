@@ -91,7 +91,7 @@ function show_hide_Element(paramData, target_div, read_type) {
                 }
             }
         }
-    
+
         // show all element on the basis of dependent answer
         for (i = 0; i < parsed_paramData.length; i++) {
             var ele_id = parsed_paramData[i].ele_id;
@@ -134,7 +134,7 @@ function show_hide_Element(paramData, target_div, read_type) {
                 var ddl_n = check_substring_consist(id, "div_ddl_");
                 var chk_n = check_substring_consist(id, "div_chk_");
                 var is_subtask_cntrl = check_substring_consist(id, "div_subtask_");
-                
+
                 if (rdo_n == true) {
                     // radio button multilevel dependency
                     if (temp_id_array.length > 1) {
@@ -216,6 +216,25 @@ function show_hide_Element(paramData, target_div, read_type) {
             // get current element value
             if (ele_type == 2) {
                 var ele_answer = $('input[name=rdogroup_' + ele_id + ']:checked').val();
+
+                let group_controls = $('input[name=rdogroup_' + ele_id + ']').attr("group_controls");
+                if (group_controls == "" || group_controls == null || group_controls == undefined || group_controls == '""') {
+                    // no group elements found
+                }
+                else {
+                    // group elements found so group answer must be same as ele_answer
+                    let t_ele = ele_id;
+                    let group_controls_Array = JSON.parse(group_controls);
+                    for (let g = 0; g < group_controls_Array.length; g++) {
+                        let t_group_ele = t_ele.replace(/_(\d+)$/, "_" + group_controls_Array[g] + "");
+                        let group_ele_answer = $('input[name=rdogroup_' + t_group_ele + ']:checked').val();
+                        if (group_ele_answer != ele_answer) {
+                            ele_answer = "";
+                        }
+                    }
+
+                }
+
                 if (ele_answer == dep_ans) {
                     if (dep_action == "show") {
                         $("." + dep_class + "").css("display", "block");
@@ -225,10 +244,10 @@ function show_hide_Element(paramData, target_div, read_type) {
                         }
                     }
                     else {
-                        $("." + dep_class + "").css("display", "hide");
+                        $("." + dep_class + "").css("display", "none");
                         if (que_n == true) {
                             // class given to main que only (required for atc - 02012025)
-                            $("." + dep_class + "").children("*").css("display", "hide");
+                            $("." + dep_class + "").children("*").css("display", "none");
                         }
                     }
                 } else {
