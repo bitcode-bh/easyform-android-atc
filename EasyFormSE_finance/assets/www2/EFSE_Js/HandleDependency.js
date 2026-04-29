@@ -217,24 +217,26 @@ function show_hide_Element(paramData, target_div, read_type) {
             if (ele_type == 2) {
                 var ele_answer = $('input[name=rdogroup_' + ele_id + ']:checked').val();
 
-                let group_controls = $('input[name=rdogroup_' + ele_id + ']').attr("group_controls");
-                if (group_controls == "" || group_controls == null || group_controls == undefined || group_controls == '""') {
-                    // no group elements found
-                }
-                else {
-                    // group elements found so group answer must be same as ele_answer
-                    let t_ele = ele_id;
-                    let group_controls_Array = JSON.parse(group_controls);
-                    for (let g = 0; g < group_controls_Array.length; g++) {
-                        let t_group_ele = t_ele.replace(/_(\d+)$/, "_" + group_controls_Array[g] + "");
-                        let group_ele_answer = $('input[name=rdogroup_' + t_group_ele + ']:checked').val();
-                        if (group_ele_answer != ele_answer) {
-                            ele_answer = "";
+                try {
+                    let group_controls = $('input[name=rdogroup_' + ele_id + ']').attr("group_controls");
+                    if (group_controls == "" || group_controls == null || group_controls == undefined || group_controls == '""') {
+                        // no group elements found
+                    }
+                    else {
+                        // group elements found so group answer must be same as ele_answer
+                        let t_ele = ele_id;
+                        let group_controls_Array = JSON.parse(group_controls);
+                        for (let g = 0; g < group_controls_Array.length; g++) {
+                            let t_group_ele = t_ele.replace(/_(\d+)$/, "_" + group_controls_Array[g] + "");
+                            let group_ele_answer = $('input[name=rdogroup_' + t_group_ele + ']:checked').val();
+                            if (group_ele_answer != ele_answer) {
+                                ele_answer = "";
+                            }
                         }
                     }
-
                 }
-
+                catch (e) { }
+ 
                 if (ele_answer == dep_ans) {
                     if (dep_action == "show") {
                         $("." + dep_class + "").css("display", "block");
