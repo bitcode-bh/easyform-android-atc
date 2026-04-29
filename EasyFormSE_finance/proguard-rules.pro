@@ -265,3 +265,6 @@
 -keep class okhttp3.** { *; }
 -keep class okio.** { *; }
 -keep class org.apache.cordova.** { *; }
+
+-keep class * extends android.app.Service { *; }
+-keep class com.sky.atc.easyformse.attendance.** { *; }
