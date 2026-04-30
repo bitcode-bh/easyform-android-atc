@@ -26,6 +26,15 @@
             android:visibility="visible"
             android:text="Log BackUp Via Email" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/mbtShowPath"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:visibility="visible"
+            android:text="Show Path" />
+
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchLogBackup"
             android:layout_width="match_parent"

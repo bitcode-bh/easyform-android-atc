@@ -3,6 +3,8 @@ package com.sky.atc.easyformse;
 import static android.content.Context.LOCATION_SERVICE;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -13,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -56,6 +59,7 @@ public class BackupFragment extends Fragment {
     boolean mStringLogbackup;
     MaterialButton mbtnLogBackup;
     SQLiteDatabase database;
+    MaterialButton mbtnShowPath;
 
     LocationManager locationManager;
     String  mlat;
@@ -78,6 +82,8 @@ public class BackupFragment extends Fragment {
         mbtnLogBackup = view.findViewById(R.id.mbtLogBackup);
         SwitchCompat mSwitchLogback = view.findViewById(R.id.switchLogBackup);
         mCompatAllServiceLog = view.findViewById(R.id.switchLogAllservices);
+        mbtnShowPath = view.findViewById(R.id.mbtShowPath);
+
 
         reqLocation();
         mbtBackup.setOnClickListener(v -> {
@@ -87,6 +93,21 @@ public class BackupFragment extends Fragment {
             LogBackup(view);
         });
 
+        mbtnShowPath.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Handler().postDelayed(new Runnable(){
+
+                    public void run() {
+                        String DBPath = "Database Backup path :\n    Open File manager App\n - Go to internal storage\n - and Scroll bottom and show location_backup.DB file";
+                        String LogPath = "Log File path :\n   Open File manager App\n - Go to internal storage\n - Click on EASY_LOG Folder";
+
+                        OpenDialog( DBPath + "\n\n\n" + LogPath,"Path");
+                    }
+
+                }, 200L);
+            }
+        });
         sharedPreferences= sqlitewraper.context.getSharedPreferences("LogWrite",0);
         mEditor = sharedPreferences.edit();
 
@@ -469,5 +490,25 @@ public class BackupFragment extends Fragment {
     {
         String lat_lng = "Lat: " + mlat + " Lng: " + mlon;
         return lat_lng;
+    }
+
+
+    public void OpenDialog(String msg,String title)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(title);
+        builder.setMessage(msg);
+
+        // Add OK button
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // Dismiss dialog
+                dialog.dismiss();
+            }
+        });
+
+        // Show the dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }
