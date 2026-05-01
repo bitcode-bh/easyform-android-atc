@@ -1,6 +1,5 @@
 ﻿// read black checksheet
 var task_creation_date;
-var user_language = "hi";
 
 // increase height of textbox automatically
 function ResizeBox(e) {
@@ -577,7 +576,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     }
                 }
             }
-         
+
             if (cnrl_type == 10) { }
             else {
                 // objectclass and objectname 09022021
@@ -812,7 +811,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         }
 
                         newdiv += '<div id="div_que_' + new_id + '" class="cntrl_main_div ' + ele_class + '" style="padding:0; margin:0; font-size: 10pt;' + disp_cntrl + '">';
-                       // newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
+                        // newdiv += '<hr style="border-top: 1px solid #B4B6BA; margin-bottom: 0px !important;" />';
 
                         if (jsonObj[i].value == '' || jsonObj[i].value == null || jsonObj[i].value == undefined || jsonObj[i].value == ' ') { }
                         else {
@@ -4783,14 +4782,16 @@ function read_dynamic_checksheet_buttons(buttons, Show_class_Array, LL_class_Arr
 
             var btnName = btnJsonObj[j].name;
 
-            let language = btnJsonObj[j].language;
-            if (language == "" || language == null || language == undefined) { }
-            else {
-                language = language[0];
-
-                if (isEmpty(language)) { }
+            if (user_language != 'en') {
+                let language = btnJsonObj[j].language;
+                if (language == "" || language == null || language == undefined) { }
                 else {
-                    btnName = language[user_language];
+                    language = language[0];
+
+                    if (isEmpty(language)) { }
+                    else {
+                        btnName = language[user_language];
+                    }
                 }
             }
 

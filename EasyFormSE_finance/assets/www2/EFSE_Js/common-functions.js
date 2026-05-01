@@ -4327,3 +4327,8 @@ function get_privacy_policy() {
         $("input[type='checkbox'][name='consent']").prop("checked", true).prop("disabled", true);;
     }
 }
+
+change_user_language = (lang) => {
+    localStorage.setItem("user_language", lang);
+    location.reload();
+}

@@ -1653,7 +1653,7 @@ MkControls.prototype.build_type_40_livelink = function () {
     }
 };
 
-
+var user_language;
 var session_ms = 0;
 var MkDocInits = function () { };
 var allow_str = "Allowed special characters are { [ / ? . , ; : # @ & _ % ÷ * + - ] }";
@@ -1674,6 +1674,12 @@ MkDocInits.prototype = {
             $('[id^=product_list]').empty();
         });
 
+        user_language = localStorage.getItem("user_language");
+        if (user_language == "" || user_language == null || user_language == undefined) {
+            user_language = "en";
+            localStorage.setItem("user_language", user_language);
+        }
+        
         if (username == "" || username == null || username == undefined) {
             username = "";
         }

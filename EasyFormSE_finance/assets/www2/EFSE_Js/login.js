@@ -2572,6 +2572,7 @@ function clear_localStorage() {
     let redirect_on_module = localStorage.getItem('redirect_on_module');
     let user_list_feature_id = localStorage.getItem("user_list_feature_id");
     let user_consent = localStorage.getItem("user_consent");
+    let user_language = localStorage.getItem("user_language");
 
     let livelink_watched_Array = localStorage.getItem('livelink_watched_Array');
     if (livelink_watched_Array == "" || livelink_watched_Array == null || livelink_watched_Array == undefined || livelink_watched_Array == "[]") {
@@ -2631,5 +2632,6 @@ function clear_localStorage() {
     localStorage.setItem('redirect_on_module', redirect_on_module);
     localStorage.setItem('user_list_feature_id', user_list_feature_id);
     localStorage.setItem('user_consent', user_consent);
+    localStorage.setItem('user_language', user_language);
     localStorage.setItem('livelink_watched_Array', JSON.stringify(livelink_watched_Array));
 }
