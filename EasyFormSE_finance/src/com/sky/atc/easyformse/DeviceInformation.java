@@ -49,8 +49,8 @@ public class DeviceInformation {
             jsonDevice.put("BRAND", deviceBrand);
             jsonDevice.put("MODEL", deviceModel);
             jsonDevice.put("ARCORE", arAvailability);
-            jsonDevice.put("Accelerometer",accelerometer != null);
-            jsonDevice.put("Gyroscope",gyroscope != null);
+            jsonDevice.put("ACCELEROMETER",accelerometer != null);
+            jsonDevice.put("GYROSCOPE",gyroscope != null);
 
         } catch (JSONException e) {
             e.printStackTrace();
