@@ -30,6 +30,8 @@ public class DeviceInformation {
         String deviceOSVersion = Build.VERSION.RELEASE;
         String deviceBrand = Build.BRAND;
         String deviceModel = Build.MODEL;
+        String Accelerometer ;
+        String Gyroscope;
         JSONObject deviceRam = getDeviceRam();
         JSONObject deviceStorage=getDeviceStorage();
 
@@ -41,7 +43,21 @@ public class DeviceInformation {
         Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         Sensor gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
+        if(accelerometer != null)
+        {
+            Accelerometer = "true";
+        }
+        else {
+            Accelerometer = "false";
+        }
 
+        if(gyroscope != null)
+        {
+            Gyroscope ="true";
+        }
+        else {
+            Gyroscope ="false";
+        }
         JSONObject jsonDevice = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         try {
@@ -49,8 +65,8 @@ public class DeviceInformation {
             jsonDevice.put("BRAND", deviceBrand);
             jsonDevice.put("MODEL", deviceModel);
             jsonDevice.put("ARCORE", arAvailability);
-            jsonDevice.put("ACCELEROMETER",accelerometer != null);
-            jsonDevice.put("GYROSCOPE",gyroscope != null);
+            jsonDevice.put("ACCELEROMETER",Accelerometer);
+            jsonDevice.put("GYROSCOPE",Gyroscope);
 
         } catch (JSONException e) {
             e.printStackTrace();
