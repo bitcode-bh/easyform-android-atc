@@ -1347,3 +1347,7 @@ foreignObject {
 }
 /* Advance filter css end */
 
+.popover-language {
+    margin-top: inherit !important;
+    left: 160px !important;
+}

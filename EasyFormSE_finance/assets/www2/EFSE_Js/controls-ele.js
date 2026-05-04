@@ -1654,6 +1654,13 @@ MkControls.prototype.build_type_40_livelink = function () {
 };
 
 var user_language;
+const languages = {
+    "hi": "Hindi", "gu": "Gujarati", "bn": "Bengali", "mr": "Marathi",
+    "kn": "Kannada", "ml": "Malayalam", "ta": "Tamil", "te": "Telugu",
+    "as": "Assamese", "or": "Oriya", "pa": "Punjabi", "ur": "Urdu",
+    "en": "English"
+};
+
 var session_ms = 0;
 var MkDocInits = function () { };
 var allow_str = "Allowed special characters are { [ / ? . , ; : # @ & _ % ÷ * + - ] }";
@@ -1678,6 +1685,10 @@ MkDocInits.prototype = {
         if (user_language == "" || user_language == null || user_language == undefined) {
             user_language = "en";
             localStorage.setItem("user_language", user_language);
+        }
+
+        if (curr_page_flag == "viewsitedata") {
+            $("#spn_language").html(languages[user_language]);
         }
         
         if (username == "" || username == null || username == undefined) {

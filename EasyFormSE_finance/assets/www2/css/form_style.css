@@ -26,19 +26,25 @@
         background: white !important;
     }
 
-        .w-50-50 .item-input img {
-            width: 100% !important;
-            height: 140px !important;
-            margin: 0 !important;
-            /*border: 1px solid rgba(0, 0, 0, .12);*/
-        }
+    .w-50-50 img[id^='ddl_loading_'] {
+        width: 50px !important;
+        height: 12px !important;
+        left: 35% !important;
+    }
 
-            .w-50-50 .item-input img[src='images/camera.png'] {
-                width: initial !important;
-                height: initial !important;
-                padding: initial;
-                border: none;
-            }
+    .w-50-50 .item-input img {
+        width: 100% !important;
+        height: 140px !important;
+        margin: 0 !important;
+        /*border: 1px solid rgba(0, 0, 0, .12);*/
+    }
+
+        .w-50-50 .item-input img[src='images/camera.png'] {
+            width: initial !important;
+            height: initial !important;
+            padding: initial;
+            border: none;
+        }
 
 .w-75-25 div[id^='div_lbl_'] {
     width: 72%;
@@ -301,3 +307,26 @@ div[id^='div_step_Col_'] .cntrl_main_div {
         color: black;
         background-color: white;
     }
+
+.popover-language {
+    margin-top: 78px;
+    border-radius: 10px;
+    background-color: #efefef;
+}
+
+    .popover-language .list-block .item-link.list-button {
+        text-align: left;
+        padding: 0px 10px;
+    }
+
+    .popover-language .list-block ul li:last-child a {
+        border-bottom: none;
+    }
+
+#spn_language {
+    color: black;
+    position: fixed;
+    top: 36px;
+    right: 18px;
+    font-size: 12px;
+}

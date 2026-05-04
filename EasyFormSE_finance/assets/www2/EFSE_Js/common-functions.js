@@ -659,7 +659,7 @@ function back_button(page) {
                         changeurl("selection_survey.html");
                     }
 
-                    
+
                 }
             }
         }
@@ -4331,4 +4331,9 @@ function get_privacy_policy() {
 change_user_language = (lang) => {
     localStorage.setItem("user_language", lang);
     location.reload();
+}
+
+change_user_language_menu = (lang) => {
+    localStorage.setItem("user_language", lang);
+    myApp.closeModal('.popover-language.modal-in');
 }
