@@ -325,7 +325,7 @@ public class DeviceEventsUtils {
         try {
             int k =
                     UploadDatabase.sendFileToServer1(path,
-                            "http://fileupload.easyform.in/api/Device_DB_Upload_Insert", name_file, userid, companyID, extn, mb);
+                            "https://dev.easyform.in/coreapi/api/Device_DB_Upload", name_file, userid, companyID, extn, mb);  //old url  http://fileupload.easyform.in/api/Device_DB_Upload_Insert
         } catch (IOException e) {
             e.printStackTrace();
         }
