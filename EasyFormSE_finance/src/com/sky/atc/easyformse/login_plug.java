@@ -574,6 +574,8 @@ public class login_plug implements Runnable {
                         lHashMap.put("url", context.getResources().getString(R.string.App_URL) + "/services/");
 
                         lHashMap.put("gps", i); // respond value in key
+
+                        lHashMap.put("deviceinfo",deviceinfo);
                         ArrayList<JSONObject> list = new ArrayList<JSONObject>();
                         JSONObject json = null;
                         json = new JSONObject(lHashMap);
