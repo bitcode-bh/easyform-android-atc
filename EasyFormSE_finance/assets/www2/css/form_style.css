@@ -83,6 +83,10 @@
     display: inline-block;
 }
 
+.w-75-25 .cntrl_main_div .form-div .form-ico {
+    display: none;
+}
+
 .lbl_type5 img[src='images/mendatory.gif'], .label-checkbox img[src='images/mendatory.gif'] {
     width: 10px;
     height: 10px;
@@ -266,9 +270,9 @@ div[id^='div_step_Col_'] .cntrl_main_div {
     border-radius: initial !important;
 }
 
-.list-block .swipeout-actions-left, .list-block .swipeout-actions-right {
+/*.list-block .swipeout-actions-left, .list-block .swipeout-actions-right {
     top: 10px !important;
-}
+}*/
 
 .input-field:after, .item-input-field:after {
     height: 0px;

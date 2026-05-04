@@ -1348,6 +1348,15 @@ foreignObject {
 /* Advance filter css end */
 
 .popover-language {
-    margin-top: inherit !important;
-    left: 160px !important;
+    margin-top: 28px;
+    left: 173px !important;
+}
+
+#nav_sub2 .card {
+    margin: 10px;
+    border-radius: 10px;
+}
+
+#nav_sub2 .list-block .item-inner:after, #nav_sub2 .list-block ul:after, #nav_sub2 .list-block ul:before {
+    height: 0;
 }

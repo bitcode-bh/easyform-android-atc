@@ -645,6 +645,10 @@ input[type=range] {
 
 #img_profile {
     margin-top: 8px !important;
+    border: 1px solid #6A6C74;
+    width: 100px;
+    height: 100px;
+    border-radius: 100px;
 }
 
 .black_overlay_profile {
@@ -2822,24 +2826,37 @@ li.w-75-25 {
 .popup-profile .card {
     background: #ecedef;
     padding: 5px;
+    border-radius: 10px;
 }
 
-.profile-user-details {
-    max-height: 215px;
-    overflow: auto;
+    .popup-profile .card a.button {
+        height: 22px;
+    }
+
+#img_my_profile {
+    width: 80px;
+    height: 80px;
+    border-radius: 50px;
+    border: 1px solid #6A6C74;
 }
 
-#profile_user_detail {
+#profile_user_detail, #tbl_deviceInfo {
+    width: 100%;
     word-break: break-word;
     font-size: 12px;
     background: #ecedef;
 }
 
+    #profile_user_detail th, #tbl_deviceInfo th {
+        text-align: center;
+        font-weight: bold;
+    }
+
 .popup-profile .list-block ul:before, .popup-profile .list-block ulafter {
     height: 0px;
 }
 
-#profile_user_detail tr td:nth-child(2) {
+#profile_user_detail tr td:nth-child(2), #tbl_deviceInfo tr td:nth-child(2) {
     text-align: right;
     color: gray;
 }

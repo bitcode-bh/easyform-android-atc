@@ -833,6 +833,10 @@ function updateuniquecode_android(invocation, res_type) {
 
             }
 
+            var deviceinfo = response[0].deviceinfo;
+            localStorage.setItem("deviceinfo", deviceinfo);
+
+
             //var img = new Image();
             //img.onerror = function () {
             //    storage.setItem('profile_pic_path', JSON.stringify(''));
@@ -2573,6 +2577,7 @@ function clear_localStorage() {
     let user_list_feature_id = localStorage.getItem("user_list_feature_id");
     let user_consent = localStorage.getItem("user_consent");
     let user_language = localStorage.getItem("user_language");
+    let deviceinfo = localStorage.getItem("deviceinfo");
 
     let livelink_watched_Array = localStorage.getItem('livelink_watched_Array');
     if (livelink_watched_Array == "" || livelink_watched_Array == null || livelink_watched_Array == undefined || livelink_watched_Array == "[]") {
@@ -2633,5 +2638,6 @@ function clear_localStorage() {
     localStorage.setItem('user_list_feature_id', user_list_feature_id);
     localStorage.setItem('user_consent', user_consent);
     localStorage.setItem('user_language', user_language);
+    localStorage.setItem('deviceinfo', deviceinfo);
     localStorage.setItem('livelink_watched_Array', JSON.stringify(livelink_watched_Array));
 }

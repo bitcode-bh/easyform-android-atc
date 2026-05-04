@@ -1682,15 +1682,15 @@ MkDocInits.prototype = {
         });
 
         user_language = localStorage.getItem("user_language");
-        if (user_language == "" || user_language == null || user_language == undefined) {
+        if (user_language == "" || user_language == null || user_language == undefined || user_language == "null") {
             user_language = "en";
             localStorage.setItem("user_language", user_language);
         }
 
-        if (curr_page_flag == "viewsitedata") {
+        if ($("#spn_language")) {
             $("#spn_language").html(languages[user_language]);
         }
-        
+
         if (username == "" || username == null || username == undefined) {
             username = "";
         }

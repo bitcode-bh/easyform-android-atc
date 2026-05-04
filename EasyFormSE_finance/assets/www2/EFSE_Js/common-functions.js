@@ -837,6 +837,12 @@ function onsuccess_get_my_profile_details_F7(e) {
         $("#pro_address").html(address);
         /*$("#pro_imei").html('<b>IMEI:</b> ' + imei_no);*/
 
+        user_language = localStorage.getItem("user_language");
+        if (user_language == "" || user_language == null || user_language == undefined) {
+            user_language = "en";
+        }
+        $("#pro_language").html("Preferred Language: " + languages[user_language]);
+
         var request = $.get({
             url: global_wcf_url + `LocationApi/aws/${lat}/${long}`, success(data) {
                 let address = data.display_name;
@@ -866,9 +872,11 @@ function onsuccess_get_my_profile_details_F7(e) {
 
         get_user_data_online();
 
+        create_table_by_device_info();
+
     }
     catch (e) {
-        alert1(e + '_onsuccess_get_my_profile_details_F7');
+        //alert1(e + '_onsuccess_get_my_profile_details_F7');
     }
 }
 
@@ -1006,9 +1014,9 @@ function get_blank_checksheet_profile(user_data, safety_passport) {
     }
 }
 
-function build_user_table(user_data, safety_passport) {
+function build_user_table(user_data) {
 
-    var detail_str = '';
+    var detail_str = '<tr><th colspan="2">User Info</th></tr>';
     var itemObj = new MKCheckItem();
 
     for (var i = 0; i < user_data.length; i++) {
@@ -1020,6 +1028,10 @@ function build_user_table(user_data, safety_passport) {
             if (is_hide != "true") {
                 var header = user_data[i].prop[0].name;
                 var value = user_data[i].ans[0];
+
+                if (header == "Profile Photo" || header == "IMEI Number 2") {
+                    continue;
+                }
 
                 if (que_id == 3) {
                     // make username in small case in case of user created in Camel or Uppar case 16012023
@@ -1151,10 +1163,10 @@ function build_user_table(user_data, safety_passport) {
                 }
 
                 if (type == 22) {
-                    detail_str += '<tr><td style="color:blue; widht: 50%;">' + header + '</td><td style="width: 50%">' + value + '</td></tr>';
+                    detail_str += '<tr><td style="widht: 50%;">' + header + '</td><td style="width: 50%">' + value + '</td></tr>';
                 }
                 else {
-                    detail_str += '<tr><td style="color:blue; widht: 50%;">' + header + '</td><td style="width: 50%">' + value + '</td></tr>';
+                    detail_str += '<tr><td style="widht: 50%;">' + header + '</td><td style="width: 50%">' + value + '</td></tr>';
                 }
             }
         }
@@ -4336,4 +4348,81 @@ change_user_language = (lang) => {
 change_user_language_menu = (lang) => {
     localStorage.setItem("user_language", lang);
     myApp.closeModal('.popover-language.modal-in');
+    $("#pro_language").html("Preferred Language: " + languages[lang]);
+}
+
+// create table by device info json
+function create_table_by_device_info() {
+
+    var device_info = localStorage.getItem("deviceinfo");
+    if (device_info == "" || device_info == null || device_info == undefined || device_info == '""') {
+        // Device info is not found
+    }
+    else {
+        
+        var json = JSON.parse(device_info);
+
+        var table = $("#tbl_deviceInfo");
+
+        $(table).empty();
+
+        $("#tbl_deviceInfo").append("<tr><th colspan='2'>Device Info</th></tr>");
+
+        //var table = $(table);
+        //$(table).addClass('mk_table');
+
+        var td_val = Array.isArray(json);
+        if (td_val == true) {
+        }
+        else {
+            json = JSON.parse(json);
+        }
+
+        $.each(json, function (ind_row, val) {
+            $.each(val, function (ind_cell, val_cell) {
+                if (ind_cell == "icon_base64") {
+
+                }
+                else {
+                    var td_val = Array.isArray(val_cell);
+                    if (td_val == true) {
+                        // array
+                        var firstElem = val_cell[0];
+                        if (typeof firstElem == "object") {
+                            //Json
+                            var json1 = JSON.stringify(val_cell);
+
+                            var str = "build_innert_table('" + ind_cell + "')";
+                            var param_str = "hide_plus_btn('" + ind_cell + "')";
+
+                            col = $("<tr><td>" + ind_cell + "</td><td style='word-wrap: break-word;overflow:auto;width: 227px;'><table id='tbl_" + ind_cell + "' class='mk_table'></table><button type='button' class='fn_btn' onclick=" + str + " value='Add Push Array' id='plus_" + ind_cell + "'><img src='Images/EF_Images/add_new_rdo.png' style='height: 20px; width: 20px;'></button><button type='button' class='fn_btn' onclick=" + param_str + " style='display: none; margin-left:1px;margin-top: 3px;' value='Add Push Array' id='minus_" + ind_cell + "''><i class='fa fa-minus-circle' aria-hidden='true'></i></button><input type='hidden'id='hdn_" + ind_cell + "' value='" + JSON.stringify(json1) + "'></td></tr>");
+                        } else {
+                            //Not Json
+                            if (val_cell.length == 0) {
+                                col = $("<tr><td>" + ind_cell + "</td><td></td></tr>");
+                            }
+                            else {
+                                col = $("<tr><td>" + ind_cell + "</td><td style='word-wrap: break-word;overflow:auto;width: 227px;'>" + val_cell.toString() + "</td></tr>");
+                            }
+                        }
+                        table.append(col);
+
+                    } else {
+                        // string
+                        if (val_cell == "" || val_cell == null || val_cell == undefined) {
+                            col = $("<tr><td>" + ind_cell + "</td><td></td></tr>");
+                        }
+                        else {
+                            col = $("<tr><td>" + ind_cell + "</td><td style='word-wrap: break-word;overflow:auto;width: 227px;'>" + val_cell + "</td></tr>");
+                            table.append(col);
+                        }
+                    }
+                }
+            })
+
+            // display only first row details only (mobile info)
+            return false;
+        })
+    }
+
 }
