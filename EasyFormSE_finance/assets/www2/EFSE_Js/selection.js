@@ -1693,6 +1693,13 @@ function get_list_of_modules_online() {
             });
 
         } else {
+            $("#div_level").show();
+            var level_Array = JSON.parse(storage.getItem('level_Array'));
+            if (level_Array.length > 0) {
+                var last_flow_name = level_Array[level_Array.length - 1].last_flow_name;
+                $("#lbl_last_flow").text(last_flow_name);
+            }
+
             var param_obj = [];
             param_obj.push({
                 'Company_Id': company_id,

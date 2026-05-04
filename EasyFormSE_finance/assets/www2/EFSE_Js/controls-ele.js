@@ -301,13 +301,16 @@ MkControls.prototype.build_type_2_radio = function () {
                 str += '<div class="list-block form-div"><ul>';
             }
 
-            let t_value = itemObj._checkStrObj(this.misc_Array[0].value);
-            let group_controls = t_value[0].group_controls;
-            if (group_controls == "" || group_controls == null || group_controls == undefined) {
-                var group_controls_str = '';
-            }
+            var group_controls_str = '';
+            let t_value = this.misc_Array[0].value;
+            if (t_value == "" || t_value == null || t_value == undefined) { }
             else {
-                var group_controls_str = " group_controls='" + JSON.stringify(group_controls) + "'";
+                t_value = itemObj._checkStrObj(t_value);
+                let group_controls = t_value[0].group_controls;
+                if (group_controls == "" || group_controls == null || group_controls == undefined) { }
+                else {
+                    var group_controls_str = " group_controls='" + JSON.stringify(group_controls) + "'";
+                }
             }
 
             for (var r = 0; r < this.rdo_Array.length; r++) {
