@@ -2360,8 +2360,8 @@ div[id^=new_item_] input:focus, div[id^=new_item_] button:focus {
 
     #container_div .step-name {
         height: 24px !important;
-        color: #6A6C74;
-        background-color: #ECEDEF !important;
+        color: white;
+        background-color: #6A6C74 !important;
         position: sticky;
         top: 0px;
         padding-top: 3px;

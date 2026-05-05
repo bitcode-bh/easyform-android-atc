@@ -260,6 +260,7 @@ div[id^='div_step_Col_'] .cntrl_main_div {
 
 .toolbar-bottom {
     border-top: 1px solid #ddd;
+    background: white !important;
 }
 
 .tabbar a.tab-link.active, .tabbar a.tab-link.active-state, html:not(.watch-active-state) .tabbar a.tab-link:active {
@@ -333,4 +334,13 @@ div[id^='div_step_Col_'] .cntrl_main_div {
     top: 36px;
     right: 18px;
     font-size: 12px;
+}
+
+#container_btn_div a.link {
+    background-color: gray;
+    color: white !important;
+    height: 34px;
+    line-height: 30px;
+    margin: 7px;
+    border-radius: 8px;
 }
