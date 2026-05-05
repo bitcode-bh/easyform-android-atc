@@ -1912,6 +1912,8 @@ MkDocInits.prototype = {
                     var pro_pic_path = JSON.parse(storage.getItem('profile_pic_path'));
                 }
 
+                $(smallImage).attr('onerror', "imageError_set_defualt('#img_my_profile')");
+
                 if (pro_pic_path == '' || pro_pic_path == null || pro_pic_path == undefined) {
                     smallImage.src = "images/profile_pic.png";
                 } else {

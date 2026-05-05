@@ -837,12 +837,6 @@ function onsuccess_get_my_profile_details_F7(e) {
         $("#pro_address").html(address);
         /*$("#pro_imei").html('<b>IMEI:</b> ' + imei_no);*/
 
-        user_language = localStorage.getItem("user_language");
-        if (user_language == "" || user_language == null || user_language == undefined) {
-            user_language = "en";
-        }
-        $("#pro_language").html("Preferred Language: " + languages[user_language]);
-
         var request = $.get({
             url: global_wcf_url + `LocationApi/aws/${lat}/${long}`, success(data) {
                 let address = data.display_name;
@@ -1017,6 +1011,14 @@ function get_blank_checksheet_profile(user_data, safety_passport) {
 function build_user_table(user_data) {
 
     var detail_str = '<tr><th colspan="2">User Info</th></tr>';
+
+    user_language = localStorage.getItem("user_language");
+    if (user_language == "" || user_language == null || user_language == undefined) {
+        user_language = "en";
+    }
+
+    detail_str += '<tr><td>Preferred Language</td><td id="pro_language">' + languages[user_language] +'</td></tr>';
+
     var itemObj = new MKCheckItem();
 
     for (var i = 0; i < user_data.length; i++) {
@@ -1029,7 +1031,8 @@ function build_user_table(user_data) {
                 var header = user_data[i].prop[0].name;
                 var value = user_data[i].ans[0];
 
-                if (header == "Profile Photo" || header == "IMEI Number 2") {
+                if (header == "Profile Photo" || header == "IMEI Number 2" || header == "Model" || header == "Handset Make" || header == "Operating System" || header == "OS Version if any") {
+                    // don't show these controls in user info table
                     continue;
                 }
 
@@ -3275,14 +3278,14 @@ function imageError() {
     }
 
     $('#menu_img_profile').attr('src', pro_pic_path);
-    $('#menu_img_profile').attr('onerror', "imageError_set_defualt()");
+    $('#menu_img_profile').attr('onerror', "imageError_set_defualt('#menu_img_profile')");
 
 }
 
-function imageError_set_defualt() {
+function imageError_set_defualt(img_ele) {
     var pro_pic_path = "images/profile_pic.png";
-    $('#menu_img_profile').attr('src', pro_pic_path);
-    $("#menu_img_profile").removeAttr("onerror");
+    $(img_ele).attr('src', pro_pic_path);
+    $(img_ele).removeAttr("onerror");
 }
 
 function redirect_page_pdf_preview(task_id, c_id, page_type) {
@@ -4348,7 +4351,7 @@ change_user_language = (lang) => {
 change_user_language_menu = (lang) => {
     localStorage.setItem("user_language", lang);
     myApp.closeModal('.popover-language.modal-in');
-    $("#pro_language").html("Preferred Language: " + languages[lang]);
+    $("#pro_language").html(languages[lang]);
 }
 
 // create table by device info json
