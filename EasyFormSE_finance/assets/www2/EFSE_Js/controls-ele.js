@@ -362,11 +362,13 @@ MkControls.prototype.build_type_2_radio = function () {
 
                         if (isEmpty(t_language_value)) { }
                         else {
-                            t_language_value = t_language_value[op_text][0];
+                            if (t_language_value[op_text]) {
+                                t_language_value = t_language_value[op_text][0];
 
-                            if (isEmpty(t_language_value)) { }
-                            else {
-                                op_text = t_language_value[user_language];
+                                if (isEmpty(t_language_value)) { }
+                                else {
+                                    op_text = t_language_value[user_language];
+                                }
                             }
                         }
                     }

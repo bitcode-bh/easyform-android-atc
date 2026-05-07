@@ -245,6 +245,24 @@ div[id^='div_step_Col_'] .cntrl_main_div {
     background: #6A6C74;
 }*/
 
+.picker-modal .toolbar {
+    background: color-mix(in srgb, #6A6C74 80%, white) !important;
+}
+
+.picker-calendar-selected-date {
+    text-align: center;
+}
+
+.picker-footer a {
+    background: #6A6C74;
+    color: white;
+    border-radius: 8px;
+}
+
+.picker-calendar-day.picker-calendar-day-today span {
+    border: 1px solid #6A6C74;
+}
+
 .navbar, .subnavbar, .toolbar, .floating-button {
     background: #ecedef !important;
 }

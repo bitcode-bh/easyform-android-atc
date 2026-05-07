@@ -3878,8 +3878,9 @@ bind_scroll_to_bottom_event = (t_div_obj) => {
         else {
             $("#btn_ScrollToBottom").css("visibility", "visible");
         }
-
     });
+
+    $("#btn_ScrollToBottom").css("visibility", "hidden");
 }
 
 scroll_to_bottom = (t_div_obj) => {

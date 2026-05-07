@@ -3168,7 +3168,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         var obj = {
                             new_id: new_id,
-                            value: jsonObj[i].value
+                            value: prop_name
                         }
                         var control = new MkControls(obj);
                         newdiv += control.build_type_31_label();

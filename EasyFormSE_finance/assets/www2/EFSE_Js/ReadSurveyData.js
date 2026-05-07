@@ -4905,7 +4905,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var obj = {
                             new_id: new_id,
-                            value: jsonObj[i].value
+                            value: prop_name
                         }
                         var control = new MkControls(obj);
                         newdiv += control.build_type_31_label();

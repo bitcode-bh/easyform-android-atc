@@ -1607,6 +1607,7 @@ html.pixel-ratio-3 .timeline-month .timeline-item:before {
 .picker-calendar.picker-modal {
     z-index: 15500 !important;
     box-shadow: 1px 1px 5px #aaa !important;
+    border-radius: 8px;
 }
 
 /*---photo view css (set z-index of photoview popup greater than all popups [29032020])---*/
