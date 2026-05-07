@@ -594,7 +594,7 @@ public class GeofenceTrasitionService extends IntentService {
 
                 ContentValues cv = new ContentValues();
 
-                if (duration > geofencetime)
+               // if (duration > geofencetime) // remove 15 min duration  07052026
                  {
                     cv.put("in_time", "0");
                     cv.put("out_time", time);
@@ -608,7 +608,7 @@ public class GeofenceTrasitionService extends IntentService {
 
                      GeofenceDownlaod.uploadGeofenceINOutTracking();
 
-                }
+                 }
             }
 
             cursor.close();
