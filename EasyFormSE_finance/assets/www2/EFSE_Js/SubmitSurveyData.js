@@ -5194,7 +5194,7 @@ function read_blank_checksheet() {
         //alert1("Reading from checksheet table...");
         var step = step_Array[step_Array.length - 1];
         var selected_check_type = JSON.parse(storage.getItem('check_type'));
-        var query = "select subcategory, checksheetid, step, data, buttons from checksheet where checksheetid = '" + selected_check_type + "' and step = '" + step + "'";
+        var query = "select subcategory, checksheetid, step, data, buttons, language from checksheet where checksheetid = '" + selected_check_type + "' and step = '" + step + "'";
         var q_jsonobj = [];
         q_jsonobj.push({
             data: query,
@@ -5218,6 +5218,20 @@ function success_check_survey_entry_next_read(e) {
             var step = myArray[0].step;
             var data = itemObj._checkStrObj(myArray[0].data);  		// check_item
             var buttons = itemObj._checkStrObj(myArray[0].buttons);  		// check_item
+
+            if (user_language != 'en') {
+                var language = itemObj._checkStrObj(myArray[0].language);
+                if (language == "" || language == null || language == undefined) { }
+                else {
+                    language = language[0];
+
+                    if (isEmpty(language)) { }
+                    else {
+                        heading = language[user_language];
+                    }
+                }
+            }
+
             read_dynamic_checksheet(heading, check_type, step, data, buttons, 0, 0);
         }
         else {
@@ -5280,6 +5294,19 @@ function onsuccess_get_checksheet_from_server(e) {
                 var step = myArray[0].step;
                 var blank_data = itemObj._checkStrObj(myArray[0].data);  		// check_item
                 var buttons = itemObj._checkStrObj(myArray[0].buttons);  		// check_item
+
+                if (user_language != 'en') {
+                    var language = itemObj._checkStrObj(myArray[0].language);
+                    if (language == "" || language == null || language == undefined) { }
+                    else {
+                        language = language[0];
+
+                        if (isEmpty(language)) { }
+                        else {
+                            heading = language[user_language];
+                        }
+                    }
+                }
 
                 read_dynamic_checksheet(heading, check_type, step, blank_data, buttons, 0, 0);
             }

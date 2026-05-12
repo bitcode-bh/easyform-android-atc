@@ -1618,6 +1618,13 @@ function onsuccess_CaptureClick_Customer(e) {
                         if (where_box_id.indexOf("rdo_") > -1) {
                             // radio autoselect
                             $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').prop('checked', true);
+                            var onchange_avail = $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').attr("onchange");
+                            if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
+                            else {
+                                setTimeout(function () {
+                                    $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').trigger("onchange");
+                                }, 1000);
+                            }
                         }
                         else {
                             // textbox autofill
@@ -1651,6 +1658,13 @@ function onsuccess_CaptureClick_Customer(e) {
             if (where_box_id.indexOf("rdo_") > -1) {
                 // radio autoselect
                 $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').prop('checked', true);
+                var onchange_avail = $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').attr("onchange");
+                if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
+                else {
+                    setTimeout(function () {
+                        $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').trigger("onchange");
+                    }, 1000);
+                }
             }
             else {
                 // textbox found hence convert it to textarea run time - mk - 26072025
