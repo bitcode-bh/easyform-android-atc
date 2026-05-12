@@ -25,7 +25,7 @@ import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 public class MySQLiteHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "location.db";
-    private static final int DATABASE_VERSION = 74;
+    private static final int DATABASE_VERSION = 75;
     private static final String DATABASE_CREATE0 = " CREATE TABLE Login_Master (username TEXT,password TEXT, u_c TEXT, imei TEXT, company_id INTEGER,user_id INTEGER,appid TEXT,servermilli TEXT,devicetype TEXT,appversion TEXT,main_milli,sub_milli,main_id,sub_id) ;";
 
     // Database creation sql statement
@@ -34,7 +34,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_index5 = "  CREATE INDEX location_log_lat_lon ON location_log (lat,lon);";
     private static final String DATABASE_CREATE20 = " CREATE TABLE total_file(filename TEXT,fileid TEXT,d_url TEXT,is_download TEXT,m_date TEXT,m_milli TEXT);";
     private static final String DATABASE_CREATE21 = " CREATE TABLE geofence(_id INTEGER PRIMARY KEY AUTOINCREMENT,username TEXT,fileid TEXT,place TEXT,lon TEXT,lat TEXT,radius TEXT,date TEXT,place_name TEXT,is_reg TEXT);";
-    private static final String DATABASE_CREATE13 = " CREATE TABLE checksheet(_id INTEGER PRIMARY KEY AUTOINCREMENT,checksheetid INTEGER,c_name TEXT,c_type INTEGER,data TEXT,buttons TEXT,step TEXT,subcategory TEXT,date TEXT,millisecond LONG,step_short_name TEXT,stepid INTEGER);";
+    private static final String DATABASE_CREATE13 = " CREATE TABLE checksheet(_id INTEGER PRIMARY KEY AUTOINCREMENT,checksheetid INTEGER,c_name TEXT,c_type INTEGER,data TEXT,buttons TEXT,step TEXT,subcategory TEXT,date TEXT,millisecond LONG,step_short_name TEXT,stepid INTEGER, language TEXT);";
     private static final String DATABASE_CREATE14 = " CREATE TABLE task_master(tid INTEGER PRIMARY KEY AUTOINCREMENT,p_tid INTEGER,p_server_task_id INTEGER,task_id TEXT,server_task_id INTEGER,flag TEXT,user_id INTEGER,username TEXT,rate FLOAT,siteid TEXT,site_flag TEXT,server_task_flag TEXT,site_name TEXT,site_address TEXT,percentage FLOAT,survey_date TEXT,lat FLOAT,long FLOAT,inspect_count INTEGER,checksheetid INTEGER,height FLOAT,display_siteid TEXT,step INTEGER,status INTEGER,upload_date TEXT,updateddate TEXT,millisecond TEXT, end_of_date TEXT, data TEXT,tower_type TEXT,moduleid TEXT,module_name TEXT,moduledef TEXT,srnumber TEXT, global_var TEXT,is_down_complete TEXT,Dynamic_Globalvar TEXT,punch_flag TEXT, in_ms TEXT,out_ms TEXT,duration TEXT,is_delete_photo TEXT,survey_ms TEXT,is_delete_log TEXT,initialstatus TEXT,edit_global_var TEXT,is_delete_sub TEXT,list_html TEXT,islogdown TEXT DEFAULT 0,que_milli TEXT DEFAULT 0,que_id TEXT DEFAULT 0,edit_flag TEXT DEFAULT 0,p_udf_id TEXT DEFAULT 0,match_temp_id TEXT DEFAULT 0,p_match_temp_id TEXT DEFAULT 0,is_valid_log TEXT,notiflag TEXT DEFAULT 0,tripflag TEXT DEFAULT 0,is_online TEXT DEFAULT 0, response_status TEXT,columndata TEXT);";
     private static final String DATABASE_CREATE15 = " CREATE TABLE User_Define_Flow_Master_change(f_id INTEGER PRIMARY KEY AUTOINCREMENT,id INTEGER,rollid INTEGER,flow_name TEXT,flow_name1 TEXT,type TEXT,flow_id INTEGER,p_id INTEGER,level_position INTEGER,data TEXT,company_id INTEGER,millisecond TEXT,isflag INTEGER,task_millisecond TEXT);";
     private static final String DATABASE_CREATE42 = " CREATE TABLE User_Define_Flow_Master(f_id INTEGER PRIMARY KEY AUTOINCREMENT,id INTEGER,rollid INTEGER,flow_name TEXT,flow_name1 TEXT,type TEXT,flow_id INTEGER,p_id INTEGER,level_position INTEGER,data TEXT,company_id INTEGER,millisecond LONG,isflag INTEGER,main_sid TEXT,task_millisecond LONG,sub_sid TEXT,sub_task_millisecond LONG,main_que_id TEXT,main_que_millisecond LONG,sub_que_id TEXT,sub_que_millisecond LONG,matchcondition TEXT,is_delete TEXT);";
@@ -701,6 +701,18 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         if(oldVersion < 74)
         {
             database.execSQL(DATABASE_CREATE54);
+        }
+        // language column added 12052026
+        if(oldVersion < 75)
+        {
+            boolean columnExists = isColumnExists(database, "checksheet", "language");
+            if (columnExists) {
+                Log.d("columnExists", String.valueOf(columnExists));
+            } else {
+                database.execSQL("ALTER TABLE checksheet ADD COLUMN language TEXT");
+            }
+
+
         }
 
     }

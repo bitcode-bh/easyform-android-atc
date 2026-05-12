@@ -667,6 +667,7 @@ class DownloadMainStructure {
                                 String milli = innerdatobj.getString("millisecond");
                                 String step_short_name = innerdatobj.getString("step_short_name");
                                 String stepId = innerdatobj.getString("step_id");
+                                String language = innerdatobj.getString("language");  // add language COLUMN 12052026
 
                                 ContentValues cv2 = new ContentValues();
                                 cv2.put("counter", counterChecksheet);
@@ -700,7 +701,8 @@ class DownloadMainStructure {
                                             c_type,
                                             step_short_name,
                                             "checksheet",
-                                            stepId
+                                            stepId,
+                                            language
                                     );
 
                                 } else {
@@ -717,6 +719,7 @@ class DownloadMainStructure {
                                     cv1.put("millisecond", milli);
                                     cv1.put("step_short_name", step_short_name);
                                     cv1.put("stepid", stepId);
+                                    cv1.put("language",language);
 
                                     database.insert("checksheet", null, cv1);
                                 }
@@ -778,7 +781,7 @@ class DownloadMainStructure {
 
     private void updateChecksheet(int checksheetid, String c_name, String data_1,
                                   String buttons, String step, String subcategory, String date,
-                                  String milli, int c_type, String step_short_name, String t_name,String stepId) {
+                                  String milli, int c_type, String step_short_name, String t_name,String stepId, String language) {
         String t2;
         t2 = "checksheetid='" + checksheetid + "' and step='" + step + "'";
         ContentValues cv1 = new ContentValues();
@@ -794,6 +797,7 @@ class DownloadMainStructure {
         cv1.put("millisecond", milli);
         cv1.put("step_short_name", step_short_name);
         cv1.put("stepid", stepId);
+        cv1.put("language",language);
         long temp = database.update(t_name, cv1, t2, null);
 
     }
