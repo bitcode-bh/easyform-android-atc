@@ -667,7 +667,12 @@ class DownloadMainStructure {
                                 String milli = innerdatobj.getString("millisecond");
                                 String step_short_name = innerdatobj.getString("step_short_name");
                                 String stepId = innerdatobj.getString("step_id");
-                                String language = innerdatobj.getString("language");  // add language COLUMN 12052026
+                                String language = "";
+                                if(innerdatobj.has("language"))
+                                {
+                                    language = innerdatobj.getString("language");  // add language COLUMN 12052026
+                                }
+
 
                                 ContentValues cv2 = new ContentValues();
                                 cv2.put("counter", counterChecksheet);
