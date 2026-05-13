@@ -1,0 +1,275 @@
+﻿
+
+/* Common*/
+
+/*.preloader-modal {
+    border: 1px solid #ccc;
+    background: white;
+}*/
+
+
+/* Level 1 - Course List */
+.course-card {
+    background: #f3f3fa;
+    border-radius: 30px;
+    padding: 10px;
+    margin: 10px;
+}
+
+.course-inner {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.course-image {
+    width: 120px;
+    border-radius: 25px;
+    overflow: hidden;
+}
+
+    .course-image img {
+        width: 120px;
+        height: 120px;
+        /*object-fit: cover;*/
+        display: block;
+    }
+
+.course-content {
+    width: 55%;
+}
+
+.course-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: #2d2f8e;
+    margin-bottom: 5px;
+}
+
+.module-pill, .minute-pill {
+    background: #d5d5d7;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.course-progress-line {
+    height: 5px;
+    background: #2d2f8e;
+    border-radius: 10px;
+    width: 60%;
+}
+
+.progress-line {
+    height: 5px;
+    background: #2f3890;
+    border-radius: 6px;
+    width: 90%;
+    margin-top: 14px;
+}
+
+/*.module-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.7);
+}
+*/
+.module-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #d6d0d09e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99;
+    border-radius: 28px;
+}
+
+.overlay-text {
+    font-size: 22px;
+    /*font-weight: 600;*/
+    color: #000;
+}
+    
+
+
+/* Level 2 - Module list */
+/*.module-card {
+    background: #e9e9e9;
+    border-radius: 28px;
+    padding: 16px;
+    margin: 16px;
+}*/
+
+
+.module-card {
+    position: relative;
+    overflow: hidden;
+    background: #e9e9e9;
+    border-radius: 28px;
+    padding: 16px;
+    margin: 16px;
+}
+
+.card-content {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.module-image {
+    width: 50%;
+}
+
+    .module-image img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 24px;
+        margin-bottom: 9px;
+    }
+
+    .module-image .module-pill {
+        width: fit-content;
+        display: inline-block;
+    }
+
+.module-content {
+    flex: 1;
+}
+
+.module-title {
+    font-weight: 600;
+    color: #3b5edb;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.module-desc {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+}
+
+/*.skill-pill {
+    text-align: center;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background: #d3d3d3;
+    border-radius: 18px;
+    font-size: 13px;
+}*/
+
+.module-progress-line {
+    height: 6px;
+    background: black;
+    border-radius: 6px;
+    width: 55%;
+    margin-top: 14px;
+}
+
+
+/* Level 3 - Skill List */
+
+#dv_Skill_List video {
+    width: 50px;
+    height: 50px;
+    display: inline-block;
+}
+
+.minute-pill {
+    display: inline-block;
+}
+
+
+/*Level 4 - Question List*/
+
+.que-container {
+    max-width: 500px;
+    margin: auto;
+}
+
+/* Video Card */
+.video-card {
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+    .video-card video {
+        width: 100%;
+        display: block;
+        height: 200px;
+    }
+
+/* Pill Card */
+.pill-card {
+    background: #e9e9e9;
+    margin-top: 10px;
+    padding: 15px;
+    border-radius: 20px;
+    line-height: 1.5;
+    color: #333;
+    font-size: 14px;
+}
+
+/* Question Card */
+.question-card {
+    background: #e9e9e9;
+    margin-top: 10px;
+    padding: 15px;
+    border-radius: 20px;
+}
+
+.question-title {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+/* Options */
+.question-card .option {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+}
+
+    .question-card .option:last-child {
+        border-bottom: none;
+    }
+
+    .question-card .option input {
+        margin-right: 10px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .question-card .option label {
+        flex: 1;
+        cursor: pointer;
+    }
+
+#vdo_btn_div {
+    display: flex;
+}
+
+    #vdo_btn_div .button {
+        height: 35px;
+        width: 160px;
+        margin: 3px;
+    }
+
+#dv_Question_List {
+    display: none;
+}

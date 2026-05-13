@@ -243,6 +243,7 @@ function show_hide_Element(paramData, target_div, read_type) {
                         if (que_n == true) {
                             // class given to main que only (required for atc - 02012025)
                             $("." + dep_class + "").children("*").css("display", "block");
+                            $("." + dep_class + "").children("*.w-50-50").css("display", "inline-block");
                         }
                     }
                     else {

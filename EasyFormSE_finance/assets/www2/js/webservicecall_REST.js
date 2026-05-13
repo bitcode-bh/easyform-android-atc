@@ -109,24 +109,24 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
 
                 }
 
-                if (F7_device == "ios") {
-                    clearTimeout(timer1);
-                    req_count = 0;
+                //if (F7_device == "ios") {
+                //    clearTimeout(timer1);
+                //    req_count = 0;
 
-                    var q_jsonobj = [];
-                    q_jsonobj.push({
-                        url: url1,
-                        Company_Feature_Id: feature_id,
-                        Role_Id: role_id,
-                        matchId: match_temp_id,
-                        params: params
-                    });
-                    cordova.exec(sucesscallback, failcallback, 'FrontWebserviceCall', 'anAction', q_jsonobj);
-                }
-                else {
+                //    var q_jsonobj = [];
+                //    q_jsonobj.push({
+                //        url: url1,
+                //        Company_Feature_Id: feature_id,
+                //        Role_Id: role_id,
+                //        matchId: match_temp_id,
+                //        params: params
+                //    });
+                //    cordova.exec(sucesscallback, failcallback, 'FrontWebserviceCall', 'anAction', q_jsonobj);
+                //}
+                //else {
                     invocation.onreadystatechange = handler;
                     invocation.send(params);
-                }
+                //}
             }
             //timer1 = setTimeout(networkerror, timeout);
 
