@@ -381,6 +381,8 @@ function onfail_get_last_step_data_type17(e) {
 // var eq_str = '12/2/3';
 // var eq_str = '12+(100%10)';
 // var eq_str = '10-{&abc&}';
+// var eq_str = 'if[<#weight_cls#>,=,YES]' - count all YES answer belongs to weight_cls (in radio, dropdown, checkbox)
+// var eq_str = 'if[<#weight_cls#>,1=,YES]' - count all answer belongs to weight_cls that has not selected YES (in radio, dropdown, checkbox)
 
 var end_bracket_outer = 0;
 var temp_result = 0;
@@ -412,6 +414,7 @@ function extract_calculator_data(paramData) {
 // { = class value {@abc@}
 // ( = equation (5+2)
 // < = inbuilt function log<10>
+// if[ = condition
 
 // check step value is exist or not
 function check_for_other_step_values(temp_calc_counter, eq_str) {
