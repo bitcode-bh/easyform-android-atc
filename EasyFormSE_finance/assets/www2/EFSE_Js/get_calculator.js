@@ -382,7 +382,7 @@ function onfail_get_last_step_data_type17(e) {
 // var eq_str = '12+(100%10)';
 // var eq_str = '10-{&abc&}';
 // var eq_str = 'if[<#weight_cls#>,=,YES]' - count all YES answer belongs to weight_cls (in radio, dropdown, checkbox)
-// var eq_str = 'if[<#weight_cls#>,1=,YES]' - count all answer belongs to weight_cls that has not selected YES (in radio, dropdown, checkbox)
+// var eq_str = 'if[<#weight_cls#>,!=,YES]' - count all answer belongs to weight_cls that has not selected YES (in radio, dropdown, checkbox)
 
 var end_bracket_outer = 0;
 var temp_result = 0;
