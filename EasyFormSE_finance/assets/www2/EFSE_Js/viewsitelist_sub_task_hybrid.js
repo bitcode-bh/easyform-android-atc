@@ -701,10 +701,16 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
 
                             var icon_base64 = new_checksheet_list[i].Checksheet_Icon;
                             if (icon_base64 == '' || icon_base64 == null || icon_base64 == undefined) {
-                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 0px solid ' + back_color + ';' + checksheet_disp + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-file-text-o"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                                icon_base64 = "file-text-o";
+                            }
+
+                            if (icon_base64.indexOf("data:image") > -1) {
+                                //----base64
+                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 0px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
                             }
                             else {
-                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 0px solid ' + back_color + ';' + checksheet_disp + '" class="' + dyn_class + ' ' + class_str + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><img src="' + icon_base64 + '" style="width:42px; height:42px; margin-top:-5px; margin-right:7px"></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
+                                //----FA icon
+                                list_item += '<li id=' + t_id + ' onclick ="' + param + '" style="border-right: 0px solid ' + back_color + ';' + checksheet_disp + '" group_name="' + group_name + '"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i class="fa fa-' + icon_base64 + '"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + new_checksheet_list[i].c_name + '</div>';
                             }
 
                             var Background_Image = new_checksheet_list[i].Background_Image;
