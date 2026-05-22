@@ -404,7 +404,11 @@ class DownloadMainStructure {
                                 String millisecond = innerdatobj.getString("millisecond");
                                 String type = innerdatobj.getString("type");
                                 String data = innerdatobj.getString("data");
-
+                                String language = "";
+                                if(innerdatobj.has("language"))
+                                {
+                                    language = innerdatobj.getString("language");  // add language COLUMN 12052026
+                                }
                                 String isDeleted = innerdatobj.has("is_delete")
                                         ? innerdatobj.getString("is_delete")
                                         : "0";
@@ -435,6 +439,8 @@ class DownloadMainStructure {
                                 cv.put("millisecond", millisecond);
                                 cv.put("isflag", flag);
                                 cv.put("is_delete", isDeleted);
+                                cv.put("language",language);
+
 
                                 Cursor c1 = database.rawQuery(
                                         "select isflag from User_Define_Flow_Master where id=" + id,
