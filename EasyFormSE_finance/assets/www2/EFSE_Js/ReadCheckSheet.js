@@ -3574,7 +3574,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                     if (buttons == "" || buttons == null || buttons == undefined) {
                         var param_task = "validate_and_submit_surveydata(1, 6, 'data')";
-                        var footer_btn_str = '<div class="left"></div><div class="right"><a class="link" onclick="' + param_task + '">Add Attendance</a></div>';
+                        var footer_btn_str = '<div class="left"></div><div class="right"><a class="link" onclick="' + param_task + '">Start Trip</a></div>';
 
                         if (type37_len > 0) {
                             $(".popup-new-task-create #container_btn_div").append(footer_btn_str);
