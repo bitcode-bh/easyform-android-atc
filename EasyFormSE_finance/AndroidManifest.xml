@@ -372,7 +372,7 @@
         <activity
             android:name=".CameraAITextActivity"
             android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/Theme.Transparent"/>
 
 
         <service android:name=".loc_change" />
