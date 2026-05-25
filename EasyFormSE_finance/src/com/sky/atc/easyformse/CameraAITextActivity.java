@@ -134,7 +134,6 @@ public class CameraAITextActivity extends AppCompatActivity {
         BrowseImage = findViewById(R.id.browseimage);
         switchcamera = findViewById(R.id.switchcamera);
 
-
         pref = sqlitewraper.getSecureShared("MyPref");
 //        themecolor = pref.getString("themecolor","");
 //        if(themecolor.equalsIgnoreCase(""))
@@ -389,10 +388,10 @@ public class CameraAITextActivity extends AppCompatActivity {
                     // Update UI
                     mFrameLayout.setVisibility(View.GONE);
                     mLinearLayoutmain.setVisibility(View.VISIBLE);
-                    linearsecond.setVisibility(View.GONE);
-                    imageView.setVisibility(View.GONE);
+                    linearsecond.setVisibility(View.VISIBLE);
+                    imageView.setVisibility(View.VISIBLE);
                     imageView.setImageBitmap(selectedBitmap);
-                    PromptText.setVisibility(View.GONE);
+                    PromptText.setVisibility(View.VISIBLE);
                     PromptText.setText(promttext);
 
                     // Send to Gemini
@@ -534,9 +533,9 @@ public class CameraAITextActivity extends AppCompatActivity {
                     selectedBitmap= (Bitmap) extras.get("data");
                     //   mainlinear.setVisibility(View.VISIBLE);
                     photo_path = saveBitmapToFile(selectedBitmap, this);
-                    imageView.setVisibility(View.GONE);
+                    imageView.setVisibility(View.VISIBLE);
                     imageView.setImageBitmap(selectedBitmap);
-                    PromptText.setVisibility(View.GONE);
+                    PromptText.setVisibility(View.VISIBLE);
                     PromptText.setText(promttext);
 
                     String prompt = PromptText.getText().toString();
@@ -589,11 +588,11 @@ public class CameraAITextActivity extends AppCompatActivity {
                             }
                             mFrameLayout.setVisibility(View.GONE);
                             mLinearLayoutmain.setVisibility(View.VISIBLE);
-                            linearsecond.setVisibility(View.GONE);
-                            imageView.setVisibility(View.GONE);
+                            linearsecond.setVisibility(View.VISIBLE);
+                            imageView.setVisibility(View.VISIBLE);
                             pdftext.setVisibility(View.GONE);
                             pdftext.setText(filename);
-                            PromptText.setVisibility(View.GONE);
+                            PromptText.setVisibility(View.VISIBLE);
                             PromptText.setText(promttext);
 
                             String prompt = PromptText.getText().toString();
@@ -660,8 +659,8 @@ public class CameraAITextActivity extends AppCompatActivity {
             public void onFailure(Call call, IOException e) {
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
-                    mLinearLayout.setVisibility(View.GONE);
-                    textOutput.setVisibility(View.GONE);
+                    mLinearLayout.setVisibility(View.VISIBLE);
+                    textOutput.setVisibility(View.VISIBLE);
                     textOutput.setText("Error: " + e.getMessage());
                 });
             }
@@ -711,8 +710,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                         textOutput.setVisibility(View.GONE);
                         textOutput.setText(result);
 //                        mButtonDone.setVisibility(View.VISIBLE);
-                        SendPluginSuccess(result);
-                        Log.d("Result",finalJson);
+                        SendPluginSuccess();
                     } catch (Exception e) {
                         textOutput.setText("Failed to parse response");
                     }
@@ -742,7 +740,7 @@ public class CameraAITextActivity extends AppCompatActivity {
         return Base64.encodeToString(pdfBytes, Base64.NO_WRAP);
     }
 
-    private void SendPluginSuccess(String result)
+    private void SendPluginSuccess()
     {
 
         try{
@@ -750,14 +748,13 @@ public class CameraAITextActivity extends AppCompatActivity {
             JSONArray mJsonArray = new JSONArray();
             JSONObject mJsonObject = new JSONObject();
             mJsonObject.put("photo_path", photo_path);
-            mJsonObject.put("responsetext", result);
+            mJsonObject.put("responsetext", textOutput.getText().toString());
             mJsonArray.put(mJsonObject);
 //            pref.putString("responsetext",textOutput.getText().toString());
 //            pref.commit();
             resultIntent.putExtra("response",mJsonArray.toString());
             setResult(RESULT_OK, resultIntent);
             finish();
-            overridePendingTransition(0,0);
         }
         catch (Exception e)
         {
