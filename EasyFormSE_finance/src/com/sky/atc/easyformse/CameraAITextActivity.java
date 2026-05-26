@@ -14,8 +14,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -44,7 +46,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -112,6 +113,7 @@ public class CameraAITextActivity extends AppCompatActivity {
     LinearLayout mLinearLayoutmain,linearsecond;
     int rot = 0;
     private boolean isFrontCamera = false;
+    FrameLayout loadingOverlay;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -133,6 +135,7 @@ public class CameraAITextActivity extends AppCompatActivity {
         mLinearLayoutmain = findViewById(R.id.linearmain);
         BrowseImage = findViewById(R.id.browseimage);
         switchcamera = findViewById(R.id.switchcamera);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
 
         pref = sqlitewraper.getSecureShared("MyPref");
 //        themecolor = pref.getString("themecolor","");
@@ -370,44 +373,52 @@ public class CameraAITextActivity extends AppCompatActivity {
 
     // Capture the image
     private void captureImage() {
-        if (textureView.isAvailable()) {
-            // Get Bitmap from preview
-            selectedBitmap = textureView.getBitmap();
 
-            if (selectedBitmap != null) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (textureView.isAvailable()) {
+                    // Get Bitmap from preview
+                    selectedBitmap = textureView.getBitmap();
 
-                // Save the rotated bitmap to file
-                File pictureFile = getOutputMediaFile();
-                selectedBitmap = imageOreintationValidator(selectedBitmap, pictureFile.getAbsolutePath());
-                try (FileOutputStream fos = new FileOutputStream(pictureFile)) {
-                    selectedBitmap.compress(Bitmap.CompressFormat.JPEG, Integer.parseInt(quality), fos);
-                    fos.flush();
+                    if (selectedBitmap != null) {
 
-                    photo_path = pictureFile.getAbsolutePath();
+                        // Save the rotated bitmap to file
+                        File pictureFile = getOutputMediaFile();
+                        selectedBitmap = imageOreintationValidator(selectedBitmap, pictureFile.getAbsolutePath());
+                        try (FileOutputStream fos = new FileOutputStream(pictureFile)) {
+                            selectedBitmap.compress(Bitmap.CompressFormat.JPEG, Integer.parseInt(quality), fos);
+                            fos.flush();
 
-                    // Update UI
-                    mFrameLayout.setVisibility(View.GONE);
-                    mLinearLayoutmain.setVisibility(View.VISIBLE);
-                    linearsecond.setVisibility(View.VISIBLE);
-                    imageView.setVisibility(View.VISIBLE);
-                    imageView.setImageBitmap(selectedBitmap);
-                    PromptText.setVisibility(View.VISIBLE);
-                    PromptText.setText(promttext);
+                            photo_path = pictureFile.getAbsolutePath();
 
-                    // Send to Gemini
-                    String prompt = PromptText.getText().toString();
-                    String base64Image = bitmapToBase64(selectedBitmap);
-                    sendToGemini(prompt, base64Image, "image/jpeg");
+                            // Update UI
+                            mFrameLayout.setVisibility(View.GONE);
+                            mLinearLayoutmain.setVisibility(View.GONE);
+                            linearsecond.setVisibility(View.GONE);
+                            imageView.setVisibility(View.GONE);
+                            imageView.setImageBitmap(selectedBitmap);
+                            PromptText.setVisibility(View.GONE);
+                            PromptText.setText(promttext);
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(CameraAITextActivity.this,
-                            "Error saving image", Toast.LENGTH_SHORT).show();
+                            loadingOverlay.setVisibility(View.VISIBLE);
+                            // Send to Gemini
+                            String prompt = PromptText.getText().toString();
+                            String base64Image = bitmapToBase64(selectedBitmap);
+                            sendToGemini(promttext, base64Image, "image/jpeg");
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Toast.makeText(CameraAITextActivity.this,
+                                    "Error saving image", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(CameraAITextActivity.this, "Failed to capture image", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            } else {
-                Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show();
             }
-        }
+        });
+
     }
 
 
@@ -533,9 +544,9 @@ public class CameraAITextActivity extends AppCompatActivity {
                     selectedBitmap= (Bitmap) extras.get("data");
                     //   mainlinear.setVisibility(View.VISIBLE);
                     photo_path = saveBitmapToFile(selectedBitmap, this);
-                    imageView.setVisibility(View.VISIBLE);
+                    imageView.setVisibility(View.GONE);
                     imageView.setImageBitmap(selectedBitmap);
-                    PromptText.setVisibility(View.VISIBLE);
+                    PromptText.setVisibility(View.GONE);
                     PromptText.setText(promttext);
 
                     String prompt = PromptText.getText().toString();
@@ -587,17 +598,19 @@ public class CameraAITextActivity extends AppCompatActivity {
                                 imageView.setImageURI(imageUri);
                             }
                             mFrameLayout.setVisibility(View.GONE);
-                            mLinearLayoutmain.setVisibility(View.VISIBLE);
-                            linearsecond.setVisibility(View.VISIBLE);
-                            imageView.setVisibility(View.VISIBLE);
+                            mLinearLayoutmain.setVisibility(View.GONE);
+                            linearsecond.setVisibility(View.GONE);
+                            imageView.setVisibility(View.GONE);
                             pdftext.setVisibility(View.GONE);
                             pdftext.setText(filename);
-                            PromptText.setVisibility(View.VISIBLE);
+                            PromptText.setVisibility(View.GONE);
                             PromptText.setText(promttext);
+
+                            loadingOverlay.setVisibility(View.VISIBLE);
 
                             String prompt = PromptText.getText().toString();
                             String base64Image = convertPdfToBase64(imageUri);
-                            sendToGemini(prompt,base64Image,mimtypeforapi);
+                            sendToGemini(promttext,base64Image,mimtypeforapi);
 
                         }
                     } catch (Exception e) {
@@ -652,16 +665,17 @@ public class CameraAITextActivity extends AppCompatActivity {
         }
 
 
-        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
 
         GeminiClient.sendPrompt(prompt, base64Image, modelname,mimtype , new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
-                    mLinearLayout.setVisibility(View.VISIBLE);
-                    textOutput.setVisibility(View.VISIBLE);
+                    mLinearLayout.setVisibility(View.GONE);
+                    textOutput.setVisibility(View.GONE);
                     textOutput.setText("Error: " + e.getMessage());
+                    SendPluginfailed("Error: " + e.getMessage());
                 });
             }
 
@@ -710,7 +724,9 @@ public class CameraAITextActivity extends AppCompatActivity {
                         textOutput.setVisibility(View.GONE);
                         textOutput.setText(result);
 //                        mButtonDone.setVisibility(View.VISIBLE);
-                        SendPluginSuccess();
+                        loadingOverlay.setVisibility(View.GONE);
+                        SendPluginSuccess(result);
+                        Log.d("Result",finalJson);
                     } catch (Exception e) {
                         textOutput.setText("Failed to parse response");
                     }
@@ -740,7 +756,7 @@ public class CameraAITextActivity extends AppCompatActivity {
         return Base64.encodeToString(pdfBytes, Base64.NO_WRAP);
     }
 
-    private void SendPluginSuccess()
+    private void SendPluginSuccess(String result)
     {
 
         try{
@@ -748,13 +764,31 @@ public class CameraAITextActivity extends AppCompatActivity {
             JSONArray mJsonArray = new JSONArray();
             JSONObject mJsonObject = new JSONObject();
             mJsonObject.put("photo_path", photo_path);
-            mJsonObject.put("responsetext", textOutput.getText().toString());
+            mJsonObject.put("responsetext", result);
             mJsonArray.put(mJsonObject);
 //            pref.putString("responsetext",textOutput.getText().toString());
 //            pref.commit();
             resultIntent.putExtra("response",mJsonArray.toString());
             setResult(RESULT_OK, resultIntent);
             finish();
+            overridePendingTransition(0,0);
+        }
+        catch (Exception e)
+        {
+
+        }
+
+    }
+
+    private void SendPluginfailed(String Error)
+    {
+
+        try{
+            Intent intent = new Intent();
+            intent.putExtra("Error",Error);
+            setResult(RESULT_CANCELED, intent);
+            finish();
+            overridePendingTransition(0,0);
         }
         catch (Exception e)
         {

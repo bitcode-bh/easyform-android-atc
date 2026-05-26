@@ -372,7 +372,8 @@
         <activity
             android:name=".CameraAITextActivity"
             android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:windowIsTranslucent="true"
+            android:theme="@style/Theme.Transparent"
             />
 
 

@@ -46,6 +46,25 @@
 
 
     </FrameLayout>
+    <FrameLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#11000000"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ProgressBar
+            android:id="@+id/loader"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:visibility="gone"
+            android:layout_gravity="center"
+           />
+
+    </FrameLayout>
     <!-- Header -->
     <LinearLayout
         android:id="@+id/linearsecond"
