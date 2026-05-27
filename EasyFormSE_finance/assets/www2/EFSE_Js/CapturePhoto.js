@@ -311,7 +311,7 @@ function capture_Photo() {
             cordova.exec(check_photo_entry_with_reading, onfail_cam, 'EntityDetection', 'anAction', q_jsonobj);
         }
         else if (photo_type == "AI") {
-            loading();
+            show_AI_loader();
             cordova.exec(check_photo_entry_with_reading, onfail_cam, 'CameraAITextPlugin', 'anAction', q_jsonobj);
         }
         else if (photo_type == "PhotoEdit") {
@@ -359,6 +359,7 @@ function camera_user_choice(photo_type, t_q_jsonobj) {
             cordova.exec(check_photo_entry_with_reading, onfail_cam, 'EntityDetection', 'anAction', q_jsonobj);
         }
         else if (photo_type == "AI") {
+            show_AI_loader();
             cordova.exec(check_photo_entry_with_reading, onfail_cam, 'CameraAITextPlugin', 'anAction', q_jsonobj);
         }
     }
@@ -570,6 +571,8 @@ function check_photo_entry_with_reading(e) {
                     t_textarea.style.height = t_textarea.scrollHeight + "px";
                 }
             }
+
+            hide_AI_loader();
         }
 
         var img_div = JSON.parse(storage.getItem('img_div_id'));
@@ -1400,7 +1403,12 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
             //alert1('q_jsonobj: ' + JSON.stringify(q_jsonobj));
 
             if (photo_type == "camera" || photo_type == "browse" || photo_type == "AI" || photo_type == "PhotoEdit") {
-                loading();
+                if (photo_type == "AI") {
+                    show_AI_loader();
+                }
+                else {
+                    loading();
+                }
                 cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
             }
             else if (photo_type == "Attendance") {
@@ -1678,10 +1686,14 @@ function onsuccess_CaptureClick_Customer(e) {
         }
     }
 
+    if (photo_type == "AI") {
+        hide_AI_loader();
+    }
 }
 
 function onfail_customer_camera(e) {
     loading_hide();
+    hide_AI_loader();
     //alert1(e + "_onfail_customer_camera")
 }
 
@@ -2310,7 +2322,7 @@ function onsuccess_CaptureClick_Customer_photo_clone(e) {
     setTimeout(function () {
         // loading hide after 1 min in case of any exception
         loading_hide();
-    },60000)
+    }, 60000)
 
     var response = JSON.parse(e);
     var photo_id = response[0].photo_id;
@@ -2361,4 +2373,22 @@ function onsuccess_CaptureClick_Customer_photo_clone(e) {
     else {
         loading_hide();
     }
+}
+
+show_AI_loader = () => {
+    let img_div = JSON.parse(storage.getItem('img_div_id'));
+    let t_new_id = img_div.replace('cbtn_', '');
+
+    if ($("#div_cbtn_" + t_new_id).parent("li").hasClass("w-50-50")) {
+        // 50-50 structure
+        $("#" + img_div).before('<div class="ai-loader" style="margin-left: 47px"><span> AI</span></div>');
+    }
+    else {
+        // 100% structure
+        $("#" + img_div).before('<div class="ai-loader"><span> AI</span></div>');
+    }
+}
+
+hide_AI_loader = () => {
+    $(".ai-loader").remove();
 }

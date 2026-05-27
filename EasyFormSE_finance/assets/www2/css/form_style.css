@@ -362,3 +362,53 @@ div[id^='div_step_Col_'] .cntrl_main_div {
     margin: 7px;
     border-radius: 8px;
 }
+
+/* Ai image loader */
+.ai-loader {
+    width: 50px;
+    height: 50px;
+    border-radius: 0px;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    /* background: #111; */
+    overflow: hidden;
+    top: 8px;
+}
+
+    /* rotating neon border */
+    .ai-loader::before {
+        content: "";
+        position: absolute;
+        inset: -5px;
+        border-radius: 30px;
+        background: conic-gradient(#00eaff, #7a5cff, #ff00ff, #00eaff);
+        animation: spin 1.5s linear infinite;
+    }
+
+    /* inner circle */
+    .ai-loader::after {
+        content: "";
+        position: absolute;
+        inset: 6px;
+        border-radius: 10px;
+        background: #111;
+    }
+
+    .ai-loader span {
+        position: relative;
+        z-index: 2;
+        font-family: Arial, sans-serif;
+        letter-spacing: 1px;
+    }
+
+/* rotation */
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}

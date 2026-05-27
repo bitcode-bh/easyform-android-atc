@@ -2755,6 +2755,7 @@ function onfail_cam() {
     curr_btn_mode = "";
     close_full_view_image_type7();
     loading_hide();
+    hide_AI_loader();
 }
 
 function close_full_view_image_type7() {
