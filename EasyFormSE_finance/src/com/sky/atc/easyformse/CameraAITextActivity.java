@@ -14,10 +14,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ImageDecoder;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
-import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -71,6 +73,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collections;
+import java.util.Iterator;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -151,7 +154,9 @@ public class CameraAITextActivity extends AppCompatActivity {
             Bundle Extras = getIntent().getExtras();
 
             modelname =  Extras.getString("modelname");
-            promttext =  Extras.getString("prompttext");
+          //  promttext =  Extras.getString("prompttext");
+//            promttext ="=== MANDATORY IMAGE AUTHENTICITY CHECK (evaluate FIRST) === Before assessing any PPE, determine if this is a LIVE photo or a photo of a photo/screen. REJECT as SPOOF if ANY of the following are present: - A screen, monitor, tablet, or phone display is visible in the frame - Visible screen glare, pixel grid, moire pattern, or scan lines - A printed photo held up or placed on a surface - Photo edges or white borders visible (indicating a printed or cropped image) - The image contains another image (nested framing) - Reflection of a camera or person in a screen taking a photo - Unusual color banding, compression artifacts consistent with screen photography - The background shows a desk, table, or hand holding a device showing a photo - Timestamp or UI elements from another app overlaid on the photo - The image appears 2D-flat with no depth or natural shadow variation If ANY spoof indicator is detected: set spoof_detected = true and result = FAIL immediately. Do NOT assess PPE content if spoof is detected. === You are a strict PPE compliance inspector for telecom tower operations in India. Your sole task is binary: confirm whether valid head protection is CLEARLY VISIBLE in this image.   VALID Head Protection Types:   Type A: Construction Helmet: (Hard Hat): Rigid shell, must show a clear brim and dome shape.  Type B: Full-Face Helmet: Hard-shell protective headgear covering the entire head and jaw, typically with a visor.  Type C: Half-Face Helmet: Hard-shell protective headgear covering the top and sides of the head, leaving the face/chin exposed.  Type D: Turban (Pagri/Dastar): Must be a full, properly wrapped fabric head covering; not a loose cloth, bandana, or cap.   REJECTION Criteria (FAIL if ANY apply):   Proximity: Face fills more than 60% of the frame (selfie too close, cannot assess PPE).  Quality: Image is blurry, dark, or low resolution. If you cannot read fabric/shell texture, REJECT.  Framing: Only partial head visible (top of frame cuts the crown).  Invalid Gear: A cap, beanie, bandana, or any non-qualifying item is worn.  Ambiguity: If you are GUESSING or INFERRING, FAIL.   STRICT Rules:   Do NOT infer presence from shadows, partial edges, or background context.  Do NOT pass because the person is at a tower site and \\\"likely\\\" has a helmet.  Do NOT consider helmets in the background or held in hand.  A single unclear pixel region is NOT sufficient for PASS.  Turban Rule: Must be a traditional, multi-layered wrap.   Respond ONLY with one word: PASS or FAIL. if detected,also return PPE bounding box coordinates. Format:{ \"Result\" : \"Your Answer\". \"Box\":[coordinates] , \"label\" :\" \"} ";
+            promttext = "Q93 : === MANDATORY IMAGE AUTHENTICITY CHECK (evaluate FIRST) === Before assessing any PPE, determine if this is a LIVE photo or a photo of a photo/screen. REJECT as SPOOF if ANY of the following are present: - A screen, monitor, tablet, or phone display is visible in the frame - Visible screen glare, pixel grid, moire pattern, or scan lines - A printed photo held up or placed on a surface - Photo edges or white borders visible (indicating a printed or cropped image) - The image contains another image (nested framing) - Reflection of a camera or person in a screen taking a photo - Unusual color banding, compression artifacts consistent with screen photography - The background shows a desk, table, or hand holding a device showing a photo - Timestamp or UI elements from another app overlaid on the photo - The image appears 2D-flat with no depth or natural shadow variation If ANY spoof indicator is detected: set spoof_detected = true and result = FAIL immediately. Do NOT assess PPE content if spoof is detected. === You are a safety compliance inspector. Your task: verify a high-visibility (hi-vis) reflective jacket is WORN and VISIBLE in this image. PASS criteria (ALL must be true): - A vest or jacket with fluorescent yellow, orange, or lime-green base fabric is visible ON the persons torso - At minimum 2 retroreflective silver/grey stripe bands are visible on the jacket body or shoulders - The jacket is being WORN not held, hanging, or on another person FAIL criteria (any one is enough to fail): - No fluorescent base color visible on torso area - Reflective stripes absent or fewer than 2 visible - Jacket open and flopped to the sides reflective surface not frontal - Image does not show the torso (head-only or lower-body-only shot) - A regular safety vest without retroreflective stripes â€” color alone does NOT qualify - Image quality: dark, backlit, or resolution too low to distinguish stripe texture CRITICAL anti-hallucination rules: - A yellow shirt or t-shirt is NOT a hi-vis jacket. Reflective stripes are MANDATORY. - Do NOT infer stripes from glare or bright light artifacts - Do NOT pass because the environment looks like a construction site - If you cannot clearly see the stripe texture: FAIL Respond ONLY in ONE WORD FAIL or PASS Q98 : === MANDATORY IMAGE AUTHENTICITY CHECK (evaluate FIRST) === Before assessing any PPE, determine if this is a LIVE photo or a photo of a photo/screen. REJECT as SPOOF if ANY of the following are present: - A screen, monitor, tablet, or phone display is visible in the frame - Visible screen glare, pixel grid, moire pattern, or scan lines - A printed photo held up or placed on a surface - Photo edges or white borders visible (indicating a printed or cropped image) - The image contains another image (nested framing) - Reflection of a camera or person in a screen taking a photo - Unusual color banding, compression artifacts consistent with screen photography - The background shows a desk, table, or hand holding a device showing a photo - Timestamp or UI elements from another app overlaid on the photo - The image appears 2D-flat with no depth or natural shadow variation If ANY spoof indicator is detected: set spoof_detected = true, set both item results to FAIL immediately. Do NOT assess PPE content if spoof is detected. === You are a safety compliance inspector. Evaluate TWO items independently from this image. === ITEM 1: Protective Safety Goggles === PASS criteria: - Goggles or Specs of any kind are visibly worn on the face OR clipped/hanging on the helmet in ready position - Standard spectacles or sunglasses also qualify - Goggles must be around the head or on the helmet or with Tool Kit or worn over the face FAIL criteria: - Image quality too poor to assess face area - No glasses of any kind Identified over the face . - Helmet visors are a red flag and clear fail Respond ONLY in only ONE WORD FAIL or PASS Q94 : === MANDATORY IMAGE AUTHENTICITY CHECK (evaluate FIRST) === Before assessing any PPE, determine if this is a LIVE photo or a photo of a photo/screen. REJECT as SPOOF if ANY of the following are present: - A screen, monitor, tablet, or phone display is visible in the frame - Visible screen glare, pixel grid, moire pattern, or scan lines - A printed photo held up or placed on a surface - Photo edges or white borders visible (indicating a printed or cropped image) - The image contains another image (nested framing) - Reflection of a camera or person in a screen taking a photo - Unusual color banding, compression artifacts consistent with screen photography - The background shows a desk, table, or hand holding a device showing a photo - Timestamp or UI elements from another app overlaid on the photo - The image appears 2D-flat with no depth or natural shadow variation If ANY spoof indicator is detected: set spoof_detected = true and result = FAIL immediately. Do NOT assess PPE content if spoof is detected. === You are a safety compliance inspector for electrical telecom work. Your task: verify insulated rubber gloves are present and worn on at least one hand. IMPORTANT LIMITATION: You CANNOT determine electrical insulation class (Class 0, Class 00, Class 1 etc.) from visual inspection alone. Your job is limited to: PASS criteria (ALL must be true): - At least one hand have/has glove worn that are CLEARLY visible and WORN (not tucked in belt/pocket) - Glove material appears to be rubber or thick synthetic or combination of synthetic with cloth usually colors of yellow and grey, red and blue, or others combinations but NOT thin full latex/complete nitrile/complete cotton - Gloves extend past the wrist (gauntlet-style preferred, minimum to wrist line) - Gloves show no visible damage, cuts, tears, or punctures in visible areas FAIL criteria: - Bare hands visible or - Thin disposable gloves (latex, medical-style) these are NOT insulating gloves - No glove worn - Gloves not actually on hands (held or lying nearby) - Hands not in frame cannot assess - Image too blurry or dark to see glove texture STRICT rule: Do NOT pass Class verification. Output class_verified = false always. Class compliance requires physical certification tag check that is NOT your function. Respond ONLY in only ONE WORD FAIL or PASS Q96 : === MANDATORY IMAGE AUTHENTICITY CHECK (evaluate FIRST) === Before assessing any PPE, determine if this is a LIVE photo or a photo of a photo/screen. REJECT as SPOOF if ANY of the following are present: - A screen, monitor, tablet, or phone display is visible - Visible screen glare, pixel grid, moire pattern, or scan lines - A printed photo held or placed on a surface - Visible photo borders or edges - Nested image (image within image) - Reflection of camera/person on a screen - Strong compression artifacts or unnatural color banding - Device UI elements (timestamp, icons, overlays) - Scene appears flat with no natural depth/shadows If ANY spoof indicator is detected: ? spoof_detected = true ? result = FAIL ? STOP (Do NOT assess PPE) === PPE VALIDATION === You are a strict PPE compliance inspector for telecom tower operations in India. Task: Determine if valid head protection is CLEARLY VISIBLE. VALID head protection (PASS if clearly visible): - Type A: Construction helmet (hard hat) - Any color (including WHITE) - Must show a rigid dome shape - Brim/edge should be partially or fully visible - Type B: Turban (Pagri/Dastar) - Fully wrapped and structured - Clearly covers entire head REJECT (FAIL) if ANY apply: - Face occupies >60% of image (too close/selfie) - Image is blurry, dark, or low resolution - Top of head is cut off / not fully visible - Helmet is NOT clearly identifiable as a hard shell - Only a small/ambiguous portion of helmet is visible - Person is wearing cap, cloth, bandana, or non-PPE item - PPE is only in hand or background IMPORTANT RELAXATION: - Helmet strap visibility is NOT mandatory - Accept helmet if dome shape and structure are clearly visible - Do NOT reject valid white helmets due to lighting or low contrast STRICT RULES: - Do NOT infer from context (location, shadows, etc.) - Do NOT consider background helmets - If visibility is unclear ? FAIL === OUTPUT === Respond ONLY with: PASS or FAIL .if detected,also return PPE bounding box coordinates. Give Response in JSON object : {Q93 : \"{ \"Result\" : \"Your Answer\". \"Box\":[coordinates] , \"label\" :\" \"}\", Q98 : \"{ \"Result\" : \"Your Answer\". \"Box\":[coordinates] , \"label\" :\" \"}\", Q94 : \"{ \"Result\" : \"Your Answer\". \"Box\":[coordinates] , \"label\" :\" \"}\", Q96 : \"{ \"Result\" : \"Your Answer\". \"Box\":[coordinates] , \"label\" :\" \"}\"}\n";
             // photo_path = Extras.getString("photoPathUri");
             AI_type = Extras.getString("AI_type");
             quality = Extras.getString("quality");
@@ -403,9 +408,20 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                             loadingOverlay.setVisibility(View.VISIBLE);
                             // Send to Gemini
-                            String prompt = PromptText.getText().toString();
-                            String base64Image = bitmapToBase64(selectedBitmap);
-                            sendToGemini(promttext, base64Image, "image/jpeg");
+
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            String prompt = PromptText.getText().toString();
+                                            String base64Image = bitmapToBase64(selectedBitmap);
+                                            sendToGemini(promttext, base64Image, "image/jpeg");
+                                        }
+                                    });
+                                }
+                            }).start();
 
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -551,7 +567,7 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                     String prompt = PromptText.getText().toString();
                     String base64Image = bitmapToBase64(selectedBitmap);
-                    sendToGemini(prompt,base64Image,"image/jpeg");
+                    sendToGemini(promttext,base64Image,"image/jpeg");
                 }
                 else {
 
@@ -595,22 +611,46 @@ public class CameraAITextActivity extends AppCompatActivity {
                             }
                             else {
                                 mimtypeforapi = "image/jpeg";
-                                imageView.setImageURI(imageUri);
+                                // imageView.setImageURI(imageUri);
+                                Bitmap geminiBitmap = uriToBitmap(imageUri);
+
+                                geminiBitmap = imageOreintationValidator(geminiBitmap, photo_path);
+                                selectedBitmap = geminiBitmap;
                             }
-                            mFrameLayout.setVisibility(View.GONE);
-                            mLinearLayoutmain.setVisibility(View.GONE);
-                            linearsecond.setVisibility(View.GONE);
-                            imageView.setVisibility(View.GONE);
-                            pdftext.setVisibility(View.GONE);
-                            pdftext.setText(filename);
-                            PromptText.setVisibility(View.GONE);
-                            PromptText.setText(promttext);
+                            runOnUiThread(() -> {
+                                mFrameLayout.setVisibility(View.GONE);
+                                loadingOverlay.setVisibility(View.VISIBLE);
+                            });
 
-                            loadingOverlay.setVisibility(View.VISIBLE);
 
-                            String prompt = PromptText.getText().toString();
-                            String base64Image = convertPdfToBase64(imageUri);
-                            sendToGemini(promttext,base64Image,mimtypeforapi);
+//                            mLinearLayoutmain.setVisibility(View.GONE);
+//                            linearsecond.setVisibility(View.GONE);
+//                            imageView.setVisibility(View.GONE);
+//                            pdftext.setVisibility(View.GONE);
+//                            pdftext.setText(filename);
+//                            PromptText.setVisibility(View.GONE);
+//                            PromptText.setText(promttext);
+                             String prompt = PromptText.getText().toString();
+
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            String base64Image;
+                                            if(extension.contains(".pdf"))
+                                            {
+                                                base64Image = convertPdfToBase64(imageUri);
+                                            }
+                                            else {
+                                                base64Image = bitmapToBase64(selectedBitmap);
+                                            }
+                                            sendToGemini(promttext,base64Image,mimtypeforapi);
+                                        }
+                                    });
+                                }
+                            }).start();
 
                         }
                     } catch (Exception e) {
@@ -629,6 +669,20 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                 }
                 break;
+        }
+    }
+    private Bitmap uriToBitmap(Uri uri) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), uri);
+                return ImageDecoder.decodeBitmap(source);
+            } else {
+                // For older Android versions
+                return MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -720,19 +774,313 @@ public class CameraAITextActivity extends AppCompatActivity {
                                 .getAsJsonArray("parts")
                                 .get(0).getAsJsonObject()
                                 .get("text").getAsString();
-                        mLinearLayout.setVisibility(View.GONE);
-                        textOutput.setVisibility(View.GONE);
-                        textOutput.setText(result);
+                       // mLinearLayout.setVisibility(View.GONE);
+                       // textOutput.setVisibility(View.GONE);
+                        //textOutput.setText(result);
 //                        mButtonDone.setVisibility(View.VISIBLE);
+
+                      //  Log.d("Result",finalJson);
+
+                        Bitmap mutableBitmap = selectedBitmap.copy(Bitmap.Config.ARGB_8888, true);
+//                        JSONObject jsonObject = new JSONObject(result);
+//
+//                        String status = jsonObject.getString("Result");
+//                        String label = jsonObject.getString("label");
+//
+//                        JSONArray boxArray = jsonObject.getJSONArray("Box");
+//
+//
+//                            int top = boxArray.getInt(0);
+//                            int left = boxArray.getInt(1);
+//                            int bottom = boxArray.getInt(2);
+//                            int right = boxArray.getInt(3);
+//
+//                            Log.d("BOX",
+//                                    "left=" + left +
+//                                            " top=" + top +
+//                                            " right=" + right +
+//                                            " bottom=" + bottom);
+//                            Canvas canvas = new Canvas(mutableBitmap);
+//
+//                            Paint boxPaint = new Paint();
+//                            boxPaint.setColor(Color.RED);
+//                            boxPaint.setStyle(Paint.Style.STROKE);
+//                            boxPaint.setStrokeWidth(10);
+//
+//                            Paint textPaint = new Paint();
+//                            textPaint.setColor(Color.RED);
+//                            textPaint.setTextSize(60);
+//                            textPaint.setStyle(Paint.Style.FILL);
+//
+//                            float scaledLeft =
+//                                    (left / 1000f) * mutableBitmap.getWidth();
+//
+//                            float scaledTop =
+//                                    (top / 1000f) * mutableBitmap.getHeight();
+//
+//                            float scaledRight =
+//                                    (right / 1000f) * mutableBitmap.getWidth();
+//
+//                            float scaledBottom =
+//                                    (bottom / 1000f) * mutableBitmap.getHeight();
+//
+//                            canvas.drawRect(
+//                                    scaledLeft,
+//                                    scaledTop,
+//                                    scaledRight,
+//                                    scaledBottom,
+//                                    boxPaint
+//                            );
+//
+//                            // Draw label
+//                            canvas.drawText(
+//                                    "",
+//                                    left,
+//                                    top - 20,
+//                                    textPaint
+//                            );
+
+                        result = cleanJson(result);
+                        Log.d("Result cleanJson",result);
+
+
+                        if (!result.startsWith("{")
+                                && !result.startsWith("[")) {
+
+                            Log.d("PLAIN_TEXT", result);
+                            textOutput.setText(result);
+                            loadingOverlay.setVisibility(View.GONE);
+                            SendPluginSuccess(result);
+                            return;
+                        }
+
+                        Canvas canvas = new Canvas(mutableBitmap);
+
+                        Paint boxPaint = new Paint();
+                        boxPaint.setColor(Color.RED);
+                        boxPaint.setStyle(Paint.Style.STROKE);
+                        boxPaint.setStrokeWidth(5);
+
+                        Paint textPaint = new Paint();
+                        textPaint.setColor(Color.RED);
+                        textPaint.setTextSize(13);
+                        textPaint.setStyle(Paint.Style.FILL);
+
+
+                        JSONObject root = new JSONObject(result);
+                        if (root.has("Result")) {
+
+                            drawDetection(root, canvas,
+                                    mutableBitmap,
+                                    boxPaint,
+                                    textPaint);
+
+                        }
+                        else {
+
+                            Iterator<String> keys = root.keys();
+
+                            while (keys.hasNext()) {
+
+                                String key = keys.next();
+
+                                Object value = root.get(key);
+
+
+                                if (value instanceof JSONObject) {
+
+                                    JSONObject item =
+                                            (JSONObject) value;
+
+                                    drawDetection(
+                                            item,
+                                            canvas,
+                                            mutableBitmap,
+                                            boxPaint,
+                                            textPaint
+                                    );
+                                }
+
+
+                                else if (value instanceof String) {
+
+                                    String itemString =
+                                            (String) value;
+
+                                    JSONObject converted = new JSONObject(itemString);
+
+                                    if (converted != null) {
+
+                                        drawDetection(
+                                                converted,
+                                                canvas,
+                                                mutableBitmap,
+                                                boxPaint,
+                                                textPaint
+                                        );
+                                    }
+                                }
+                            }
+                        }
+
+
+                            String dir = Environment.getExternalStorageDirectory()
+                                    + File.separator + "ATC_AIImage";
+
+                            File folder = new File(dir); // folder name
+                            folder.mkdirs();
+
+                            String name = "AI_" + System.currentTimeMillis() + ".jpeg";
+                            File finalFile = new File(dir, name);
+
+                            FileOutputStream out = new FileOutputStream(finalFile);
+
+                            mutableBitmap.compress(
+                                    Bitmap.CompressFormat.JPEG,
+                                    100,
+                                    out
+                            );
+
+                            out.flush();
+                            out.close();
+
+                            photo_path = finalFile.getAbsolutePath();
+//                            Log.d("SavedImage", finalFile.getAbsolutePath());
+//
+//                            Toast.makeText(
+//                                    CameraAITextActivity.this,
+//                                    "Saved: " + finalFile.getAbsolutePath(),
+//                                    Toast.LENGTH_LONG
+//                            ).show();
+
+
+
+                        textOutput.setText(result);
+
                         loadingOverlay.setVisibility(View.GONE);
+
                         SendPluginSuccess(result);
-                        Log.d("Result",finalJson);
+
                     } catch (Exception e) {
+                        SendPluginfailed(e.toString());
+                        Log.d("Failed to parse response",e.toString());
                         textOutput.setText("Failed to parse response");
                     }
                 });
             }
         });
+    }
+
+//    private JSONObject convertStringToJson(String text) {
+//
+//        try {
+//
+//            JSONObject obj = new JSONObject();
+//
+//            Matcher resultMatcher = Pattern.compile("Result\\s*:\\s*\"(.*?)\"").matcher(text);
+//
+//            if (resultMatcher.find()) {
+//
+//                obj.put("Result", resultMatcher.group(1));
+//            }
+//
+//            Matcher labelMatcher = Pattern.compile("label\\s*:\\s*\"(.*?)\"").matcher(text);
+//
+//            if (labelMatcher.find()) {
+//                obj.put("label", labelMatcher.group(1));
+//            }
+//
+//            Matcher boxMatcher =
+//                    Pattern.compile("\\[(.*?)\\]").matcher(text);
+//
+//            if (boxMatcher.find()) {
+//
+//                String[] nums =
+//                        boxMatcher.group(1)
+//                                .split(",");
+//
+//                JSONArray arr =
+//                        new JSONArray();
+//
+//                for (String n : nums) {
+//                    arr.put(Integer.parseInt(n.trim()));
+//                }
+//
+//                obj.put("Box", arr);
+//            }
+//
+//            return obj;
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return null;
+//    }
+
+    private String cleanJson(String text) {
+
+        text = text
+                .replace("```json", "")
+                .replace("```", "")
+                .trim();
+
+        return text.trim();
+    }
+    private void drawDetection(
+            JSONObject item,
+            Canvas canvas,
+            Bitmap bitmap,
+            Paint boxPaint,
+            Paint textPaint) {
+
+        try {
+
+            String status = item.getString("Result");
+
+            if (!status.equalsIgnoreCase("PASS")) {
+                return;
+            }
+
+            String label = item.optString("label", "");
+
+            JSONArray boxArray = item.getJSONArray("Box");
+
+            int top = boxArray.getInt(0);
+            int left = boxArray.getInt(1);
+            int bottom = boxArray.getInt(2);
+            int right = boxArray.getInt(3);
+
+            float scaledLeft =
+                    (left / 1000f) * bitmap.getWidth();
+
+            float scaledTop =
+                    (top / 1000f) * bitmap.getHeight();
+
+            float scaledRight =
+                    (right / 1000f) * bitmap.getWidth();
+
+            float scaledBottom =
+                    (bottom / 1000f) * bitmap.getHeight();
+
+            canvas.drawRect(
+                    scaledLeft,
+                    scaledTop,
+                    scaledRight,
+                    scaledBottom,
+                    boxPaint
+            );
+
+            canvas.drawText(
+                    "",
+                    scaledLeft,
+                    scaledTop - 10,
+                    textPaint
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private String bitmapToBase64(Bitmap bitmap) {
@@ -742,18 +1090,24 @@ public class CameraAITextActivity extends AppCompatActivity {
     }
 
 
-    private String convertPdfToBase64(Uri pdfUri) throws IOException {
-        InputStream inputStream = getContentResolver().openInputStream(pdfUri);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int bytesRead;
+    private String convertPdfToBase64(Uri pdfUri)  {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(pdfUri);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int bytesRead;
 
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, bytesRead);
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+
+            byte[] pdfBytes = outputStream.toByteArray();
+            return Base64.encodeToString(pdfBytes, Base64.NO_WRAP);
+        } catch (Exception e) {
+//            throw new RuntimeException(e);
+            return e.toString();
         }
 
-        byte[] pdfBytes = outputStream.toByteArray();
-        return Base64.encodeToString(pdfBytes, Base64.NO_WRAP);
     }
 
     private void SendPluginSuccess(String result)
