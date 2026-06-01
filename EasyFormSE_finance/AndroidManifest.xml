@@ -372,8 +372,9 @@
         <activity
             android:name=".CameraAITextActivity"
             android:exported="false"
-            android:windowIsTranslucent="true"
+            android:windowAnimationStyle="@null"
             android:theme="@style/Theme.Transparent"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize"
             />
 
 
