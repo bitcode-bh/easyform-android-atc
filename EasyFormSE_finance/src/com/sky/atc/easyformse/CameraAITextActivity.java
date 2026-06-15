@@ -104,7 +104,7 @@ public class CameraAITextActivity extends AppCompatActivity {
     String quality;
     String width;
     String height;
-
+    String max_file_size;
     private Camera camera;
 
     private TextureView textureView;
@@ -162,6 +162,7 @@ public class CameraAITextActivity extends AppCompatActivity {
             quality = Extras.getString("quality");
             width = Extras.getString("width");
             height = Extras.getString("height");
+            max_file_size = Extras.getString("max_file_size");
 
             if(AI_type.equalsIgnoreCase(""))
             {
@@ -390,12 +391,15 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                         // Save the rotated bitmap to file
                         File pictureFile = getOutputMediaFile();
+                        photo_path = pictureFile.getAbsolutePath();
                         selectedBitmap = imageOreintationValidator(selectedBitmap, pictureFile.getAbsolutePath());
                         try (FileOutputStream fos = new FileOutputStream(pictureFile)) {
                             selectedBitmap.compress(Bitmap.CompressFormat.JPEG, Integer.parseInt(quality), fos);
-                            fos.flush();
 
-                            photo_path = pictureFile.getAbsolutePath();
+                            Bitmap geminiBitmap;
+                            geminiBitmap = resize(selectedBitmap, Integer.parseInt(width), Integer.parseInt(height));
+                            fos.flush();
+                            fos.close();
 
                             // Update UI
                             mFrameLayout.setVisibility(View.GONE);
@@ -416,7 +420,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                                         @Override
                                         public void run() {
                                             String prompt = PromptText.getText().toString();
-                                            String base64Image = bitmapToBase64(selectedBitmap);
+                                            String base64Image = bitmapToBase64(geminiBitmap);
                                             sendToGemini(promttext, base64Image, "image/jpeg");
                                         }
                                     });
@@ -437,6 +441,18 @@ public class CameraAITextActivity extends AppCompatActivity {
 
     }
 
+
+    // only use for send bitmap to gemini api calling 15062026
+    private static Bitmap resize(Bitmap image,
+                                 int maxWidth,
+                                 int maxHeight) {
+
+        return Bitmap.createScaledBitmap(
+                image,
+                640,
+                480,
+                true);
+    }
 
     private File getOutputMediaFile() {
         String dir = Environment.getExternalStorageDirectory() + File.separator + "myDirectory";
@@ -595,7 +611,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                         long lengthoffile = file.length();
                         lengthoffile = lengthoffile / 1024;
 
-                        int filesize = Integer.parseInt("5") * 1000;
+                        int filesize = Integer.parseInt(max_file_size) * 1000;
                         //Only Less than 5MB of file size allowed
                         if (lengthoffile < filesize) {
                             String path = file.getAbsolutePath();
@@ -615,6 +631,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                                 Bitmap geminiBitmap = uriToBitmap(imageUri);
 
                                 geminiBitmap = imageOreintationValidator(geminiBitmap, photo_path);
+                                geminiBitmap = resize(geminiBitmap, Integer.parseInt(width), Integer.parseInt(height));
                                 selectedBitmap = geminiBitmap;
                             }
                             runOnUiThread(() -> {
@@ -630,7 +647,7 @@ public class CameraAITextActivity extends AppCompatActivity {
 //                            pdftext.setText(filename);
 //                            PromptText.setVisibility(View.GONE);
 //                            PromptText.setText(promttext);
-                             String prompt = PromptText.getText().toString();
+                            String prompt = PromptText.getText().toString();
 
                             new Thread(new Runnable() {
                                 @Override
@@ -652,7 +669,19 @@ public class CameraAITextActivity extends AppCompatActivity {
                                 }
                             }).start();
 
+
                         }
+                        else {
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(context, "File size is too big ! \n File size must be less than "+max_file_size+"MB!", Toast.LENGTH_LONG).show();
+                                }
+                            });
+
+                        }
+
+
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

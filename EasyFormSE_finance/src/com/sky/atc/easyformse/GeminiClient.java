@@ -10,6 +10,7 @@ import net.sqlcipher.database.SQLiteDatabase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +23,7 @@ import okhttp3.RequestBody;
 
 public class GeminiClient {
     static SQLiteDatabase database;
-//    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBklsrY31wUPmy1ZBg642ui-d0IGuuCI8M";
+    //    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=AIzaSyBklsrY31wUPmy1ZBg642ui-d0IGuuCI8M";
     private static String API_URL;
     private static final String WCFURL = sqlitewraper.context.getResources().getString(R.string.WCFURL);
     private static final String METHOD_NAME_corner = "Select_url_from_Modelname";
@@ -85,8 +86,10 @@ public class GeminiClient {
                             .readTimeout(90, TimeUnit.SECONDS)
                             .build();
 
-                    String json = new Gson().toJson(Map.of(
-                            "contents", List.of(Map.of(
+                    Map<String, Object> requestMap = new HashMap<>();
+
+                    requestMap.put("contents", List.of(
+                            Map.of(
                                     "role", "user",
                                     "parts", List.of(
                                             Map.of("text", prompt),
@@ -95,8 +98,19 @@ public class GeminiClient {
                                                     "data", base64Image
                                             ))
                                     )
-                            ))
+                            )
                     ));
+
+                    if (modelname != null && !modelname.toLowerCase().startsWith("gemini-2")) {
+
+                        requestMap.put("generationConfig",
+                                Map.of("thinkingConfig",
+                                        Map.of("thinkingLevel", "MINIMAL")
+                                )
+                        );
+                    }
+
+                    String json = new Gson().toJson(requestMap);
 
                     RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
                     Request request = new Request.Builder().url(API_URL).post(body).build();
