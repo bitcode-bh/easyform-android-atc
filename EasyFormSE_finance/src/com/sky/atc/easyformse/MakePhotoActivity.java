@@ -40,6 +40,7 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Display;
 import android.view.MotionEvent;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -188,6 +189,9 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
     LinearLayout mLayoutTextview;
     String max_file_size;
     private static final int PERMISSION_REQUEST_CODE = 200;
+    private int currentDeviceAngle = 0;
+    private OrientationEventListener orientationEventListener;
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -237,6 +241,25 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
         } catch (Exception e) {
             LogUtils.photoLogFile(e.toString(), "MakePhotoActivity");
         }
+
+        orientationEventListener = new OrientationEventListener(this) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                if (orientation == ORIENTATION_UNKNOWN) return;
+
+
+                if (orientation >= 315 || orientation < 45) {
+                    currentDeviceAngle = 0;
+                } else if (orientation >= 45 && orientation < 135) {
+                    currentDeviceAngle = 90;
+                } else if (orientation >= 135 && orientation < 225) {
+                    currentDeviceAngle = 180;
+                } else if (orientation >= 225 && orientation < 315) {
+                    currentDeviceAngle = 270;
+                }
+            }
+        };
+        orientationEventListener.enable();
 
 
         imgdate = findViewById(R.id.imgdate);
@@ -789,6 +812,9 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
             preview.camera = null;
         }
         mSensorManager.unregisterListener(this);
+        if (orientationEventListener != null) {
+            orientationEventListener.disable();
+        }
         super.onDestroy();
     }
 
@@ -1003,6 +1029,7 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
                 i.putExtra("SMText", SMText);
                 i.putExtra("info", info);
                 i.putExtra("max_file_size",max_file_size);
+                i.putExtra("currentDeviceAngle",currentDeviceAngle);
                 startActivityForResult(i, 101);
 
             } else {

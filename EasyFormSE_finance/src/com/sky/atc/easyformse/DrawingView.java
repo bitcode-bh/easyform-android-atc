@@ -69,7 +69,7 @@ class DrawingView extends View
 	{
 		// TODO Auto-generated method stub
 		super.draw(canvas);
-
+		canvas.drawColor(Color.BLACK);
 		h_n = mBitmap.getHeight();
 		w_n = mBitmap.getWidth();
 		float h = canvas.getHeight();
@@ -87,7 +87,7 @@ class DrawingView extends View
 		xscale1 = (float) w / w_n;
 		yscale1 = h / h_n;
 		xscale2 = xscale1;
-		yscale2 = yscale2;
+		yscale2 = yscale1;
 		// float diff = h1 - h;
 
 		if (xscale1 > yscale1) // make sure both dimensions fit (use the smaller
@@ -112,15 +112,15 @@ class DrawingView extends View
 		if (w_n > h_n)
 		{
 			mBitmap = Bitmap.createScaledBitmap(mBitmap, (int) (newx),(int) (newy), true);
-		} 
-		else 
+			canvas.drawBitmap(mBitmap, borderx, bordery, null);
+		}
+		else
 		{
 			mBitmap = Bitmap.createScaledBitmap(mBitmap, canvas.getWidth(),canvas.getHeight(), true);
+			canvas.drawBitmap(mBitmap, 0, 0, null);
 
 		}
 
-
-		canvas.drawBitmap(mBitmap, 0, 0, null);
 		mCanvas = new Canvas(mBitmap);
 	}
 
@@ -135,23 +135,34 @@ class DrawingView extends View
 		String colhex = Integer.toHexString(colval);
 		mPaint.setColor(Color.parseColor("#" + colhex));
 		mPaint.setStrokeWidth(color2.getStrockWidth());
+
+
+		float currentX = event.getX();
+		float currentY = event.getY();
+
+		if (w_n > h_n)
+		{
+			currentX = (currentX - borderx) / xscale1;
+			currentY = (currentY - bordery) / xscale1;
+		}
+
 		switch (action) 
 		{
 		case MotionEvent.ACTION_DOWN:
-			downx = event.getX();
-			downy = event.getY();
+			downx = currentX;
+			downy = currentY;
 			break;
 		case MotionEvent.ACTION_MOVE:
-			upx = event.getX();
-			upy = event.getY();
+			upx = currentX;
+			upy = currentY;
 			mCanvas.drawLine(downx, downy, upx, upy, mPaint);
 			invalidate();
 			downx = upx;
 			downy = upy;
 			break;
 		case MotionEvent.ACTION_UP:
-			upx = event.getX();
-			upy = event.getY();
+			upx = currentX;
+			upy = currentY;
 
 			mCanvas.drawLine(downx, downy, upx, upy, mPaint);
 			invalidate();

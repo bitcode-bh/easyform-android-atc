@@ -200,6 +200,7 @@ public class easy_draw_new extends Activity implements OnClickListener,
     String info;
     String max_file_size;
     String themecolor;
+    int currentDeviceAngle;
     public static Bitmap rotateImage(Bitmap source, float angle) {
 
         Bitmap retVal = source;
@@ -552,6 +553,14 @@ public class easy_draw_new extends Activity implements OnClickListener,
             SMText = Extras.getString("SMText", "");
             info = Extras.getString("info","");
             max_file_size = Extras.getString("max_file_size","");
+            try{
+                currentDeviceAngle = Extras.getInt("currentDeviceAngle",0);
+            }
+            catch (Exception e)
+            {
+                currentDeviceAngle = 0;
+            }
+
             if (hasResponse == 0) {
                 uniqueCode = Extras.getString("uniqueId");// 73d2a32c-d39e-410d-96f0-a3a3d4d6d03e
             }
@@ -1142,27 +1151,27 @@ public class easy_draw_new extends Activity implements OnClickListener,
                 generateNoteOnSD("easydraw11.txt", "before Decode Stream");
 
                 if (!camera_new.isCropMode) {
-                    if (cameraviewid == -1) {
-                        if (flagdraw.equals("1")) {
-                            bmp = rotateImage(bmp, 0);
-                        } else {
-                            bmp = rotateImage(bmp, 90);
-                        }
+
+                    int baseRotation = 90;
+                    if (cameraviewid == 0) {
+                        baseRotation = (flagdraw.equals("1")) ? 0 : 90;
                     } else {
-                        if (cameraviewid == 0) {
-                            if (flagdraw.equals("1")) {
-                                bmp = rotateImage(bmp, 0);
-                            } else {
-                                bmp = rotateImage(bmp, 90);
-                            }
-                        } else {
-                            if (flagdraw.equals("1")) {
-                                bmp = rotateImage(bmp, 0);
-                            } else {
-                                bmp = rotateImage(bmp, 270);
-                            }
-                        }
+                        baseRotation = (flagdraw.equals("1")) ? 0 : 270;
                     }
+
+
+                    int finalRotationAngle = baseRotation;
+
+
+                    if (currentDeviceAngle == 90) {
+                        finalRotationAngle = (baseRotation == 90) ? 180 : 0;
+                    } else if (currentDeviceAngle == 270) {
+                        finalRotationAngle = (baseRotation == 90) ? 0 : 180;
+                    } else if (currentDeviceAngle == 180) {
+                        finalRotationAngle = (baseRotation + 180) % 360;
+                    }
+
+                    bmp = rotateImage(bmp, finalRotationAngle);
                 }
 
 
