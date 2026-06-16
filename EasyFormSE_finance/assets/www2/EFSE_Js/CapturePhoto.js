@@ -555,6 +555,15 @@ function check_photo_entry_with_reading(e) {
                 $("." + target_class + "").show();
                 let responsetext = myArray[0].responsetext;
                 responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
+
+                try {
+                    // JSON string with Result key in response
+                    let t_responsetext = JSON.parse(responsetext);
+                    responsetext = t_responsetext.Result;
+                } catch (e) {
+                    // simple string
+                }
+
                 $("." + target_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
                 let where_box_id = $("." + target_class + " :input").attr("id");
                 let tagName = $("#" + where_box_id + "").prop("tagName");
@@ -1607,13 +1616,26 @@ function onsuccess_CaptureClick_Customer(e) {
             let responsetext = response[0].responsetext;
             responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
             try {
-                let responsetext_new = responsetext.replaceAll('\n', '');
-                responsetext_new = responsetext_new.match(/\{(.*?)\}/);     // extract inner string { }
-                responsetext_new = responsetext_new[0];
-                let responseJSON = JSON.parse(responsetext_new);
-
+                
+                try {
+                    var responsetext_new = responsetext.replaceAll('\n', '');
+                    responsetext_new = responsetext_new.match(/\{(.*?)\}/);     // extract inner string { }
+                    responsetext_new = responsetext_new[0];
+                    var responseJSON = JSON.parse(responsetext_new);
+                }
+                catch (e) {
+                    // response with Result key
+                    var responsetext_new = responsetext.replaceAll('\n', '');
+                    var responseJSON = JSON.parse(responsetext_new);
+                }
+                
                 // response is in JSON
                 $.each(responseJSON, function (key, value) {
+
+                    if (typeof value == 'object') {
+                        value = value.Result;
+                    }
+
                     let qid_class = key;
                     $("." + qid_class + "").show();
                     $("." + qid_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
@@ -1656,6 +1678,15 @@ function onsuccess_CaptureClick_Customer(e) {
     else {
         let responsetext = response[0].responsetext;
         responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
+
+        try {
+            // JSON string with Result key in response
+            let t_responsetext = JSON.parse(responsetext);
+            responsetext = t_responsetext.Result;
+        } catch (e) {
+            // simple string
+        }
+
         $("." + target_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
         let where_box_id = $("." + target_class + " :input").attr("id");
         let tagName = $("#" + where_box_id + "").prop("tagName");
