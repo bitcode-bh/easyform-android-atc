@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+import com.sky.atc.easyformse.utils.LogUtils;
 
 //Speed violation calculation
 @StringFogIgnore
@@ -160,6 +161,7 @@ public class SpeedViolation {
                 //than violation is started
                 if ((d.getSpeedLimit() < ac_speed) && (d.getspeed_time() < d.getSpeedLimit())) {
                     Log.d("##SPEED_DETECT", String.valueOf(ac_speed));
+                    LogUtils.writeAttendanceLogToFile( String.valueOf(ac_speed),"##SPEED_DETECT");
                     detectedMilli = System.currentTimeMillis();
                     d.setspeed_time(ac_speed);
                     flag = 1;
@@ -193,6 +195,7 @@ public class SpeedViolation {
                     long duration = currentTime - detectedMilli;
 
                     Log.d("##LAST_SPEED_DURATION", String.valueOf(duration));
+                    LogUtils.writeAttendanceLogToFile( String.valueOf(duration),"##duration");
                     String speedDuration = sharedPreferences.getString("speedviolation", "120000");
                     long speedDura = 0;
                     if(speedDuration != null && !speedDuration.equalsIgnoreCase(""))
@@ -200,6 +203,7 @@ public class SpeedViolation {
                         speedDura = Long.parseLong(speedDuration);
                     }
 
+                    LogUtils.writeAttendanceLogToFile( String.valueOf(speedDura),"##speedDura");
                     if(savedMilli == 0){
 
                         savedMilli = currentTime;
@@ -213,6 +217,7 @@ public class SpeedViolation {
                         if (duration > speedDura && ac_speed > d.getSpeedLimit() && flag == 1) {
 
                             try {
+                                LogUtils.writeAttendanceLogToFile(String.valueOf("duration:" + duration + ",speedDura:" +speedDura +",ac_speed:" + ac_speed + ",d.getSpeedLimit():"+d.getSpeedLimit()),"##if ");
 
                                 new Handler(Looper.getMainLooper()).post(SpeedViolation::speedViolationAlert);
                                 ContentValues c = new ContentValues();
@@ -261,6 +266,7 @@ public class SpeedViolation {
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 Log.d("SPEED_EXCEPTION", e.getMessage());
+                                LogUtils.writeAttendanceLogToFile( e.getMessage(),"SPEED_EXCEPTION");
                             }
                         }
 
@@ -276,6 +282,7 @@ public class SpeedViolation {
 
                             savedMilli = currentTime;
                             Log.d("##VIOLATION_MORETHAN45", String.valueOf(savedMilli));
+                            LogUtils.writeAttendanceLogToFile( String.valueOf(savedMilli),"##VIOLATION_MORETHAN45");
 
                         }else {
 
@@ -283,6 +290,7 @@ public class SpeedViolation {
                             if (duration > speedDura && ac_speed > d.getSpeedLimit() && flag == 1) {
 
                                 try {
+                                    LogUtils.writeAttendanceLogToFile(String.valueOf("duration:" + duration + ",speedDura:" +speedDura +",ac_speed:" + ac_speed + ",d.getSpeedLimit():"+d.getSpeedLimit()),"##else ");
                                     new Handler(Looper.getMainLooper()).post(SpeedViolation::speedViolationAlert);
                                     ContentValues c = new ContentValues();
                                     c.put("username", d.getusername());
@@ -328,6 +336,8 @@ public class SpeedViolation {
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     Log.d("SPEED_EXCEPTION", e.getMessage());
+                                    LogUtils.writeAttendanceLogToFile(e.getMessage() ,"##else SPEED_EXCEPTION");
+
                                 }
                             }
                             savedMilli = currentTime;
