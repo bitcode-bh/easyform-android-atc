@@ -133,6 +133,9 @@ public class CameraAITextActivity extends AppCompatActivity {
     private  String METHOD_NAME_corner = "PhotoAIMaster"; // gemini api call form server side 17062026
     String Client_Primary_Key;
     static SQLiteDatabase database;
+    String sId;
+    String queId ;
+    String checksheetid;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -1461,9 +1464,9 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                 String companyId = jsonObject.getString("company_id");
                 String site_id = jsonObject.getString("site_id");
-                String sId = jsonObject.getString("sid");
-                String queId = jsonObject.getString("que_id");
-                String checksheetid = jsonObject.getString("checksheetid");
+                 sId = jsonObject.getString("sid");
+                 queId = jsonObject.getString("que_id");
+                 checksheetid = jsonObject.getString("checksheetid");
                 String stepNo = jsonObject.getString("step_No");
                 String phId = jsonObject.getString("Ph_id");
                 String thPath = jsonObject.getString("th_path");
@@ -1781,6 +1784,11 @@ public class CameraAITextActivity extends AppCompatActivity {
 
             requestMap.put("Photo_Id", String.valueOf(photoId));
             requestMap.put("Client_Primary_Key",Client_Primary_Key);
+            requestMap.put("Task_Id",sId);
+            requestMap.put("Checksheet_Id",checksheetid);
+            requestMap.put("Que_Id",queId);
+            requestMap.put("ModelName",modelname);
+
 
             requestMap.put("contents", List.of(
                     Map.of(
