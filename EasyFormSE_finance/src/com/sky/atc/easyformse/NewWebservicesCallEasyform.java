@@ -644,4 +644,146 @@ public class NewWebservicesCallEasyform {
     }
 
 
+    public static String ExecuteNetworkHTTPPostRequestForGemini(JSONObject jsonData, String appUrl, String webMethod) {
+
+
+        String jsonResponse = null;
+
+        B_new b1 = new B_new();
+        String u_c2 = b1.GetValue();
+        if (u_c2 == null) {
+            u_c2 = "";
+        }
+
+        if (webMethod.equalsIgnoreCase("Device_Login_With_Multi_Role_Crypto") ||
+                webMethod.equalsIgnoreCase("Wcf_Select_ThemeForPackage") ||
+                webMethod.equalsIgnoreCase("Wcf_GetApplicationURL_New") ||
+                webMethod.equalsIgnoreCase("WCF_getGCMdataByUsername") ||
+                (!u_c2.equalsIgnoreCase("NA") && !u_c2.equalsIgnoreCase("")) ||
+                webMethod.equalsIgnoreCase("WCF_ForgotPassword") ||
+                webMethod.equalsIgnoreCase("Wcf_LDAP_authentication_check")) {
+
+            appUrl = appUrl + webMethod;
+
+            JSONArray jsds = new JSONArray();
+            jsds.put(jsonData);
+
+            JSONObject data2 = null;
+            try {
+                database = sqlitewraper.getDatabase();
+                Cursor c3 = database.rawQuery("SELECT username,company_id,appid,user_id FROM Login_Master",
+                        null);
+                c3.moveToLast();
+                String username = c3.getString(0);
+                B_new b = new B_new();
+                String u_c = b.GetValue();
+                int company_id = c3.getInt(1);
+                String appid = c3.getString(2);
+                String UserId = c3.getString(3);
+                c3.close();
+
+
+                MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+                String roleid = prefs.getString("authroleidn", "0");
+                String companyFeatureid = prefs.getString("authcompanyfid", "0");
+
+                if(webMethod.equalsIgnoreCase("Wcf_GetApplicationURL_New"))
+                {
+                    pref = sqlitewraper.getSecureShared("MyPref");
+                    username = pref.getString("username","");
+                    data2 = new JSONObject();
+                    data2.put("username", username);
+                    data2.put("u_c", u_c);
+                    data2.put("appid", appid);
+                    data2.put("user_id", UserId);
+                    data2.put("Role_Id", roleid);
+                    data2.put("Company_Feature_Id", companyFeatureid);
+                    data2.put("matchId", "0");
+
+                }
+                else {
+                    data2 = new JSONObject();
+                    data2.put("username", username);
+                    data2.put("u_c", u_c);
+                    data2.put("appid", appid);
+                    data2.put("user_id", UserId);
+                    data2.put("Role_Id", roleid);
+                    data2.put("Company_Feature_Id", companyFeatureid);
+                    data2.put("matchId", "0");
+
+                }
+
+                String auth1 = data2.toString();
+
+
+                MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                RequestBody body1 = RequestBody.create(JSON, jsds.toString());
+                Request request = new Request.Builder()
+                        .header("Accept", "application/json")
+                        .header("Content-Type", "application/json; charset=utf-8")
+                        .header("auth1", auth1)
+                        .header("Role_Id", roleid)
+                        .header("Company_Feature_Id", companyFeatureid)
+                        .header("matchId", "0")
+                        .post(body1)
+                        .url(appUrl)
+                        .build();
+                String forErrorLog = "\nauth1 :" + auth1 + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
+                        "matchId" + "0" + "\nBody :" + jsds;
+
+                long startTime = System.currentTimeMillis();
+                //  LogUtils.writeApilistLogToFile(webMethod, startTime,0,context);
+
+                String str = "Api -" + webMethod;
+                DeviceEventsUtils.showToast(str);
+
+
+                Log.d("##WEBSERVICE1", webMethod);
+
+                if (!auth1.equalsIgnoreCase("")) {
+
+                    Response response = okHttpClient.newCall(request).execute();
+                    Log.d("##WEBSERVICE2", response.toString());
+                    try {
+                        jsonResponse = response.body().string();
+                        jsonResponse = jsonResponse.replaceAll("(\r\n|\n)", "");
+                        long endTime = System.currentTimeMillis();
+                        LogUtils.writeApilistLogToFile(webMethod, startTime,endTime,context);
+                        LogUtils.writeAllApiCallLog( "Request : " + forErrorLog  + "\n\n\nResponse : " + jsonResponse   , appUrl , "");
+
+                    } catch (Exception e) {
+                        LogUtils.writeApiCallLogToFile(e +
+                                "\nJsonData: " + jsonData + "Auth1: " + auth1,  appUrl, "ExecuteNetworkHTTPPostRequest","0");
+                        return null;
+                    }
+                    if (response.code() != 200) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            public void run() {
+                                Toast.makeText(context, "Response code: " + response.code() + "\nMethod: " + webMethod, Toast.LENGTH_LONG).show();
+                            }
+                        });
+
+                        LogUtils.writeApiCallLogToFile("Response code: " + response.code()
+                                + "\nJsonData: " + jsonData + "Auth1: " + auth1,appUrl, "ExecuteNetworkHTTPPostRequest","1");
+                        return null;
+                    }
+                } else {
+                    LogUtils.writeApiCallLogToFile(
+                            "\nJsonData: " + jsonData + "Auth1: " + auth1 + " null or empty",  appUrl, "ExecuteNetworkHTTPPostRequest","0");
+                    return null;
+                }
+
+            } catch (Exception e) {
+                LogUtils.writeApiCallLogToFile(
+                        e + "\nJsonData: " + jsonData,appUrl, "ExecuteNetworkHTTPPostRequest","0");
+                return null;
+            } finally {
+//       TrafficStats.clearThreadStatsTag();
+            }
+//        }
+        }
+        return jsonResponse;
+
+    }
+
 }

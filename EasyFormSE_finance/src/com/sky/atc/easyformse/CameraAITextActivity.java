@@ -28,7 +28,10 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.media.ExifInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -39,6 +42,7 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
+import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -57,11 +61,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
+import com.sky.atc.easyformse.upload.UploadUtils;
+import net.sqlcipher.database.SQLiteDatabase;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -73,11 +81,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 public class CameraAITextActivity extends AppCompatActivity {
 
@@ -117,6 +125,14 @@ public class CameraAITextActivity extends AppCompatActivity {
     int rot = 0;
     private boolean isFrontCamera = false;
     FrameLayout loadingOverlay;
+    private int currentDeviceAngle = 0;
+    private OrientationEventListener orientationEventListener;
+    String flowData;
+    Uri imageUri;
+    private  String WCFURL = context.getResources().getString(R.string.WCFURL);
+    private  String METHOD_NAME_corner = "PhotoAIMaster"; // gemini api call form server side 17062026
+    String Client_Primary_Key;
+    static SQLiteDatabase database;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -149,6 +165,24 @@ public class CameraAITextActivity extends AppCompatActivity {
 //
 //        }
 
+        orientationEventListener = new OrientationEventListener(this) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                if (orientation == ORIENTATION_UNKNOWN) return;
+
+                if (orientation >= 315 || orientation < 45) {
+                    currentDeviceAngle = 0;   //  (Portrait)
+                } else if (orientation >= 45 && orientation < 135) {
+                    currentDeviceAngle = 90;  // (Landscape)
+                } else if (orientation >= 135 && orientation < 225) {
+                    currentDeviceAngle = 180; //  (Reverse Portrait)
+                } else if (orientation >= 225 && orientation < 315) {
+                    currentDeviceAngle = 270; //  (Landscape)
+                }
+            }
+        };
+        orientationEventListener.enable();
+
 
         try{
             Bundle Extras = getIntent().getExtras();
@@ -176,6 +210,13 @@ public class CameraAITextActivity extends AppCompatActivity {
             if(promttext.equalsIgnoreCase(""))
             {
                 promttext = "Tell me about something this ";
+            }
+            try{
+                flowData = Extras.getString("flowData");
+            }
+            catch (Exception e)
+            {
+                flowData = "";
             }
             setup();
 
@@ -389,6 +430,28 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                     if (selectedBitmap != null) {
 
+                        if (currentDeviceAngle != 0) {
+                            int finalRotationAngle = 0;
+
+                            if (currentDeviceAngle == 90) {
+                                finalRotationAngle = 90;
+                            } else if (currentDeviceAngle == 270) {
+                                finalRotationAngle = 270;
+                            } else if (currentDeviceAngle == 180) {
+                                finalRotationAngle = 180;
+                            }
+
+                            if (finalRotationAngle != 0) {
+                                Matrix matrix = new Matrix();
+                                matrix.postRotate(finalRotationAngle);
+                                Bitmap rotatedBitmap = Bitmap.createBitmap(selectedBitmap, 0, 0,
+                                        selectedBitmap.getWidth(), selectedBitmap.getHeight(), matrix, true);
+
+                                selectedBitmap.recycle();
+                                selectedBitmap = rotatedBitmap;
+                            }
+                        }
+
                         // Save the rotated bitmap to file
                         File pictureFile = getOutputMediaFile();
                         photo_path = pictureFile.getAbsolutePath();
@@ -396,8 +459,8 @@ public class CameraAITextActivity extends AppCompatActivity {
                         try (FileOutputStream fos = new FileOutputStream(pictureFile)) {
                             selectedBitmap.compress(Bitmap.CompressFormat.JPEG, Integer.parseInt(quality), fos);
 
-                            Bitmap geminiBitmap;
-                            geminiBitmap = resize(selectedBitmap, Integer.parseInt(width), Integer.parseInt(height));
+                            //Bitmap selectedBitmap;
+                            selectedBitmap = resize(selectedBitmap, Integer.parseInt(width), Integer.parseInt(height));
                             fos.flush();
                             fos.close();
 
@@ -412,20 +475,27 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                             loadingOverlay.setVisibility(View.VISIBLE);
                             // Send to Gemini
+                            mimtypeforapi = "image/jpeg";
+                            if (isNetworkAvailable()) {
+                                new uploadphoto().execute(photo_path, "104");
+                            } else {
+                                showAlertDialogWithMessage(photo_path, "104");
 
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            String prompt = PromptText.getText().toString();
-                                            String base64Image = bitmapToBase64(geminiBitmap);
-                                            sendToGemini(promttext, base64Image, "image/jpeg");
-                                        }
-                                    });
-                                }
-                            }).start();
+                            }
+                             // hide beaucse gemini api call form server side 17062026
+//                            new Thread(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    runOnUiThread(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            String prompt = PromptText.getText().toString();
+//                                            String base64Image = bitmapToBase64(geminiBitmap);
+//                                            sendToGemini(promttext, base64Image, "image/jpeg");
+//                                        }
+//                                    });
+//                                }
+//                            }).start();
 
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -581,9 +651,16 @@ public class CameraAITextActivity extends AppCompatActivity {
                     PromptText.setVisibility(View.GONE);
                     PromptText.setText(promttext);
 
-                    String prompt = PromptText.getText().toString();
-                    String base64Image = bitmapToBase64(selectedBitmap);
-                    sendToGemini(promttext,base64Image,"image/jpeg");
+                   // String prompt = PromptText.getText().toString();
+                   // String base64Image = bitmapToBase64(selectedBitmap);
+                   // sendToGemini(promttext,base64Image,"image/jpeg");
+
+                    if (isNetworkAvailable()) {
+                        new uploadphoto().execute(photo_path, "104");
+                    } else {
+                        showAlertDialogWithMessage(photo_path, "104");
+
+                    }
                 }
                 else {
 
@@ -601,7 +678,7 @@ public class CameraAITextActivity extends AppCompatActivity {
             case SELECT_PDF:
                 if (resultCode == RESULT_OK) {
                     try {
-                        final Uri imageUri = data.getData();
+                        imageUri = data.getData();
                         photo_path = getPath(context, imageUri);
                         if (photo_path == null) {
                             photo_path = data.getData().getPath();
@@ -640,34 +717,36 @@ public class CameraAITextActivity extends AppCompatActivity {
                             });
 
 
-//                            mLinearLayoutmain.setVisibility(View.GONE);
-//                            linearsecond.setVisibility(View.GONE);
-//                            imageView.setVisibility(View.GONE);
-//                            pdftext.setVisibility(View.GONE);
-//                            pdftext.setText(filename);
-//                            PromptText.setVisibility(View.GONE);
-//                            PromptText.setText(promttext);
-                            String prompt = PromptText.getText().toString();
+                            // photo upload call
 
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            String base64Image;
-                                            if(extension.contains(".pdf"))
-                                            {
-                                                base64Image = convertPdfToBase64(imageUri);
-                                            }
-                                            else {
-                                                base64Image = bitmapToBase64(selectedBitmap);
-                                            }
-                                            sendToGemini(promttext,base64Image,mimtypeforapi);
-                                        }
-                                    });
-                                }
-                            }).start();
+                            if (isNetworkAvailable()) {
+                                new uploadphoto().execute(photo_path, "104");
+                            } else {
+                                showAlertDialogWithMessage(photo_path, "104");
+
+                            }
+
+//                            String prompt = PromptText.getText().toString();
+//
+//                            new Thread(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    runOnUiThread(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            String base64Image;
+//                                            if(extension.contains(".pdf"))
+//                                            {
+//                                                base64Image = convertPdfToBase64(imageUri);
+//                                            }
+//                                            else {
+//                                                base64Image = bitmapToBase64(selectedBitmap);
+//                                            }
+//                                            sendToGemini(promttext,base64Image,mimtypeforapi);
+//                                        }
+//                                    });
+//                                }
+//                            }).start();
 
 
                         }
@@ -739,313 +818,267 @@ public class CameraAITextActivity extends AppCompatActivity {
     }
 
     // call api for firebase ai model name base
-    private void sendToGemini(String prompt, String base64Image,String mimtype) {
-        // ⌨️ Hide keyboard
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-
-
-        progressBar.setVisibility(View.GONE);
-
-        GeminiClient.sendPrompt(prompt, base64Image, modelname,mimtype , new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
-                    mLinearLayout.setVisibility(View.GONE);
-                    textOutput.setVisibility(View.GONE);
-                    textOutput.setText("Error: " + e.getMessage());
-                    SendPluginfailed("Error: " + e.getMessage());
-                });
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String json = "";
-
-                if (response.isSuccessful()) {
-                    json  = response.body().string();
-                }
-                else {
-                    try{
-                        json = response.body().string();
-                        Log.d("json",json);
-                        JSONObject mjson = new JSONObject(json);
-                        String code = mjson.getJSONObject("error").getString("code");
-                        String message = mjson.getJSONObject("error").getString("message");
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            public void run() {
-                                ToastUtil.show(sqlitewraper.context,  "Firebase Api Response code: " + code + "\n message:" + message);
-
-                               // Toast.makeText(CameraAITextActivity.this, " Firebase Api Response : " + message, Toast.LENGTH_LONG).show();
-                            }
-                        });
-                        CameraAITextActivity.this.finish();
-
-                    }
-                    catch (Exception e)
-                    {
-                    }
-                }
-
-                String finalJson = json;
-                runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
-
-                    try {
-                        JsonObject obj = JsonParser.parseString(finalJson).getAsJsonObject();
-                        String result = obj.getAsJsonArray("candidates")
-                                .get(0).getAsJsonObject()
-                                .getAsJsonObject("content")
-                                .getAsJsonArray("parts")
-                                .get(0).getAsJsonObject()
-                                .get("text").getAsString();
-                       // mLinearLayout.setVisibility(View.GONE);
-                       // textOutput.setVisibility(View.GONE);
-                        //textOutput.setText(result);
-//                        mButtonDone.setVisibility(View.VISIBLE);
-
-                      //  Log.d("Result",finalJson);
-
-                        Bitmap mutableBitmap = selectedBitmap.copy(Bitmap.Config.ARGB_8888, true);
-//                        JSONObject jsonObject = new JSONObject(result);
-//
-//                        String status = jsonObject.getString("Result");
-//                        String label = jsonObject.getString("label");
-//
-//                        JSONArray boxArray = jsonObject.getJSONArray("Box");
-//
-//
-//                            int top = boxArray.getInt(0);
-//                            int left = boxArray.getInt(1);
-//                            int bottom = boxArray.getInt(2);
-//                            int right = boxArray.getInt(3);
-//
-//                            Log.d("BOX",
-//                                    "left=" + left +
-//                                            " top=" + top +
-//                                            " right=" + right +
-//                                            " bottom=" + bottom);
-//                            Canvas canvas = new Canvas(mutableBitmap);
-//
-//                            Paint boxPaint = new Paint();
-//                            boxPaint.setColor(Color.RED);
-//                            boxPaint.setStyle(Paint.Style.STROKE);
-//                            boxPaint.setStrokeWidth(10);
-//
-//                            Paint textPaint = new Paint();
-//                            textPaint.setColor(Color.RED);
-//                            textPaint.setTextSize(60);
-//                            textPaint.setStyle(Paint.Style.FILL);
-//
-//                            float scaledLeft =
-//                                    (left / 1000f) * mutableBitmap.getWidth();
-//
-//                            float scaledTop =
-//                                    (top / 1000f) * mutableBitmap.getHeight();
-//
-//                            float scaledRight =
-//                                    (right / 1000f) * mutableBitmap.getWidth();
-//
-//                            float scaledBottom =
-//                                    (bottom / 1000f) * mutableBitmap.getHeight();
-//
-//                            canvas.drawRect(
-//                                    scaledLeft,
-//                                    scaledTop,
-//                                    scaledRight,
-//                                    scaledBottom,
-//                                    boxPaint
-//                            );
-//
-//                            // Draw label
-//                            canvas.drawText(
-//                                    "",
-//                                    left,
-//                                    top - 20,
-//                                    textPaint
-//                            );
-
-                        result = cleanJson(result);
-                        Log.d("Result cleanJson",result);
-
-
-                        if (!result.startsWith("{")
-                                && !result.startsWith("[")) {
-
-                            Log.d("PLAIN_TEXT", result);
-                            textOutput.setText(result);
-                            loadingOverlay.setVisibility(View.GONE);
-                            SendPluginSuccess(result);
-                            return;
-                        }
-
-                        Canvas canvas = new Canvas(mutableBitmap);
-
-                        Paint boxPaint = new Paint();
-                        boxPaint.setColor(Color.RED);
-                        boxPaint.setStyle(Paint.Style.STROKE);
-                        boxPaint.setStrokeWidth(5);
-
-                        Paint textPaint = new Paint();
-                        textPaint.setColor(Color.RED);
-                        textPaint.setTextSize(13);
-                        textPaint.setStyle(Paint.Style.FILL);
-
-
-                        JSONObject root = new JSONObject(result);
-                        if (root.has("Result")) {
-
-                            drawDetection(root, canvas,
-                                    mutableBitmap,
-                                    boxPaint,
-                                    textPaint);
-
-                        }
-                        else {
-
-                            Iterator<String> keys = root.keys();
-
-                            while (keys.hasNext()) {
-
-                                String key = keys.next();
-
-                                Object value = root.get(key);
-
-
-                                if (value instanceof JSONObject) {
-
-                                    JSONObject item =
-                                            (JSONObject) value;
-
-                                    drawDetection(
-                                            item,
-                                            canvas,
-                                            mutableBitmap,
-                                            boxPaint,
-                                            textPaint
-                                    );
-                                }
-
-
-                                else if (value instanceof String) {
-
-                                    String itemString =
-                                            (String) value;
-
-                                    JSONObject converted = new JSONObject(itemString);
-
-                                    if (converted != null) {
-
-                                        drawDetection(
-                                                converted,
-                                                canvas,
-                                                mutableBitmap,
-                                                boxPaint,
-                                                textPaint
-                                        );
-                                    }
-                                }
-                            }
-                        }
-
-
-                            String dir = Environment.getExternalStorageDirectory()
-                                    + File.separator + "ATC_AIImage";
-
-                            File folder = new File(dir); // folder name
-                            folder.mkdirs();
-
-                            String name = "AI_" + System.currentTimeMillis() + ".jpeg";
-                            File finalFile = new File(dir, name);
-
-                            FileOutputStream out = new FileOutputStream(finalFile);
-
-                            mutableBitmap.compress(
-                                    Bitmap.CompressFormat.JPEG,
-                                    100,
-                                    out
-                            );
-
-                            out.flush();
-                            out.close();
-
-                            photo_path = finalFile.getAbsolutePath();
-//                            Log.d("SavedImage", finalFile.getAbsolutePath());
-//
-//                            Toast.makeText(
-//                                    CameraAITextActivity.this,
-//                                    "Saved: " + finalFile.getAbsolutePath(),
-//                                    Toast.LENGTH_LONG
-//                            ).show();
-
-
-
-                        textOutput.setText(result);
-
-                        loadingOverlay.setVisibility(View.GONE);
-
-                        SendPluginSuccess(result);
-
-                    } catch (Exception e) {
-                        SendPluginfailed(e.toString());
-                        Log.d("Failed to parse response",e.toString());
-                        textOutput.setText("Failed to parse response");
-                    }
-                });
-            }
-        });
-    }
-
-//    private JSONObject convertStringToJson(String text) {
-//
-//        try {
-//
-//            JSONObject obj = new JSONObject();
-//
-//            Matcher resultMatcher = Pattern.compile("Result\\s*:\\s*\"(.*?)\"").matcher(text);
-//
-//            if (resultMatcher.find()) {
-//
-//                obj.put("Result", resultMatcher.group(1));
-//            }
-//
-//            Matcher labelMatcher = Pattern.compile("label\\s*:\\s*\"(.*?)\"").matcher(text);
-//
-//            if (labelMatcher.find()) {
-//                obj.put("label", labelMatcher.group(1));
-//            }
-//
-//            Matcher boxMatcher =
-//                    Pattern.compile("\\[(.*?)\\]").matcher(text);
-//
-//            if (boxMatcher.find()) {
-//
-//                String[] nums =
-//                        boxMatcher.group(1)
-//                                .split(",");
-//
-//                JSONArray arr =
-//                        new JSONArray();
-//
-//                for (String n : nums) {
-//                    arr.put(Integer.parseInt(n.trim()));
-//                }
-//
-//                obj.put("Box", arr);
-//            }
-//
-//            return obj;
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
+//    private void sendToGemini(String prompt, String base64Image,String mimtype) {
+//        // ⌨️ Hide keyboard
+//        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//        View view = this.getCurrentFocus();
+//        if (view != null) {
+//            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 //        }
 //
-//        return null;
+//
+//        progressBar.setVisibility(View.GONE);
+//
+//        GeminiClient.sendPrompt(prompt, base64Image, modelname,mimtype , new Callback() {
+//            @Override
+//            public void onFailure(Call call, IOException e) {
+//                runOnUiThread(() -> {
+//                    progressBar.setVisibility(View.GONE);
+//                    mLinearLayout.setVisibility(View.GONE);
+//                    textOutput.setVisibility(View.GONE);
+//                    textOutput.setText("Error: " + e.getMessage());
+//                    SendPluginfailed("Error: " + e.getMessage());
+//                });
+//            }
+//
+//            @Override
+//            public void onResponse(Call call, Response response) throws IOException {
+//                String json = "";
+//
+//                if (response.isSuccessful()) {
+//                    json  = response.body().string();
+//                }
+//                else {
+//                    try{
+//                        json = response.body().string();
+//                        Log.d("json",json);
+//                        JSONObject mjson = new JSONObject(json);
+//                        String code = mjson.getJSONObject("error").getString("code");
+//                        String message = mjson.getJSONObject("error").getString("message");
+//                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                            public void run() {
+//                                ToastUtil.show(context,  "Firebase Api Response code: " + code + "\n message:" + message);
+//
+//                               // Toast.makeText(CameraAITextActivity.this, " Firebase Api Response : " + message, Toast.LENGTH_LONG).show();
+//                            }
+//                        });
+//                        CameraAITextActivity.this.finish();
+//
+//                    }
+//                    catch (Exception e)
+//                    {
+//                    }
+//                }
+//
+//                String finalJson = json;
+//                runOnUiThread(() -> {
+//                    progressBar.setVisibility(View.GONE);
+//
+//                    try {
+//                        JsonObject obj = JsonParser.parseString(finalJson).getAsJsonObject();
+//                        String result = obj.getAsJsonArray("candidates")
+//                                .get(0).getAsJsonObject()
+//                                .getAsJsonObject("content")
+//                                .getAsJsonArray("parts")
+//                                .get(0).getAsJsonObject()
+//                                .get("text").getAsString();
+//                       // mLinearLayout.setVisibility(View.GONE);
+//                       // textOutput.setVisibility(View.GONE);
+//                        //textOutput.setText(result);
+////                        mButtonDone.setVisibility(View.VISIBLE);
+//
+//                      //  Log.d("Result",finalJson);
+//
+//                        Bitmap mutableBitmap = selectedBitmap.copy(Bitmap.Config.ARGB_8888, true);
+////                        JSONObject jsonObject = new JSONObject(result);
+////
+////                        String status = jsonObject.getString("Result");
+////                        String label = jsonObject.getString("label");
+////
+////                        JSONArray boxArray = jsonObject.getJSONArray("Box");
+////
+////
+////                            int top = boxArray.getInt(0);
+////                            int left = boxArray.getInt(1);
+////                            int bottom = boxArray.getInt(2);
+////                            int right = boxArray.getInt(3);
+////
+////                            Log.d("BOX",
+////                                    "left=" + left +
+////                                            " top=" + top +
+////                                            " right=" + right +
+////                                            " bottom=" + bottom);
+////                            Canvas canvas = new Canvas(mutableBitmap);
+////
+////                            Paint boxPaint = new Paint();
+////                            boxPaint.setColor(Color.RED);
+////                            boxPaint.setStyle(Paint.Style.STROKE);
+////                            boxPaint.setStrokeWidth(10);
+////
+////                            Paint textPaint = new Paint();
+////                            textPaint.setColor(Color.RED);
+////                            textPaint.setTextSize(60);
+////                            textPaint.setStyle(Paint.Style.FILL);
+////
+////                            float scaledLeft =
+////                                    (left / 1000f) * mutableBitmap.getWidth();
+////
+////                            float scaledTop =
+////                                    (top / 1000f) * mutableBitmap.getHeight();
+////
+////                            float scaledRight =
+////                                    (right / 1000f) * mutableBitmap.getWidth();
+////
+////                            float scaledBottom =
+////                                    (bottom / 1000f) * mutableBitmap.getHeight();
+////
+////                            canvas.drawRect(
+////                                    scaledLeft,
+////                                    scaledTop,
+////                                    scaledRight,
+////                                    scaledBottom,
+////                                    boxPaint
+////                            );
+////
+////                            // Draw label
+////                            canvas.drawText(
+////                                    "",
+////                                    left,
+////                                    top - 20,
+////                                    textPaint
+////                            );
+//
+//                        result = cleanJson(result);
+//                        Log.d("Result cleanJson",result);
+//
+//
+//                        if (!result.startsWith("{")
+//                                && !result.startsWith("[")) {
+//
+//                            Log.d("PLAIN_TEXT", result);
+//                            textOutput.setText(result);
+//                            loadingOverlay.setVisibility(View.GONE);
+//                            SendPluginSuccess(result);
+//                            return;
+//                        }
+//
+//                        Canvas canvas = new Canvas(mutableBitmap);
+//
+//                        Paint boxPaint = new Paint();
+//                        boxPaint.setColor(Color.RED);
+//                        boxPaint.setStyle(Paint.Style.STROKE);
+//                        boxPaint.setStrokeWidth(5);
+//
+//                        Paint textPaint = new Paint();
+//                        textPaint.setColor(Color.RED);
+//                        textPaint.setTextSize(13);
+//                        textPaint.setStyle(Paint.Style.FILL);
+//
+//
+//                        JSONObject root = new JSONObject(result);
+//                        if (root.has("Result")) {
+//
+//                            drawDetection(root, canvas,
+//                                    mutableBitmap,
+//                                    boxPaint,
+//                                    textPaint);
+//
+//                        }
+//                        else {
+//
+//                            Iterator<String> keys = root.keys();
+//
+//                            while (keys.hasNext()) {
+//
+//                                String key = keys.next();
+//
+//                                Object value = root.get(key);
+//
+//
+//                                if (value instanceof JSONObject) {
+//
+//                                    JSONObject item =
+//                                            (JSONObject) value;
+//
+//                                    drawDetection(
+//                                            item,
+//                                            canvas,
+//                                            mutableBitmap,
+//                                            boxPaint,
+//                                            textPaint
+//                                    );
+//                                }
+//
+//
+//                                else if (value instanceof String) {
+//
+//                                    String itemString =
+//                                            (String) value;
+//
+//                                    JSONObject converted = new JSONObject(itemString);
+//
+//                                    if (converted != null) {
+//
+//                                        drawDetection(
+//                                                converted,
+//                                                canvas,
+//                                                mutableBitmap,
+//                                                boxPaint,
+//                                                textPaint
+//                                        );
+//                                    }
+//                                }
+//                            }
+//                        }
+//
+//
+//                            String dir = Environment.getExternalStorageDirectory()
+//                                    + File.separator + "ATC_AIImage";
+//
+//                            File folder = new File(dir); // folder name
+//                            folder.mkdirs();
+//
+//                            String name = "AI_" + System.currentTimeMillis() + ".jpeg";
+//                            File finalFile = new File(dir, name);
+//
+//                            FileOutputStream out = new FileOutputStream(finalFile);
+//
+//                            mutableBitmap.compress(
+//                                    Bitmap.CompressFormat.JPEG,
+//                                    100,
+//                                    out
+//                            );
+//
+//                            out.flush();
+//                            out.close();
+//
+//                            photo_path = finalFile.getAbsolutePath();
+////                            Log.d("SavedImage", finalFile.getAbsolutePath());
+////
+////                            Toast.makeText(
+////                                    CameraAITextActivity.this,
+////                                    "Saved: " + finalFile.getAbsolutePath(),
+////                                    Toast.LENGTH_LONG
+////                            ).show();
+//
+//
+//
+//                        textOutput.setText(result);
+//
+//                        loadingOverlay.setVisibility(View.GONE);
+//
+//                        SendPluginSuccess(result);
+//
+//                    } catch (Exception e) {
+//                        SendPluginfailed(e.toString());
+//                        Log.d("Failed to parse response",e.toString());
+//                        textOutput.setText("Failed to parse response");
+//                    }
+//                });
+//            }
+//        });
 //    }
+
 
     private String cleanJson(String text) {
 
@@ -1139,7 +1172,7 @@ public class CameraAITextActivity extends AppCompatActivity {
 
     }
 
-    private void SendPluginSuccess(String result)
+    private void SendPluginSuccess(String result,int photoId)
     {
 
         try{
@@ -1148,10 +1181,13 @@ public class CameraAITextActivity extends AppCompatActivity {
             JSONObject mJsonObject = new JSONObject();
             mJsonObject.put("photo_path", photo_path);
             mJsonObject.put("responsetext", result);
+            mJsonObject.put("photo_id",photoId);
+            mJsonObject.put("photo_size", UploadUtils.sizeofFile);
             mJsonArray.put(mJsonObject);
 //            pref.putString("responsetext",textOutput.getText().toString());
 //            pref.commit();
             resultIntent.putExtra("response",mJsonArray.toString());
+          //  Log.d("response",mJsonArray.toString());
             setResult(RESULT_OK, resultIntent);
             finish();
             overridePendingTransition(0,0);
@@ -1383,5 +1419,408 @@ public class CameraAITextActivity extends AppCompatActivity {
 
         return retVal;
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (orientationEventListener != null) orientationEventListener.disable();
+    }
+
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        @SuppressLint("MissingPermission")
+        NetworkInfo activeNetworkInfo = connectivityManager
+                .getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+
+    @SuppressLint("StaticFieldLeak")
+    private class uploadphoto extends AsyncTask<String, String, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+
+        @Override
+        protected String doInBackground(String... strings) {
+            int photoId = 0;
+            String photopath = "";
+            String status = strings[0];
+            String caseid = strings[1];
+            String responsetext = "";
+
+
+            try {
+                JSONArray jsonArray1 = new JSONArray(flowData);
+                JSONObject jsonObject = jsonArray1.getJSONObject(0);
+
+                String companyId = jsonObject.getString("company_id");
+                String site_id = jsonObject.getString("site_id");
+                String sId = jsonObject.getString("sid");
+                String queId = jsonObject.getString("que_id");
+                String checksheetid = jsonObject.getString("checksheetid");
+                String stepNo = jsonObject.getString("step_No");
+                String phId = jsonObject.getString("Ph_id");
+                String thPath = jsonObject.getString("th_path");
+                String type = jsonObject.getString("type");
+                String itId = jsonObject.getString("it_id");
+                database = sqlitewraper.getDatabase();
+                Cursor c3 = database.rawQuery("SELECT username,company_id,appid,user_id FROM Login_Master",
+                        null);
+                c3.moveToLast();
+                String username = c3.getString(0);
+                B_new b = new B_new();
+                String u_c = b.GetValue();
+                int company_id = c3.getInt(1);
+                String appid = c3.getString(2);
+                String UserId = c3.getString(3);
+                c3.close();
+
+                Client_Primary_Key = checksheetid + "_" + queId + "_" + UserId + "_" + System.currentTimeMillis();
+
+                photoId = UploadUtils.uploadPhotoResumable(status, companyId, "0", checksheetid, queId, stepNo, type, phId, itId, thPath, sId);
+
+
+
+                if (photoId > 0) {
+
+                    if(caseid.equalsIgnoreCase("104"))
+                    {
+                        pref.putString("photo_path", status);
+                        pref.commit();
+                        callWebserviceGeminiFromServerSide(photoId);
+
+                    }
+
+
+                } else {
+
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        public void run() {
+                            Toast.makeText(context, "Photo_id is 0 " , Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+
+                }
+
+            } catch (IOException | JSONException e) {
+
+                e.printStackTrace();
+            }
+
+            return "";
+
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+        }
+    }
+
+    private void showAlertDialogWithMessage(String filePath, String requestCode) {
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(CameraAITextActivity.this);
+        alertBuilder.setTitle("Internet Not Available");
+        alertBuilder.setMessage("Please turn on the internet and Retry");
+        alertBuilder.setCancelable(false);
+        alertBuilder.setPositiveButton("Retry", (dialog, which) -> {
+            dialog.dismiss();
+            if (isNetworkAvailable()) {
+                new uploadphoto().execute(filePath, requestCode);
+            } else {
+                showAlertDialogWithMessage(filePath, requestCode);
+            }
+
+        });
+        alertBuilder.setNegativeButton("Cancel", (dialog, which) -> {
+            SendPluginfailed("error");
+            dialog.dismiss();
+
+        });
+        alertBuilder.show();
+    }
+
+
+    public void callWebserviceGeminiFromServerSide(int photoId)
+    {
+        String base64Image = "";
+          if(extension != null && extension.contains(".pdf"))
+          {
+              base64Image = convertPdfToBase64(imageUri);
+          }
+          else {
+              base64Image = bitmapToBase64(selectedBitmap);
+          }
+
+
+          String responsetext = Geminiapi(promttext,mimtypeforapi,modelname,base64Image,photoId);
+
+        if(responsetext != null) {
+            JSONArray jsonArray = null;
+            String Status = null;
+            String message = null;
+            try {
+
+                if (responsetext != null && responsetext.startsWith("\"")) {
+
+                    responsetext = JsonParser
+                            .parseString(responsetext)
+                            .getAsString();
+                }
+
+                responsetext = responsetext.trim();
+
+                if (responsetext.trim().startsWith("[")) {
+
+                    JSONArray arr = new JSONArray(responsetext);
+
+                    if (arr.length() > 0) {
+
+                        JSONObject obj = arr.getJSONObject(0);
+
+                        Status = obj.optString("status");
+                         message = obj.optString("message");
+                        String data = obj.optString("data");
+
+                        String finalStatus = Status;
+                        String finalMessage = message;
+                        runOnUiThread(() -> {
+                            loadingOverlay.setVisibility(View.GONE);
+
+                            ToastUtil.show(
+                                    CameraAITextActivity.this,
+                                    "Status : " + finalStatus +
+                                            "\nMessage : " + finalMessage
+                            );
+                        });
+
+                        Log.e("SERVER_ERROR", data);
+
+                        SendPluginfailed(message);
+
+                        return;
+                    }
+                }
+
+//                if (responsetext.startsWith("\"{")) {
+//
+//                    responsetext =
+//                            JsonParser.parseString(responsetext)
+//                                    .getAsString();
+//                }
+
+                JsonObject json = JsonParser.parseString(responsetext).getAsJsonObject();
+                if (json.has("candidates")) {
+                    String result = json.getAsJsonArray("candidates")
+                            .get(0).getAsJsonObject()
+                            .getAsJsonObject("content")
+                            .getAsJsonArray("parts")
+                            .get(0).getAsJsonObject()
+                            .get("text").getAsString();
+
+                   //System.out.println("Success: " + result);
+
+                    try {
+
+                        Bitmap mutableBitmap = selectedBitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+                        result = cleanJson(result);
+                        Log.d("Result cleanJson",result);
+
+
+                        if (!result.startsWith("{")
+                                && !result.startsWith("[")) {
+
+                            Log.d("PLAIN_TEXT", result);
+                            runOnUiThread(() -> {
+                                loadingOverlay.setVisibility(View.GONE);
+                                // textOutput.setText(result);
+                            });
+                            SendPluginSuccess(result,photoId);
+                            return;
+                        }
+
+                        Canvas canvas = new Canvas(mutableBitmap);
+
+                        Paint boxPaint = new Paint();
+                        boxPaint.setColor(Color.RED);
+                        boxPaint.setStyle(Paint.Style.STROKE);
+                        boxPaint.setStrokeWidth(5);
+
+                        Paint textPaint = new Paint();
+                        textPaint.setColor(Color.RED);
+                        textPaint.setTextSize(13);
+                        textPaint.setStyle(Paint.Style.FILL);
+
+
+                        JSONObject root = new JSONObject(result);
+                        if (root.has("Result")) {
+
+                            drawDetection(root, canvas,
+                                    mutableBitmap,
+                                    boxPaint,
+                                    textPaint);
+
+                        }
+                        else {
+
+                            Iterator<String> keys = root.keys();
+
+                            while (keys.hasNext()) {
+
+                                String key = keys.next();
+
+                                Object value = root.get(key);
+
+
+                                if (value instanceof JSONObject) {
+
+                                    JSONObject item =
+                                            (JSONObject) value;
+
+                                    drawDetection(
+                                            item,
+                                            canvas,
+                                            mutableBitmap,
+                                            boxPaint,
+                                            textPaint
+                                    );
+                                }
+
+
+                                else if (value instanceof String) {
+
+                                    String itemString =
+                                            (String) value;
+
+                                    JSONObject converted = new JSONObject(itemString);
+
+                                    if (converted != null) {
+
+                                        drawDetection(
+                                                converted,
+                                                canvas,
+                                                mutableBitmap,
+                                                boxPaint,
+                                                textPaint
+                                        );
+                                    }
+                                }
+                            }
+                        }
+
+
+                        String dir = Environment.getExternalStorageDirectory()
+                                + File.separator + "ATC_AIImage";
+
+                        File folder = new File(dir); // folder name
+                        folder.mkdirs();
+
+                        String name = "AI_" + System.currentTimeMillis() + ".jpeg";
+                        File finalFile = new File(dir, name);
+
+                        FileOutputStream out = new FileOutputStream(finalFile);
+
+                        mutableBitmap.compress(
+                                Bitmap.CompressFormat.JPEG,
+                                100,
+                                out
+                        );
+
+                        out.flush();
+                        out.close();
+
+                        photo_path = finalFile.getAbsolutePath();
+//                            Log.d("SavedImage", finalFile.getAbsolutePath());
+//
+//                            Toast.makeText(
+//                                    CameraAITextActivity.this,
+//                                    "Saved: " + finalFile.getAbsolutePath(),
+//                                    Toast.LENGTH_LONG
+//                            ).show();
+
+
+
+                        //textOutput.setText(result);
+                        runOnUiThread(() -> {
+                            loadingOverlay.setVisibility(View.GONE);
+                            // textOutput.setText(result);
+                        });
+
+
+
+                        SendPluginSuccess(result,photoId);
+
+                    } catch (Exception e) {
+                        SendPluginfailed(e.toString());
+                        Log.d("Failed to parse response",e.toString());
+
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                Log.d("Exception",e.toString());
+            }
+        }
+    }
+
+    public String Geminiapi(String promttext, String mimtypeforapi, String modelname,String base64Image,int photoId) {
+
+        String restext = null;
+        try {
+            Map<String, Object> requestMap = new HashMap<>();
+
+            requestMap.put("Photo_Id", String.valueOf(photoId));
+            requestMap.put("Client_Primary_Key",Client_Primary_Key);
+
+            requestMap.put("contents", List.of(
+                    Map.of(
+                            "role", "user",
+                            "parts", List.of(
+                                    Map.of("text", promttext),
+                                    Map.of("inlineData", Map.of(
+                                            "mimeType", mimtypeforapi,
+                                            "data", base64Image
+                                    ))
+                            )
+                    )
+            ));
+
+            if (modelname != null &&
+                    !modelname.toLowerCase().startsWith("gemini-2")) {
+
+                requestMap.put("generationConfig",
+                        Map.of(
+                                "thinkingConfig",
+                                Map.of("thinkingLevel", "MINIMAL")
+                        )
+                );
+            }
+            JSONObject jsonObject = new JSONObject(new Gson().toJson(requestMap));
+
+         //   String json = new Gson().toJson(requestMap);
+
+         //   Log.d("REQUEST_JSON", json);
+
+//            JSONArray finalArray = new JSONArray();
+//            finalArray.put(request);
+//
+//            String requestBody = finalArray.toString();
+
+            restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestForGemini( jsonObject, WCFURL, METHOD_NAME_corner);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return restext;
     }
 }

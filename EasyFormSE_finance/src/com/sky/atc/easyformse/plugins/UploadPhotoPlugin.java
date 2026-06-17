@@ -490,6 +490,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
         intent.putExtra("prompttext",prompttext);
         intent.putExtra("camera_type", photoType);
         intent.putExtra("AI_type", "Camera");
+        intent.putExtra("flowData",flowData);
         if (this.cordova != null) {
             this.cordova.startActivityForResult(this, intent, 104);
             return true;
@@ -638,14 +639,17 @@ public class UploadPhotoPlugin extends CordovaPlugin {
 //                            status = sharedPreferences.getString("photo_path", null);
                             status = bundle.getString("response");
 
-                        }
+                            callbackContext.success(status);
 
-                        if (isNetworkAvailable()) {
-                            new uploadphoto().execute(status, "104");
-                        } else {
-                            showAlertDialogWithMessage(status, "104");
 
                         }
+
+//                        if (isNetworkAvailable()) {
+//                            new uploadphoto().execute(status, "104");
+//                        } else {
+//                            showAlertDialogWithMessage(status, "104");
+//
+//                        }
 
 
                     } else {
@@ -797,20 +801,20 @@ public class UploadPhotoPlugin extends CordovaPlugin {
 
             }
 
-            if (caseid.equalsIgnoreCase("104"))
-            {
-                try {
-                    JSONArray jsonArray = new JSONArray(status);
-                    JSONObject jsonObject = jsonArray.getJSONObject(0);
-                    photopath = jsonObject.getString("photo_path");
-                    if(jsonObject.has("responsetext"))
-                    {
-                        responsetext = jsonObject.getString("responsetext");
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
+//            if (caseid.equalsIgnoreCase("104"))
+//            {
+//                try {
+//                    JSONArray jsonArray = new JSONArray(status);
+//                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+//                    photopath = jsonObject.getString("photo_path");
+//                    if(jsonObject.has("responsetext"))
+//                    {
+//                        responsetext = jsonObject.getString("responsetext");
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 
             if (photoType.equalsIgnoreCase("video")) {
                 try {
@@ -845,9 +849,9 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                 else if (caseid.equalsIgnoreCase("101")) {
                     photoId = UploadUtils.uploadPhotoResumable(photopath, companyId, "0", checksheetid, queId, stepNo, type, phId, itId, thPath, sId);
                 }
-                else if (caseid.equalsIgnoreCase("104")) {
-                    photoId = UploadUtils.uploadPhotoResumable(photopath, companyId, "0", checksheetid, queId, stepNo, type, phId, itId, thPath, sId);
-                }
+//                else if (caseid.equalsIgnoreCase("104")) {
+//                    photoId = UploadUtils.uploadPhotoResumable(photopath, companyId, "0", checksheetid, queId, stepNo, type, phId, itId, thPath, sId);
+//                }
                 else {
                     photoId = UploadUtils.uploadPhotoResumable(status, companyId, "0", checksheetid, queId, stepNo, type, phId, itId, thPath, sId);
                 }
@@ -872,20 +876,20 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                         pref.commit();
                         callbackContext.success(jsonArray.toString());
                     }
-                    else if(caseid.equalsIgnoreCase("104"))
-                    {
-                        JSONArray jsonArray = new JSONArray();
-                        JSONObject jsonObject1 = new JSONObject();
-                        jsonObject1.put("photo_id", photoId);
-                        jsonObject1.put("photo_path", photopath);
-                        jsonObject1.put("photo_size", UploadUtils.sizeofFile);
-                        jsonObject1.put("responsetext", responsetext);
-                        jsonArray.put(jsonObject1);
-
-                        pref.putString("photo_path", status);
-                        pref.commit();
-                        callbackContext.success(jsonArray.toString());
-                    }
+//                    else if(caseid.equalsIgnoreCase("104"))
+//                    {
+//                        JSONArray jsonArray = new JSONArray();
+//                        JSONObject jsonObject1 = new JSONObject();
+//                        jsonObject1.put("photo_id", photoId);
+//                        jsonObject1.put("photo_path", photopath);
+//                        jsonObject1.put("photo_size", UploadUtils.sizeofFile);
+//                        jsonObject1.put("responsetext", responsetext);
+//                        jsonArray.put(jsonObject1);
+//
+//                        pref.putString("photo_path", status);
+//                        pref.commit();
+//                        callbackContext.success(jsonArray.toString());
+//                    }
                     else {
                         JSONArray jsonArray = new JSONArray();
                         JSONObject jsonObject1 = new JSONObject();
