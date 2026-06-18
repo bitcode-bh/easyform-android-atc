@@ -76,6 +76,13 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
                         'user_id': user_id
                     });
 
+                    let t_auth = data[0].auth1;
+                    if (t_auth == '' || t_auth == null || t_auth == undefined) {
+                        params = JSON.parse(params);
+                        params[0]['auth1'] = auth1;
+                        params = JSON.stringify(params);
+                    }
+
                     invocation.setRequestHeader('auth1', JSON.stringify(auth1[0]));
 
                     var feature_id = localStorage.getItem('company_feature_id');
