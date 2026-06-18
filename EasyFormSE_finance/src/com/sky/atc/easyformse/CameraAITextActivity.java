@@ -106,7 +106,7 @@ public class CameraAITextActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 200;
     static Activity mCameraAITextActivity;
     String AI_type;
-    private final int SELECT_PDF = 2;
+    private final int SELECT_PHOTO = 2;
     String extension;
     String mimtypeforapi;
     String quality;
@@ -628,14 +628,16 @@ public class CameraAITextActivity extends AppCompatActivity {
 
     private void opendocument()
     {
-        Intent photoPickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        photoPickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
+        Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
+//        photoPickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
 
-        photoPickerIntent.setType("*/*");
+//        photoPickerIntent.setType("*/*");
 //        String[] mimetypes   = new String[]{ "application/pdf", "image/*"};
-        String[] mimetypes   = new String[]{"image/*"};
-        photoPickerIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
-        startActivityForResult(photoPickerIntent, SELECT_PDF);
+//        String[] mimetypes   = new String[]{"image/*"};
+        photoPickerIntent.setType("image/*");
+//        photoPickerIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+        startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+
     }
 
     @Override
@@ -678,14 +680,14 @@ public class CameraAITextActivity extends AppCompatActivity {
                 }
                 break;
 
-            case SELECT_PDF:
+            case SELECT_PHOTO:
                 if (resultCode == RESULT_OK) {
                     try {
                         imageUri = data.getData();
                         photo_path = getPath(context, imageUri);
-                        if (photo_path == null) {
-                            photo_path = data.getData().getPath();
-                        }
+//                        if (photo_path == null) {
+//                            photo_path = data.getData().getPath();
+//                        }
                         File f = new File(photo_path);
                         File file = new File(photo_path);
                         long lengthoffile = file.length();
@@ -694,18 +696,18 @@ public class CameraAITextActivity extends AppCompatActivity {
                         int filesize = Integer.parseInt(max_file_size) * 1000;
                         //Only Less than 5MB of file size allowed
                         if (lengthoffile < filesize) {
-                            String path = file.getAbsolutePath();
-                            String filename = path.substring(path.lastIndexOf("/") + 1);
-
-
-                            extension = filename.substring(filename.lastIndexOf("."));
-
-                            if(extension.contains(".pdf"))
-                            {
-                                mimtypeforapi = "application/pdf";
-                                imageView.setImageResource(R.drawable.documentlogo);
-                            }
-                            else {
+//                            String path = file.getAbsolutePath();
+//                            String filename = path.substring(path.lastIndexOf("/") + 1);
+//
+//
+//                            extension = filename.substring(filename.lastIndexOf("."));
+//
+//                            if(extension.contains(".pdf"))
+//                            {
+//                                mimtypeforapi = "application/pdf";
+//                                imageView.setImageResource(R.drawable.documentlogo);
+//                            }
+//                            else {
                                 mimtypeforapi = "image/jpeg";
                                 // imageView.setImageURI(imageUri);
                                 Bitmap geminiBitmap = uriToBitmap(imageUri);
@@ -713,7 +715,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                                 geminiBitmap = imageOreintationValidator(geminiBitmap, photo_path);
                                 geminiBitmap = resize(geminiBitmap, Integer.parseInt(width), Integer.parseInt(height));
                                 selectedBitmap = geminiBitmap;
-                            }
+//                            }
                             runOnUiThread(() -> {
                                 mFrameLayout.setVisibility(View.GONE);
                                 loadingOverlay.setVisibility(View.VISIBLE);
