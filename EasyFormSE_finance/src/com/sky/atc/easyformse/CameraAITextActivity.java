@@ -136,7 +136,7 @@ public class CameraAITextActivity extends AppCompatActivity {
     String sId;
     String queId ;
     String checksheetid;
-
+    int company_id;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1481,7 +1481,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                 String username = c3.getString(0);
                 B_new b = new B_new();
                 String u_c = b.GetValue();
-                int company_id = c3.getInt(1);
+                company_id = c3.getInt(1);
                 String appid = c3.getString(2);
                 String UserId = c3.getString(3);
                 c3.close();
@@ -1790,7 +1790,7 @@ public class CameraAITextActivity extends AppCompatActivity {
             requestMap.put("Checksheet_Id",checksheetid);
             requestMap.put("Que_Id",queId);
             requestMap.put("ModelName",modelname);
-
+            requestMap.put("Company_id",company_id);
 
             requestMap.put("contents", List.of(
                     Map.of(
