@@ -1630,7 +1630,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                             .get(0).getAsJsonObject()
                             .get("text").getAsString();
 
-                   //System.out.println("Success: " + result);
+                   System.out.println("Success: " + result);
 
                     try {
 
@@ -1668,14 +1668,51 @@ public class CameraAITextActivity extends AppCompatActivity {
                         JSONObject root = new JSONObject(result);
                         if (root.has("Result")) {
 
-                            drawDetection(root, canvas,
+                            drawDetection(
+                                    root,
+                                    canvas,
                                     mutableBitmap,
                                     boxPaint,
-                                    textPaint);
-
+                                    textPaint
+                            );
                         }
                         else {
 
+                            boolean hasDetection = false;
+
+                            Iterator<String> checkKeys = root.keys();
+
+                            while (checkKeys.hasNext()) {
+
+                                String key = checkKeys.next();
+
+                                Object value = root.get(key);
+
+                                if (value instanceof String) {
+
+                                    String str = (String) value;
+
+                                    if (str.contains("\"Result\"")
+                                            || str.contains("\"Box\"")) {
+
+                                        hasDetection = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // CASE: {"Q93":"PASS","Q98":"FAIL"}
+                            if (!hasDetection) {
+
+                                runOnUiThread(() -> {
+                                    loadingOverlay.setVisibility(View.GONE);
+                                });
+
+                                SendPluginSuccess(result, photoId);
+                                return;
+                            }
+
+                            // CASE: Detection JSON
                             Iterator<String> keys = root.keys();
 
                             while (keys.hasNext()) {
@@ -1684,30 +1721,14 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                                 Object value = root.get(key);
 
+                                if (value instanceof String) {
 
-                                if (value instanceof JSONObject) {
+                                    String itemString = (String) value;
 
-                                    JSONObject item =
-                                            (JSONObject) value;
+                                    try {
 
-                                    drawDetection(
-                                            item,
-                                            canvas,
-                                            mutableBitmap,
-                                            boxPaint,
-                                            textPaint
-                                    );
-                                }
-
-
-                                else if (value instanceof String) {
-
-                                    String itemString =
-                                            (String) value;
-
-                                    JSONObject converted = new JSONObject(itemString);
-
-                                    if (converted != null) {
+                                        JSONObject converted =
+                                                new JSONObject(itemString);
 
                                         drawDetection(
                                                 converted,
@@ -1716,7 +1737,19 @@ public class CameraAITextActivity extends AppCompatActivity {
                                                 boxPaint,
                                                 textPaint
                                         );
+
+                                    } catch (Exception ignore) {
                                     }
+                                }
+                                else if (value instanceof JSONObject) {
+
+                                    drawDetection(
+                                            (JSONObject) value,
+                                            canvas,
+                                            mutableBitmap,
+                                            boxPaint,
+                                            textPaint
+                                    );
                                 }
                             }
                         }
