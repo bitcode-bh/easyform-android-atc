@@ -1556,14 +1556,14 @@ public class CameraAITextActivity extends AppCompatActivity {
     public void callWebserviceGeminiFromServerSide(int photoId)
     {
         String base64Image = "";
-          if(extension != null && extension.contains(".pdf"))
-          {
-              base64Image = convertPdfToBase64(imageUri);
-          }
-          else {
-              base64Image = bitmapToBase64(selectedBitmap);
-          }
-
+//          if(extension != null && extension.contains(".pdf"))
+//          {
+//              base64Image = convertPdfToBase64(imageUri);
+//          }
+//          else {
+//
+//          }
+        base64Image = bitmapToBase64(selectedBitmap);
 
           String responsetext = Geminiapi(promttext,mimtypeforapi,modelname,base64Image,photoId);
 
