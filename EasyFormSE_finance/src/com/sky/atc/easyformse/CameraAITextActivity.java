@@ -1592,7 +1592,6 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                         Status = obj.optString("status");
                          message = obj.optString("message");
-                        String data = obj.optString("data");
 
                         String finalStatus = Status;
                         String finalMessage = message;
@@ -1604,11 +1603,10 @@ public class CameraAITextActivity extends AppCompatActivity {
                                     "Status : " + finalStatus +
                                             "\nMessage : " + finalMessage
                             );
+
+                            SendPluginfailed(finalStatus);
                         });
 
-                        Log.e("SERVER_ERROR", data);
-
-                        SendPluginfailed(message);
 
                         return;
                     }
