@@ -1616,7 +1616,7 @@ function onsuccess_CaptureClick_Customer(e) {
             let responsetext = response[0].responsetext;
             responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
             try {
-                
+
                 try {
                     var responsetext_new = responsetext.replaceAll('\n', '');
                     responsetext_new = responsetext_new.match(/\{(.*?)\}/);     // extract inner string { }
@@ -1628,7 +1628,7 @@ function onsuccess_CaptureClick_Customer(e) {
                     var responsetext_new = responsetext.replaceAll('\n', '');
                     var responseJSON = JSON.parse(responsetext_new);
                 }
-                
+
                 // response is in JSON
                 $.each(responseJSON, function (key, value) {
 
@@ -2407,17 +2407,17 @@ function onsuccess_CaptureClick_Customer_photo_clone(e) {
 }
 
 show_AI_loader = () => {
-    let img_div = JSON.parse(storage.getItem('img_div_id'));
-    let t_new_id = img_div.replace('cbtn_', '');
+    //let img_div = JSON.parse(storage.getItem('img_div_id'));
+    //let t_new_id = img_div.replace('cbtn_', '');
 
-    if ($("#div_cbtn_" + t_new_id).parent("li").hasClass("w-50-50")) {
-        // 50-50 structure
-        $("#" + img_div).before('<div class="ai-loader" style="margin-left: 47px"><span> AI</span></div>');
-    }
-    else {
-        // 100% structure
-        $("#" + img_div).before('<div class="ai-loader"><span> AI</span></div>');
-    }
+    //if ($("#div_cbtn_" + t_new_id).parent("li").hasClass("w-50-50")) {
+    //    // 50-50 structure
+    //    $("#" + img_div).before('<div class="ai-loader" style="margin-left: 47px"><span> AI</span></div>');
+    //}
+    //else {
+    //    // 100% structure
+    //    $("#" + img_div).before('<div class="ai-loader"><span> AI</span></div>');
+    //}
 }
 
 hide_AI_loader = () => {
