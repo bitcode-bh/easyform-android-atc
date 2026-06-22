@@ -1635,6 +1635,15 @@ function onsuccess_CaptureClick_Customer(e) {
                     if (typeof value == 'object') {
                         value = value.Result;
                     }
+                     else{
+                          try{
+                               value = JSON.parse(value);
+                               value = value.Result;
+                          }
+                           catch(e){
+                                value = value;
+                           }
+                     }
 
                     let qid_class = key;
                     $("." + qid_class + "").show();
