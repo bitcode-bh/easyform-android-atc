@@ -684,90 +684,54 @@ public class CameraAITextActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     try {
                         imageUri = data.getData();
-                        photo_path = getPath(context, imageUri);
-//                        if (photo_path == null) {
-//                            photo_path = data.getData().getPath();
-//                        }
-                        File f = new File(photo_path);
-                        File file = new File(photo_path);
-                        long lengthoffile = file.length();
+                        if (imageUri == null) return;
+
+                        long lengthoffile = 0;
+                        try (android.database.Cursor cursor = context.getContentResolver().query(imageUri, null, null, null, null)) {
+                            if (cursor != null && cursor.moveToFirst()) {
+                                int sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
+                                if (sizeIndex != -1) {
+                                    lengthoffile = cursor.getLong(sizeIndex);
+                                }
+                            }
+                        }
                         lengthoffile = lengthoffile / 1024;
 
                         int filesize = Integer.parseInt(max_file_size) * 1000;
-                        //Only Less than 5MB of file size allowed
-                        if (lengthoffile < filesize) {
-//                            String path = file.getAbsolutePath();
-//                            String filename = path.substring(path.lastIndexOf("/") + 1);
-//
-//
-//                            extension = filename.substring(filename.lastIndexOf("."));
-//
-//                            if(extension.contains(".pdf"))
-//                            {
-//                                mimtypeforapi = "application/pdf";
-//                                imageView.setImageResource(R.drawable.documentlogo);
-//                            }
-//                            else {
-                                mimtypeforapi = "image/jpeg";
-                                // imageView.setImageURI(imageUri);
-                                Bitmap geminiBitmap = uriToBitmap(imageUri);
 
-                                geminiBitmap = imageOreintationValidator(geminiBitmap, photo_path);
-                                geminiBitmap = resize(geminiBitmap, Integer.parseInt(width), Integer.parseInt(height));
-                                selectedBitmap = geminiBitmap;
-//                            }
+                        if (lengthoffile < filesize) {
+                            mimtypeforapi = "image/jpeg";
+
+                            Bitmap geminiBitmap = uriToBitmap(imageUri);
+
+                            geminiBitmap = imageOrientationValidatorFromUri(context, geminiBitmap, imageUri);
+                            geminiBitmap = resize(geminiBitmap, Integer.parseInt(width), Integer.parseInt(height));
+                            selectedBitmap = geminiBitmap;
+
                             runOnUiThread(() -> {
                                 mFrameLayout.setVisibility(View.GONE);
                                 loadingOverlay.setVisibility(View.VISIBLE);
                             });
 
+                            photo_path = createTempFileFromUri(context, imageUri);
 
-                            // photo upload call
-
-                            if (isNetworkAvailable()) {
-                                new uploadphoto().execute(photo_path, "104");
+                            if (photo_path != null) {
+                                if (isNetworkAvailable()) {
+                                    new uploadphoto().execute(photo_path, "104");
+                                } else {
+                                    showAlertDialogWithMessage(photo_path, "104");
+                                }
                             } else {
-                                showAlertDialogWithMessage(photo_path, "104");
-
+                                Toast.makeText(context, "Failed to process image file.", Toast.LENGTH_SHORT).show();
                             }
 
-//                            String prompt = PromptText.getText().toString();
-//
-//                            new Thread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    runOnUiThread(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            String base64Image;
-//                                            if(extension.contains(".pdf"))
-//                                            {
-//                                                base64Image = convertPdfToBase64(imageUri);
-//                                            }
-//                                            else {
-//                                                base64Image = bitmapToBase64(selectedBitmap);
-//                                            }
-//                                            sendToGemini(promttext,base64Image,mimtypeforapi);
-//                                        }
-//                                    });
-//                                }
-//                            }).start();
-
-
+                        } else {
+                            new Handler(Looper.getMainLooper()).post(() ->
+                                    Toast.makeText(context, "File size must be less than " + max_file_size + "MB!", Toast.LENGTH_LONG).show()
+                            );
                         }
-                        else {
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(context, "File size is too big ! \n File size must be less than "+max_file_size+"MB!", Toast.LENGTH_LONG).show();
-                                }
-                            });
-
-                        }
-
-
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
                     }
                 }
                 else {
@@ -784,6 +748,42 @@ public class CameraAITextActivity extends AppCompatActivity {
                 break;
         }
     }
+
+    private Bitmap imageOrientationValidatorFromUri(Context context, Bitmap bitmap, Uri uri) {
+        try (java.io.InputStream inputStream = context.getContentResolver().openInputStream(uri)) {
+            if (inputStream == null) return bitmap;
+
+            android.media.ExifInterface exifInterface = new android.media.ExifInterface(inputStream);
+            int orientation = exifInterface.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+
+            android.graphics.Matrix matrix = new android.graphics.Matrix();
+            if (orientation == android.media.ExifInterface.ORIENTATION_ROTATE_90) matrix.postRotate(90);
+            else if (orientation == android.media.ExifInterface.ORIENTATION_ROTATE_180) matrix.postRotate(180);
+            else if (orientation == android.media.ExifInterface.ORIENTATION_ROTATE_270) matrix.postRotate(270);
+
+            return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        } catch (Exception e) {
+            return bitmap;
+        }
+    }
+
+    private String createTempFileFromUri(Context context, Uri uri) {
+        try (java.io.InputStream inputStream = context.getContentResolver().openInputStream(uri)) {
+            File tempFile = new File(context.getCacheDir(), "upload_image_" + System.currentTimeMillis() + ".jpeg");
+            try (java.io.FileOutputStream outputStream = new java.io.FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                return tempFile.getAbsolutePath();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private Bitmap uriToBitmap(Uri uri) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
