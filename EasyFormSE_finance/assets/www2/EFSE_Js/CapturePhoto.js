@@ -1635,15 +1635,15 @@ function onsuccess_CaptureClick_Customer(e) {
                     if (typeof value == 'object') {
                         value = value.Result;
                     }
-                     else{
-                          try{
-                               value = JSON.parse(value);
-                               value = value.Result;
-                          }
-                           catch(e){
-                                value = value;
-                           }
-                     }
+                    else {
+                        try {
+                            value = JSON.parse(value);
+                            value = value.Result;
+                        }
+                        catch (e) {
+                            value = value;
+                        }
+                    }
 
                     let qid_class = key;
                     $("." + qid_class + "").show();
@@ -2427,8 +2427,13 @@ show_AI_loader = () => {
     //    // 100% structure
     //    $("#" + img_div).before('<div class="ai-loader"><span> AI</span></div>');
     //}
+
+    // simple ant path animation
+    let img_div = JSON.parse(storage.getItem('img_div_id'));
+    $("#" + img_div).parent('div.item-input-field').addClass("marching-ants");
 }
 
 hide_AI_loader = () => {
     $(".ai-loader").remove();
+    $('div.item-input-field').removeClass("marching-ants");
 }
