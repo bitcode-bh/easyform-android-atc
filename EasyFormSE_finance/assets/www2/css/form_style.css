@@ -32,14 +32,14 @@
         left: 35% !important;
     }
 
-    .w-50-50 .item-input img {
+    .w-50-50 .item-input-field img {
         width: 100% !important;
         height: 140px !important;
         margin: 0 !important;
         /*border: 1px solid rgba(0, 0, 0, .12);*/
     }
 
-        .w-50-50 .item-input img[src='images/camera.png'] {
+        .w-50-50 .item-input-field img[src='images/camera.png'] {
             width: initial !important;
             height: initial !important;
             padding: initial;
@@ -410,5 +410,27 @@ div[id^='div_step_Col_'] .cntrl_main_div {
 @keyframes spin {
     100% {
         transform: rotate(360deg);
+    }
+}
+
+.marching-ants {
+    /* Border width and color */
+    --bw: 3px;
+    --bc: blue;
+    background: linear-gradient(90deg, var(--bc) 50%, transparent 50%) repeat-x top, linear-gradient(90deg, var(--bc) 50%, transparent 50%) repeat-x bottom, linear-gradient(0deg, var(--bc) 50%, transparent 50%) repeat-y left, linear-gradient(0deg, var(--bc) 50%, transparent 50%) repeat-y right;
+    background-size: 16px var(--bw), 16px var(--bw), var(--bw) 16px, var(--bw) 16px;
+    animation: ants 0.4s linear infinite;
+    border-radius: 5px;
+    padding: 5px 5px 0px 5px;
+}
+
+
+@keyframes ants {
+    from {
+        background-position: 0 0, 0 100%, 0 0, 100% 0;
+    }
+
+    to {
+        background-position: 16px 0, -16px 100%, 0 -16px, 100% 16px;
     }
 }

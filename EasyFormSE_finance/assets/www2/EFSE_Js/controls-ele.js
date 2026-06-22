@@ -602,7 +602,7 @@ MkControls.prototype.build_type_7_camera = function () {
         }
 
         var str = '';
-        str += '<div class="item-input item-input-field form-div" ' + this.enable_disable + '>';
+        str += '<div class="item-input-field form-div" ' + this.enable_disable + ' style="text-align:center">';
 
         var onclick_str = "onclick = '" + this.param + "'";
         var onerror_str = "onerror = '" + this.param1 + "'";
