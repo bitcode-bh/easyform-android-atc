@@ -24,6 +24,7 @@
             android:layout_marginTop="15dp"
             android:layout_marginEnd="5dp"
             android:padding="7dp"
+            android:visibility="gone"
             android:layout_gravity="top|end"
             android:src="@drawable/browse"
             />
@@ -31,7 +32,7 @@
             android:id="@+id/switchcamera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="70dp"
+            android:layout_marginTop="15dp"
             android:layout_gravity="end"
             android:src="@drawable/frontcamera_foreground"
             />
