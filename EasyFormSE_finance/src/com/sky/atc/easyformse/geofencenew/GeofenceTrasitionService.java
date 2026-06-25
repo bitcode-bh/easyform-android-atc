@@ -81,7 +81,9 @@ public class GeofenceTrasitionService extends IntentService {
 
         int geoFenceTransition = geofencingEvent.getGeofenceTransition();
         // Check if the transition type is of interest
-        if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+//        if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER)  // remove transition enter and use dwell 24062026
+        if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL)
+        {
             // Get the geofence that were triggered
             List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
             ArrayList<String> geofenceTransitionDetails = getGeofenceTrasitionDetails(geoFenceTransition, triggeringGeofences);
@@ -142,7 +144,7 @@ public class GeofenceTrasitionService extends IntentService {
         Log.d("####triggerid", triggerId);
 
         String status = null;
-        if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER)
+        if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL)
             status = "IN";
         else if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT)
             status = "OUT";

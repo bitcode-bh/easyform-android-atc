@@ -64,12 +64,33 @@ public class GeofenceTrasitionServicenew extends IntentService {
             int transaction = geofencingEvent.getGeofenceTransition();
             List<Geofence> geofences = geofencingEvent.getTriggeringGeofences();
            // Geofence geofence = geofences.get(0);
-
+            int geoFenceTransition = geofencingEvent.getGeofenceTransition();
             Intent pipIntent = new Intent(sqlitewraper.context, TripBackgroundMapActivity.class);
             pipIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             if (transaction == Geofence.GEOFENCE_TRANSITION_ENTER) {
                 Log.d(TAG, "You are inside Tacme");
+
+                // Get the geofence that were triggered
+                List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
+                ArrayList<String> geofenceTransitionDetails = getGeofenceTrasitionDetails(geoFenceTransition, triggeringGeofences);
+                // Send notification details as a String
+
+                for (int i=0;i<geofenceTransitionDetails.size();i++) {
+
+                    String geofenceId=geofenceTransitionDetails.get(i);
+                    sendNotification(geofenceTransitionDetails.get(i));
+                    //insert Into Database
+                    if (!geofenceId.equalsIgnoreCase("BIG")) {
+                        sendNotification(geofenceId);
+
+                        // geofence in time check trip running or not and out time not check trip running or not 18-03-2026
+                        if(DeviceEventsUtils.tripStatus().equalsIgnoreCase("true"))
+                        {
+                            insertInto_In_Out_Database("IN", geofenceId);
+                        }
+                    }
+                }
 
 
                 MySharedPreferences  pref = sqlitewraper.getSecureShared("MyPref");
@@ -86,6 +107,7 @@ public class GeofenceTrasitionServicenew extends IntentService {
                         }
                     }
                 }
+
             }
 //            else {
 //                Log.d(TAG, "You are outside Tacme");
@@ -114,6 +136,7 @@ public class GeofenceTrasitionServicenew extends IntentService {
                     if (!geofenceId.equalsIgnoreCase("BIG")) {
                         sendNotification(geofenceId);
                         insertIntoDatabase("OUT", geofenceId);
+                        insertInto_In_Out_Database("OUT", geofenceId);
                     }
 
 //                    if (geofenceId.equalsIgnoreCase("BIG")) {
@@ -487,6 +510,150 @@ public class GeofenceTrasitionServicenew extends IntentService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void insertInto_In_Out_Database(String status,String geoId)
+    {
+        if (status.equalsIgnoreCase("IN"))
+        {
+            long time = System.currentTimeMillis();
+
+            Cursor cursor = database.rawQuery(
+                    "SELECT id,place_id,event FROM geofence_user_tracking_In_Out ORDER BY id DESC LIMIT 1",
+                    null
+            );
+
+            String flowid = "";
+            if (!geoId.equalsIgnoreCase("BIG")) {
+
+                Cursor c4 = database.rawQuery("select flow_id FROM geofence_tracking where place_id='" + geoId + "'",
+                        null);
+                c4.moveToLast();
+                if (c4.getCount() > 0) {
+                    flowid = c4.getString(0);
+                    c4.close();
+                }
+
+            }
+
+            if (cursor.moveToFirst()) {
+                // Row already exists → UPDATE
+                String id = cursor.getString(0);
+                String place_id = cursor.getString(1);
+                String event = cursor.getString(2);
+
+                if(place_id.equalsIgnoreCase(geoId) && event.equalsIgnoreCase(status))
+                {
+                    cursor.close();
+                    return;
+                }
+
+                ContentValues cv = new ContentValues();
+                cv.put("place_id", geoId);
+                cv.put("in_time", time);
+                cv.put("out_time", "0");
+                cv.put("duration", "");
+                cv.put("is_send", "0");
+                cv.put("flowid",flowid);
+                cv.put("event", "IN");
+                int updated =  database.update("geofence_user_tracking_In_Out", cv, id, null);
+
+                Log.d("###GEO", "ENTER UPDATE row: " + updated);
+
+                if (updated > 0) {
+                    GeofenceDownlaod.uploadGeofenceINOutTracking();
+                }
+
+            } else {
+                //  First time → INSERT
+
+                Cursor c3 = database.rawQuery("select user_id,username,appid FROM Login_Master", null);
+
+                String user_id = "";
+                String appid = "";
+                String username = "";
+
+                if (c3.moveToLast()) {
+                    user_id = c3.getString(0);
+                    username = c3.getString(1);
+                    appid = c3.getString(2);
+                }
+                c3.close();
+
+
+
+                ContentValues c = new ContentValues();
+                c.put("user_id", user_id);
+                c.put("place_id", geoId);
+                c.put("in_time", time);
+                c.put("out_time", "0");
+                c.put("duration", "");
+                c.put("is_send", "0");
+                c.put("appid", appid);
+                c.put("flowid",flowid);
+                c.put("event", "IN");
+
+                long result = database.insert("geofence_user_tracking_In_Out", null, c);
+
+                Log.d("###GEO", "FIRST INSERT: " + result);
+
+                if (result > 0) {
+                    GeofenceDownlaod.uploadGeofenceINOutTracking();
+                }
+            }
+
+            cursor.close();
+        }
+
+        else if(status.equalsIgnoreCase("OUT"))
+        {
+            long time = System.currentTimeMillis();
+
+            Cursor cursor = database.rawQuery(
+                    "SELECT id,in_time,place_id FROM geofence_user_tracking_In_Out ORDER BY id DESC LIMIT 1",
+                    null
+            );
+
+            if (cursor.moveToFirst()) {
+
+                String id = cursor.getString(0);
+                String in_time = cursor.getString(1);
+                String place_id = cursor.getString(2);
+
+                if (!geoId.equalsIgnoreCase(place_id)) {
+                    Log.d("###GEO", "EXIT ignored (different geofence)");
+                    cursor.close();
+                    return;
+                }
+
+                long duration = time - Long.parseLong(in_time);
+
+                // GET geofencetime
+                MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre1");
+                String restoredText = prefs.getString("geofencetime", "900000"); // default 15 min 900000
+                long geofencetime = Long.parseLong(restoredText);
+
+                ContentValues cv = new ContentValues();
+
+                // if (duration > geofencetime) // remove 15 min duration  07052026
+                {
+                    cv.put("in_time", "0");
+                    cv.put("out_time", time);
+                    cv.put("duration", duration);
+                    cv.put("is_send", "0");
+                    cv.put("event", "OUT");
+
+                    database.update("geofence_user_tracking_In_Out", cv, id,null);
+
+                    Log.d("###GEO", "EXIT VALID → API");
+
+                    GeofenceDownlaod.uploadGeofenceINOutTracking();
+
+                }
+            }
+
+            cursor.close();
         }
     }
 }

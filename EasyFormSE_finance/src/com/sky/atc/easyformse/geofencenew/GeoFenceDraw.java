@@ -301,8 +301,11 @@ public class GeoFenceDraw implements
                 .setRequestId(String.valueOf(siteid))
                 .setCircularRegion(latLng.latitude, latLng.longitude, radius)
                 .setExpirationDuration(GEO_DURATION)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER
-                        | Geofence.GEOFENCE_TRANSITION_EXIT)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL
+                         | Geofence.GEOFENCE_TRANSITION_EXIT)
+                .setLoiteringDelay(5 * 60 * 1000)  //  5 min geofence create e
+//                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER  // remove enter type and use dwell 24062026
+//                        | Geofence.GEOFENCE_TRANSITION_EXIT)
                 .build();
     }
 
@@ -310,7 +313,9 @@ public class GeoFenceDraw implements
     private GeofencingRequest createGeofenceRequest(Geofence geofence,int enterExitflag) {
         Log.d(TAG, "###createGeofenceRequest");
 
-        int intialTrigger = GeofencingRequest.INITIAL_TRIGGER_ENTER;
+//        int intialTrigger = GeofencingRequest.INITIAL_TRIGGER_ENTER;
+
+        int intialTrigger  = GeofencingRequest.INITIAL_TRIGGER_DWELL;
 
         if (enterExitflag==1){
             intialTrigger = GeofencingRequest.INITIAL_TRIGGER_EXIT;
