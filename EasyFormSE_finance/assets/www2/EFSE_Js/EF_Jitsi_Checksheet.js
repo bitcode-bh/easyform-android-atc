@@ -142,6 +142,7 @@ function onsuccess_get_tid_from_task_jitsi(e) {
             localStorage.setItem('checksheetid', check_type);
             localStorage.setItem('p_key', step);
             storage.setItem('check_type', JSON.stringify(check_type));
+            storage.setItem('server_task_id', JSON.stringify(jitsi_server_task_id));
 
             var data_json = JSON.parse(storage.getItem('list_json'));
             var list_data = JSON.parse(data_json);
