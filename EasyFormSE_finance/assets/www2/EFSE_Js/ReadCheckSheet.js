@@ -237,6 +237,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
         var weather_cntrl_found = 0;
         var Type7_upload_Array = [];
         var Type7_old_photo_class_Array = [];
+        var Type7_AI_photo_Array = [];
         var Type40_ll_Array = [];
 
         var Car_que_id_Array = [];
@@ -1507,6 +1508,10 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         newdiv += '<input type="hidden" id="hdn_cbtn_ans_' + new_id + '" value="" />';
 
                         newdiv += '</div>';
+
+                        if (photo_type == "AI") {
+                            Type7_AI_photo_Array.push(jsonObj[i].que_id);
+                        }
                     }
 
                     // Calendar
@@ -4690,6 +4695,13 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     $("." + t_old_photo_class + " img[id^=cbtn_]").attr("onclick", "");
                 }
                 Type7_old_photo_class_Array.splice(u, 1);
+            }
+        }
+
+        if (form_flag == 0) {
+            // for mobile log only
+            if (Type7_AI_photo_Array.length > 0) {
+                check_AI_photo_entry(Type7_AI_photo_Array);
             }
         }
 

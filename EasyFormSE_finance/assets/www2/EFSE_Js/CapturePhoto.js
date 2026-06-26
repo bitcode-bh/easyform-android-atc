@@ -2437,3 +2437,181 @@ hide_AI_loader = () => {
     $(".ai-loader").remove();
     $('div.item-input-field').removeClass("marching-ants");
 }
+
+
+check_AI_photo_entry = (Type7_AI_photo_Array) => {
+
+    let qid_array = Type7_AI_photo_Array.toString();
+    var t_id = curr_survey_data["t_id"];
+    var step = curr_survey_data["step"];
+    var check_type = curr_survey_data["check_type"];
+
+    var type22_popup = $('.popup-type22:visible');
+    if (type22_popup.length > 0) {
+        var type22_img_que_id = storage.getItem('img_id_type22');
+        if (type22_current_mode == 'edit') {
+            // edit mode
+            var t_row_index_no = row_index_no;
+        }
+        else {
+            //  insert mode
+            var last_index = $('#row_index_' + type22_new_id + '').val();
+            last_index = parseInt(last_index);
+            var t_row_index_no = last_index + 1;
+        }
+    }
+    else {
+        var type22_img_que_id = 0;
+        var t_row_index_no = 0;
+    }
+
+    var query = "select * from p_master where tid = '" + t_id + "' and checksheetid = '" + check_type + "' and p_key = '" + step + "' and que_id in (" + qid_array + ") and Ph_id = '" + type22_img_que_id + "' and it_id = '" + t_row_index_no + "'";
+    var q_jsonobj = [];
+    q_jsonobj.push({
+        data: query,
+        p: "1"
+    });
+    cordova.exec(function (e) {
+        // success
+        var myArray = JSON.parse(e);
+        if (myArray.length > 0) {
+            let que_id = myArray[0].que_id;
+            let p_url = myArray[0].p_url;
+            let responsetext = myArray[0].ai_photo_response;
+            responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
+
+            let img_div = "cbtn_0_" + check_type + "_" + que_id;
+            $("#" + img_div).attr("src", p_url);
+            
+            let date_s = new Date();
+            let time = date_s.getTime();
+            let company_id = JSON.parse(storage.getItem('company_id'));
+            let user_id = JSON.parse(storage.getItem('user_id'));
+            let siteid = JSON.parse(storage.getItem('siteid'));
+            let p_name = company_id + "_" + user_id + "_" + siteid + "_" + time + '_' + t_row_index_no + '.jpeg';
+
+            let answer = [];
+            answer.push(p_url, p_name, '', '', '', '');
+
+            let index = $("#" + img_div + "").attr('index');
+            index = parseInt(index);
+            jsonObj_old[index].ans = answer;
+
+            var target_class = $("#" + img_div + "").attr('target_class');
+            if (target_class == "" || target_class == null || target_class == undefined) {
+                try {
+
+                    try {
+                        var responsetext_new = responsetext.replaceAll('\n', '');
+                        responsetext_new = responsetext_new.match(/\{(.*?)\}/);     // extract inner string { }
+                        responsetext_new = responsetext_new[0];
+                        var responseJSON = JSON.parse(responsetext_new);
+                    }
+                    catch (e) {
+                        // response with Result key
+                        var responsetext_new = responsetext.replaceAll('\n', '');
+                        var responseJSON = JSON.parse(responsetext_new);
+                    }
+
+                    // response is in JSON
+                    $.each(responseJSON, function (key, value) {
+
+                        if (typeof value == 'object') {
+                            value = value.Result;
+                        }
+                        else {
+                            try {
+                                value = JSON.parse(value);
+                                value = value.Result;
+                            }
+                            catch (e) {
+                                value = value;
+                            }
+                        }
+
+                        let qid_class = key;
+                        $("." + qid_class + "").show();
+                        $("." + qid_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
+                        let where_box_id = $("." + qid_class + " :input").attr("id");
+                        let tagName = $("#" + where_box_id + "").prop("tagName");
+                        if (tagName == "TEXTAREA") {
+                            $("#" + where_box_id + "").val(value);
+                        }
+                        else {
+                            if (where_box_id.indexOf("rdo_") > -1) {
+                                // radio autoselect
+                                $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').prop('checked', true);
+                                var onchange_avail = $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').attr("onchange");
+                                if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
+                                else {
+                                    setTimeout(function () {
+                                        $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').trigger("onchange");
+                                    }, 1000);
+                                }
+                            }
+                            else {
+                                // textbox autofill
+                                let $input = $("#" + where_box_id + "");
+                                let $textarea = '<textarea cols="20" rows="1" class="form-ele" id="' + where_box_id + '" value=\'' + value + '\' style="overflow:hidden; resize:none; width: 100% !important; background-color: #ddd; border-radius: 5px; padding: 5px;" disabled="disabled">' + value + '</textarea>';
+                                $input.replaceWith($textarea);
+
+                                let t_textarea = document.getElementById(where_box_id);
+                                t_textarea.style.height = "auto";
+                                t_textarea.style.height = t_textarea.scrollHeight + 4 + "px";
+                            }
+                        }
+                    });
+
+                }
+                catch (e) {
+                    alert("Response is not in JSON structure!" + responsetext);
+                }
+            }
+            else {
+
+                try {
+                    // JSON string with Result key in response
+                    let t_responsetext = JSON.parse(responsetext);
+                    responsetext = t_responsetext.Result;
+                } catch (e) {
+                    // simple string
+                }
+
+                $("." + target_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
+                let where_box_id = $("." + target_class + " :input").attr("id");
+                let tagName = $("#" + where_box_id + "").prop("tagName");
+                if (tagName == "TEXTAREA") {
+                    $("#" + where_box_id + "").val(responsetext);
+                }
+                else {
+                    if (where_box_id.indexOf("rdo_") > -1) {
+                        // radio autoselect
+                        $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').prop('checked', true);
+                        var onchange_avail = $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').attr("onchange");
+                        if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
+                        else {
+                            setTimeout(function () {
+                                $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').trigger("onchange");
+                            }, 1000);
+                        }
+                    }
+                    else {
+                        // textbox found hence convert it to textarea run time - mk - 26072025
+                        let $input = $("#" + where_box_id + "");
+                        let $textarea = '<textarea cols="20" rows="2" class="form-ele" id="' + where_box_id + '" onkeydown="ResizeBox(event)" value=\'' + responsetext + '\' style="resize:vertical !important; width: 100% !important;" disabled="disabled">' + responsetext + '</textarea>';
+                        $input.replaceWith($textarea);
+
+                        let t_textarea = document.getElementById(where_box_id);
+                        t_textarea.style.height = t_textarea.scrollHeight + "px";
+                    }
+                }
+            }
+
+
+        }
+    }, function (e) {
+        // fail
+
+    }, 'SqlitePlugin', 'showValues', q_jsonobj);
+
+}
