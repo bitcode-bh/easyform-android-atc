@@ -200,6 +200,11 @@ public class delete_database extends CordovaPlugin {
                 database.execSQL("delete from sqlite_sequence where name='Events_check'");
                 database.delete("meterreading", null, null);
                 database.execSQL("delete from sqlite_sequence where name='meterreading'");
+                database.delete("geofence_user_tracking_In_Out", null, null);
+                database.execSQL("delete from sqlite_sequence where name='geofence_user_tracking_In_Out'");
+                database.delete("Thresold_New", null, null);
+                database.execSQL("delete from sqlite_sequence where name='Thresold_New'");
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

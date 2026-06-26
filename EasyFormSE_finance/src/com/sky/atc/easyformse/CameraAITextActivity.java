@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -66,6 +67,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.upload.UploadUtils;
+import com.sky.atc.easyformse.utils.LogUtils;
+
 import net.sqlcipher.database.SQLiteDatabase;
 
 import org.json.JSONArray;
@@ -137,6 +140,14 @@ public class CameraAITextActivity extends AppCompatActivity {
     String queId ;
     String checksheetid;
     int company_id;
+    String stepNo;
+    String phId ;
+    String thPath;
+    String type ;
+    String itId ;
+    String companyId;
+    String site_id ;
+    String Pname;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +169,8 @@ public class CameraAITextActivity extends AppCompatActivity {
         BrowseImage = findViewById(R.id.browseimage);
         switchcamera = findViewById(R.id.switchcamera);
         loadingOverlay = findViewById(R.id.loadingOverlay);
+
+        database = sqlitewraper.getDatabase();
 
         pref = sqlitewraper.getSecureShared("MyPref");
 //        themecolor = pref.getString("themecolor","");
@@ -458,6 +471,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                         // Save the rotated bitmap to file
                         File pictureFile = getOutputMediaFile();
                         photo_path = pictureFile.getAbsolutePath();
+                        Pname = pictureFile.getName();
                         selectedBitmap = imageOreintationValidator(selectedBitmap, pictureFile.getAbsolutePath());
                         try (FileOutputStream fos = new FileOutputStream(pictureFile)) {
                             selectedBitmap.compress(Bitmap.CompressFormat.JPEG, Integer.parseInt(quality), fos);
@@ -776,6 +790,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
                     outputStream.write(buffer, 0, bytesRead);
                 }
+                Pname = tempFile.getName();
                 return tempFile.getAbsolutePath();
             }
         } catch (Exception e) {
@@ -1181,6 +1196,7 @@ public class CameraAITextActivity extends AppCompatActivity {
     {
 
         try{
+            insert_p_master(result);
             Intent resultIntent = new Intent();
             JSONArray mJsonArray = new JSONArray();
             JSONObject mJsonObject = new JSONObject();
@@ -1464,17 +1480,17 @@ public class CameraAITextActivity extends AppCompatActivity {
                 JSONArray jsonArray1 = new JSONArray(flowData);
                 JSONObject jsonObject = jsonArray1.getJSONObject(0);
 
-                String companyId = jsonObject.getString("company_id");
-                String site_id = jsonObject.getString("site_id");
+                 companyId = jsonObject.getString("company_id");
+                 site_id = jsonObject.getString("site_id");
                  sId = jsonObject.getString("sid");
                  queId = jsonObject.getString("que_id");
                  checksheetid = jsonObject.getString("checksheetid");
-                String stepNo = jsonObject.getString("step_No");
-                String phId = jsonObject.getString("Ph_id");
-                String thPath = jsonObject.getString("th_path");
-                String type = jsonObject.getString("type");
-                String itId = jsonObject.getString("it_id");
-                database = sqlitewraper.getDatabase();
+                 stepNo = jsonObject.getString("step_No");
+                 phId = jsonObject.getString("Ph_id");
+                 thPath = jsonObject.getString("th_path");
+                 type = jsonObject.getString("type");
+                 itId = jsonObject.getString("it_id");
+
                 Cursor c3 = database.rawQuery("SELECT username,company_id,appid,user_id FROM Login_Master",
                         null);
                 c3.moveToLast();
@@ -1774,6 +1790,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                         out.close();
 
                         photo_path = finalFile.getAbsolutePath();
+                        Pname = finalFile.getName();
 //                            Log.d("SavedImage", finalFile.getAbsolutePath());
 //
 //                            Toast.makeText(
@@ -1863,5 +1880,46 @@ public class CameraAITextActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return restext;
+    }
+
+    // ai photo entery insert in p_master with ai response 26062026
+    private void insert_p_master(String ai_response)
+    {
+        try {
+
+
+            Cursor check_taskmaster = database
+                    .rawQuery(
+                            "SELECT tid FROM task_master WHERE server_task_id=" + sId,
+                            null);
+            check_taskmaster.moveToFirst();
+
+            int tid = 0 ;
+            if (check_taskmaster.getCount() > 0) {
+                tid = check_taskmaster.getInt(0);
+            }
+            check_taskmaster.close();
+
+
+            ContentValues PMasterValues = new ContentValues();
+            PMasterValues.put("tid", tid);
+            PMasterValues.put("checksheetid", checksheetid);
+            PMasterValues.put("p_name", Pname);
+            PMasterValues.put("p_url", photo_path);
+            PMasterValues.put("millisecond", System.currentTimeMillis());
+            PMasterValues.put("p_key", "1");
+            PMasterValues.put("p_value", "image");
+            PMasterValues.put("p_type", "image/jpg");
+            PMasterValues.put("Ph_id", phId);
+            PMasterValues.put("it_id", itId);
+            PMasterValues.put("que_name", "Ai Photo");
+            PMasterValues.put("que_id", queId);
+            PMasterValues.put("match_temp_id","0");
+            PMasterValues.put("flag", "1");
+            PMasterValues.put("ai_photo_response",ai_response);
+            long temp = database.insert("p_master", null, PMasterValues);
+        } catch (Exception e) {
+            LogUtils.writeAttendanceLogToFile("Exception : " + e.toString(), "insertPMaster");
+        }
     }
 }
