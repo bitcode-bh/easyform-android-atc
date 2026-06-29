@@ -28,6 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+import com.sky.atc.easyformse.utils.LogUtils;
 
 //To Draw geofence
 @StringFogIgnore
@@ -107,6 +108,7 @@ public class GeoFenceDraw implements
                 for (int i = 0; i < pendinggeofence; i++) {
                     placeid = c2.getString(0);
                     c2.moveToNext();
+                    LogUtils.writeGeofenceLogToFile("pendinggeofence : " + placeid ," site in new");
                     redrawpendingWithExit(placeid);
                     placeidString = placeidString +","+ placeid;
 
@@ -278,7 +280,7 @@ public class GeoFenceDraw implements
         Log.i(TAG, "###markerForGeofence(" + latLng + ")");
         String title = latLng.latitude + ", " + latLng.longitude;
         startGeofence(latLng, siteid, distanceRadius,enterExitflag);
-
+        LogUtils.writeGeofenceLogToFile(String.valueOf(enterExitflag),"markerForGeofence");
     }
 
     // Start Geofence creation process
@@ -288,6 +290,7 @@ public class GeoFenceDraw implements
             GeofencingRequest geofenceRequest = createGeofenceRequest(geofence,enterExitflag);
             addGeofence(geofenceRequest);
             Log.i("####startgeofence", geoFenceMarker.latitude + " : " + geoFenceMarker.longitude);
+            LogUtils.writeGeofenceLogToFile(geoFenceMarker.latitude + " : " + geoFenceMarker.longitude,"startGeofence");
         } else {
             Log.e(TAG, "###Geofence marker is null");
         }
@@ -462,6 +465,7 @@ public class GeoFenceDraw implements
         c2.moveToFirst();
 
         if (pendinggeofence > 0) {
+            LogUtils.writeGeofenceLogToFile("redrawpendingWithExit : " + placeid ,"re draw");
 
             for (int i = 0; i < pendinggeofence; i++) {
                 lat = c2.getString(0);

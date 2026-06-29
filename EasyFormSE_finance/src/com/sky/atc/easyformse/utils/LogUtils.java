@@ -492,4 +492,30 @@ public class LogUtils {
     }
 
 
+    public static void writeGeofenceLogToFile(String error, String classAndMethod) {
+        executorService.execute(() -> {
+            try {
+                String folderPath = LogFolderName + "/" + "Geofence";
+                File folderFile = new File(Utils.getRootFolderFile(sqlitewraper.context) + "/" + folderPath);
+
+
+                File path = new File(folderFile.getAbsolutePath());
+                if (!path.exists()) {
+                    path.mkdirs();
+                }
+                Date currentData = new Date();
+                String pattern = "MM_dd_yyyy";
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern, Locale.getDefault());
+                String fileName = "AttendanceLogs_" + simpleDateFormat.format(currentData) + ".txt";
+                File logFile = new File(path, fileName);
+
+                String time = currentData.toString();
+                writLogFile(error, "", logFile, time,classAndMethod);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
 }

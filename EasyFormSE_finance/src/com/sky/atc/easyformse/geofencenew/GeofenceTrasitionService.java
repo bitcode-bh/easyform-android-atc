@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+import com.sky.atc.easyformse.utils.LogUtils;
 
 //To receive Geofence event occurence enter/exit
 @StringFogIgnore
@@ -80,6 +81,11 @@ public class GeofenceTrasitionService extends IntentService {
         }
 
         int geoFenceTransition = geofencingEvent.getGeofenceTransition();
+
+        if(geofencingEvent.hasError())
+        {
+            LogUtils.writeGeofenceLogToFile("Geofence error" + geofencingEvent.hasError() + "Error code " + geofencingEvent.getErrorCode() ,"Geofence error");
+        }
         // Check if the transition type is of interest
 //        if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER)  // remove transition enter and use dwell 24062026
         if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL)
@@ -253,6 +259,8 @@ public class GeofenceTrasitionService extends IntentService {
                         long temp = database.insert("geofence_user_tracking_detail", null, c);
                         Log.d("####GeofenceInsert", String.valueOf(temp) + ": " + geoId);
                         Log.d("####GEOMIlLLI_INSERT", String.valueOf(time));
+                        LogUtils.writeGeofenceLogToFile("GeofenceInsertrt IN : " + geoId ,"GeofenceInsert");
+
                     }
                 } else {
 
@@ -272,6 +280,7 @@ public class GeofenceTrasitionService extends IntentService {
 //                        }
 //                    });
 
+                    LogUtils.writeGeofenceLogToFile("GeofenceInsertrt IN : " + geoId ,"GeofenceInsert");
                     long temp = database.insert("geofence_user_tracking_detail", null, c);
                     Log.d("####GeofenceInsert", String.valueOf(temp) + ": " + geoId);
                     Log.d("####GEOMIlLLI_INSERT", String.valueOf(time));
@@ -332,7 +341,7 @@ public class GeofenceTrasitionService extends IntentService {
 //                                    toast.show();
 //                                }
 //                            });
-
+                            LogUtils.writeGeofenceLogToFile("GeofenceInsertrt if OUT : " + geoId ,"GeofenceInsert");
                             long temp = database.update("geofence_user_tracking_detail", c1, t, null);
                             Log.d("####GeofenceUpdate", String.valueOf(temp) + ":" + geoId);
                             Log.d("####GEOMILLI_UPDATE", String.valueOf(time));
@@ -349,7 +358,7 @@ public class GeofenceTrasitionService extends IntentService {
                             c1.put("duration", duration);
                             c1.put("out_time", "1");
                             c1.put("is_send", "0");
-
+                            LogUtils.writeGeofenceLogToFile("GeofenceInsertrt else OUT : " + geoId ,"GeofenceInsert");
                             long temp = database.update("geofence_user_tracking_detail", c1, t, null);
                             Log.d("####GeoDuration", String.valueOf(temp) + ":" + geoId);
                             Log.d("####GEODuration", String.valueOf(duration));
@@ -374,7 +383,7 @@ public class GeofenceTrasitionService extends IntentService {
                         long temp = database.update("geofence_user_tracking_detail", c1, t, null);
                         Log.d("####GeofenceUpdate", String.valueOf(temp) + ":" + geoId);
                         Log.d("####GEOMILLI_UPDATE", String.valueOf(time));
-
+                        LogUtils.writeGeofenceLogToFile("GeofenceInsertrt if 1 OUT : " + geoId ,"GeofenceInsert");
                         if (temp > 0) {
                             GeofenceDownlaod.uploadGeofenceTracking();
                         }
@@ -387,7 +396,7 @@ public class GeofenceTrasitionService extends IntentService {
                         c1.put("duration", duration);
                         c1.put("out_time", "1");
                         c1.put("is_send", "0");
-
+                        LogUtils.writeGeofenceLogToFile("GeofenceInsertrt else 1 OUT : " + geoId ,"GeofenceInsert");
                         long temp = database.update("geofence_user_tracking_detail", c1, t, null);
                         Log.d("####GeoDuration", String.valueOf(temp) + ":" + geoId);
                         Log.d("####GEODuration", String.valueOf(duration));
@@ -502,7 +511,7 @@ public class GeofenceTrasitionService extends IntentService {
                 String id = cursor.getString(0);
                 String place_id = cursor.getString(1);
                 String event = cursor.getString(2);
-
+                //LogUtils.writeGeofenceLogToFile("geofence_user_tracking_In_Out  IN : " + "place_id" +  place_id + "geoid" + geoId ,"GeofenceInsert");
                 if(place_id.equalsIgnoreCase(geoId) && event.equalsIgnoreCase(status))
                 {
                     cursor.close();
@@ -518,7 +527,7 @@ public class GeofenceTrasitionService extends IntentService {
                 cv.put("flowid",flowid);
                 cv.put("event", "IN");
                 int updated =  database.update("geofence_user_tracking_In_Out", cv, id, null);
-
+                LogUtils.writeGeofenceLogToFile("geofence_user_tracking_In_Out update IN : " + geoId ,"GeofenceInsert");
                 Log.d("###GEO", "ENTER UPDATE row: " + updated);
 
                 if (updated > 0) {
@@ -553,7 +562,7 @@ public class GeofenceTrasitionService extends IntentService {
                 c.put("appid", appid);
                 c.put("flowid",flowid);
                 c.put("event", "IN");
-
+                LogUtils.writeGeofenceLogToFile("geofence_user_tracking_In_Out insert IN : " + geoId ,"GeofenceInsert");
                 long result = database.insert("geofence_user_tracking_In_Out", null, c);
 
                 Log.d("###GEO", "FIRST INSERT: " + result);
@@ -586,7 +595,7 @@ public class GeofenceTrasitionService extends IntentService {
                     cursor.close();
                     return;
                 }
-
+                LogUtils.writeGeofenceLogToFile("geofence_user_tracking_In_Out  OUT : " + geoId ,"GeofenceInsert");
                 long duration = time - Long.parseLong(in_time);
 
                 // GET geofencetime

@@ -439,8 +439,9 @@ class DownloadMainStructure {
                                 cv.put("millisecond", millisecond);
                                 cv.put("isflag", flag);
                                 cv.put("is_delete", isDeleted);
-                                cv.put("language",language);
-
+                                if(!language.equalsIgnoreCase("")) {
+                                    cv.put("language", language);
+                                }
 
                                 Cursor c1 = database.rawQuery(
                                         "select isflag from User_Define_Flow_Master where id=" + id,
@@ -730,8 +731,9 @@ class DownloadMainStructure {
                                     cv1.put("millisecond", milli);
                                     cv1.put("step_short_name", step_short_name);
                                     cv1.put("stepid", stepId);
-                                    cv1.put("language",language);
-
+                                    if(!language.equalsIgnoreCase("")) {
+                                        cv1.put("language", language);
+                                    }
                                     database.insert("checksheet", null, cv1);
                                 }
 
@@ -808,7 +810,10 @@ class DownloadMainStructure {
         cv1.put("millisecond", milli);
         cv1.put("step_short_name", step_short_name);
         cv1.put("stepid", stepId);
-        cv1.put("language",language);
+        if(!language.equalsIgnoreCase(""))
+        {
+            cv1.put("language",language);
+        }
         long temp = database.update(t_name, cv1, t2, null);
 
     }
