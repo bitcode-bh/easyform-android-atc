@@ -1353,7 +1353,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                     // Camera Button
                     else if (jsonObj[i].type == 7) {
                         var misc_Array = jsonObj[i].prop[0].misc_data;
-                        var value, photo_type, latlong, quality, width, height, target_class, burstmode, old_photo_class, scan_mode, ref_class, max_file_size, model_name, prompt_text, prompt_text_array, group_photo_class;
+                        var value, photo_type, latlong, quality, width, height, target_class, burstmode, old_photo_class, scan_mode, ref_class, max_file_size, model_name, prompt_text, prompt_text_array, group_photo_class, max_attempt;
                         for (h = 0; h < misc_Array.length; h++) {
                             var type = misc_Array[h].type;
                             if (type == 6) {
@@ -1373,6 +1373,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                                 prompt_text = value[0].prompt_text;
                                 prompt_text_array = value[0].prompt_text_array;
                                 group_photo_class = value[0].group_photo_class;
+                                max_attempt = value[0].max_attempt;
                             }
                         }
                         if (photo_type == '' || photo_type == null || photo_type == undefined) {
@@ -1499,7 +1500,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                             'model_name': model_name,
                             'prompt_text': prompt_text,
                             'prompt_text_array': prompt_text_array,
-                            'group_photo_class': group_photo_class
+                            'group_photo_class': group_photo_class,
+                            'max_attempt': max_attempt
                         });
 
                         var hdn_cam_ary_str = JSON.stringify(hdn_cam_ary);

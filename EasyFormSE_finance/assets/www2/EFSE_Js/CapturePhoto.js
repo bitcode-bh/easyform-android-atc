@@ -1205,6 +1205,30 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
         var hdn_cam_ary = $("#hdn_" + img_div + "").val();
         hdn_cam_ary = decodeURIComponent(hdn_cam_ary);
         hdn_cam_ary = JSON.parse(hdn_cam_ary);
+
+        if (photo_type == "AI") {
+            let max_attempt = hdn_cam_ary[0].max_attempt;
+            if (max_attempt == "" || max_attempt == null || max_attempt == undefined) { }
+            else {
+                let attempt = $("#" + img_div + "").attr("attempt");
+                if (attempt == "" || attempt == null || attempt == undefined) { }
+                else {
+                    if (typeof attempt == "string") {
+                        attempt = parseInt(attempt);
+                    }
+
+                    if (typeof max_attempt == "string") {
+                        max_attempt = parseInt(max_attempt);
+                    }
+
+                    if (attempt >= max_attempt) {
+                        alert("You have reached max limit to capture this photo");
+                        return false;
+                    }
+                }
+            }
+        }
+
         var max_file_size = hdn_cam_ary[0].max_file_size;
         var model_name = hdn_cam_ary[0].model_name;
         var prompt_text = hdn_cam_ary[0].prompt_text;
@@ -1728,6 +1752,26 @@ function onsuccess_CaptureClick_Customer(e) {
 
     if (photo_type == "AI") {
         hide_AI_loader();
+
+        let img_div = JSON.parse(storage.getItem('img_div_id'));
+        let hdn_cam_ary = $("#hdn_" + img_div + "").val();
+        hdn_cam_ary = decodeURIComponent(hdn_cam_ary);
+        hdn_cam_ary = JSON.parse(hdn_cam_ary);
+
+        let max_attempt = hdn_cam_ary[0].max_attempt;
+        if (max_attempt == "" || max_attempt == null || max_attempt == undefined) { }
+        else {
+            let attempt = $("#" + img_div + "").attr("attempt");
+            if (attempt == "" || attempt == null || attempt == undefined) {
+                $("#" + img_div + "").attr('attempt', "1");
+            }
+            else {
+                if (typeof attempt == "string") {
+                    attempt = parseInt(attempt);
+                }
+                $("#" + img_div + "").attr('attempt', attempt + 1);
+            }
+        }
     }
 }
 
@@ -2438,7 +2482,7 @@ hide_AI_loader = () => {
     $('div.item-input-field').removeClass("marching-ants");
 }
 
-
+// get last valid AI photo entry
 check_AI_photo_entry = (Type7_AI_photo_Array) => {
 
     let qid_array = Type7_AI_photo_Array.toString();
@@ -2465,7 +2509,7 @@ check_AI_photo_entry = (Type7_AI_photo_Array) => {
         var t_row_index_no = 0;
     }
 
-    var query = "select * from p_master where tid = '" + t_id + "' and checksheetid = '" + check_type + "' and p_key = '" + step + "' and que_id in (" + qid_array + ") and Ph_id = '" + type22_img_que_id + "' and it_id = '" + t_row_index_no + "'";
+    var query = "select * from p_master where tid = '" + t_id + "' and checksheetid = '" + check_type + "' and p_key = '" + step + "' and que_id in (" + qid_array + ") and Ph_id = '" + type22_img_que_id + "' and it_id = '" + t_row_index_no + "' order by 1 desc";
     var q_jsonobj = [];
     q_jsonobj.push({
         data: query,
@@ -2482,7 +2526,7 @@ check_AI_photo_entry = (Type7_AI_photo_Array) => {
 
             let img_div = "cbtn_0_" + check_type + "_" + que_id;
             $("#" + img_div).attr("src", p_url);
-            
+
             let date_s = new Date();
             let time = date_s.getTime();
             let company_id = JSON.parse(storage.getItem('company_id'));
