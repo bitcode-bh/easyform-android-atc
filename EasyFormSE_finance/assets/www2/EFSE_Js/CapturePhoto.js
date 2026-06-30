@@ -1263,6 +1263,11 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
             var check_type = JSON.parse(storage.getItem('check_type'));
             var siteid = JSON.parse(storage.getItem('siteid'));
         }
+        else if (form_flag_temp == 3 && c_is_online == 1) {
+            // collapsible control
+            var check_type = collapse_Json[0].checksheet_id;
+            var siteid = JSON.parse(storage.getItem('siteid'));
+        }
         else if (form_flag_temp == 8) {
             var check_type = localStorage.getItem('check_type_user');
             var siteid = 0;
@@ -1356,6 +1361,10 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                     }
                 }
             }
+            else if (form_flag_temp == 3 && c_is_online == 1) {
+                // collapsible online form
+                var sid = JSON.parse(storage.getItem('server_task_id'));
+            }
             else if (form_flag_temp == 12) {
                 // group task
                 var t_curr_cd_div = target_div;
@@ -1394,6 +1403,10 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                         }
                     }
                 }
+            }
+
+            if (step == 0) {
+                step = 1;
             }
 
             var flowParamData = [];
@@ -2365,6 +2378,10 @@ function upload_autofill_photo_temp_mobile_checksheet(auto_fill_que_id, auto_fil
     else {
         var type22_img_que_id = 0;
         var t_row_index_no = 0;
+    }
+
+    if (step == 0) {
+        step = 1;
     }
 
     var flowParamData = [];
