@@ -1197,6 +1197,10 @@ public class CameraAITextActivity extends AppCompatActivity {
 
         try{
             insert_p_master(result);
+
+            // Get count
+            int pMasterCount = getPMasterCount();
+
             Intent resultIntent = new Intent();
             JSONArray mJsonArray = new JSONArray();
             JSONObject mJsonObject = new JSONObject();
@@ -1204,6 +1208,7 @@ public class CameraAITextActivity extends AppCompatActivity {
             mJsonObject.put("responsetext", result);
             mJsonObject.put("photo_id",photoId);
             mJsonObject.put("photo_size", UploadUtils.sizeofFile);
+            mJsonObject.put("attempt",pMasterCount);
             mJsonArray.put(mJsonObject);
 //            pref.putString("responsetext",textOutput.getText().toString());
 //            pref.commit();
@@ -1888,17 +1893,7 @@ public class CameraAITextActivity extends AppCompatActivity {
         try {
 
 
-            Cursor check_taskmaster = database
-                    .rawQuery(
-                            "SELECT tid FROM task_master WHERE server_task_id=" + sId,
-                            null);
-            check_taskmaster.moveToFirst();
-
-            int tid = 0 ;
-            if (check_taskmaster.getCount() > 0) {
-                tid = check_taskmaster.getInt(0);
-            }
-            check_taskmaster.close();
+            int tid = gettid(sId);
 
 
             ContentValues PMasterValues = new ContentValues();
@@ -1907,7 +1902,7 @@ public class CameraAITextActivity extends AppCompatActivity {
             PMasterValues.put("p_name", Pname);
             PMasterValues.put("p_url", photo_path);
             PMasterValues.put("millisecond", System.currentTimeMillis());
-            PMasterValues.put("p_key", "1");
+            PMasterValues.put("p_key", stepNo);
             PMasterValues.put("p_value", "image");
             PMasterValues.put("p_type", "image/jpg");
             PMasterValues.put("Ph_id", phId);
@@ -1921,5 +1916,49 @@ public class CameraAITextActivity extends AppCompatActivity {
         } catch (Exception e) {
             LogUtils.writeAttendanceLogToFile("Exception : " + e.toString(), "insertPMaster");
         }
+    }
+
+   // get tid from server task id
+   private int gettid(String server_task_id)
+   {
+       Cursor check_taskmaster = database
+               .rawQuery(
+                       "SELECT tid FROM task_master WHERE server_task_id=" + server_task_id,
+                       null);
+       check_taskmaster.moveToFirst();
+
+       int tid = 0 ;
+       if (check_taskmaster.getCount() > 0) {
+           tid = check_taskmaster.getInt(0);
+       }
+       check_taskmaster.close();
+
+       return tid;
+   }
+
+   // get pmaster count 07012026
+    private int getPMasterCount() {
+
+        int count = 0;
+
+        Cursor cursor = null;
+
+        try {
+
+             int tid = gettid(sId);
+
+
+            cursor = database.rawQuery(
+                    "select * from p_master where tid =" + tid +" and checksheetid = " + checksheetid + " and p_key =" + stepNo +
+                            " and que_id = " + queId + " and Ph_id =" + phId + " and it_id =" + itId, null);
+            cursor.moveToFirst();
+
+            count = cursor.getCount();
+
+
+        } catch (Exception e) {
+            Log.d("Exception",e.toString());
+        }
+        return count;
     }
 }
