@@ -5220,9 +5220,10 @@ function success_check_survey_entry_next_read(e) {
             var buttons = itemObj._checkStrObj(myArray[0].buttons);  		// check_item
 
             if (user_language != 'en') {
-                var language = itemObj._checkStrObj(myArray[0].language);
-                if (language == "" || language == null || language == undefined) { }
+                var language = myArray[0].language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
                 else {
+                    language = itemObj._checkStrObj(language);
                     language = language[0];
 
                     if (isEmpty(language)) { }
@@ -5296,9 +5297,10 @@ function onsuccess_get_checksheet_from_server(e) {
                 var buttons = itemObj._checkStrObj(myArray[0].buttons);  		// check_item
 
                 if (user_language != 'en') {
-                    var language = itemObj._checkStrObj(myArray[0].language);
-                    if (language == "" || language == null || language == undefined) { }
+                    var language = myArray[0].language;
+                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
                     else {
+                        language = itemObj._checkStrObj(language);
                         language = language[0];
 
                         if (isEmpty(language)) { }

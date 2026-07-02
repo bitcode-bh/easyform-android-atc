@@ -405,7 +405,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
             if (user_language != 'en') {
                 var language = jsonObj[i].language;
-                if (language == "" || language == null || language == undefined) { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
                 else {
                     language = language[0];
 

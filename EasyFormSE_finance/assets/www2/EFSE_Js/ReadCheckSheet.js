@@ -567,7 +567,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
             if (user_language != 'en') {
                 var language = jsonObj[i].language;
-                if (language == "" || language == null || language == undefined) { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
                 else {
                     language = language[0];
 
@@ -4798,7 +4798,7 @@ function read_dynamic_checksheet_buttons(buttons, Show_class_Array, LL_class_Arr
 
             if (user_language != 'en') {
                 let language = btnJsonObj[j].language;
-                if (language == "" || language == null || language == undefined) { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
                 else {
                     language = language[0];
 
