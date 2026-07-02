@@ -43,57 +43,121 @@ public class SpeedCalculation {
 //        }
 //    }
 
-    // gps zig zag issue fixed 24062026
+    // gps zig zag issue 02072026
     private static Location locationA;
     private static Float lastValidMovementBearing = null;
+    private static int badPointCount = 0;
 
     public static float calculateSpeedBetweenPoints(Location locationB) {
+
         try {
+
+            if (locationB == null) {
+                return 10000;
+            }
 
             if (locationA == null) {
                 locationA = locationB;
                 return 0;
             }
+            long timeDiff;
+            if (locationA.getElapsedRealtimeNanos() > 0 &&
+                    locationB.getElapsedRealtimeNanos() > 0) {
 
-            long nanoTimeDiff = locationB.getElapsedRealtimeNanos() - locationA.getElapsedRealtimeNanos();
-            float seconds = nanoTimeDiff / 1_000_000_000f;
+                timeDiff = (locationB.getElapsedRealtimeNanos()
+                        - locationA.getElapsedRealtimeNanos()) / 1000000L;
 
-            if (seconds <= 0) {
+            } else {
+
+                timeDiff = locationB.getTime() - locationA.getTime();
+            }
+
+
+            float seconds = timeDiff / 1000f;
+
+            if (seconds <= 0 || seconds > 30f) {
+                Log.d("GPS_FILTER", "Rejected: invalid time");
+                locationA = locationB;
+                lastValidMovementBearing = null;
                 return 10000;
             }
 
             float distance = locationA.distanceTo(locationB);
-            float speed = distance / seconds;
-            float currentMovementBearing = locationA.bearingTo(locationB);
 
+            float accSum = locationA.getAccuracy() + locationB.getAccuracy();
 
-            locationA = locationB;
+            if (distance > (accSum + 150)) {
 
-            if (lastValidMovementBearing != null && distance > 15) {
-                float bearingChange = Math.abs(lastValidMovementBearing - currentMovementBearing);
-                if (bearingChange > 180) {
-                    bearingChange = 360 - bearingChange;
+                badPointCount++;
+
+//                Log.d("GPS_FILTER",
+//                        "Rejected GPS JUMP | distance=" + distance +
+//                                " accuracy=" + locationB.getAccuracy() +
+//                                " badCount=" + badPointCount);
+
+                if (badPointCount <= 1) {
+                    return 10000;
                 }
 
-                if (bearingChange > 135.0f && speed > 10.0f) {
-                    Log.e("##GPS_FILTER", "REJECTED BEARING JUMP: " + bearingChange + " deg");
+                locationA = locationB;
+                lastValidMovementBearing = null;
+                badPointCount = 0;
+                return 10000;
+            } else {
+                badPointCount = 0;
+            }
+
+            if (distance < 10f) {
+                locationA = locationB;
+                return 10000;
+            }
+
+            float speed = distance / seconds;
+
+            if (speed > 40f) {
+                //Log.d("GPS_FILTER", "Rejected impossible speed: " + speed);
+                locationA = locationB;
+                lastValidMovementBearing = null;
+                return 10000;
+            }
+
+            float currentBearing = locationA.bearingTo(locationB);
+
+            if (lastValidMovementBearing != null && distance > 15f) {
+
+                float bearingChange = Math.abs(lastValidMovementBearing - currentBearing);
+
+                if (bearingChange > 180f) {
+                    bearingChange = 360f - bearingChange;
+                }
+
+                if (bearingChange > 135f && speed > 10f) {
+                 //   Log.d("GPS_FILTER", "Rejected bearing jump");
+                    locationA = locationB;
+                    lastValidMovementBearing = null;
+                    return 10000;
+                }
+
+            }
+
+            float providerSpeed = locationB.getSpeed();
+
+            if (providerSpeed > 0) {
+                float diff = Math.abs(providerSpeed - speed);
+
+                if (diff > 15f) {
+                  //  Log.d("GPS_FILTER", "Rejected provider mismatch");
+                    locationA = locationB;
                     return 10000;
                 }
             }
 
-            float percentgeOfError = percent(speed, locationB.getSpeed());
+            lastValidMovementBearing = currentBearing;
+            locationA = locationB;
 
-            if (percentgeOfError > 30 ) {
+          //  Log.d("GPS_FILTER", "Accepted speed = " + speed);
 
-                Log.d("##GPS_STATUS", "ACCEPTED VALID POINT: " + speed + " m/s");
-
-                lastValidMovementBearing = currentMovementBearing;
-
-                return speed;
-            } else {
-                Log.e("##GPS_STATUS", "REJECTED HIGH ERROR: " + percentgeOfError + "%");
-                return 10000;
-            }
+            return speed;
 
         } catch (Exception e) {
             e.printStackTrace();

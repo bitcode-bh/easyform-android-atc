@@ -18,6 +18,7 @@ import static com.sky.atc.easyformse.DeviceEventsUtils.utcCalculationOffset;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -341,7 +342,7 @@ public class newfused extends Service implements LocationListener {
                     try {
 
                         //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
-                        if (location.getSpeed() < 33 && location.getAccuracy() <= 60) {
+                        if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
 
                             //for manual speed calculation
                             float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(location);
@@ -490,7 +491,7 @@ public class newfused extends Service implements LocationListener {
         Log.d("##LOCATIONSERVIE", String.valueOf(location.getAccuracy()));
         try {
             //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
-            if (location.getSpeed() < 33 && location.getAccuracy() <= 60) {
+            if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
 
                 //for manual speed calculation
                 float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(location);
@@ -622,5 +623,18 @@ public class newfused extends Service implements LocationListener {
                 updateServiceMilli();
             }
         }, DELAY, DELAY);
+    }
+
+    private boolean isMyServiceRunning(Context context, String Myservice) {
+        ActivityManager manager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager
+                .getRunningServices(Integer.MAX_VALUE)) {
+            if (Myservice.equals(service.service.getClassName())) {
+
+                return true;
+            }
+        }
+        return false;
     }
 }
