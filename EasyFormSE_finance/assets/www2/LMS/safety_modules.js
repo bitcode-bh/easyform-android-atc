@@ -1,8 +1,6 @@
 ﻿
-//var global_wcf_url_lms = 'https://dev.easyform.in/LMS/api/';
 var global_wcf_url_lms = 'https://mwfm-uat.altiusinfra.com/LMS/api/';
 
-// common-function.js functions start
 function loading() {
     //  loading_hide();
 
@@ -24,20 +22,13 @@ function loading_hide() {
 
     setTimeout(function () {
         myApp.preloader.hide();
-    }, 100);
+    }, 20)
 }
+
 function onfail(e) {
     loading_hide();
     alert(e);
 }
-function vibrate_device() {
-    try {
-        var q_jsonobj = [];
-        cordova.exec(function (e) { }, function (e) { }, 'VibrationPlugin', 'vibrate', q_jsonobj);
-    }
-    catch (e) { }
-}
-//////////////////////
 
 function back_button_LMS() {
     var level4_popup = $('.popup-level-4.modal-in:visible');
@@ -105,7 +96,7 @@ function get_course() {
                 // str += '<div class="module-pill">Module 1</div>';
                 // str += '<div class="module-pill">Module 2</div>';
                 str += '</div></div>';
-                str += '<div id="course_progress_' + Course_Id +'" class="progress-line"></div>';
+                str += '<div id="course_progress_' + Course_Id + '" class="progress-line"></div>';
                 str += '</div>';
 
                 $("#dv_Course_List").append(str);
@@ -115,11 +106,11 @@ function get_course() {
                 let div_id = '#course_progress_' + Course_Id + '';
 
                 if (question_count == "" || question_count == null || question_count == undefined || question_count == '0') {
-                    $(div_id).css('width','5%');
+                    $(div_id).css('width', '5%');
                 }
                 else {
                     let progress = (question_log_count / question_count) * 100;
-                    progress = Math.round(progress);                    
+                    progress = Math.round(progress);
                     $(div_id).css('width', progress + '%');
                 }
 
@@ -194,9 +185,11 @@ function get_module_by_course(Course_Id) {
 //}
 
 
-function get_module_details_by_course_id(Course_Id) {
-    myApp.popup.open('.popup-level-2');
+function get_module_details_by_course_id() {
+    //myApp.popup.open('.popup-level-2');
     $("#dv_Module_List").empty();
+
+    let Course_Id = 0;
 
     var Param_obj = [];
     Param_obj.push({
@@ -237,14 +230,14 @@ function get_module_details_by_course_id(Course_Id) {
 
                 //str += '<div class="skill-btn">Target Skill</div>';
                 str += '</div>';
-                
+
                 str += '<div class="module-content">';
                 str += '<div class="module-title">' + Module_Name + '</div>';
                 str += '<div class="module-desc">' + Module_Description + '</div>';
                 str += '</div></div>';
-                                
+
                 let progress_id = 'progress_' + Module_Id + '_' + Course_Id + '';
-                str += '<div id=' + progress_id + ' class="module-progress-line"></div>';               
+                str += '<div id=' + progress_id + ' class="module-progress-line"></div>';
                 str += '</div>';
 
                 $("#dv_Module_List").append(str);
@@ -338,9 +331,9 @@ function get_progess_by_module(Module_Id, Course_Id, Skill_Id) {
         var status = myArray[0].status;
         if (status == 1) {
 
-            let data = JSON.parse(myArray[0]["data"])            
+            let data = JSON.parse(myArray[0]["data"])
             let module_id = data[0].Module_Id;
-            let course_id = data[0].Course_Id     
+            let course_id = data[0].Course_Id
             let Score = data[0].Score;
             let total_score = data[0].Total_Score;
             let question_count = data[0].question_count;
@@ -362,7 +355,7 @@ function get_progess_by_module(Module_Id, Course_Id, Skill_Id) {
 
                 let curr_card = $(score_id).closest(".module-card")[0];
                 $(curr_card).addClass("disabled");
-            }                              
+            }
         }
         else if (status == 3) {
             var message = myArray[0].message;
@@ -619,7 +612,7 @@ function submit_question_by_skill_id(flag) {
         }
         if (flag == 'savenexit') {
             if (selectedAns.length == 0) {
-                is_valid = 0;               
+                is_valid = 0;
             }
         }
 
@@ -729,19 +722,19 @@ function get_video_skill_by_module_id(flag) {
 
 $(document).on("click", ".link.popup-close", function () {
     $("#dv_Question_List").hide();
-    set_progress_local();  
+    set_progress_local();
 
     var video = $("#vdo_Question")[0];
 
     if (video) {
-        video.pause();        
+        video.pause();
     }
 
     // 2. Stop interval
     if (progressInterval) {
         clearInterval(progressInterval);
         progressInterval = null;
-    }    
+    }
     get_video_skill_by_module_id('');
 });
 
@@ -787,7 +780,7 @@ $(document).ready(function () {
 var progressInterval = null;
 set_progress = () => {
     progressInterval = setInterval(function () {
-        set_progress_local();   
+        set_progress_local();
         console.log("Saved after 10 sec");
     }, 10000);
 }
@@ -810,7 +803,7 @@ set_progress_local = () => {
     progress = progress.toFixed(0)
     var currentProgress = progress;
 
-    
+
     var existing = JSON.parse(localStorage.getItem('video_progress_' + skillId)) || [];
     var found = false;
     existing.forEach(function (item) {
@@ -848,7 +841,7 @@ function call_by_videolog(flag) {
     else if (flag == 'submit') {
         status = '2'; // submit button
     }
-    
+
     var Param_obj = [];
     Param_obj.push({
         "User_Id": user_id,
@@ -857,7 +850,7 @@ function call_by_videolog(flag) {
         "Skill_Id": Skill_Id,
         "Status": status
     });
-  
+
     loading();
 
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_InsertUpdate_User_Assessment_Rating', JSON.stringify(Param_obj), function (e) {
