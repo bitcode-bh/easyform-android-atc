@@ -85,10 +85,11 @@ public class GeofenceTrasitionServicenew extends IntentService {
                         sendNotification(geofenceId);
 
                         // geofence in time check trip running or not and out time not check trip running or not 18-03-2026
-                        if(DeviceEventsUtils.tripStatus().equalsIgnoreCase("true"))
-                        {
+                         // as per discuss with sir remove trip condition  02072026
+//                        if(DeviceEventsUtils.tripStatus().equalsIgnoreCase("true"))
+//                        {
                             insertInto_In_Out_Database("IN", geofenceId);
-                        }
+//                        }
                     }
                 }
 
