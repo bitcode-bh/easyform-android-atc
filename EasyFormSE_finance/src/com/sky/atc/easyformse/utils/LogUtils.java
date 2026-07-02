@@ -498,8 +498,8 @@ public class LogUtils {
                 String folderPath = LogFolderName + "/" + "Geofence";
                 File folderFile = new File(Utils.getRootFolderFile(sqlitewraper.context) + "/" + folderPath);
 
-
-                File path = new File(folderFile.getAbsolutePath());
+                File path = new File(filePath("Geofence"));
+//                File path = new File(folderFile.getAbsolutePath());
                 if (!path.exists()) {
                     path.mkdirs();
                 }
