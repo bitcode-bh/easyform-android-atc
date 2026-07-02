@@ -90,39 +90,6 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
 
     }
 
-    private boolean isAfterDuaration(String value) {
-        if (value == null || value.isEmpty()) {
-            return false; // Handle empty or null input safely
-        }
-
-        // Split the string value by ":"
-        String[] timeParts = value.split(":");
-        if (timeParts.length != 2) {
-            return false; // If the string doesn't contain a valid hour:minute format, return false
-        }
-
-        try {
-            int valueHour = Integer.parseInt(timeParts[0]); // Hour part (e.g., "14" -> 14)
-            int valueMinute = Integer.parseInt(timeParts[1]); // Minute part (e.g., "00" -> 0)
-
-            // Get the current time
-            Calendar now = Calendar.getInstance();
-            int currentHour = now.get(Calendar.HOUR_OF_DAY); // Current hour (0-23)
-            int currentMinute = now.get(Calendar.MINUTE); // Current minute (0-59)
-
-            // If the current time hour is greater than the input value hour
-            if (currentHour > valueHour) {
-                return true;
-            }
-            // If the current time hour is equal to the input value hour, compare minutes
-            else if (currentHour == valueHour) {
-                return currentMinute >= valueMinute; // If minutes are equal or after the specified minutes, return true
-            }
-            return false; // If the current time is before the input time
-        } catch (NumberFormatException e) {
-            return false; // If parsing fails, handle gracefully by returning false
-        }
-    }
 
     private boolean shouldAutoStopTrip(long tripStartTimeMillis, String autoEndTime, long currentTimeMillis) {
         try {
@@ -162,7 +129,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
     {
         try {
             android.database.Cursor check = database.rawQuery(
-                    "select s_lat,s_lon,min_milli from lat_plug where trip_status = 0", null);
+                    "SELECT s_lat,s_lon,min_milliFROM lat_plug WHERE trip_status=0 ORDER BY _id DESC LIMIT 1", null);
 
             check.moveToFirst();
             if ((check.getCount() > 0)) {
@@ -219,7 +186,20 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
             editor = sqlitewraper.getSecureShared(MY_PREFS_NAME);
             MySharedPreferences prefs = sqlitewraper.getSecureShared(MY_PREFS_NAME);
             String t;
-            String tid = prefs.getString("tid", null);
+            String tid = "0";
+//            String tid = prefs.getString("tid", null);
+
+            Cursor triptid = database.rawQuery("SELECT tid FROM lat_plug WHERE trip_status=0 ORDER BY _id DESC LIMIT 1", null);
+            triptid.moveToLast();
+            int tripflagCount = triptid.getCount();
+
+            if (tripflagCount>0){
+                tid = triptid.getString(0);
+            }
+
+            triptid.close();
+
+
             String siteLng = "0";
             String siteLat = "0";
             String sid = "0";
@@ -325,7 +305,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
             editor.commit();
 
 
-            String restoredText = prefs.getString("tid", null);
+            String restoredText = tid;
             if (restoredText != null) {
                 unique_trip_id = prefs.getString("unique_trip_id", "");//"No name defined" is the default value.
             }
@@ -333,7 +313,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
 
 
             Cursor tidcursor = database.rawQuery(
-                    "SELECT tid  FROM  lat_plug WHERE   _id = (SELECT MAX(_id) FROM lat_plug);", null);
+                    "SELECT tid FROM lat_plug WHERE trip_status=0 ORDER BY _id DESC LIMIT 1", null);
             tidcursor.moveToFirst();
 
             int j = tidcursor.getCount();
@@ -733,7 +713,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                         SameLocation = mAttendanceData.getAllow_round_trip();
                                     }
 
-                                    //  Condition 1: Trip start + duration time
+                                    //  Condition 1: Trip start + duration time 7:30
 //
                                     if( mAttendanceData.getAuto_punchout_duration_hours() == null || mAttendanceData.getAuto_punchout_duration_hours().equalsIgnoreCase(""))
                                     {
@@ -754,7 +734,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                     }
 
 
-                                    //Condition 2: Use configured auto punch-out duration
+                                    //Condition 2: Use configured auto punch-out duration like 8 hour close
                                     // Check duration or 24-hour time condition
                                     if (mAttendanceData.getAuto_punchout_duration() == null || mAttendanceData.getAuto_punchout_duration().equalsIgnoreCase("")) {
                                         if (is24HoursPassed(Long.parseLong(TripStartTime))) {
