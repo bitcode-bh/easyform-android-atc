@@ -1,199 +1,11 @@
 ﻿
-var global_wcf_url_lms = 'https://mwfm-uat.altiusinfra.com/LMS/api/';
-
-function loading() {
-    //  loading_hide();
-
-    try {
-        var is_loading = $(".preloader-modal");
-        if (is_loading.length == 0) {
-            myApp.preloader.show();
-        }
-    }
-    catch (e) {
-        setTimeout(function () {
-            myApp.preloader.show();
-        }, 10)
-    }
-}
-
-function loading_hide() {
-    myApp.preloader.hide();
-
-    setTimeout(function () {
-        myApp.preloader.hide();
-    }, 20)
-}
-
-function onfail(e) {
-    loading_hide();
-    alert(e);
-}
-
-function back_button_LMS() {
-    var level4_popup = $('.popup-level-4.modal-in:visible');
-    var level3_popup = $('.popup-level-3.modal-in:visible');
-    var level2_popup = $('.popup-level-2.modal-in:visible');
-    if (level4_popup.length > 0) {
-        myApp.popup.close('.popup-level-4');
-        return false;
-    }
-    else if (level3_popup.length > 0) {
-        myApp.popup.close('.popup-level-3');
-        return false;
-    }
-    else if (level2_popup.length > 0) {
-        myApp.popup.close('.popup-level-2');
-        return false;
-    }
-}
-
-///////////// ---------------- ////////////////// ------------------ //////////////// ------------
-
-
-// Level 1 (course listing + module listing by course)
-function get_course() {
-    var company_id = window.localStorage.getItem("company_id");
-    var user_id = JSON.parse(storage.getItem('user_id'));
-
-    $("#dv_Course_List").empty();
-
-    var Param_obj = [];
-    Param_obj.push({
-        'Company_Id': company_id,
-        'User_Id': user_id
-    });
-
-    loading();
-
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Course_Master', JSON.stringify(Param_obj), function (e) {
-        var responseText = e.responseText;
-        var myArray = JSON.parse(responseText);
-        var status = myArray[0].status;
-        if (status == 1) {
-            let data = myArray[0]["data"];
-            data = JSON.parse(data);
-
-            for (let c = 0; c < data.length; c++) {
-                let Course_Id = data[c].Course_Id;
-                let Course_Name = data[c].Course_Name;
-                let Thumbnail_link = data[c].Thumbnail_link;
-
-                let onclick_str = "get_module_details_by_course_id('" + Course_Id + "')";
-
-                let str = '<div class="course-card" Course_Id="' + Course_Id + '" onclick="' + onclick_str + '">';
-                str += '<div class="course-inner">';
-
-                if (Thumbnail_link == "" || Thumbnail_link == null || Thumbnail_link == undefined) {
-                    str += '<div class="course-image"><img src="images/no_image.png" alt="Course 1" style="padding: 15px;"></div>';
-                }
-                else {
-                    str += '<div class="course-image"><img src="' + Thumbnail_link + '" alt="Course 1"></div>';
-                }
-
-                str += '<div class="course-content">';
-                str += '<div class="course-title">' + Course_Name + '</div>';
-                // str += '<div class="module-pill">Module 1</div>';
-                // str += '<div class="module-pill">Module 2</div>';
-                str += '</div></div>';
-                str += '<div id="course_progress_' + Course_Id + '" class="progress-line"></div>';
-                str += '</div>';
-
-                $("#dv_Course_List").append(str);
-
-                let question_count = data[c].question_count;
-                let question_log_count = data[c].question_log_count;
-                let div_id = '#course_progress_' + Course_Id + '';
-
-                if (question_count == "" || question_count == null || question_count == undefined || question_count == '0') {
-                    $(div_id).css('width', '5%');
-                }
-                else {
-                    let progress = (question_log_count / question_count) * 100;
-                    progress = Math.round(progress);
-                    $(div_id).css('width', progress + '%');
-                }
-
-                get_module_by_course(Course_Id);
-
-            }
-        }
-        else if (status == 2 || status == 3) {
-            var message = myArray[0].message;
-            alert(message);
-        }
-
-        loading_hide();
-
-    }, onfail);
-    getdata.callOtherDomain();
-}
-
-function get_module_by_course(Course_Id) {
-    var Param_obj = [];
-    Param_obj.push({
-        'Course_Id': Course_Id
-    });
-    loading();
-
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Module_Master_By_CourseId', JSON.stringify(Param_obj), function (e) {
-        var responseText = e.responseText;
-        var myArray = JSON.parse(responseText);
-        var status = myArray[0].status;
-        if (status == 1) {
-            let data = myArray[0]["data"];
-            data = JSON.parse(data);
-
-            let str = '';
-
-            for (let m = 0; m < data.length; m++) {
-                let Module_Id = data[m].Module_Id;
-                let Module_Name = data[m].Module_Name;
-                let Module_Description = data[m].Module_Description;
-
-                str += '<input id="hdn_module_id_' + Module_Id + '" type="hidden" value="' + Module_Description + '">';
-                //let onclick_str = "get_module_details_by_course_id('" + Course_Id + "')";
-                str += '<div class="module-pill">' + Module_Name + '</div>';
-            }
-
-            $("div[Course_Id='" + Course_Id + "']").find(".course-content").append(str);
-
-        }
-        else if (status == 3) {
-            var message = myArray[0].message;
-            alert(message);
-        }
-
-        loading_hide();
-
-    }, onfail);
-    getdata.callOtherDomain();
-}
-
-
-// Level 2 (module details by module id in popup)
-//function get_module_details_by_module_id(Module_Id) {
-
-//    myApp.popup.open('.popup-level-2');
-
-//    let module_desc = $("#hdn_module_id_" + Module_Id + "").val();
-//    if (module_desc == "" || module_desc == null || module_desc == undefined) {
-//        module_desc = "";
-//    }
-
-//    //$(".popup-level-2").find(".page-content").empty().append(module_desc);
-//}
-
-
-function get_module_details_by_course_id() {
-    //myApp.popup.open('.popup-level-2');
+// Safety module listing (level 1)
+function get_safety_module_listing_old() {
     $("#dv_Module_List").empty();
 
-    let Course_Id = 0;
-
     var Param_obj = [];
     Param_obj.push({
-        'Course_Id': Course_Id
+        'Course_Id': 0
     });
 
     loading();
@@ -212,10 +24,10 @@ function get_module_details_by_course_id() {
                 let Module_Description = data[m].Module_Description;
                 let Thumbnail_link = data[m].Thumbnail_link;
 
-                let onclick_str = "get_target_skill_by_module_id('" + Module_Id + "','" + Course_Id + "')";
+                let onclick_str = "get_target_skill_by_module_id('" + Module_Id + "')";
                 let str = '<div class="module-card" Module_Id="' + Module_Id + '" onclick="' + onclick_str + '">';
 
-                let score_id = 'score_' + Module_Id + '_' + Course_Id + '';
+                let score_id = 'score_' + Module_Id + '';
                 str += '<div  id=' + score_id + ' class="module-overlay" style="display:none"><div class="overlay-text">Score</div></div>';
 
                 str += '<div class="card-content">';
@@ -236,13 +48,78 @@ function get_module_details_by_course_id() {
                 str += '<div class="module-desc">' + Module_Description + '</div>';
                 str += '</div></div>';
 
-                let progress_id = 'progress_' + Module_Id + '_' + Course_Id + '';
+                let progress_id = 'progress_' + Module_Id + '';
                 str += '<div id=' + progress_id + ' class="module-progress-line"></div>';
                 str += '</div>';
 
                 $("#dv_Module_List").append(str);
 
-                get_target_skill_tag_by_module_id(Module_Id, Course_Id);
+                get_target_skill_tag_by_module_id(Module_Id);
+            }
+        }
+        else {
+            var message = myArray[0].message;
+            alert(message);
+            myApp.popup.close('.popup-level-2');
+        }
+
+        loading_hide();
+
+    }, onfail);
+    getdata.callOtherDomain();
+}
+
+function get_safety_module_listing() {
+    $("#dv_Module_List").empty();
+
+    var Param_obj = [];
+    Param_obj.push({
+        'Course_Id': 0
+    });
+
+    loading();
+
+    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Module_Master_By_CourseId', JSON.stringify(Param_obj), function (e) {
+        var responseText = e.responseText;
+        var myArray = JSON.parse(responseText);
+        var status = myArray[0].status;
+        if (status == 1) {
+            let data = myArray[0]["data"];
+            data = JSON.parse(data);
+
+            for (let m = 0; m < data.length; m++) {
+                let Module_Id = data[m].Module_Id;
+                let Module_Name = data[m].Module_Name;
+                let Module_Description = data[m].Module_Description;
+                let Thumbnail_link = data[m].Thumbnail_link;
+                if (Thumbnail_link == "" || Thumbnail_link == null || Thumbnail_link == undefined) {
+                    Thumbnail_link = "images/bg2.jpg";
+                }
+
+                let onclick_str = "get_target_skill_by_module_id('" + Module_Id + "')";
+
+                let str = '<div class="sample-module-card" Module_Id="' + Module_Id + '" onclick="' + onclick_str + '">';
+                str += '<div class="sample-module-image" >';
+                str += '<img src="' + Thumbnail_link + '">';
+                str += '<span class="sample-module-tag">Safety</span>';
+                str += '</div>';
+                str += '<div class="sample-module-card-body">';
+                str += '<div class="sample-module-title">' + Module_Name + '</div>';
+                str += '<div class="sample-module-desc">' + Module_Description + '</div>';
+                str += '<div class="sample-module-meta">';
+                str += '<div class="sample-module-lessons">';
+                str += '<span class="sample-module-help">?</span>';
+                str += '<span>4 lessons</span>';
+                str += '</div>';
+                str += '<div class="sample-module-percent">50%</div>';
+                str += '</div>';
+                str += '<div class="sample-module-progress"><span></span></div>';
+                str += '</div>';
+                str += '</div>';
+
+                $("#dv_Module_List").append(str);
+
+                get_target_skill_tag_by_module_id(Module_Id);
             }
         }
         else {
@@ -258,7 +135,9 @@ function get_module_details_by_course_id() {
 }
 
 var module_progress_array = [];
-function get_target_skill_tag_by_module_id(Module_Id, Course_Id) {
+
+// adding skill tag in module listing (level 1)
+function get_target_skill_tag_by_module_id(Module_Id) {
     var Param_obj = [];
     Param_obj.push({
         'Module_Id': Module_Id
@@ -297,10 +176,10 @@ function get_target_skill_tag_by_module_id(Module_Id, Course_Id) {
 
             //let onclick_str = "get_question_by_skill_id('" + Skill_Id + "', '" + Video_Link + "', '" + Module_Id + "')";
 
-            let onclick_str = "get_questionlog_by_skill_id('" + Skill_Id + "', '" + Video_Link + "', '" + Module_Id + "','" + Course_Id + "')";
-            $("div[Module_Id='" + Module_Id + "']").attr("onclick", onclick_str);
+            //  let onclick_str = "get_questionlog_by_skill_id('" + Skill_Id + "', '" + Video_Link + "', '" + Module_Id + "')";
+            //$("div[Module_Id='" + Module_Id + "']").attr("onclick", onclick_str);
 
-            get_progess_by_module(Module_Id, Course_Id, Skill_Id)
+            get_progess_by_module(Module_Id, Skill_Id)
         }
         else if (status == 3) {
             var message = myArray[0].message;
@@ -312,15 +191,13 @@ function get_target_skill_tag_by_module_id(Module_Id, Course_Id) {
     }, onfail);
     getdata.callOtherDomain();
 }
-
-
-function get_progess_by_module(Module_Id, Course_Id, Skill_Id) {
+function get_progess_by_module(Module_Id, Skill_Id) {
     var user_id = JSON.parse(storage.getItem('user_id'));
     var Param_obj = [];
     Param_obj.push({
         "User_Id": user_id,
         "Module_Id": Module_Id,
-        "Course_Id": Course_Id,
+        "Course_Id": 0,
         "Skill_Id": Skill_Id
     });
     loading();
@@ -333,7 +210,6 @@ function get_progess_by_module(Module_Id, Course_Id, Skill_Id) {
 
             let data = JSON.parse(myArray[0]["data"])
             let module_id = data[0].Module_Id;
-            let course_id = data[0].Course_Id
             let Score = data[0].Score;
             let total_score = data[0].Total_Score;
             let question_count = data[0].question_count;
@@ -342,7 +218,7 @@ function get_progess_by_module(Module_Id, Course_Id, Skill_Id) {
             if (question_count == question_log_count) {
                 // score logic
                 let score_percent = (Score / total_score) * 100;
-                let score_id = '#score_' + module_id + '_' + course_id + '';
+                let score_id = '#score_' + module_id + '';
                 $(score_id).show();
                 $(score_id).find('.overlay-text').html(`Score ${score_percent}%`);
 
@@ -350,7 +226,7 @@ function get_progess_by_module(Module_Id, Course_Id, Skill_Id) {
                 let progress = (question_log_count / question_count) * 100;
                 progress = Math.round(progress);
 
-                let div_id = '#progress_' + module_id + '_' + course_id + '';
+                let div_id = '#progress_' + module_id + '';
                 $(div_id).css('width', progress + '%');
 
                 let curr_card = $(score_id).closest(".module-card")[0];
@@ -369,12 +245,11 @@ function get_progess_by_module(Module_Id, Course_Id, Skill_Id) {
 }
 
 
-// Level 3 (skill list by module id in popup) - currently cancelled
-
+// get modulewise videos (level 2)
 function get_target_skill_by_module_id(Module_Id) {
 
-    myApp.popup.open('.popup-level-3');
-    $("#dv_Skill_List").empty();
+    myApp.popup.open('.lms-module-preview-popup');
+    $(".lesson-preview-list").empty();
 
     var Param_obj = [];
     Param_obj.push({
@@ -386,34 +261,47 @@ function get_target_skill_by_module_id(Module_Id) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
+
+        let module_bg = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-image").find("img").attr("src");
+        $(".module-preview-header").css("background-image", "linear-gradient(180deg, rgba(6, 18, 66, 0.45), rgba(4, 6, 20, 0.82)), url('" + module_bg + "')");
+
+        let module_title = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-title").html();
+        $(".module-preview-title").html(module_title);
+
+        let module_description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-desc").html();
+        $(".module-preview-desc").html(module_description);
+
         if (status == 1) {
             let data = myArray[0]["data"];
             data = JSON.parse(data);
 
+            $(".lession-count").html(data.length + " lessons - 0 completed");
+
             for (let m = 0; m < data.length; m++) {
                 let Skill_Id = data[m].Skill_Id;
                 let Skill_Name = data[m].Skill_Name;
+                let Skill_Description = data[m].Skill_Description;
                 let Video_Link = data[m].Video_Link;
 
-                let onclick_str = "get_question_by_skill_id('" + Skill_Id + "', '" + Video_Link + "', '" + Module_Id + "')";
+                let onclick_str = "get_questionlog_by_skill_id('" + Skill_Id + "', '" + Video_Link + "', '" + Module_Id + "')";
 
-                let str = '<div class="module-card" Skill_Id="' + Skill_Id + '" onclick="' + onclick_str + '">';
-                str += '<div class="card-content">';
-
-                str += '<div class="module-image">';
-                str += '<video id="preview_video_src" src="' + Video_Link + '" /></video>';
-                str += '<div class="minute-pill ml-12">20 Min</div>';
+                let str = '<a href="#" class="lesson-preview-card" onclick="' + onclick_str + '">';
+                str += '<div class="lesson-preview-thumb" >';
+                str += '<img src="images/bg2.jpg">';
+                str += '<span class="lesson-preview-check"><i class="fa fa-check"></i></span>';
                 str += '</div>';
-
-                str += '<div class="module-content">';
-                str += '<div class="module-title">' + Skill_Name + '</div>';
-                str += '</div></div>';
-
-                str += '<div class="module-progress-line"></div>';
-
+                str += '<div>';
+                str += '<div class="lesson-preview-name">' + Skill_Name + '</div>';
+                str += '<div class="lesson-preview-subtitle">' + Skill_Description + '</div>';
+                str += '<div class="lesson-preview-footer">';
+                str += '<span class="lesson-preview-time"><i class="fa-regular fa-clock"></i>6 min</span>';
+                str += '<span class="lesson-preview-status completed">Completed</span>';
                 str += '</div>';
+                str += '</div>';
+                str += '<div class="lesson-preview-next"><i class="fa fa-chevron-right"></i></div>';
+                str += '</a> ';
 
-                $("#dv_Skill_List").append(str);
+                $(".lesson-preview-list").append(str);
 
             }
 
@@ -432,19 +320,15 @@ function get_target_skill_by_module_id(Module_Id) {
 }
 
 
-
-
-// Level 4 (question list by module id in popup)
-
+// get videowise question listing (level 3)
 
 var log_data = [];
-function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Course_Id) {
+function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id) {
 
     myApp.popup.open('.popup-level-4');
     $("#dv_Question_List").empty();
 
     $("#vdo_Question").attr("src", Video_Link);
-    $("#vdo_Question").attr("Course_Id", Course_Id);
     $("#vdo_Question").attr("skil_id", Skill_Id);
     $("#vdo_Question").attr("Module_Id", Module_Id);
     let vdo_Description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.module-desc").html();
@@ -719,64 +603,6 @@ function get_video_skill_by_module_id(flag) {
 }
 
 // video related logic ------//// 
-
-$(document).on("click", ".link.popup-close", function () {
-    $("#dv_Question_List").hide();
-    set_progress_local();
-
-    var video = $("#vdo_Question")[0];
-
-    if (video) {
-        video.pause();
-    }
-
-    // 2. Stop interval
-    if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-    }
-    get_video_skill_by_module_id('');
-});
-
-$(document).ready(function () {
-
-    var video = $("#vdo_Question")[0];
-    var timeoutId = null;
-
-    $(video).on("loadedmetadata", function () {
-        var courseId = $(video).attr("course_id");
-        var skillId = $(video).attr("skil_id");
-        var moduleId = $(video).attr("module_id");
-        var data = JSON.parse(localStorage.getItem('video_progress_' + skillId)) || [];
-
-        if (data.length > 0) {
-            var saved = data.find(item => item.Skill_Id == skillId);
-
-            if (saved && saved.currentTime) {
-                video.currentTime = saved.currentTime;
-            }
-        }
-
-    });
-
-    $(video).on("play", function () {
-        if (this.currentTime < 0.5) {
-            call_by_videolog('start'); // call api            
-        }
-        set_progress_local();
-        set_progress();
-    });
-
-    // clear timer properly
-    $(video).on("ended", function () {
-        $("#dv_Question_List").show();
-        set_progress_local();
-        clearInterval(progressInterval);
-        console.log("Interval cleared");
-    });
-
-});
-
 var progressInterval = null;
 set_progress = () => {
     progressInterval = setInterval(function () {
@@ -788,7 +614,6 @@ set_progress = () => {
 set_progress_local = () => {
     var video = $("#vdo_Question")[0];
 
-    var courseId = $(video).attr("course_id");
     var skillId = $(video).attr("skil_id");
     var moduleId = $(video).attr("module_id");
 
@@ -829,7 +654,6 @@ function call_by_videolog(flag) {
     var user_id = JSON.parse(storage.getItem('user_id'));
     var Skill_Id = $("#vdo_Question").attr("skil_id");
     var Module_Id = $("#vdo_Question").attr("Module_Id");
-    var Course_Id = $("#vdo_Question").attr("Course_Id");
 
     let status = "";
     if (flag == 'start') {
@@ -846,7 +670,7 @@ function call_by_videolog(flag) {
     Param_obj.push({
         "User_Id": user_id,
         "Module_Id": Module_Id,
-        "Course_Id": Course_Id,
+        "Course_Id": 0,
         "Skill_Id": Skill_Id,
         "Status": status
     });
