@@ -68,6 +68,7 @@
         font-size: 27px;
         border-radius: 40px;
         height: 30px;
+        opacity: 0.78;
     }
 
     .action-item span {
@@ -115,8 +116,9 @@
 
 .correct-answer {
     background: #d4edda;
-    border: 2px solid #28a745;
+    border: 1px solid #28a745;
     border-radius: 8px;
+    margin-bottom: 7px;
 }
 
     .correct-answer .item-title {
@@ -126,8 +128,9 @@
 
 .incorrect-answer {
     background: #ff00001c;
-    border: 2px solid #ff00009c;
+    border: 1px solid #ff00009c;
     border-radius: 8px;
+    margin-bottom: 7px;
 }
 
     .incorrect-answer .item-title {

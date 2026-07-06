@@ -72,14 +72,16 @@ function get_safety_module_listing_old() {
 function get_safety_module_listing() {
     $("#dv_Module_List").empty();
 
+    let role_id_array = localStorage.getItem('role_id_array');
+
     var Param_obj = [];
     Param_obj.push({
-        'Course_Id': 0
+        'Role_Id': role_id_array
     });
 
     loading();
 
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Module_Master_By_CourseId', JSON.stringify(Param_obj), function (e) {
+    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Module_RoleWise', JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
@@ -108,8 +110,8 @@ function get_safety_module_listing() {
                 str += '<div class="sample-module-desc">' + Module_Description + '</div>';
                 str += '<div class="sample-module-meta">';
                 str += '<div class="sample-module-lessons">';
-                str += '<span class="sample-module-help">?</span>';
-                str += '<span>4 lessons</span>';
+                str += '<span class="sample-module-help"><i class="fa fa-book-open"></i></span>';
+                str += '<span class="sample-lession-count">0 lessons</span>';
                 str += '</div>';
                 str += '<div class="sample-module-percent">50%</div>';
                 str += '</div>';
@@ -152,6 +154,8 @@ function get_target_skill_tag_by_module_id(Module_Id) {
             let data = myArray[0]["data"];
             data = JSON.parse(data);
 
+            $("div[Module_Id='" + Module_Id + "']").find(".sample-lession-count").html(data.length + " lessons");
+
             let str = '';
 
             //for (let m = 0; m < data.length; m++) {
@@ -182,6 +186,7 @@ function get_target_skill_tag_by_module_id(Module_Id) {
             get_progess_by_module(Module_Id, Skill_Id)
         }
         else if (status == 3) {
+            $("div[Module_Id='" + Module_Id + "']").find(".sample-lession-count").html("0 lessons");
             var message = myArray[0].message;
             alert(message);
         }
@@ -229,6 +234,9 @@ function get_progess_by_module(Module_Id, Skill_Id) {
                 let div_id = '#progress_' + module_id + '';
                 $(div_id).css('width', progress + '%');
 
+                //$("div[Module_Id='" + Module_Id + "']").find(".sample-module-percent").html(progress + "%")
+                //$("div[Module_Id='" + Module_Id + "']").find(".sample-module-progress").find("span").css('width', progress + '%');
+
                 let curr_card = $(score_id).closest(".module-card")[0];
                 $(curr_card).addClass("disabled");
             }
@@ -271,6 +279,7 @@ function get_target_skill_by_module_id(Module_Id) {
         let module_description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-desc").html();
         $(".module-preview-desc").html(module_description);
 
+
         if (status == 1) {
             let data = myArray[0]["data"];
             data = JSON.parse(data);
@@ -304,12 +313,17 @@ function get_target_skill_by_module_id(Module_Id) {
                 $(".lesson-preview-list").append(str);
 
             }
-
-
         }
         else {
-            var message = myArray[0].message;
-            alert(message);
+            $(".lession-count").html("0 lessons - 0 completed");
+
+            if (status == 2) {
+                $(".lesson-preview-list").append("No lession found");
+            }
+            else {
+                var message = myArray[0].message;
+                $(".lesson-preview-list").append(message);
+            }
             myApp.popup.close('.popup-level-3');
         }
 
@@ -331,7 +345,7 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id) {
     $("#vdo_Question").attr("src", Video_Link);
     $("#vdo_Question").attr("skil_id", Skill_Id);
     $("#vdo_Question").attr("Module_Id", Module_Id);
-    let vdo_Description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.module-desc").html();
+    let vdo_Description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-desc").html();
     $("#vdo_Description").html(vdo_Description);
 
     var user_id = JSON.parse(storage.getItem('user_id'));

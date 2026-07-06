@@ -1,5 +1,6 @@
 ﻿
 var reelsSwiper;
+var reelTouchStartIndex = 0;
 function bind_micro_learning_events() {
     //setTimeout(function () {
 
@@ -19,6 +20,7 @@ function bind_micro_learning_events() {
             mousewheel: true, // Allows scrolling via desktop mousewheel
             watchSlidesProgress: true,
             resistanceRatio: 0,
+            rewind: true,
             observer: true,
             observeParents: true,
             noSwiping: true,
@@ -29,6 +31,8 @@ function bind_micro_learning_events() {
                     playVideo(this.slides[this.activeIndex]);
                 },
                 touchStart: function () {
+                    reelTouchStartIndex = this.activeIndex;
+
                     // // Pause all videos immediately when user starts dragging
                     $(".reel-actions, .video-overlay, .video-overlay-sub").css("visibility", "hidden");
 
@@ -39,6 +43,12 @@ function bind_micro_learning_events() {
                 touchEnd: function () {
                     // Resume active video when user releases
                     $(".reel-actions, .video-overlay, .video-overlay-sub").css("visibility", "visible");
+
+                    if (reelTouchStartIndex == this.slides.length - 1 && this.swipeDirection == "next") {
+                        playNextReelOrRestart();
+                        return;
+                    }
+
                     playVideo(this.slides[this.activeIndex]);
                 },
                 slideChangeTransitionEnd: function () {
@@ -63,8 +73,24 @@ function pauseAllVideos() {
     });
 }
 
+function playNextReelOrRestart() {
+    if (!reelsSwiper || reelsSwiper.slides.length == 0) return;
+
+    if (reelsSwiper.activeIndex < reelsSwiper.slides.length - 1) {
+        reelsSwiper.slideNext();
+    }
+    else {
+        document.querySelectorAll('.reel-video').forEach(function (video) {
+            video.currentTime = 0;
+        });
+        $(".video-progress-fill").css("width", "0%");
+        reelsSwiper.slideTo(0, 0);
+        playVideo(reelsSwiper.slides[reelsSwiper.activeIndex]);
+    }
+}
+
 function playVideo(slideElement) {
-    //if (!slideElement) return;
+    if (!slideElement) return;
 
 
     // Pause all videos
@@ -80,6 +106,12 @@ function playVideo(slideElement) {
     if (!video) return;
 
     if (video) {
+        if (video.ended || (video.duration && video.currentTime >= video.duration)) {
+            video.currentTime = 0;
+            if (progress) {
+                progress.style.width = '0%';
+            }
+        }
         //video.currentTime = 0;
         video.play().catch(function (error) {
             console.log("Auto-play prevented", error);
@@ -159,10 +191,15 @@ function get_user_activities() {
 var total_reels = 0;
 function get_micro_learning_videos() {
 
+    let role_id_array = localStorage.getItem('role_id_array');
+
     var Param_obj = [];
+    Param_obj.push({
+        'Role_Id': role_id_array
+    });
 
     loading();
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Micro_Learning_Master', JSON.stringify(Param_obj), function (e) {
+    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Micro_Learning_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
         var All_data = e.responseText;
         All_data = JSON.parse(All_data);
         let status = All_data[0]["status"];
@@ -196,7 +233,7 @@ function get_micro_learning_videos() {
                     let reel_str = '<div class="swiper-slide" Ml_id="' + Ml_id + '">';
 
                     reel_str += '<div class="video-progress"><div class="video-progress-fill"></div></div>';
-                    reel_str += '<video class="reel-video" preload="auto" autoplay muted playsinline><source src="' + Video_Link + '" type="video/mp4" /></video>';
+                    reel_str += '<video class="reel-video" preload="auto" autoplay playsinline><source src="' + Video_Link + '" type="video/mp4" /></video>';
                     reel_str += '<div class="video-overlay">' + Title + '</div>';
                     reel_str += '<div class="video-overlay-sub">' + Description + '</div>';
 
@@ -220,26 +257,26 @@ function get_micro_learning_videos() {
                     }
 
                     if (IsLiked == 1) {
-                        reel_str += '<div class="action-item"><i class="fa fa-thumbs-up" style="color: red" onclick="' + like_str + '"></i><span>' + Total_Likes + '</span></div>';
+                        reel_str += '<div class="action-item"><i class="fa-solid fa-thumbs-up" onclick="' + like_str + '"></i><span>' + Total_Likes + '</span></div>';
                     }
                     else {
-                        reel_str += '<div class="action-item"><i class="fa fa-thumbs-up" onclick="' + like_str + '"></i><span>' + Total_Likes + '</span></div>';
+                        reel_str += '<div class="action-item"><i class="fa-regular fa-thumbs-up" onclick="' + like_str + '"></i><span>' + Total_Likes + '</span></div>';
                     }
 
                     if (IsDisliked == 1) {
-                        reel_str += '<div class="action-item"><i class="fa fa-thumbs-down" style="color: red" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
+                        reel_str += '<div class="action-item"><i class="fa-solid fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
                     }
                     else {
-                        reel_str += '<div class="action-item"><i class="fa fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
+                        reel_str += '<div class="action-item"><i class="fa-regular fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
                     }
 
                     reel_str += '<div class="action-item"><i class="fa fa-share-alt"></i><span>' + Total_Shares + '</span></div>';
 
                     if (Watch_Count == 1) {
-                        reel_str += '<div class="action-item"><i class="fa fa-eye" style="color: red"></i><span>' + Total_Watch_Count + '</span></div></div>';
+                        reel_str += '<div class="action-item"><i class="fa-solid fa-eye"></i><span>' + Total_Watch_Count + '</span></div></div>';
                     }
                     else {
-                        reel_str += '<div class="action-item"><i class="fa fa-eye"></i><span>' + Total_Watch_Count + '</span></div></div>';
+                        reel_str += '<div class="action-item"><i class="fa-regular fa-eye"></i><span>' + Total_Watch_Count + '</span></div></div>';
                     }
 
                     reel_str += '</div>';
@@ -253,7 +290,7 @@ function get_micro_learning_videos() {
             bind_micro_learning_events();
         }
         else {
-            alert(All_data[0]["message"]);
+            alert("No reel found!");
         }
         loading_hide();
     }, onfail);
@@ -263,8 +300,8 @@ function get_micro_learning_videos() {
 
 function add_user_activitiy(t_ML_id, activity_type, icon_ele) {
 
-    let t_color = $(icon_ele).css("color");
-    if (t_color == "red" || t_color == "rgb(255, 0, 0)") {
+    let isActive = $(icon_ele).hasClass("fa-solid");
+    if (isActive) {
         // remove
         var action = "0";
 
@@ -297,12 +334,12 @@ function add_user_activitiy(t_ML_id, activity_type, icon_ele) {
             let curr_count = $(icon_ele).next("span").text();
 
             if (action == "0") {
-                $(icon_ele).css("color", "");
+                $(icon_ele).removeClass("fa-solid").addClass("fa-regular");
                 curr_count = parseInt(curr_count);
                 $(icon_ele).next("span").text(curr_count - 1);
             }
             else {
-                $(icon_ele).css("color", "red");
+                $(icon_ele).removeClass("fa-regular").addClass("fa-solid")
                 curr_count = parseInt(curr_count);
                 $(icon_ele).next("span").text(curr_count + 1);
             }
@@ -342,7 +379,7 @@ function get_ML_question(Ml_Id) {
 
             $("#ML_Question").text(Question_Name);
             $("#ML_Question").attr("valid_ans", Valid_Answer[0]);
-            
+
             $("#option0").text(OptionText[0]);
             $("#option1").text(OptionText[1]);
             $("#option2").text(OptionText[2]);
@@ -354,7 +391,9 @@ function get_ML_question(Ml_Id) {
             myApp.sheet.open("#pnl_ML_Question");
 
         }
-        else if (status == 2) { }
+        else if (status == 2) {
+            playNextReelOrRestart();
+        }
         else {
             alert(All_data[0]["message"]);
         }
@@ -387,7 +426,7 @@ function submit_ML_question() {
         "Ml_Id": glob_ML_Id,
         "Ml_Que_Id": glob_ML_Que_Id,
         "Question_Name": questionName,
-        "Ans": selectedAns, 
+        "Ans": selectedAns,
         "Circle": circle_name
     });
 
@@ -427,12 +466,7 @@ function submit_ML_question() {
 
                 $("#btn_ML_Que_Submit").css("visibility", "visible");
 
-                if (reelsSwiper.activeIndex < reelsSwiper.slides.length - 1) {
-                    // Move to next reel (Next reel is available)
-                    reelsSwiper.slideNext();
-                } else {
-                    // Last reel is completed load more videos if required
-                }
+                playNextReelOrRestart();
             }, 3000);
 
         }

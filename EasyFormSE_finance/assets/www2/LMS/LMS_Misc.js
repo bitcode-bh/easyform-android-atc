@@ -74,6 +74,10 @@ function loading() {
 
 function loading_hide() {
     myApp.preloader.hide();
+
+    setTimeout(function () {
+        myApp.preloader.hide();
+    }, 10)
 }
 function onfail(e) {
     loading_hide();
