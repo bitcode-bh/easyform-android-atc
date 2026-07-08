@@ -133,55 +133,66 @@ public class NotificationUtils {
                                           PendingIntent rejectCallPendingIntent,
                                           String title,
                                           String text,
-                                          @DrawableRes int smallIconId, Bundle extras) {
+                                          @DrawableRes int smallIconId, Bundle extra) {
+
+//        Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
+//                context.getPackageName() + "/" + R.raw.ringtone_video_call);
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startRingtone(context);
+            startRingtone(context); // Start playing ringtone
         }, 500);
 
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        final String CHANNEL_ID = "incoming_call_channel_v2"; // Make sure it's unique
+        final String CHANNEL_NAME = "Incoming Call Notifications";
 
-        String CHANNEL_ID = "call_channel";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Incoming Call",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+
+            if (notificationManager.getNotificationChannel(CHANNEL_ID) != null) {
+                notificationManager.deleteNotificationChannel(CHANNEL_ID);
+            }
+
+//            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+//                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+//                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+//                    .build();
+
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+            channel.enableVibration(true);
+            channel.enableLights(true);
+
             notificationManager.createNotificationChannel(channel);
         }
-        // Full screen intent
-        Intent intent = new Intent(context, IncomingCallActivity.class);
-        intent.putExtra("Bundle_extras", extras);
-        intent.putExtra("notificationId", NOTIFICATION_ID);
-        intent.putExtra("callfrom", text);
-        PendingIntent fullScreenIntent = PendingIntent.getActivity(
-                context, 0, intent,
+
+//        Intent loadingActivityIntent = new Intent(context, LoadingActivity.class);
+//        loadingActivityIntent.setAction(Utils.BroadcastAction.JITSI_CALL_ACCEPT);
+//        loadingActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        loadingActivityIntent.putExtras(extras);
+
+        @SuppressLint("UnspecifiedImmutableFlag")
+        PendingIntent contentIntent = PendingIntent.getActivity(
+                context,
+                0,
+                new Intent(),
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
-        // Custom layout
-        RemoteViews rv = new RemoteViews(context.getPackageName(),
-                R.layout.incoming_call_notification);
 
-        rv.setTextViewText(R.id.tvTitle, text);
-        rv.setOnClickPendingIntent(R.id.btnAccept, acceptCallPendingIntent);
-        rv.setOnClickPendingIntent(R.id.btnReject, rejectCallPendingIntent);
-
-        Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(smallIconId)
-                .setCustomHeadsUpContentView(rv)
-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
-                .setOngoing(true)
                 .setAutoCancel(false)
-                .setFullScreenIntent(fullScreenIntent, true)
-                .build();
+                .setOngoing(false)
+                .setContentIntent(contentIntent)
+                .addAction(R.drawable.reject_icon, "Reject", rejectCallPendingIntent)
+                .addAction(R.drawable.call_icon, "Accept", acceptCallPendingIntent);
 
-        notificationManager.notify(NOTIFICATION_ID, notification);
+        // ✅ Show notification
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
 

@@ -679,7 +679,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 .setFeatureFlag("pinSelf",true)
 //                .setFeatureFlag("tile-view.enabled", true)
 //                .setFeatureFlag("filmstrip.enabled", false)
-                .setAudioMuted(true)
+                .setAudioMuted(false)
                 .setVideoMuted(false)
                 .build();
 

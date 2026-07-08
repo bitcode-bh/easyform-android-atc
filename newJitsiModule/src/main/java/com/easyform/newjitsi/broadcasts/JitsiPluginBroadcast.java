@@ -146,12 +146,12 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
             editor.putString("call_username", mFirebaseRequestData.getCallfrom());
             editor.commit();
 
-//            Intent callIntent = new Intent(context, IncomingCallActivity.class);
-//            callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//            callIntent.putExtra("Bundle_extras", extras);
-//            callIntent.putExtra("notificationId", notificationId);
-//            callIntent.putExtra("callfrom", mFirebaseRequestData.getCallfrom() + " is Inviting you for Meet !");
-//            context.startActivity(callIntent);
+            Intent callIntent = new Intent(context, IncomingCallActivity.class);
+            callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            callIntent.putExtra("Bundle_extras", extras);
+            callIntent.putExtra("notificationId", notificationId);
+            callIntent.putExtra("callfrom", mFirebaseRequestData.getCallfrom() + " is Inviting you for Meet !");
+            context.startActivity(callIntent);
 
         }
     }
