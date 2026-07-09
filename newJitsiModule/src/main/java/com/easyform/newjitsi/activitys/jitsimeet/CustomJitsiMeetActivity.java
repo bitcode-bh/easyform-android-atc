@@ -98,6 +98,7 @@ import com.easyform.newjitsi.network.Models.participant.Participant;
 import com.easyform.newjitsi.network.response.users.EasyFromUser;
 import com.easyform.newjitsi.network.response.users.EasyFromUserItem;
 import com.easyform.newjitsi.utils.JitsiMeetBroadcastUtils;
+import com.easyform.newjitsi.utils.NotificationUtils;
 import com.easyform.newjitsi.utils.Utils;
 import com.google.ar.core.ArCoreApk;
 import com.google.gson.Gson;
@@ -610,6 +611,8 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
             setDrawOptionsClicks();
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
             ((FrameLayout) findViewById(android.R.id.content)).addView(mActivityCustomJitsiMeetBinding.getRoot(), layoutParams);
+
+            mActivityCustomJitsiMeetBinding.loading.setVisibility(View.VISIBLE);
         }
         iniUi();
     }
@@ -714,7 +717,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastScreenShearReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastScreenShearRemoteSizeReceiver);
         unregisterReceiver(commentReceiver);
-
+        NotificationUtils.stopOutgoingRing();
         // JitsiMeetBroadcastUtils.endMeeting(this);
         // JitsiMeetActivityDelegate.onHostDestroy(this);
         //  jitsiMeetView.dispose();
@@ -732,19 +735,31 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         if (intent != null) {
             BroadcastEvent event = new BroadcastEvent(intent);
             switch (event.getType()) {
-                case CONFERENCE_JOINED: {
-                    getParticipantsInfoRetrievedBroadcast();
-                    mActivityCustomJitsiMeetBinding.llUserActions.setVisibility(View.VISIBLE);
-                    this.onConferenceJoined(event.getData());
-                    isCallRunning = true;
-                    sharedPreferences = getApplicationContext().getSharedPreferences("Jitsiuser", MODE_PRIVATE);
-                    String IspluginClick = sharedPreferences.getString("IsPluginClick","false");
-                    if(!IspluginClick.equalsIgnoreCase("true"))
-                    {
-                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                            forceSelfViewFullScreen();
-                        }, 3000);
+                case CONFERENCE_WILL_JOIN:
+                {
+                    if (mActivityCustomJitsiMeetBinding != null) {
+                        mActivityCustomJitsiMeetBinding.loading.setVisibility(View.GONE);
                     }
+                    break;
+                }
+                case CONFERENCE_JOINED: {
+
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        getParticipantsInfoRetrievedBroadcast();
+                        mActivityCustomJitsiMeetBinding.llUserActions.setVisibility(View.VISIBLE);
+                        this.onConferenceJoined(event.getData());
+                        isCallRunning = true;
+                        sharedPreferences = getApplicationContext().getSharedPreferences("Jitsiuser", MODE_PRIVATE);
+                        String IspluginClick = sharedPreferences.getString("IsPluginClick","false");
+                        if(!IspluginClick.equalsIgnoreCase("true"))
+                        {
+                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                forceSelfViewFullScreen();
+                            }, 3000);
+                        }
+                    }, 1000);
+
+
 
                     break;
                 }
@@ -766,6 +781,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                     break;
                 }
                 case PARTICIPANT_JOINED: {
+                    NotificationUtils.stopOutgoingRing();
                     getParticipantsInfoRetrievedBroadcast();
                     this.onParticipantJoined(event.getData());
                     break;
@@ -805,6 +821,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 case READY_TO_CLOSE: {
                     isCallRunning = false;
                     JitsiMeetBroadcastUtils.endMeeting(this);
+                    NotificationUtils.stopOutgoingRing();
                     this.onReadyToClose();
                     mIncomingCallActivity = new IncomingCallActivity();
                     mIncomingCallActivity.finishActivity();

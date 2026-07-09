@@ -61,7 +61,10 @@ public class LoadingActivity extends AppCompatActivity {
         String otherDataString = extras.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
         OtherData mOtherData = mGson.fromJson(otherDataString, OtherData.class);
         if (action.matches(Utils.BroadcastAction.JITSI_PLUGIN_CALL)) {
+
             mLoadingViewModel.sendNotification(extras,LoadingActivity.this);
+            NotificationUtils.startOutgoingRing(LoadingActivity.this);
+
         } else if (action.matches(Utils.BroadcastAction.JITSI_CALL_ACCEPT)) {
             NotificationUtils.stopRingtone();
             sharedPreferences = getApplicationContext().getSharedPreferences("jitsicall", MODE_PRIVATE);
