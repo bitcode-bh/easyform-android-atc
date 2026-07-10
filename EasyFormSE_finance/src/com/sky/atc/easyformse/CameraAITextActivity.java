@@ -63,6 +63,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
@@ -1603,6 +1604,35 @@ public class CameraAITextActivity extends AppCompatActivity {
 
                 responsetext = responsetext.trim();
 
+                if (responsetext.trim().startsWith("{")) {
+
+                    JsonElement element = JsonParser.parseString(responsetext);
+                    JsonObject json = element.getAsJsonObject();
+                    // Error Response
+                    if (json.has("status")) {
+
+                        Status = json.get("status").getAsString();
+                        message = json.get("message").getAsString();
+
+
+                        String finalStatus1 = Status;
+                        String finalMessage1 = message;
+                        runOnUiThread(() -> {
+                            loadingOverlay.setVisibility(View.GONE);
+
+                            ToastUtil.show(
+                                    CameraAITextActivity.this,
+                                    "Status : " + finalStatus1 +
+                                            "\nMessage : " + finalMessage1);
+
+                            SendPluginfailed(finalStatus1);
+                        });
+
+                        return;
+                    }
+                }
+
+
                 if (responsetext.trim().startsWith("[")) {
 
                     JSONArray arr = new JSONArray(responsetext);
@@ -1618,12 +1648,14 @@ public class CameraAITextActivity extends AppCompatActivity {
                         String finalMessage = message;
                         runOnUiThread(() -> {
                             loadingOverlay.setVisibility(View.GONE);
-
+                            MySharedPreferences prefs = sqlitewraper.getSecureShared("mypre2");
+                            String companyFeatureid = prefs.getString("authcompanyfid", "0");
                             ToastUtil.show(
                                     CameraAITextActivity.this,
                                     "Status : " + finalStatus +
-                                            "\nMessage : " + finalMessage
-                            );
+                                            "\nMessage : " + finalMessage +
+                                            "\nApi Name :" + WCFURL + METHOD_NAME_corner +
+                                            "\nCompanyFeatureid : " + companyFeatureid);
 
                             SendPluginfailed(finalStatus);
                         });
