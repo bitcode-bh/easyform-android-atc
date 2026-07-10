@@ -285,6 +285,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 }
             }
 
+            else if(data.get("videocallType").equalsIgnoreCase("photosave"))
+            {
+                Intent jitsiPluginBroadcast = null;
+                try {
+                    jitsiPluginBroadcast = new Intent(getApplicationContext(), Class.forName(JitsiMeetingPlugin.JITSI_PLUGIN_BROADCAST_CLASS));
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                if (jitsiPluginBroadcast != null) {
+                    jitsiPluginBroadcast.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "photosave");
+                    jitsiPluginBroadcast.putExtra("NOTIFICATION_REMOTE_DATA", new JSONObject(data).toString());
+                    sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
+                }
+            }
+
         } else {
             Intent jitsiPluginBroadcast = null;
             try {
