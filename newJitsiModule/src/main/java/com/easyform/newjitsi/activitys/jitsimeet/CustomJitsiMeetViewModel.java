@@ -888,8 +888,95 @@ public class CustomJitsiMeetViewModel extends ViewModel {
         }
     }
 
-    public void Screenshotcapture() {
+    public void sendNotificationforphotosave(Bundle extras, Context mContext) {
 
+        mExecutorService.execute(() -> {
+            String loginUserDataString = extras.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");
+            String otherDataString = extras.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
+            //   String pluginArgsString = extras.getString(Utils.BroadcastActionExtrasKeys.JITSI_MEETING_PLUGIN_ARGS, "");
+
+            UserData mUserData = mGson.fromJson(loginUserDataString, UserData.class);
+
+            OtherData mOtherData = mGson.fromJson(otherDataString, OtherData.class);
+
+            List<String> fcmIosIds = new ArrayList<>();
+            List<String> fcmIds = new ArrayList<>();
+
+
+            String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+            if(!notificationRemoteDataString.equalsIgnoreCase("")) {
+                FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+
+                if (mFirebaseRequestData.getDevice_type().matches("ios")) {
+                    fcmIosIds.add(mFirebaseRequestData.getRemotetoken());
+                } else {
+                    fcmIds.add(mFirebaseRequestData.getRemotetoken());
+                }
+            }
+
+            String pluginArgsString = extras.getString(Utils.BroadcastActionExtrasKeys.JITSI_MEETING_PLUGIN_ARGS, "");
+            if(!pluginArgsString.equalsIgnoreCase("")) {
+                Type listType = new TypeToken<List<PluginArgs>>() {
+                }.getType();
+                List<PluginArgs> pluginArgsList = mGson.fromJson(pluginArgsString, listType);
+                for (int i = 0; i < pluginArgsList.get(0).getZoomMeeting().size(); i++) {
+                    ZoomMeetingItem zoomMeetingItem = pluginArgsList.get(0).getZoomMeeting().get(i);
+                    if (zoomMeetingItem.getDeviceType().matches("ios")) {
+                        fcmIosIds.add(zoomMeetingItem.getFcmid());
+                    } else {
+                        fcmIds.add(zoomMeetingItem.getFcmid());
+                    }
+                }
+
+            }
+
+            if (fcmIosIds.isEmpty() && fcmIds.isEmpty()) {
+                return;
+            }
+
+
+            SharedPreferences sharedPreferences = mContext.getSharedPreferences("Jitsi_roomname", MODE_PRIVATE);
+            String roomname = sharedPreferences.getString("Roomname", "");
+
+            FirebaseRequestData data = new FirebaseRequestData("Photo save success ",
+                    mUserData.getUsername() + " Photo save successfully !",
+                    "call", mUserData.getUsername(), roomname,
+                    "photosave",
+                    "0",
+                    "",
+                    mOtherData.getClickAction() + "",
+                    mOtherData.getWebPush().toString() + "",
+                    mUserData.getDeviceType() + "",
+                    fcmIds.get(0) + "",
+                    mUserData.getUserid() + "", mOtherData.getServer_task_id() + "", "jitsiMeet", "jitsiMeet", "photosave", false, "",""
+            );
+            callNotificationApi(data, false, fcmIds, fcmIosIds);
+        });
+    }
+
+    public void SavePhoto(Bundle bundle,Context context)
+    {
+        mExecutorService.execute(() -> {
+            String notificationRemoteDataString = bundle.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+            FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+
+
+            int notificationId = (int) System.currentTimeMillis();
+
+//            NotificationUtils.rejectCallNotification(notificationId, context,
+//                    mFirebaseRequestData.getTitle(),
+//                    mFirebaseRequestData.getBody(),
+//                    R.drawable.atc_logo);
+
+            Handler leftHandler = new Handler(Looper.getMainLooper());
+            leftHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(context, "Photo saved", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        });
     }
 }
 

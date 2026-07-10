@@ -104,6 +104,10 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
                     e.printStackTrace();
                 }
             }
+            else if(action.matches(Utils.BroadcastAction.JITSI_CALL_photosave))
+            {
+                SavePhoto(context, extras);
+            }
         }
     }
 
@@ -618,6 +622,12 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
        meetViewModel = new CustomJitsiMeetViewModel();
        meetViewModel.Get_photoid(bundle,context);
 
+
+    }
+
+    private void SavePhoto(Context context, Bundle mBundle) {
+        meetViewModel = new CustomJitsiMeetViewModel();
+        meetViewModel.SavePhoto(mBundle,context);
 
     }
 }

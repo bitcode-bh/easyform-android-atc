@@ -1,6 +1,7 @@
 package com.easyform.newjitsi.activitys.call;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.easyform.newjitsi.activitys.drawing.CameraPreviewActivity;
 import com.easyform.newjitsi.activitys.jitsimeet.CustomJitsiMeetActivity;
@@ -42,6 +43,8 @@ public class JitsiScreenShotPlugin extends CordovaPlugin {
               activity.sendnotification(JsonData);
 
             });
+
+            Toast.makeText(cordova.getActivity(), "Please wait photo capturing", Toast.LENGTH_SHORT).show();
         }
         catch (Exception e)
         {

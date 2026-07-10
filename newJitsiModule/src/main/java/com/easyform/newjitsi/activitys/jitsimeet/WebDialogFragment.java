@@ -121,6 +121,10 @@ public class WebDialogFragment extends DialogFragment {
     public void onStart() {
         super.onStart();
 
+        if (getDialog() != null) {
+            getDialog().setCanceledOnTouchOutside(false);
+        }
+
         if (getDialog() != null && getDialog().getWindow() != null) {
 
             DisplayMetrics displayMetrics = new DisplayMetrics();

@@ -1990,7 +1990,9 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                     String dateformate = mUserData.getDateformate();
 
                     webDialogFragment = new WebDialogFragment(roleId, taskId,Url,FlowId,start_status,compnay_id,UserId,site_id,udf_id,feature_id,dateformate);
+                    webDialogFragment.setCancelable(false);
                     webDialogFragment.show(getSupportFragmentManager(), "webDialog");
+
                 });
 
         builder.setPositiveButton("Close", null);
@@ -2013,6 +2015,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         String dateformate = mUserData.getDateformate();
 
         webDialogFragment = new WebDialogFragment(roleId, taskId,Url,FlowId,start_status,compnay_id,UserId,site_id,udf_id,feature_id,dateformate);
+        webDialogFragment.setCancelable(false);
         webDialogFragment.show(getSupportFragmentManager(), "webDialog");
     }
 
@@ -2235,16 +2238,13 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 }
             }
 
-        }, 2000); // wait for rendering
+        }, 1000); // wait for rendering
     }
     private static final Gson gson = new Gson();
     public static void saveToGallery(Bitmap bitmap,String jsonData) {
         String filename = "Jitsi_" + System.currentTimeMillis() + ".jpg";
 
-        File dir = new File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "Jitsi"
-        );
+        File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Jitsi");
 
         if (!dir.exists()) {
             dir.mkdirs();
@@ -2258,15 +2258,18 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
             fos.flush();
             fos.close();
 
-            // ✅ Make visible in gallery
-            MediaScannerConnection.scanFile(
-                    context,
-                    new String[]{imageFile.getAbsolutePath()},
-                    new String[]{"image/jpeg"},
-                    null
-            );
+//            // ✅ Make visible in gallery
+//            MediaScannerConnection.scanFile(
+//                    context,
+//                    new String[]{imageFile.getAbsolutePath()},
+//                    new String[]{"image/jpeg"},
+//                    null
+//            );
 
             Toast.makeText(getInstance(), "Photo saved to gallery", Toast.LENGTH_SHORT).show();
+            // send notification when photo save to gallery
+            CustomJitsiMeetViewModel customJitsiMeetViewModel = new CustomJitsiMeetViewModel();
+            customJitsiMeetViewModel.sendNotificationforphotosave(mBundle,context);
 
             String otherDataString  = mBundle.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
             String  loginUserDataString  = mBundle.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");
