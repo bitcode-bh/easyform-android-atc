@@ -1,74 +1,6 @@
 ﻿
 // Safety module listing (level 1)
-function get_safety_module_listing_old() {
-    $("#dv_Module_List").empty();
-
-    var Param_obj = [];
-    Param_obj.push({
-        'Course_Id': 0
-    });
-
-    loading();
-
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Module_Master_By_CourseId', JSON.stringify(Param_obj), function (e) {
-        var responseText = e.responseText;
-        var myArray = JSON.parse(responseText);
-        var status = myArray[0].status;
-        if (status == 1) {
-            let data = myArray[0]["data"];
-            data = JSON.parse(data);
-
-            for (let m = 0; m < data.length; m++) {
-                let Module_Id = data[m].Module_Id;
-                let Module_Name = data[m].Module_Name;
-                let Module_Description = data[m].Module_Description;
-                let Thumbnail_link = data[m].Thumbnail_link;
-
-                let onclick_str = "get_target_skill_by_module_id('" + Module_Id + "')";
-                let str = '<div class="module-card" Module_Id="' + Module_Id + '" onclick="' + onclick_str + '">';
-
-                let score_id = 'score_' + Module_Id + '';
-                str += '<div  id=' + score_id + ' class="module-overlay" style="display:none"><div class="overlay-text">Score</div></div>';
-
-                str += '<div class="card-content">';
-                str += '<div class="module-image">';
-
-                if (Thumbnail_link == "" || Thumbnail_link == null || Thumbnail_link == undefined) {
-                    str += '<img src="images/no_image.png" alt="Course 1" style="padding: 15px;">';
-                }
-                else {
-                    str += '<img src="' + Thumbnail_link + '" alt="Course 1">';
-                }
-
-                //str += '<div class="skill-btn">Target Skill</div>';
-                str += '</div>';
-
-                str += '<div class="module-content">';
-                str += '<div class="module-title">' + Module_Name + '</div>';
-                str += '<div class="module-desc">' + Module_Description + '</div>';
-                str += '</div></div>';
-
-                let progress_id = 'progress_' + Module_Id + '';
-                str += '<div id=' + progress_id + ' class="module-progress-line"></div>';
-                str += '</div>';
-
-                $("#dv_Module_List").append(str);
-
-                get_target_skill_tag_by_module_id(Module_Id);
-            }
-        }
-        else {
-            var message = myArray[0].message;
-            alert(message);
-            myApp.popup.close('.popup-level-2');
-        }
-
-        loading_hide();
-
-    }, onfail);
-    getdata.callOtherDomain();
-}
-
+var glob_Module_Schedule_Id = 0;
 function get_safety_module_listing() {
     $("#dv_Module_List").empty();
 
@@ -93,17 +25,45 @@ function get_safety_module_listing() {
                 let Module_Id = data[m].Module_Id;
                 let Module_Name = data[m].Module_Name;
                 let Module_Description = data[m].Module_Description;
+                let Module_Schedule_Id = data[m].Module_Schedule_Id;
+
                 let Thumbnail_link = data[m].Thumbnail_link;
                 if (Thumbnail_link == "" || Thumbnail_link == null || Thumbnail_link == undefined) {
                     Thumbnail_link = "images/bg2.jpg";
                 }
 
-                let onclick_str = "get_target_skill_by_module_id('" + Module_Id + "')";
+                let Progress = data[m].Progress;
+                if (Progress == "" || Progress == null || Progress == undefined) {
+                    Progress = "0";
+                }
+                else {
+                    Progress = Math.round(Progress);
+                }
+
+                let Score = data[m].Score;
+                if (Score == "" || Score == null || Score == undefined) {
+                    Score = "0"
+                }
+
+                let TotalSkill = data[m].TotalSkill;
+                let TotalQuestion = data[m].TotalQuestion;
+                let SubmitedQuestion = data[m].SubmitedQuestion;
+                let SubmitedSkill = data[m].SubmitedSkill;
+
+                let onclick_str = "get_target_skill_by_module_id('" + Module_Id + "', '" + Progress + "', '" + SubmitedSkill + "', '" + Module_Schedule_Id + "')";
 
                 let str = '<div class="sample-module-card" Module_Id="' + Module_Id + '" onclick="' + onclick_str + '">';
+
+                //let score_id = 'score_' + Module_Id + '';
+                //str += '<div id=' + score_id + ' class="module-overlay" style="display:none"><div class="overlay-text">Score</div></div>';
+
                 str += '<div class="sample-module-image" >';
                 str += '<img src="' + Thumbnail_link + '">';
                 str += '<span class="sample-module-tag">Safety</span>';
+
+                if (SubmitedSkill > 0) {
+                    str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
+                }
                 str += '</div>';
                 str += '<div class="sample-module-card-body">';
                 str += '<div class="sample-module-title">' + Module_Name + '</div>';
@@ -111,17 +71,17 @@ function get_safety_module_listing() {
                 str += '<div class="sample-module-meta">';
                 str += '<div class="sample-module-lessons">';
                 str += '<span class="sample-module-help"><i class="fa fa-book-open"></i></span>';
-                str += '<span class="sample-lession-count">0 lessons</span>';
+                str += '<span class="sample-lession-count">' + TotalSkill + ' lessons</span>';
                 str += '</div>';
-                str += '<div class="sample-module-percent">50%</div>';
+                str += '<div class="sample-module-percent">' + Progress + '%</div>';
                 str += '</div>';
-                str += '<div class="sample-module-progress"><span></span></div>';
+                str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div>';
                 str += '</div>';
                 str += '</div>';
 
                 $("#dv_Module_List").append(str);
 
-                get_target_skill_tag_by_module_id(Module_Id);
+                //get_target_skill_tag_by_module_id(Module_Id);
             }
         }
         else {
@@ -234,8 +194,8 @@ function get_progess_by_module(Module_Id, Skill_Id) {
                 let div_id = '#progress_' + module_id + '';
                 $(div_id).css('width', progress + '%');
 
-                //$("div[Module_Id='" + Module_Id + "']").find(".sample-module-percent").html(progress + "%")
-                //$("div[Module_Id='" + Module_Id + "']").find(".sample-module-progress").find("span").css('width', progress + '%');
+                $("div[Module_Id='" + Module_Id + "']").find(".sample-module-percent").html(progress + "%")
+                $("div[Module_Id='" + Module_Id + "']").find(".sample-module-progress").find("span").css('width', progress + '%');
 
                 let curr_card = $(score_id).closest(".module-card")[0];
                 $(curr_card).addClass("disabled");
@@ -254,7 +214,9 @@ function get_progess_by_module(Module_Id, Skill_Id) {
 
 
 // get modulewise videos (level 2)
-function get_target_skill_by_module_id(Module_Id) {
+function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Module_Schedule_Id) {
+
+    glob_Module_Schedule_Id = Module_Schedule_Id;
 
     myApp.popup.open('.lms-module-preview-popup');
     $(".lesson-preview-list").empty();
@@ -265,7 +227,7 @@ function get_target_skill_by_module_id(Module_Id) {
     });
     loading();
 
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Skill_Master_By_ModuleId', JSON.stringify(Param_obj), function (e) {
+    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Skill_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
@@ -279,12 +241,15 @@ function get_target_skill_by_module_id(Module_Id) {
         let module_description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-desc").html();
         $(".module-preview-desc").html(module_description);
 
+        $(".module-preview-percent").html(Progress + "%");
+        $(".module-preview-progress").find("span").css("width", "" + Progress + "%");
+
 
         if (status == 1) {
             let data = myArray[0]["data"];
             data = JSON.parse(data);
 
-            $(".lession-count").html(data.length + " lessons - 0 completed");
+            $(".lession-count").html(data.length + " lessons - " + SubmitedSkill + " completed");
 
             for (let m = 0; m < data.length; m++) {
                 let Skill_Id = data[m].Skill_Id;
@@ -292,7 +257,23 @@ function get_target_skill_by_module_id(Module_Id) {
                 let Skill_Description = data[m].Skill_Description;
                 let Video_Link = data[m].Video_Link;
 
-                let onclick_str = "get_questionlog_by_skill_id('" + Skill_Id + "', '" + Video_Link + "', '" + Module_Id + "')";
+                let Progress = data[m].Progress;
+                if (Progress == "" || Progress == null || Progress == undefined) {
+                    Progress = "0";
+                }
+                else {
+                    Progress = Math.round(Progress);
+                }
+
+                let Score = data[m].Score;
+                if (Score == "" || Score == null || Score == undefined) {
+                    Score = "0"
+                }
+
+                let TotalQuestion = data[m].TotalQuestion;
+                let SubmitedQuestion = data[m].SubmitedQuestion;
+
+                let onclick_str = "get_questionlog_by_skill_id('" + Skill_Id + "', '" + Video_Link + "', '" + Module_Id + "', '" + Progress + "')";
 
                 let str = '<a href="#" class="lesson-preview-card" onclick="' + onclick_str + '">';
                 str += '<div class="lesson-preview-thumb" >';
@@ -304,7 +285,16 @@ function get_target_skill_by_module_id(Module_Id) {
                 str += '<div class="lesson-preview-subtitle">' + Skill_Description + '</div>';
                 str += '<div class="lesson-preview-footer">';
                 str += '<span class="lesson-preview-time"><i class="fa-regular fa-clock"></i>6 min</span>';
-                str += '<span class="lesson-preview-status completed">Completed</span>';
+
+                if (Progress == "100") {
+                    str += '<span class="lesson-preview-status completed">Completed</span>';
+                    str += '<span class="badge color-green">' + TotalQuestion + '</span>';
+                }
+                else {
+                    str += '<span class="lesson-preview-status progress">Pending</span>';
+                    str += '<span class="badge color-orange">' + TotalQuestion + '</span>';
+                }
+
                 str += '</div>';
                 str += '</div>';
                 str += '<div class="lesson-preview-next"><i class="fa fa-chevron-right"></i></div>';
@@ -337,7 +327,7 @@ function get_target_skill_by_module_id(Module_Id) {
 // get videowise question listing (level 3)
 
 var log_data = [];
-function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id) {
+function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
 
     myApp.popup.open('.popup-level-4');
     $("#dv_Question_List").empty();
@@ -348,11 +338,16 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id) {
     let vdo_Description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-desc").html();
     $("#vdo_Description").html(vdo_Description);
 
+    //if (Progress == "100") {
+    //    return false;
+    //}
+
     var user_id = JSON.parse(storage.getItem('user_id'));
     var Param_obj = [];
     Param_obj.push({
         'Skill_Id': Skill_Id,
-        'User_ID': user_id
+        'User_ID': user_id,
+        'Module_Schedule_Id': glob_Module_Schedule_Id
     });
     loading();
 
@@ -372,13 +367,13 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id) {
 
 
         loading_hide();
-        get_question_by_skill_id(Skill_Id, Video_Link, Module_Id)
+        get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress)
 
     }, onfail);
     getdata.callOtherDomain();
 }
 
-function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id) {
+function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
 
     var Param_obj = [];
     Param_obj.push({
@@ -403,24 +398,44 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id) {
                 let optionsArray = merge_array[i].OptionText;
                 let IsActive = merge_array[i].IsActive;
                 let weightage = merge_array[i].Weightage;
-
+                if (weightage == "" || weightage == null || weightage == undefined) {
+                    weightage = 1;
+                }
+                let Valid_Answer = merge_array[i].Valid_Answer[0];
                 let ans_label = merge_array[i].ans;
 
                 let str = '<div class="question-card">';
                 str += '<div class="question-title" skill_que_id=' + skill_que_id + ' IsActive=' + IsActive + '>' + skill_que_name + '</div>';
 
                 for (let j = 0; j < optionsArray.length; j++) {
-                    let t_ans = optionsArray[j].trim()
-                    str += '<div class="option">';
+                    let op_text = optionsArray[j].trim();
 
-                    if (ans_label == t_ans) {
-                        str += '<input type="checkbox" alt="' + weightage + '" id="' + skill_que_id + '_' + j + '" checked="checked">';
+                    if (Progress == "100") {
+                        // log found
+
+                        if (op_text === Valid_Answer) {
+
+                            // Highlight the correct answer
+                             str += '<div class="option correct-answer">';
+
+                        }
+                        else {
+                            str += '<div class="option">';
+                        }
+                    }
+                    else {
+                        // log not found
+                        str += '<div class="option">';
+                    }
+
+                    if (ans_label == op_text) {
+                        str += '<input type="checkbox" alt="' + weightage + '" id="' + skill_que_id + '_' + j + '" checked="checked" style="font-weight: bold">';
                     }
                     else {
                         str += '<input type="checkbox" alt="' + weightage + '" id="' + skill_que_id + '_' + j + '">';
                     }
 
-                    str += '<label for="' + skill_que_id + '_' + j + '">' + t_ans + '</label>';
+                    str += '<label for="' + skill_que_id + '_' + j + '">' + op_text + '</label>';
                     str += '</div>';
                 }
 
@@ -428,17 +443,17 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id) {
 
             }
 
-            let btn_str = "";
-            btn_str += '<div id="vdo_btn_div" class="buttons-row">'
-            //btn_str += '<a href="#" class="button button-fill color-gray" onclick="get_video_skill_by_module_id()">Submit Video</a>'
-
-            let onclick_str = "submit_question_by_skill_id('savenexit')";
-            btn_str += '<a href="#" class="button button-fill color-gray" onclick="' + onclick_str + '">Save</a>';
-
-            let on_submit = "submit_question_by_skill_id('submit')";
-            btn_str += '<a href="#" class="button button-fill color-gray" onclick="' + on_submit + '">Submit</a>'
-            btn_str += '</div>'
-            $("#dv_Question_List").append(btn_str);
+            if (Progress == "100") {
+                $("#dv_Question_List").find("input[type='checkbox']").attr("disabled", "disabled");
+                $("#dv_Question_List").show();
+            }
+            else {
+                let on_submit = "submit_question_by_skill_id('submit')";
+                let btn_str = '<div id="vdo_btn_div" class="buttons-row">'
+                btn_str += '<a href="#" class="button button-fill color-gray" onclick="' + on_submit + '">Submit</a>'
+                btn_str += '</div>'
+                $("#dv_Question_List").append(btn_str);
+            }
 
             document.querySelectorAll('.question-card').forEach(card => {
                 const checkboxes = card.querySelectorAll('input[type="checkbox"]');
@@ -531,7 +546,8 @@ function submit_question_by_skill_id(flag) {
                 "Skill_Que_Id": Skill_Que_Id,
                 "Skill_Question_Name": questionName,
                 "Ans": selectedAns,
-                "Circle": circle_name
+                "Circle": circle_name,
+                "Module_Schedule_Id": glob_Module_Schedule_Id
             });
         }
     }
@@ -695,10 +711,142 @@ function call_by_videolog(flag) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
-        if (status == 1) { }
+        if (status == 1) {
+            if (flag == 'log_save') {
+                myApp.popup.close('.popup-level-4');
+            }
+            else if (flag == 'submit') {
+                myApp.popup.close('.popup-level-4');
+                myApp.popup.close('.lms-module-preview-popup');
+                get_safety_module_listing();
+            }
+        }
         loading_hide();
 
     }, onfail);
     getdata.callOtherDomain();
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Un used code
+//function get_safety_module_listing_old() {
+//    $("#dv_Module_List").empty();
+
+//    var Param_obj = [];
+//    Param_obj.push({
+//        'Course_Id': 0
+//    });
+
+//    loading();
+
+//    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Module_Master_By_CourseId', JSON.stringify(Param_obj), function (e) {
+//        var responseText = e.responseText;
+//        var myArray = JSON.parse(responseText);
+//        var status = myArray[0].status;
+//        if (status == 1) {
+//            let data = myArray[0]["data"];
+//            data = JSON.parse(data);
+
+//            for (let m = 0; m < data.length; m++) {
+//                let Module_Id = data[m].Module_Id;
+//                let Module_Name = data[m].Module_Name;
+//                let Module_Description = data[m].Module_Description;
+//                let Thumbnail_link = data[m].Thumbnail_link;
+
+//                let onclick_str = "get_target_skill_by_module_id('" + Module_Id + "')";
+//                let str = '<div class="module-card" Module_Id="' + Module_Id + '" onclick="' + onclick_str + '">';
+
+//                let score_id = 'score_' + Module_Id + '';
+//                str += '<div  id=' + score_id + ' class="module-overlay" style="display:none"><div class="overlay-text">Score</div></div>';
+
+//                str += '<div class="card-content">';
+//                str += '<div class="module-image">';
+
+//                if (Thumbnail_link == "" || Thumbnail_link == null || Thumbnail_link == undefined) {
+//                    str += '<img src="images/no_image.png" alt="Course 1" style="padding: 15px;">';
+//                }
+//                else {
+//                    str += '<img src="' + Thumbnail_link + '" alt="Course 1">';
+//                }
+
+//                //str += '<div class="skill-btn">Target Skill</div>';
+//                str += '</div>';
+
+//                str += '<div class="module-content">';
+//                str += '<div class="module-title">' + Module_Name + '</div>';
+//                str += '<div class="module-desc">' + Module_Description + '</div>';
+//                str += '</div></div>';
+
+//                let progress_id = 'progress_' + Module_Id + '';
+//                str += '<div id=' + progress_id + ' class="module-progress-line"></div>';
+//                str += '</div>';
+
+//                $("#dv_Module_List").append(str);
+
+//                get_target_skill_tag_by_module_id(Module_Id);
+//            }
+//        }
+//        else {
+//            var message = myArray[0].message;
+//            alert(message);
+//            myApp.popup.close('.popup-level-2');
+//        }
+
+//        loading_hide();
+
+//    }, onfail);
+//    getdata.callOtherDomain();
+//}

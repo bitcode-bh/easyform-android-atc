@@ -1,23 +1,30 @@
 ﻿
-$(document).on("click", ".link.popup-close", function () {
-    $("#dv_Question_List").hide();
-    set_progress_local();
-
-    var video = $("#vdo_Question")[0];
-
-    if (video) {
-        video.pause();
-    }
-
-    // 2. Stop interval
-    if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-    }
-    get_video_skill_by_module_id('');
-});
-
 $(document).ready(function () {
+
+    get_safety_module_listing();
+
+    $(document).on('tab:show', '.tab', function () {
+
+        pauseAllVideos();
+
+        if (this.id == "tab-1") {
+            $(".sample-safety-titlebar").html("Safety Modules");
+            get_safety_module_listing();
+        }
+        else if (this.id == "tab-2") {
+            $(".sample-safety-titlebar").html("Assessments");
+            get_assessments_listing();
+        }
+        else if (this.id == "tab-4") {
+            $(".navbar").hide();
+
+            get_user_activities();
+            //get_micro_learning_videos();
+        }
+        else {
+            $(".navbar").show();
+        }
+    });
 
     var video = $("#vdo_Question")[0];
     var timeoutId = null;
@@ -55,7 +62,23 @@ $(document).ready(function () {
 
 });
 
+$(document).on("click", ".link.popup-close", function () {
+    $("#dv_Question_List").hide();
+    set_progress_local();
 
+    var video = $("#vdo_Question")[0];
+
+    if (video) {
+        video.pause();
+    }
+
+    // 2. Stop interval
+    if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+    }
+    get_video_skill_by_module_id('');
+});
 function loading() {
     //  loading_hide();
 

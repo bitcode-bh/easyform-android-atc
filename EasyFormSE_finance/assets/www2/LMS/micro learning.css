@@ -116,7 +116,7 @@
 
 .correct-answer {
     background: #d4edda;
-    border: 1px solid #28a745;
+    border: 1px solid #28a745 !important;
     border-radius: 8px;
     margin-bottom: 7px;
 }
@@ -128,7 +128,7 @@
 
 .incorrect-answer {
     background: #ff00001c;
-    border: 1px solid #ff00009c;
+    border: 1px solid #ff00009c !important;
     border-radius: 8px;
     margin-bottom: 7px;
 }
@@ -137,3 +137,6 @@
         color: #ff00009c;
         font-weight: bold;
     }
+
+
+

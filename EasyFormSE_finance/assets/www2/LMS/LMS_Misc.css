@@ -195,11 +195,17 @@
     font-size: 11px;
 }
 
-.lesson-preview-time {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
+    .lesson-preview-footer .badge {
+        height: 17px;
+        min-width: 17px;
+        font-size: 10px;
+    }
+
+    .lesson-preview-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
 
     .lesson-preview-time i {
         color: #6d7f90;

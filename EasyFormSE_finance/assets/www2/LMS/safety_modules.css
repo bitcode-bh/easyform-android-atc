@@ -262,6 +262,7 @@
 
 #vdo_btn_div {
     display: flex;
+    float: right;
 }
 
     #vdo_btn_div .button {
@@ -272,4 +273,21 @@
 
 #dv_Question_List {
     display: none;
+}
+
+
+.sample-score-tag {
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    z-index: 1;
+    border-radius: 15px;
+    background: rgba(16, 24, 34, 0.86);
+    color: #fff;
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
+.correct-answer input[type='checkbox'] {
+    margin-left: 10px;
 }
