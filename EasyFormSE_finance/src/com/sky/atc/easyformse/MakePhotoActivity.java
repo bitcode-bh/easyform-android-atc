@@ -108,6 +108,7 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
     Double mt = (double) 0;
     TextView txtsm;
     TextView txtmgnt;
+    LinearLayout linearmgnt;
     String temp_jason_array;
     int[] degree_id;
     int j = -1;
@@ -191,7 +192,6 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
     private static final int PERMISSION_REQUEST_CODE = 200;
     private int currentDeviceAngle = 0;
     private OrientationEventListener orientationEventListener;
-
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -434,6 +434,7 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
 
         txtsm = findViewById(R.id.txtsi);
         txtmgnt = findViewById(R.id.txtmgnt);
+        linearmgnt = findViewById(R.id.linearmgnt);
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -541,8 +542,9 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
 
         if ((mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)) == null || (mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null)) {
             ivCaptureFront.setVisibility(VISIBLE);
-            txtsm.setVisibility(View.INVISIBLE);
-            txtmgnt.setVisibility(View.INVISIBLE);
+            linearmgnt.setVisibility(GONE);
+            txtsm.setVisibility(GONE);
+            txtmgnt.setVisibility(View.GONE);
 
         }
 

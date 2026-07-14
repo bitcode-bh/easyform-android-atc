@@ -26,28 +26,55 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.33"
+            android:layout_weight="0.35"
             android:gravity="center"
-            android:orientation="vertical">
+            android:weightSum="1"
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/txtsi"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="left"
-                android:text="MF"
-                android:textColor="@color/white"
-                android:textSize="12sp" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:gravity="center"
+                android:visibility="visible"
+                android:id="@+id/linearmgnt"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/txtmgnt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="left"
-                android:text="MF"
-                android:textColor="@color/white"
-                android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/txtsi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left"
+                    android:text="MF"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txtmgnt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left"
+                    android:text="MF"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/flash"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:visibility="visible"
+                android:layout_weight="0.5"
+                android:gravity="center"
+                android:src="@drawable/flashon_foreground"
+                android:text="" />
+
+
+
+
         </LinearLayout>
+
+
 
         <!--<ZoomControls-->
         <!--android:id="@+id/CAMERA_ZOOM_CONTROLS"-->
@@ -62,22 +89,30 @@
             android:id="@+id/captureFront"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
             android:layout_weight="0.33"
             android:onClick="onClick"
             android:src="@drawable/cameraclick_foreground"
             android:text="" />
 
-
-
-        <ImageView
-            android:id="@+id/flash"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight="0.30"
+            android:gravity="center"
             android:layout_alignParentRight="true"
-            android:layout_weight="0.33"
-            android:src="@drawable/flashon_foreground"
-            android:text="" />
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/switchcamera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClick"
+                android:src="@drawable/frontcamera_foreground"
+                />
+        </LinearLayout>
+
+
+
 
 
 

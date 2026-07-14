@@ -37,15 +37,16 @@
         layout="@layout/camera_text"
         app:layout_constraintLeft_toLeftOf="parent" />
 
-    <ImageView
-        android:id="@+id/switchcamera"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="camera_change"
-        android:onClick="onClick"
-        android:src="@drawable/frontcamera_foreground"
-        app:layout_constraintEnd_toEndOf="@+id/preview"
-        app:layout_constraintTop_toTopOf="parent" />
+<!--    <ImageView-->
+<!--        android:id="@+id/switchcamera"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:contentDescription="camera_change"-->
+<!--        android:onClick="onClick"-->
+<!--        android:visibility="gone"-->
+<!--        android:src="@drawable/frontcamera_foreground"-->
+<!--        app:layout_constraintEnd_toEndOf="@+id/preview"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
     <include
         android:id="@+id/la_cameracontrol"
