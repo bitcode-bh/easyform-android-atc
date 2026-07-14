@@ -775,7 +775,8 @@ public class MainActivity extends Activity {
 //                       }
 
                             // screen over other apps permission
-                            if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true")) {
+                            if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true"))
+                            {
                                 if (checkOverlayDisplayPermission()) {
                                     sec_act();
                                 } else {
@@ -786,13 +787,15 @@ public class MainActivity extends Activity {
                             }
 
                         } else {
-                            if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true")) {
+                            if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true"))
+                            {
                                 if (checkOverlayDisplayPermission()) {
                                     sec_act();
                                 } else {
                                     requestOverlayDisplayPermission();
                                 }
-                            } else {
+                            }
+                             else {
                                 sec_act();
                             }
                             //  sec_act();
@@ -840,7 +843,8 @@ public class MainActivity extends Activity {
 //                       }
 
                             // screen over other apps permission
-                            if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true")) {
+                            if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true"))
+                            {
                                 if (checkOverlayDisplayPermission()) {
                                     sec_act();
                                 } else {

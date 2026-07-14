@@ -33,6 +33,8 @@ public class Utils {
         public static final String JITSI_CALL_webviewload = "com.easyform.newjitsi.Webviewload";
         public static final String JITSI_CALL_screenshot = "com.easyform.newjitsi.ScreenShot";
 
+        public static final String JITSI_CALL_photosave = "com.easyform.newjitsi.photosave";
+
     }
 
     public static class BroadcastActionExtrasKeys {

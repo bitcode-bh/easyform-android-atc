@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.widget.ImageView;
 
@@ -120,6 +121,10 @@ public class WebDialogFragment extends DialogFragment {
     public void onStart() {
         super.onStart();
 
+        if (getDialog() != null) {
+            getDialog().setCanceledOnTouchOutside(false);
+        }
+
         if (getDialog() != null && getDialog().getWindow() != null) {
 
             DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -129,7 +134,7 @@ public class WebDialogFragment extends DialogFragment {
 
             Window window = getDialog().getWindow();
 
-
+            window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
 

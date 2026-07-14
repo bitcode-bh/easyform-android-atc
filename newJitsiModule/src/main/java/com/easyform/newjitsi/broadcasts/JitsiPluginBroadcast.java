@@ -2,7 +2,6 @@ package com.easyform.newjitsi.broadcasts;
 
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.easyform.newjitsi.App.context;
 import static com.easyform.newjitsi.App.getContext;
 
 import android.app.ActivityManager;
@@ -15,9 +14,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Keep;
@@ -36,15 +33,12 @@ import com.easyform.newjitsi.activitys.drawing.models.RemoteUtils;
 import com.easyform.newjitsi.activitys.jitsimeet.CustomJitsiMeetActivity;
 import com.easyform.newjitsi.activitys.jitsimeet.CustomJitsiMeetViewModel;
 import com.easyform.newjitsi.activitys.jitsimeet.VideoRecordingService;
-import com.easyform.newjitsi.activitys.jitsimeet.WebDialogFragment;
 import com.easyform.newjitsi.activitys.loading.LoadingActivity;
-import com.easyform.newjitsi.fragments.InviteListItem;
 import com.easyform.newjitsi.fragments.MultiChoiceDialogFragment;
 import com.easyform.newjitsi.network.Models.OtherData;
 import com.easyform.newjitsi.network.Models.UserData;
 import com.easyform.newjitsi.network.requests.notifcation.FirebaseRequest;
 import com.easyform.newjitsi.network.requests.notifcation.FirebaseRequestData;
-import com.easyform.newjitsi.network.response.notifcation.FirebaseResponse;
 import com.easyform.newjitsi.utils.FCMNotificationApiCall;
 import com.easyform.newjitsi.utils.JitsiMeetBroadcastUtils;
 import com.easyform.newjitsi.utils.NotificationUtils;
@@ -60,8 +54,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import retrofit2.Response;
 
 /**
  * Created by NareshChocha on 18/2/2023.
@@ -112,6 +104,10 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
                     e.printStackTrace();
                 }
             }
+            else if(action.matches(Utils.BroadcastAction.JITSI_CALL_photosave))
+            {
+                SavePhoto(context, extras);
+            }
         }
     }
 
@@ -138,7 +134,7 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
                     getAcceptCallPendingIntent(context, extras, notificationId),
                     getRejectCallPendingIntent(context, extras, notificationId),
                     "EASYFORM CALL",
-                    mFirebaseRequestData.getCallfrom() + " is Calling !",
+                    mFirebaseRequestData.getCallfrom() + " is Inviting you for Meet !",
                     R.drawable.atc_logo,extras);
 
             sharedPreferences = context.getSharedPreferences("Jitsiuser", MODE_PRIVATE);
@@ -283,6 +279,9 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
                 mFirebaseRequestData.getTitle(),
                 mFirebaseRequestData.getBody(),
                 R.drawable.atc_logo);
+
+        NotificationUtils.stopOutgoingRing();
+        JitsiMeetBroadcastUtils.endMeeting(context);
     }
 
     private void remoteScreenSize(Context context, Bundle extras) {
@@ -579,8 +578,8 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
                 mFirebaseRequestData.getTitle(),
                 mFirebaseRequestData.getBody(),
                 R.drawable.atc_logo);
-        if (IncomingCallActivity.mActivity != null) {
-            NotificationUtils.stopRingtone();
+        NotificationUtils.stopRingtone();
+         if (IncomingCallActivity.mActivity != null) {
             IncomingCallActivity.mActivity.finish();
         }
         if (CameraPreviewActivity.mActivity != null) {
@@ -623,6 +622,12 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
        meetViewModel = new CustomJitsiMeetViewModel();
        meetViewModel.Get_photoid(bundle,context);
 
+
+    }
+
+    private void SavePhoto(Context context, Bundle mBundle) {
+        meetViewModel = new CustomJitsiMeetViewModel();
+        meetViewModel.SavePhoto(mBundle,context);
 
     }
 }

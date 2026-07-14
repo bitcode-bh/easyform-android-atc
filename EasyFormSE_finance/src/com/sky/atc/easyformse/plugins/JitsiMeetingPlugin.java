@@ -53,12 +53,11 @@ public class JitsiMeetingPlugin extends CordovaPlugin {
 //        if (!Settings.canDrawOverlays(activity)) {
 //            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
 //                    Uri.parse("package:" + activity.getPackageName()));
-//            cordova.setActivityResultCallback(this); // Important for receiving result
+//            cordova.setActivityResultCallback(this);
 //            activity.startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION);
 //        }
 //        else
         {
-
 
             sharedPreferences = this.cordova.getActivity().getSharedPreferences("Jitsiuser", MODE_PRIVATE);
             editor = sharedPreferences.edit();

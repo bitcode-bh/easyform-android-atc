@@ -98,6 +98,7 @@ import com.easyform.newjitsi.network.Models.participant.Participant;
 import com.easyform.newjitsi.network.response.users.EasyFromUser;
 import com.easyform.newjitsi.network.response.users.EasyFromUserItem;
 import com.easyform.newjitsi.utils.JitsiMeetBroadcastUtils;
+import com.easyform.newjitsi.utils.NotificationUtils;
 import com.easyform.newjitsi.utils.Utils;
 import com.google.ar.core.ArCoreApk;
 import com.google.gson.Gson;
@@ -610,6 +611,8 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
             setDrawOptionsClicks();
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
             ((FrameLayout) findViewById(android.R.id.content)).addView(mActivityCustomJitsiMeetBinding.getRoot(), layoutParams);
+
+            mActivityCustomJitsiMeetBinding.loading.setVisibility(View.VISIBLE);
         }
         iniUi();
     }
@@ -679,7 +682,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 .setFeatureFlag("pinSelf",true)
 //                .setFeatureFlag("tile-view.enabled", true)
 //                .setFeatureFlag("filmstrip.enabled", false)
-                .setAudioMuted(true)
+                .setAudioMuted(false)
                 .setVideoMuted(false)
                 .build();
 
@@ -714,7 +717,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastScreenShearReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastScreenShearRemoteSizeReceiver);
         unregisterReceiver(commentReceiver);
-
+        NotificationUtils.stopOutgoingRing();
         // JitsiMeetBroadcastUtils.endMeeting(this);
         // JitsiMeetActivityDelegate.onHostDestroy(this);
         //  jitsiMeetView.dispose();
@@ -732,19 +735,31 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         if (intent != null) {
             BroadcastEvent event = new BroadcastEvent(intent);
             switch (event.getType()) {
-                case CONFERENCE_JOINED: {
-                    getParticipantsInfoRetrievedBroadcast();
-                    mActivityCustomJitsiMeetBinding.llUserActions.setVisibility(View.VISIBLE);
-                    this.onConferenceJoined(event.getData());
-                    isCallRunning = true;
-                    sharedPreferences = getApplicationContext().getSharedPreferences("Jitsiuser", MODE_PRIVATE);
-                    String IspluginClick = sharedPreferences.getString("IsPluginClick","false");
-                    if(!IspluginClick.equalsIgnoreCase("true"))
-                    {
-                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                            forceSelfViewFullScreen();
-                        }, 3000);
+                case CONFERENCE_WILL_JOIN:
+                {
+                    if (mActivityCustomJitsiMeetBinding != null) {
+                        mActivityCustomJitsiMeetBinding.loading.setVisibility(View.GONE);
                     }
+                    break;
+                }
+                case CONFERENCE_JOINED: {
+
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        getParticipantsInfoRetrievedBroadcast();
+                        mActivityCustomJitsiMeetBinding.llUserActions.setVisibility(View.VISIBLE);
+                        this.onConferenceJoined(event.getData());
+                        isCallRunning = true;
+                        sharedPreferences = getApplicationContext().getSharedPreferences("Jitsiuser", MODE_PRIVATE);
+                        String IspluginClick = sharedPreferences.getString("IsPluginClick","false");
+                        if(!IspluginClick.equalsIgnoreCase("true"))
+                        {
+                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                forceSelfViewFullScreen();
+                            }, 5000);
+                        }
+                    }, 1000);
+
+
 
                     break;
                 }
@@ -766,6 +781,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                     break;
                 }
                 case PARTICIPANT_JOINED: {
+                    NotificationUtils.stopOutgoingRing();
                     getParticipantsInfoRetrievedBroadcast();
                     this.onParticipantJoined(event.getData());
                     break;
@@ -805,6 +821,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 case READY_TO_CLOSE: {
                     isCallRunning = false;
                     JitsiMeetBroadcastUtils.endMeeting(this);
+                    NotificationUtils.stopOutgoingRing();
                     this.onReadyToClose();
                     mIncomingCallActivity = new IncomingCallActivity();
                     mIncomingCallActivity.finishActivity();
@@ -1973,7 +1990,9 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                     String dateformate = mUserData.getDateformate();
 
                     webDialogFragment = new WebDialogFragment(roleId, taskId,Url,FlowId,start_status,compnay_id,UserId,site_id,udf_id,feature_id,dateformate);
+                    webDialogFragment.setCancelable(false);
                     webDialogFragment.show(getSupportFragmentManager(), "webDialog");
+
                 });
 
         builder.setPositiveButton("Close", null);
@@ -1996,6 +2015,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         String dateformate = mUserData.getDateformate();
 
         webDialogFragment = new WebDialogFragment(roleId, taskId,Url,FlowId,start_status,compnay_id,UserId,site_id,udf_id,feature_id,dateformate);
+        webDialogFragment.setCancelable(false);
         webDialogFragment.show(getSupportFragmentManager(), "webDialog");
     }
 
@@ -2218,16 +2238,13 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 }
             }
 
-        }, 2000); // wait for rendering
+        }, 1000); // wait for rendering
     }
     private static final Gson gson = new Gson();
     public static void saveToGallery(Bitmap bitmap,String jsonData) {
         String filename = "Jitsi_" + System.currentTimeMillis() + ".jpg";
 
-        File dir = new File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "Jitsi"
-        );
+        File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Jitsi");
 
         if (!dir.exists()) {
             dir.mkdirs();
@@ -2241,15 +2258,18 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
             fos.flush();
             fos.close();
 
-            // ✅ Make visible in gallery
-            MediaScannerConnection.scanFile(
-                    context,
-                    new String[]{imageFile.getAbsolutePath()},
-                    new String[]{"image/jpeg"},
-                    null
-            );
+//            // ✅ Make visible in gallery
+//            MediaScannerConnection.scanFile(
+//                    context,
+//                    new String[]{imageFile.getAbsolutePath()},
+//                    new String[]{"image/jpeg"},
+//                    null
+//            );
 
             Toast.makeText(getInstance(), "Photo saved to gallery", Toast.LENGTH_SHORT).show();
+            // send notification when photo save to gallery
+            CustomJitsiMeetViewModel customJitsiMeetViewModel = new CustomJitsiMeetViewModel();
+            customJitsiMeetViewModel.sendNotificationforphotosave(mBundle,context);
 
             String otherDataString  = mBundle.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
             String  loginUserDataString  = mBundle.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");

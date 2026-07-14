@@ -23,6 +23,8 @@
         android:required="false" />
     <uses-feature android:name="android.hardware.camera.flash" />
 
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+
     <application
         android:allowBackup="true">
         <activity
@@ -62,6 +64,7 @@
             android:theme="@style/JitsiModule.Theme" />
 
         <activity android:name=".activitys.call.IncomingCallActivity"
+            android:exported="false"
             android:showOnLockScreen="true"
             android:turnScreenOn="true"
             android:excludeFromRecents="true"

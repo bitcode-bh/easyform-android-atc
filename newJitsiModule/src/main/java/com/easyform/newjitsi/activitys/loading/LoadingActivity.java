@@ -61,7 +61,10 @@ public class LoadingActivity extends AppCompatActivity {
         String otherDataString = extras.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
         OtherData mOtherData = mGson.fromJson(otherDataString, OtherData.class);
         if (action.matches(Utils.BroadcastAction.JITSI_PLUGIN_CALL)) {
+
             mLoadingViewModel.sendNotification(extras,LoadingActivity.this);
+            NotificationUtils.startOutgoingRing(LoadingActivity.this);
+
         } else if (action.matches(Utils.BroadcastAction.JITSI_CALL_ACCEPT)) {
             NotificationUtils.stopRingtone();
             sharedPreferences = getApplicationContext().getSharedPreferences("jitsicall", MODE_PRIVATE);
@@ -105,12 +108,14 @@ public class LoadingActivity extends AppCompatActivity {
 
     private boolean hasPermissions() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestPermissions() {
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
+                new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO,Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                 PERMISSIONS_REQUEST_CODE);
     }
 
