@@ -4103,6 +4103,19 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                                 else {
                                                     var json_inv_type = json_inv[a].type[0].type;
                                                     var filled_obj = json_inv[a].type[0];
+
+                                                    if (user_language != 'en') {
+                                                        var language = json_inv[a].type[0].language;
+                                                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                                                        else {
+                                                            language = language[0];
+
+                                                            if (isEmpty(language)) { }
+                                                            else {
+                                                                th_name = language[user_language];
+                                                            }
+                                                        }
+                                                    }
                                                 }
 
                                                 list_div_data += '<td class="type22-list-item-label"><span class="list-ans" onclick="toggle_hidden_ans_data(this)">' + th_name + '</span></td>';
