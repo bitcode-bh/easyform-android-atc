@@ -1662,8 +1662,7 @@ var user_language;
 const languages = {
     "hi": "Hindi", "gu": "Gujarati", "bn": "Bengali", "mr": "Marathi",
     "kn": "Kannada", "ml": "Malayalam", "ta": "Tamil", "te": "Telugu",
-    "as": "Assamese", "or": "Oriya", "pa": "Punjabi", "ur": "Urdu",
-    "en": "English"
+    "as": "Assamese", "or": "Oriya", "pa": "Punjabi", "en": "English"
 };
 
 var session_ms = 0;
