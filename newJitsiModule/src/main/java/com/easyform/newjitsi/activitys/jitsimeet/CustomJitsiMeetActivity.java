@@ -755,6 +755,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                         {
                             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                                 forceSelfViewFullScreen();
+                                mActivityCustomJitsiMeetBinding.jitsiRequestChecklist.setVisibility(View.GONE);
                             }, 5000);
                         }
                     }, 1000);
