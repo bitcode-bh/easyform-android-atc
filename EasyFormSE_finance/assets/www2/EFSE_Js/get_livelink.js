@@ -87,6 +87,13 @@ function videoclick() {
     }
 }
 
+function skip_video(ll_new_id) {
+    let op = confirm("Are you sure, you want skip this video?");
+    if (op == true) {
+        $("#livelink_video_" + ll_new_id + "").trigger("ended");
+    }
+}
+
 function download_livelink_doc(t_live_url) {
     var q_jsonobj = [];
     q_jsonobj.push({
@@ -106,6 +113,8 @@ function download_livelink_doc(t_live_url) {
 reset_video_url_by_live_url = (t_video_ele) => {
     let live_url = $(t_video_ele).attr("live_url");
     $(t_video_ele).attr("src", live_url);
+
+    $("p[id^='livelink_force_btn_']").show();
 }
 
 function get_full_view_image_type40_F7(t_obj) {
@@ -129,7 +138,7 @@ function get_full_view_image_type40_F7(t_obj) {
     //    captionsTheme: 'dark'
     //});
 
-   /* myPhotoBrowser.open();*/
+    /* myPhotoBrowser.open();*/
     open_pinch_zoom_div(t_src);
 
 }

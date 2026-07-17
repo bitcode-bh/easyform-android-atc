@@ -87,6 +87,7 @@ function add_validation_class(element) {
     $(element).find(".list-block").addClass('cls_validation');
     $(element).find(".switch").addClass('cls_validation');
     $(element).find("img[id^='video_']").addClass('cls_validation');
+    $(element).find(".video-container").parent("div[id^='div_livelink_']").addClass('cls_validation');
 }
 function remove_validation_class(element) {
     $(element).find(".item-input").removeClass('cls_validation');

@@ -3128,6 +3128,20 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                             if (min_record == '' || min_record == null || min_record == undefined) { }
                             else {
                                 if (typeof min_record == "string") {
+
+                                    // min_record = "<@Q820@>";
+                                    if (min_record.indexOf("@") > -1) {
+                                        // get min record from above control
+
+                                        let ans_text = get_min_max_value_from_class(min_record);
+                                        if (ans_text == '' || ans_text == null || ans_text == undefined || ans_text == '--- Select Values ---' || ans_text == 'Select Value' || ans_text == '--- Select ---') {
+                                            alert("Minimum record value is not found!");
+                                        }
+                                        else {
+                                            min_record = ans_text;
+                                        }
+                                    }
+
                                     min_record = parseInt(min_record);
                                 }
 
@@ -4212,6 +4226,19 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         }
                         else {
                             if (typeof max_record == "string") {
+
+                                if (max_record.indexOf("@") > -1) {
+                                    // get max record from above control
+
+                                    let ans_text = get_min_max_value_from_class(max_record);
+                                    if (ans_text == '' || ans_text == null || ans_text == undefined || ans_text == '--- Select Values ---' || ans_text == 'Select Value' || ans_text == '--- Select ---') {
+                                        alert("Maximum record value is not found!");
+                                    }
+                                    else {
+                                        max_record = ans_text;
+                                    }
+                                }
+
                                 max_record = parseInt(max_record);
                             }
 

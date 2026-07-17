@@ -1592,6 +1592,20 @@ function add_row_to_listview_by_popup(inv_test, json) {
         else {
 
             if (typeof max_record == "string") {
+
+                // max_record = "<@Q820@>";
+                if (max_record.indexOf("@") > -1) {
+                    // get max record from above control
+
+                    let ans_text = get_min_max_value_from_class(max_record);
+                    if (ans_text == '' || ans_text == null || ans_text == undefined || ans_text == '--- Select Values ---' || ans_text == 'Select Value' || ans_text == '--- Select ---') {
+                        alert("Maximum record value is not found!");
+                    }
+                    else {
+                        max_record = ans_text;
+                    }
+                }
+
                 max_record = parseInt(max_record);
             }
 
@@ -2469,6 +2483,19 @@ function delete_row_from_table(item_id_1, btn_NewInv_Counter1, row_counter_new, 
             else {
 
                 if (typeof max_record == "string") {
+
+                    if (max_record.indexOf("@") > -1) {
+                        // get max record from above control
+
+                        let ans_text = get_min_max_value_from_class(max_record);
+                        if (ans_text == '' || ans_text == null || ans_text == undefined || ans_text == '--- Select Values ---' || ans_text == 'Select Value' || ans_text == '--- Select ---') {
+                            alert("Maximum record value is not found!");
+                        }
+                        else {
+                            max_record = ans_text;
+                        }
+                    }
+
                     max_record = parseInt(max_record);
                 }
 
@@ -2547,4 +2574,26 @@ check_n_apply_show_more_for_invoice_items = (t_inv_counter) => {
             $('.readmore-link').show();
         }
     });
+}
+
+// dynamic min_record / max_record addition in invoice control
+get_min_max_value_from_class = (class_name) => {
+    var value_type = class_name.substring(2, 1);
+    var sub_get_value = class_name.substring(2, class_name.length - 2);
+
+    var ddl_found = $("." + sub_get_value + "").find("select");
+    var ele_type = $("." + sub_get_value + "").find("div :nth-child(2)").prop('tagName');
+
+    if (ele_type == 'SELECT' || ele_type == 'OPTION' || ddl_found.length > 0) {
+        // normal dropdown
+        var where_box_id = $("." + sub_get_value + "").find("select").attr("id");
+        var ans_text = $("#" + where_box_id + " :selected").text();
+    }
+    else {
+        // radio
+        var rdo_name = $("." + sub_get_value + " :input[type=radio]").attr("name");
+        var ans_text = $('input[name=' + rdo_name + ']:checked').val();
+    }
+   
+    return ans_text;
 }

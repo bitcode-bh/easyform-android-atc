@@ -873,6 +873,20 @@ function SuccessCallBack_get_modules(e) {
                             var udf_subtitle = counter_1[0].udf_subtitle;
                             if (udf_subtitle == "" || udf_subtitle == null || udf_subtitle == undefined) {
                                 udf_subtitle = udf_name;
+
+                                if (user_language != 'en') {
+                                    let language = myArray[0].language;
+                                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                                    else {
+                                        language = itemObj._checkStrObj(language);
+                                        language = language[0];
+
+                                        if (isEmpty(language)) { }
+                                        else {
+                                            udf_subtitle = language[user_language];
+                                        }
+                                    }
+                                }
                             }
 
                             list_item += '</div></div></div><div class="item-text">' + udf_subtitle + '</div></a>';
@@ -2208,6 +2222,9 @@ function get_today_attendance_for_notification() {
                 $("#noti_Attendance3").css("display", "none");
             }
         }
+    }
+    else {
+        $("#module_list").css("margin-top", "12px");
     }
 }
 

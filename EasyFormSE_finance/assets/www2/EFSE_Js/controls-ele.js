@@ -1645,6 +1645,10 @@ MkControls.prototype.build_type_40_livelink = function () {
             str += '</video>';
             str += '<p id="livelink_status_' + this.new_id + '">' + watch_status + '</p>';
 
+            // force video watched - mk - 16072026
+            let force_str = "skip_video('" + this.new_id + "')"
+            str += '<p id="livelink_force_btn_' + this.new_id + '" onclick="' + force_str + '" style="float:right; display: none; background-color: red; color: white; border: none;">Skip video and continue</p>';
+
             // hide video download button as not required currently - mk - 04022026
             let download_str = "download_livelink_doc('" + doc_url + "')"
             str += '<p id="livelink_download_' + this.new_id + '" onclick="' + download_str + '" style="float:right; display: none"><i class="fa fa-download"></i> Download</p>';
