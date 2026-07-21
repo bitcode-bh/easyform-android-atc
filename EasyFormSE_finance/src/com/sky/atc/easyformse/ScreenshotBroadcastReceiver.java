@@ -79,10 +79,11 @@ public class ScreenshotBroadcastReceiver extends BroadcastReceiver {
     public void insert()
     {
         try {
-            JSONArray mJsonArray = new JSONArray(jsonData);
+//            JSONArray mJsonArray = new JSONArray(jsonData);
+            JSONObject jsonObject = new JSONObject(jsonData);
 
-
-            JSONObject mJsonObject = mJsonArray.getJSONObject(0);
+            JSONArray screenshotArray = jsonObject.getJSONArray("screenshot");
+            JSONObject mJsonObject = screenshotArray.getJSONObject(0);
             String ChecksheetId = mJsonObject.getString("checksheet_id");
             String question_id = mJsonObject.getString("que_id");
 
@@ -222,7 +223,8 @@ public class ScreenshotBroadcastReceiver extends BroadcastReceiver {
                         update_pid(pid, "p_master", Integer.parseInt(taskid), millisecond);
 
                         Intent intent = new Intent(sqlitewraper.context,Class.forName(JITSI_PLUGIN_BROADCAST_CLASS));
-                        intent.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "PhotoId");
+//                        intent.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "PhotoId"); // use for send notification
+                        intent.setAction(JitsiMeetingPlugin.JITSI_BASE_ACTION + "Get_PhotoId");
                         intent.putExtra("Photo_Id", photoId);
                         intent.putExtra("task_id", taskid);
                         intent.putExtra("Photo_name", p_name);

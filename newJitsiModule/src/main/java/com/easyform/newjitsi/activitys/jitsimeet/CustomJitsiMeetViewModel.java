@@ -18,6 +18,9 @@ import androidx.lifecycle.ViewModel;
 import com.easyform.newjitsi.R;
 import com.easyform.newjitsi.activitys.call.JitsiScreenShotPlugin;
 import com.easyform.newjitsi.activitys.chat.WebApiCallJitsiMeet;
+import com.easyform.newjitsi.activitys.drawing.AR.ARDrawActivity;
+import com.easyform.newjitsi.activitys.drawing.AR.EventUtils;
+import com.easyform.newjitsi.activitys.drawing.AR.TouchEventAR;
 import com.easyform.newjitsi.network.Apis;
 import com.easyform.newjitsi.network.Models.ApiAuth;
 import com.easyform.newjitsi.network.Models.OtherData;
@@ -722,21 +725,36 @@ public class CustomJitsiMeetViewModel extends ViewModel {
     public void Get_photoid(Bundle bundle,Context context)
     {
         mExecutorService.execute(() -> {
-            String notificationRemoteDataString = bundle.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
-            FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
-
-
-            int notificationId = (int) System.currentTimeMillis();
-
-            NotificationUtils.rejectCallNotification(notificationId, context,
-                    mFirebaseRequestData.getTitle(),
-                    mFirebaseRequestData.getBody(),
-                    R.drawable.atc_logo);
-
+            // comment notification recevie code becuse photo capture proceess changes 21072026
+//            String notificationRemoteDataString = bundle.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
+//            FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+//
+//
+//            int notificationId = (int) System.currentTimeMillis();
+//
+//            NotificationUtils.rejectCallNotification(notificationId, context,
+//                    mFirebaseRequestData.getTitle(),
+//                    mFirebaseRequestData.getBody(),
+//                    R.drawable.atc_logo);
+            JSONObject mJsonObject = new JSONObject();
+            JSONArray mJsonArray = new JSONArray();
             try {
 
-                JSONArray mJsonArray = new JSONArray(mFirebaseRequestData.getJsonData());
-                JSONObject mJsonObject = mJsonArray.getJSONObject(0);
+
+                mJsonObject.put("PhotoId",bundle.getInt("Photo_Id"));
+                mJsonObject.put("task_id",bundle.getString("task_id"));
+                mJsonObject.put("file_name",bundle.getString("Photo_name"));
+                mJsonObject.put("photo_path",bundle.getString("Photo_path"));
+                mJsonObject.put("photo_size",bundle.getString("Photo_size"));
+                mJsonObject.put("checksheet_id",bundle.getString("checksheet_id"));
+                mJsonObject.put("que_id",bundle.getString("que_id"));
+                mJsonObject.put("LOGIN_USER_DATA",bundle.getString("LOGIN_USER_DATA"));
+                mJsonObject.put("OTHER_DATA",bundle.getString("OTHER_DATA"));
+                mJsonObject.put("JITSI_MEETING_PLUGIN_ARGS",bundle.getString("JITSI_MEETING_PLUGIN_ARGS"));
+                mJsonArray.put(mJsonObject);
+
+//                JSONArray mJsonArray = new JSONArray(mFirebaseRequestData.getJsonData());
+//                JSONObject mJsonObject = mJsonArray.getJSONObject(0);
 
                 JitsiScreenShotPlugin.sendSuccessToJS(mJsonArray.toString());
                 String loginUserDataString = mJsonObject.getString("LOGIN_USER_DATA");

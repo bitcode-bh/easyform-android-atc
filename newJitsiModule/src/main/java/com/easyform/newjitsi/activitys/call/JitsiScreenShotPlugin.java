@@ -40,7 +40,11 @@ public class JitsiScreenShotPlugin extends CordovaPlugin {
             callbackContext.sendPluginResult(pr);
 
             cordova.getActivity().runOnUiThread(() -> {
-              activity.sendnotification(JsonData);
+                try {
+                    activity.sendnotification(JsonData);
+                } catch (Exception e) {
+                    Log.d("Exception",e.toString());
+                }
 
             });
 

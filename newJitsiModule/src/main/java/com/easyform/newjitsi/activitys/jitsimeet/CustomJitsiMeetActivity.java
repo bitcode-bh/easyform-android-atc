@@ -112,6 +112,7 @@ import org.jitsi.meet.sdk.JitsiMeetUserInfo;
 import org.jitsi.meet.sdk.JitsiMeetView;
 import org.jitsi.meet.sdk.log.JitsiMeetLogger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.michaelbel.bottomsheet.BottomSheet;
 import org.michaelbel.bottomsheet.BottomSheetCallback;
@@ -2174,10 +2175,12 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
     }
 
 
-    public void sendnotification(String jsondata)
-    {
+    public void sendnotification(String jsondata)  {
        // mCustomJitsiMeetViewModel.sendNotificationScreenShearDrawData(extras, screenShearEasyFromUserList, "screenshot", jsondata.toString(),CustomJitsiMeetActivity.this);
-        mCustomJitsiMeetViewModel.sendNotificationforviewcapture(extras,  "screenshot", jsondata,CustomJitsiMeetActivity.this);
+//        mCustomJitsiMeetViewModel.sendNotificationforviewcapture(extras,  "screenshot", jsondata,CustomJitsiMeetActivity.this);
+
+//        mCustomJitsiMeetViewModel.ScreenShots(context,extras);
+        capturePhoto(CustomJitsiMeetActivity.getInstance(), jsondata);
     }
 
     private void exitPipAndShowFullScreen() {
@@ -2267,10 +2270,10 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
 //                    null
 //            );
 
-            Toast.makeText(getInstance(), "Photo saved to gallery", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getInstance(), "Photo saved successfully", Toast.LENGTH_SHORT).show();
             // send notification when photo save to gallery
-            CustomJitsiMeetViewModel customJitsiMeetViewModel = new CustomJitsiMeetViewModel();
-            customJitsiMeetViewModel.sendNotificationforphotosave(mBundle,context);
+          //  CustomJitsiMeetViewModel customJitsiMeetViewModel = new CustomJitsiMeetViewModel();
+          //  customJitsiMeetViewModel.sendNotificationforphotosave(mBundle,context);
 
             String otherDataString  = mBundle.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
             String  loginUserDataString  = mBundle.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");

@@ -59,7 +59,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
 
 //    implementation('org.jitsi.react:jitsi-meet-sdk:7.0.1') { transitive = true }
-    implementation('org.jitsi.react:jitsi-meet-sdk:11.6.3') { transitive = true }
+    implementation('org.jitsi.react:jitsi-meet-sdk:12.0.0') { transitive = true }
 
     //AR
     // Provides ARCore Session and related resources.
