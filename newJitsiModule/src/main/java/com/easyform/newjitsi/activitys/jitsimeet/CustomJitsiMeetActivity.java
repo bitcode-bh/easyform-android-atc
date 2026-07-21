@@ -131,6 +131,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
 
 
 import timber.log.Timber;
@@ -581,8 +582,8 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+//        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+//        StrictMode.setThreadPolicy(policy);
 
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -603,7 +604,10 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
 //        WebRTCModuleOptions options = WebRTCModuleOptions.getInstance();
 //        options.loggingSeverity = Logging.Severity.LS_ERROR;
 
-        availability = ArCoreApk.getInstance().checkAvailability(this);
+        //availability = ArCoreApk.getInstance().checkAvailability(this);
+        ArCoreApk.getInstance().checkAvailabilityAsync(this, availabilityStatus -> {
+            availability = availabilityStatus;
+        });
         mCustomJitsiMeetViewModel = new ViewModelProvider(this).get(CustomJitsiMeetViewModel.class);
         if (getIntent().getAction().matches("org.jitsi.meet.CONFERENCE")) {
             mActivityCustomJitsiMeetBinding = ActivityCustomJitsiMeetBinding.inflate(getLayoutInflater());
@@ -655,39 +659,47 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
 
 
     public static void customLaunch(Context context, String roomOrJetToken, UserData mUserData,OtherData mOtherData, Bundle extras) {
-        URL serverURL;
-        try {
-            serverURL = new URL(Apis.JITSI_URL);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Invalid server URL!");
-        }
-        JitsiMeetUserInfo mJitsiMeetUserInfo = new JitsiMeetUserInfo();
-        mJitsiMeetUserInfo.setDisplayName(mUserData.getUsername());
-        task_id = mOtherData.getServer_task_id();
-        JitsiMeetConferenceOptions options = new JitsiMeetConferenceOptions.Builder()
-                .setServerURL(serverURL)
-                .setRoom(roomOrJetToken)
-                .setUserInfo(mJitsiMeetUserInfo)
-                .setFeatureFlag("notifications.enabled", true)
-                .setFeatureFlag("invite.enabled", false)
-                .setFeatureFlag("video-share.enabled", false)
-                .setFeatureFlag("pip-while-screen-sharing.enabled", true)
-                .setFeatureFlag("prejoinpage.enabled", false)
-                .setFeatureFlag("callstats.enabled", false)
-                .setFeatureFlag("chat.enabled", true)
-                .setFeatureFlag("welcomepage.enabled", false)
-                .setFeatureFlag("desktop-sharing.enabled", true)
-                .setFeatureFlag("android.screensharing.enabled", true)
-                .setFeatureFlag("pip.enabled", false)
-                .setFeatureFlag("pinSelf",true)
+
+        Executors.newSingleThreadExecutor().execute(() ->
+        {
+            URL serverURL;
+            try {
+                serverURL = new URL(Apis.JITSI_URL);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Invalid server URL!");
+            }
+            JitsiMeetUserInfo mJitsiMeetUserInfo = new JitsiMeetUserInfo();
+            mJitsiMeetUserInfo.setDisplayName(mUserData.getUsername());
+            task_id = mOtherData.getServer_task_id();
+            JitsiMeetConferenceOptions options = new JitsiMeetConferenceOptions.Builder()
+                    .setServerURL(serverURL)
+                    .setRoom(roomOrJetToken)
+                    .setUserInfo(mJitsiMeetUserInfo)
+                    .setFeatureFlag("notifications.enabled", true)
+                    .setFeatureFlag("invite.enabled", false)
+                    .setFeatureFlag("video-share.enabled", false)
+                    .setFeatureFlag("pip-while-screen-sharing.enabled", true)
+                    .setFeatureFlag("prejoinpage.enabled", false)
+                    .setFeatureFlag("callstats.enabled", false)
+                    .setFeatureFlag("chat.enabled", true)
+                    .setFeatureFlag("welcomepage.enabled", false)
+                    .setFeatureFlag("desktop-sharing.enabled", true)
+                    .setFeatureFlag("android.screensharing.enabled", true)
+                    .setFeatureFlag("pip.enabled", false)
+                    .setFeatureFlag("pinSelf",true)
 //                .setFeatureFlag("tile-view.enabled", true)
 //                .setFeatureFlag("filmstrip.enabled", false)
-                .setAudioMuted(false)
-                .setVideoMuted(false)
-                .build();
+                    .setAudioMuted(false)
+                    .setVideoMuted(false)
+                    .build();
 
-        CustomJitsiMeetActivity.launch(context, options, extras);
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                CustomJitsiMeetActivity.launch(context, options, extras);
+            });
+
+        });
+
     }
 
     private void registerForBroadcastMessages() {
