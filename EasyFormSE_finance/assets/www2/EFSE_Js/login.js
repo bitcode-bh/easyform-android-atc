@@ -355,27 +355,35 @@ function success_get_imei(e) {
         changeurl("viewsitedata_task.html");
     } else if (crash_status == 7) {
         //when app is killed before start/stop trip
-        curr_survey_data["shortest_path"] = localStorage.getItem('shortest_path');
-        curr_survey_data["json"] = localStorage.getItem('json');
-        form_flag = localStorage.getItem('form_flag');
-        var data_json = JSON.parse(storage.getItem('list_json'));
-        var list_data = JSON.parse(data_json);
-        var auto_trip = list_data[0].auto_trip;
-        if (auto_trip == 'true') {
-            //var trip_status = localStorage.getItem('trip_status');
-            //if (trip_status == 0) {
-            //    start_stop_trip(trip_status);
-            //}
-            //else {
-            //    changeurl("viewsitedata.html");
-            //}
 
-            changeurl("viewsitedata_task.html");
+        try {
+            curr_survey_data["shortest_path"] = localStorage.getItem('shortest_path');
+            curr_survey_data["json"] = localStorage.getItem('json');
+            form_flag = localStorage.getItem('form_flag');
+            var data_json = JSON.parse(storage.getItem('list_json'));
+            var list_data = JSON.parse(data_json);
+            var auto_trip = list_data[0].auto_trip;
+            if (auto_trip == 'true') {
+                //var trip_status = localStorage.getItem('trip_status');
+                //if (trip_status == 0) {
+                //    start_stop_trip(trip_status);
+                //}
+                //else {
+                //    changeurl("viewsitedata.html");
+                //}
 
+                changeurl("viewsitedata_task.html");
+
+            }
+            else {
+                changeurl("viewsitedata.html");
+            }
         }
-        else {
-            changeurl("viewsitedata.html");
+        catch (e) {
+            storage.setItem('crash_status', JSON.stringify('0'));
+            get_imei();
         }
+
     }
     ////
 }
@@ -2532,7 +2540,7 @@ function clear_localStorage() {
     let last_username = JSON.parse(storage.getItem('last_username'));
     let crash_status = JSON.parse(storage.getItem('crash_status'));
     let cam_crash_data = JSON.parse(storage.getItem('cam_crash_data'));
-    let data_json = JSON.parse(storage.getItem('list_json'));
+    let list_json = JSON.parse(storage.getItem('list_json'));
 
     let viewsite_btn_color = JSON.parse(storage.getItem('viewsite_btn_color'));
     let viewsite_btn_text_color = JSON.parse(storage.getItem('viewsite_btn_text_color'));
@@ -2605,7 +2613,7 @@ function clear_localStorage() {
     storage.setItem('last_username', JSON.stringify(last_username));
     storage.setItem('crash_status', JSON.stringify(crash_status));
     storage.setItem('cam_crash_data', JSON.stringify(cam_crash_data));
-    storage.setItem('data_json', JSON.stringify(data_json));
+    storage.setItem('list_json', JSON.stringify(list_json));
 
     storage.setItem('viewsite_btn_color', JSON.stringify(viewsite_btn_color));
     storage.setItem('viewsite_btn_text_color', JSON.stringify(viewsite_btn_text_color));
