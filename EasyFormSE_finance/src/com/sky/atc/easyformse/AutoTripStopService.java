@@ -129,7 +129,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
     {
         try {
             android.database.Cursor check = database.rawQuery(
-                    "SELECT s_lat,s_lon,min_milliFROM lat_plug WHERE trip_status=0 ORDER BY _id DESC LIMIT 1", null);
+                    "SELECT s_lat,s_lon,min_milli FROM lat_plug WHERE trip_status=0 ORDER BY _id DESC LIMIT 1", null);
 
             check.moveToFirst();
             if ((check.getCount() > 0)) {

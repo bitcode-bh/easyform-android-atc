@@ -341,13 +341,24 @@ public class newfused extends Service implements LocationListener {
                     Log.d("##LOCATIONSERVIE", String.valueOf(location.getAccuracy()));
                     try {
 
+
+                        if (location.getLatitude() == 0.0 && location.getLongitude() == 0.0) {
+                            return;
+                        }
+
+                        if (Math.abs(location.getLatitude()) < 0.0001 &&
+                                Math.abs(location.getLongitude()) < 0.0001) {
+                            return;
+                        }
+
                         //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
                         if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
 
                             //for manual speed calculation
                             float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(location);
-
-                            onLocationUpdate(location, manualSpeed);
+                            if(manualSpeed != 10000) {
+                                onLocationUpdate(location, manualSpeed);
+                            }
                         }
 
                     } catch (Exception e) {
@@ -490,13 +501,24 @@ public class newfused extends Service implements LocationListener {
     public void onLocationChanged(@NonNull Location location) {
         Log.d("##LOCATIONSERVIE", String.valueOf(location.getAccuracy()));
         try {
+            if (location.getLatitude() == 0.0 && location.getLongitude() == 0.0) {
+                return;
+            }
+
+            if (Math.abs(location.getLatitude()) < 0.0001 &&
+                    Math.abs(location.getLongitude()) < 0.0001) {
+                return;
+            }
+
             //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
             if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
 
                 //for manual speed calculation
                 float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(location);
 
-                onLocationUpdate(location, manualSpeed);
+                if(manualSpeed != 10000) {
+                    onLocationUpdate(location, manualSpeed);
+                }
             }
 
         } catch (Exception e) {

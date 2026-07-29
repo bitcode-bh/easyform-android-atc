@@ -44,9 +44,8 @@ public class SpeedCalculation {
 //    }
 
     // gps zig zag issue 02072026
-    private static Location locationA;
+    public static Location locationA;
     private static Float lastValidMovementBearing = null;
-    private static int badPointCount = 0;
 
     public static float calculateSpeedBetweenPoints(Location locationB) {
 
@@ -56,11 +55,23 @@ public class SpeedCalculation {
                 return 10000;
             }
 
+
+            if ((locationB.getLatitude() == 0.0 && locationB.getLongitude() == 0.0)
+                    || (Math.abs(locationB.getLatitude()) < 0.0001
+                    && Math.abs(locationB.getLongitude()) < 0.0001)) {
+
+                Log.d("GPS_FILTER", "Rejected : 0,0 Location");
+                return 10000;
+            }
+
+
             if (locationA == null) {
-                locationA = locationB;
+                locationA = new Location(locationB);
                 return 0;
             }
+
             long timeDiff;
+
             if (locationA.getElapsedRealtimeNanos() > 0 &&
                     locationB.getElapsedRealtimeNanos() > 0) {
 
@@ -72,52 +83,31 @@ public class SpeedCalculation {
                 timeDiff = locationB.getTime() - locationA.getTime();
             }
 
-
             float seconds = timeDiff / 1000f;
 
-            if (seconds <= 0 || seconds > 30f) {
-                Log.d("GPS_FILTER", "Rejected: invalid time");
-                locationA = locationB;
-                lastValidMovementBearing = null;
+            if (seconds <= 0 || seconds > 60f) {
+                Log.d("GPS_FILTER", "Rejected : Invalid Time");
                 return 10000;
             }
 
             float distance = locationA.distanceTo(locationB);
 
-            float accSum = locationA.getAccuracy() + locationB.getAccuracy();
-
-            if (distance > (accSum + 150)) {
-
-                badPointCount++;
-
-//                Log.d("GPS_FILTER",
-//                        "Rejected GPS JUMP | distance=" + distance +
-//                                " accuracy=" + locationB.getAccuracy() +
-//                                " badCount=" + badPointCount);
-
-                if (badPointCount <= 1) {
-                    return 10000;
-                }
-
-                locationA = locationB;
-                lastValidMovementBearing = null;
-                badPointCount = 0;
+            // Reject impossible jump
+            if (distance > 1000f) {
+              //  Log.d("GPS_FILTER", "Rejected : GPS Jump " + distance);
                 return 10000;
-            } else {
-                badPointCount = 0;
             }
 
             if (distance < 10f) {
-                locationA = locationB;
+                locationA = new Location(locationB);
                 return 10000;
             }
 
             float speed = distance / seconds;
 
+            // Reject impossible speed
             if (speed > 40f) {
-                //Log.d("GPS_FILTER", "Rejected impossible speed: " + speed);
-                locationA = locationB;
-                lastValidMovementBearing = null;
+             //   Log.d("GPS_FILTER", "Rejected : Speed " + speed);
                 return 10000;
             }
 
@@ -132,30 +122,14 @@ public class SpeedCalculation {
                 }
 
                 if (bearingChange > 135f && speed > 10f) {
-                 //   Log.d("GPS_FILTER", "Rejected bearing jump");
-                    locationA = locationB;
-                    lastValidMovementBearing = null;
-                    return 10000;
-                }
-
-            }
-
-            float providerSpeed = locationB.getSpeed();
-
-            if (providerSpeed > 0) {
-                float diff = Math.abs(providerSpeed - speed);
-
-                if (diff > 15f) {
-                  //  Log.d("GPS_FILTER", "Rejected provider mismatch");
-                    locationA = locationB;
+                 //   Log.d("GPS_FILTER", "Rejected : Bearing Jump");
                     return 10000;
                 }
             }
 
             lastValidMovementBearing = currentBearing;
-            locationA = locationB;
+            locationA = new Location(locationB);
 
-          //  Log.d("GPS_FILTER", "Accepted speed = " + speed);
 
             return speed;
 
