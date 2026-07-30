@@ -83,6 +83,7 @@ function mk_animate_border(element, x, time, t_color_name, after_effect) {
 }
 
 function add_validation_class(element) {
+    $(element).find(".item-input-field").addClass('cls_validation');
     $(element).find(".item-input").addClass('cls_validation');
     $(element).find(".list-block").addClass('cls_validation');
     $(element).find(".switch").addClass('cls_validation');
@@ -90,6 +91,7 @@ function add_validation_class(element) {
     $(element).find(".video-container").parent("div[id^='div_livelink_']").addClass('cls_validation');
 }
 function remove_validation_class(element) {
+    $(element).find(".item-input-field").removeClass('cls_validation');
     $(element).find(".item-input").removeClass('cls_validation');
     $(element).find(".list-block").removeClass('cls_validation');
     $(element).find(".switch").removeClass('cls_validation');

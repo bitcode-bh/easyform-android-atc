@@ -5526,7 +5526,10 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                     else {
                         $('.readmore-link').show();
                     }
-                })
+                });
+
+                hide_add_record_button_by_max_record(inv_new_id);
+
             }
         }, 1000);
         //===show more UI for type22 listview

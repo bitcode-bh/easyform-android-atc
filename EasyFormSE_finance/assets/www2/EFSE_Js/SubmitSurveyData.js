@@ -3151,6 +3151,7 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                         inv_calc_answer = "";
 
                                         alert1("Minimum " + min_record + " records are required for " + prop_name);
+                                        $("#btn_add_row_" + new_id + "").css('display', 'inline');
                                     }
                                 }
                                 else {
@@ -3158,6 +3159,7 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                         inv_calc_answer = "";
 
                                         alert1("Minimum " + min_record + " records are required for " + prop_name);
+                                        $("#btn_add_row_" + new_id + "").css('display', 'inline');
                                     }
                                 }
                             }

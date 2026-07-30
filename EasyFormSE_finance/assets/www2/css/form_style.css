@@ -170,7 +170,7 @@ div[id^='div_que_'] {
     border-radius: 10px;
 }
 
-.cntrl_main_div .list-block, .cntrl_main_div .item-input {
+.cntrl_main_div .list-block, .cntrl_main_div .item-input, .cntrl_main_div .item-input-field {
     background: #ECEDEF;
     border-radius: 10px;
 }

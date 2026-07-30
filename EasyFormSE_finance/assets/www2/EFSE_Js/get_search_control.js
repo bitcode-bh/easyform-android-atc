@@ -3415,7 +3415,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                     var box_id = [];
                     var box_class = Fill_Data[fj].classname;
                     var box_editable = Fill_Data[fj].editable;
-                    
+
                     var ddl_found = $("." + box_class + "").find("select");
                     if (ddl_found.length > 0) {
                         // below dropdown found to fill
@@ -3520,6 +3520,15 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                 if (curr_box_id.indexOf("rdo_") > -1) {
                                     // radio autoselect
                                     $('div.' + box_class + ' input[type="radio"][value="' + fieldvalue + '"]').prop('checked', true);
+
+                                    var onchange_avail = $('div.' + box_class + ' input[type="radio"][value="' + fieldvalue + '"]').attr("onchange");
+                                    if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
+                                    else {
+                                        setTimeout(function () {
+                                            $('div.' + box_class + ' input[type="radio"][value="' + fieldvalue + '"]').trigger("onchange");
+                                        }, 1000);
+                                    }
+
                                 }
                                 else if ($("#" + curr_box_id + "").is("img")) {
                                     //img autofill [FT-18022025]
@@ -3531,15 +3540,15 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                     }
 
                                     var img_new_id = curr_box_id.replace('cbtn_', '');
-                                    let new_que_id = $("#div_cbtn_" + img_new_id).attr('que_id'); 
+                                    let new_que_id = $("#div_cbtn_" + img_new_id).attr('que_id');
                                     var img_ary = myArray[fi].img_ary;
-                                    
+
                                     if (img_ary == "" || img_ary == null || img_ary == undefined) {
                                         // livelinkg with image type 40
                                         $("#" + curr_box_id + "").attr("src", fieldvalue);
                                         $("#" + curr_box_id + "").attr('autofill', "true");
 
-                                        img_ary = [fieldvalue,'','','',''];
+                                        img_ary = [fieldvalue, '', '', '', ''];
 
                                         if (autofill_form_flag == 0 || autofill_form_flag == 6) {
                                             for (var j = 0; j < jsonObj_old.length; j++) {
@@ -3610,7 +3619,7 @@ function fill_data_to_box(obj_id, temp_cell_value, tempfieldArray, temp_btnSearc
                                             $("#" + curr_box_id + "").attr('src', img_src);
                                             $("#" + curr_box_id + "").attr('onerror', rebind_str);
 
-                                     
+
                                             if (autofill_form_flag == 0 || autofill_form_flag == 6) {
                                                 for (var j = 0; j < jsonObj_old.length; j++) {
                                                     var json_que_id = jsonObj_old[j].que_id;

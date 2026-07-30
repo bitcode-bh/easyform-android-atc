@@ -323,19 +323,21 @@ function add_row_to_table_by_popup(inv_test, json) {
         popup_items_hide_type22(0);
 
         //Add new record as per config. max_record (For tableview) - mk - 01042025
-        var max_record = $("#hdn_btn_congfiure_" + btn_NewInv_Counter + "").attr('max_record');
-        if (max_record == null || max_record == '' || max_record == undefined) { }
-        else {
+        // var max_record = $("#hdn_btn_congfiure_" + btn_NewInv_Counter + "").attr('max_record');
+        // if (max_record == null || max_record == '' || max_record == undefined) { }
+        // else {
 
-            if (typeof max_record == "string") {
-                max_record = parseInt(max_record);
-            }
+        //     if (typeof max_record == "string") {
+        //         max_record = parseInt(max_record);
+        //     }
 
-            var tbl_length = $('#tbl_row_data_' + btn_NewInv_Counter + ' tr[id^=tr_row_for_delete_]:visible').length;
-            if (max_record == tbl_length) {
-                $("#btn_add_row_" + btn_NewInv_Counter + "").css('display', 'none');
-            }
-        }
+        //     var tbl_length = $('#tbl_row_data_' + btn_NewInv_Counter + ' tr[id^=tr_row_for_delete_]:visible').length;
+        //     if (max_record == tbl_length) {
+        //         $("#btn_add_row_" + btn_NewInv_Counter + "").css('display', 'none');
+        //     }
+        // }
+
+        hide_add_record_button_by_max_record(btn_NewInv_Counter);
 
     } catch (e) {
         alert1(e + "_add_row_to_table_by_popup");
@@ -1587,33 +1589,35 @@ function add_row_to_listview_by_popup(inv_test, json) {
         popup_items_hide_type22(0);
 
         //Add new record as per config. max_record (For listview) - mk - 01042025
-        var max_record = $("#hdn_btn_congfiure_" + btn_NewInv_Counter + "").attr('max_record');
-        if (max_record == null || max_record == '' || max_record == undefined) { }
-        else {
+        // var max_record = $("#hdn_btn_congfiure_" + btn_NewInv_Counter + "").attr('max_record');
+        // if (max_record == null || max_record == '' || max_record == undefined) { }
+        // else {
 
-            if (typeof max_record == "string") {
+        //     if (typeof max_record == "string") {
 
-                // max_record = "<@Q820@>";
-                if (max_record.indexOf("@") > -1) {
-                    // get max record from above control
+        //         // max_record = "<@Q820@>";
+        //         if (max_record.indexOf("@") > -1) {
+        //             // get max record from above control
 
-                    let ans_text = get_min_max_value_from_class(max_record);
-                    if (ans_text == '' || ans_text == null || ans_text == undefined || ans_text == '--- Select Values ---' || ans_text == 'Select Value' || ans_text == '--- Select ---') {
-                        alert("Maximum record value is not found!");
-                    }
-                    else {
-                        max_record = ans_text;
-                    }
-                }
+        //             let ans_text = get_min_max_value_from_class(max_record);
+        //             if (ans_text == '' || ans_text == null || ans_text == undefined || ans_text == '--- Select Values ---' || ans_text == 'Select Value' || ans_text == '--- Select ---') {
+        //                 alert("Maximum record value is not found!");
+        //             }
+        //             else {
+        //                 max_record = ans_text;
+        //             }
+        //         }
 
-                max_record = parseInt(max_record);
-            }
+        //         max_record = parseInt(max_record);
+        //     }
 
-            var li_length = $('#div_list_display_' + btn_NewInv_Counter + ' li[id^=tr_row_for_delete_]:visible').length;
-            if (max_record == li_length) {
-                $("#btn_add_row_" + btn_NewInv_Counter + "").css('display', 'none');
-            }
-        }
+        //     var li_length = $('#div_list_display_' + btn_NewInv_Counter + ' li[id^=tr_row_for_delete_]:visible').length;
+        //     if (max_record == li_length) {
+        //         $("#btn_add_row_" + btn_NewInv_Counter + "").css('display', 'none');
+        //     }
+        // }
+
+        hide_add_record_button_by_max_record(btn_NewInv_Counter);
 
     } catch (e) {
         alert1(e + "_add_row_to_listview_by_popup");
@@ -2596,4 +2600,48 @@ get_min_max_value_from_class = (class_name) => {
     }
    
     return ans_text;
+}
+
+hide_add_record_button_by_max_record = (t_new_id) => {
+
+    var max_record = $("#hdn_btn_congfiure_" + t_new_id + "").attr('max_record');
+    if (max_record == null || max_record == '' || max_record == undefined) { }
+    else {
+
+        if (typeof max_record == "string") {
+
+            // max_record = "<@Q820@>";
+            if (max_record.indexOf("@") > -1) {
+                // get max record from above control
+
+                let ans_text = get_min_max_value_from_class(max_record);
+                if (ans_text == '' || ans_text == null || ans_text == undefined || ans_text == '--- Select Values ---' || ans_text == 'Select Value' || ans_text == '--- Select ---') {
+                    alert("Maximum record value is not found!");
+                }
+                else {
+                    max_record = ans_text;
+                }
+            }
+
+            max_record = parseInt(max_record);
+        }
+
+        if ($('#div_list_display_' + t_new_id + '').length > 0) {
+            // listview
+            var li_length = $('#div_list_display_' + t_new_id + ' li[id^=tr_row_for_delete_]:visible').length;
+            if (max_record == li_length) {
+                $("#btn_add_row_" + t_new_id + "").css('display', 'none');
+            }
+        }
+
+        if ($('#tbl_row_data_' + t_new_id + '').length > 0) {
+            // tableview
+            var tbl_length = $('#tbl_row_data_' + t_new_id + ' tr[id^=tr_row_for_delete_]:visible').length;
+            if (max_record == tbl_length) {
+                $("#btn_add_row_" + t_new_id + "").css('display', 'none');
+            }
+        }
+        
+    }
+
 }
