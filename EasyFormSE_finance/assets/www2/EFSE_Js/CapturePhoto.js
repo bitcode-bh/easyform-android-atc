@@ -1774,16 +1774,22 @@ function onsuccess_CaptureClick_Customer(e) {
         let max_attempt = hdn_cam_ary[0].max_attempt;
         if (max_attempt == "" || max_attempt == null || max_attempt == undefined) { }
         else {
-            let attempt = $("#" + img_div + "").attr("attempt");
-            if (attempt == "" || attempt == null || attempt == undefined) {
-                $("#" + img_div + "").attr('attempt', "1");
+            // let attempt = $("#" + img_div + "").attr("attempt");
+            // if (attempt == "" || attempt == null || attempt == undefined) {
+            //     $("#" + img_div + "").attr('attempt', "1");
+            // }
+            // else {
+            //     if (typeof attempt == "string") {
+            //         attempt = parseInt(attempt);
+            //     }
+            //     $("#" + img_div + "").attr('attempt', attempt + 1);
+            // }
+
+            let attempt = response[0].attempt;
+            if (typeof attempt == "string") {
+                attempt = parseInt(attempt);
             }
-            else {
-                if (typeof attempt == "string") {
-                    attempt = parseInt(attempt);
-                }
-                $("#" + img_div + "").attr('attempt', attempt + 1);
-            }
+            $("#" + img_div + "").attr('attempt', attempt);
         }
     }
 }
