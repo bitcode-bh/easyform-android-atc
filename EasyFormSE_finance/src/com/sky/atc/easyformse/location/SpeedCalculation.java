@@ -85,8 +85,8 @@ public class SpeedCalculation {
 
             float seconds = timeDiff / 1000f;
 
-            if (seconds <= 0 || seconds > 60f) {
-                Log.d("GPS_FILTER", "Rejected : Invalid Time");
+            if (seconds <= 0 || seconds > 30f) {
+                locationA = new Location(locationB);
                 return 10000;
             }
 
@@ -94,11 +94,11 @@ public class SpeedCalculation {
 
             // Reject impossible jump
             if (distance > 1000f) {
-              //  Log.d("GPS_FILTER", "Rejected : GPS Jump " + distance);
+                //Log.d("GPS_FILTER", "Rejected : GPS Jump " + distance);
                 return 10000;
             }
 
-            if (distance < 10f) {
+            if (distance < 5f) {
                 locationA = new Location(locationB);
                 return 10000;
             }
@@ -107,7 +107,7 @@ public class SpeedCalculation {
 
             // Reject impossible speed
             if (speed > 40f) {
-             //   Log.d("GPS_FILTER", "Rejected : Speed " + speed);
+                //Log.d("GPS_FILTER", "Rejected : Speed " + speed);
                 return 10000;
             }
 
@@ -122,7 +122,7 @@ public class SpeedCalculation {
                 }
 
                 if (bearingChange > 135f && speed > 10f) {
-                 //   Log.d("GPS_FILTER", "Rejected : Bearing Jump");
+                    Log.d("GPS_FILTER", "Rejected : Bearing Jump");
                     return 10000;
                 }
             }
