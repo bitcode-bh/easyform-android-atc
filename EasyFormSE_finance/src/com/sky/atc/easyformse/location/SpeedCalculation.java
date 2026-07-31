@@ -100,7 +100,7 @@ public class SpeedCalculation {
 
             if (distance < 5f) {
                 locationA = new Location(locationB);
-                return 0;
+                return 1000;
             }
 
             float speed = distance / seconds;
@@ -122,7 +122,7 @@ public class SpeedCalculation {
                 }
 
                 if (bearingChange > 135f && speed > 10f) {
-                    Log.d("GPS_FILTER", "Rejected : Bearing Jump");
+                   // Log.d("GPS_FILTER", "Rejected : Bearing Jump");
                     return 10000;
                 }
             }
