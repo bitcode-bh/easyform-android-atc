@@ -689,7 +689,7 @@ public class TripUploadNew {
         Cursor check = database.rawQuery(
                 "select _id,Event_strt,Event_end,Event_type,lat,lon,th_s,duration,battery from Events where Event_strt>="
                         + min_milli + " and Event_strt <=" + max_milli
-                        + " and Event_type IN ('Gps_outage','Gprs_outage','Phone_outage','App_outage','Service_outage','screen','background','PowerSavingMode')", null);
+                        + " and Event_type IN ('Gps_outage','Gprs_outage','Phone_outage','App_outage','Service_outage','screen','background','PowerSavingMode','Call')", null);
 
         JSONArray di_n = new JSONArray();
         check.moveToFirst();

@@ -14,9 +14,6 @@
 
 package com.sky.atc.easyformse;
 
-import static com.sky.atc.easyformse.DeviceEventsUtils.utcCalculationOffset;
-
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
@@ -28,10 +25,7 @@ import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -44,15 +38,17 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.StrictMode;
-import android.os.SystemClock;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyCallback;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
@@ -70,20 +66,8 @@ import com.sky.atc.easyformse.trip.TripMapUtils;
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -131,6 +115,26 @@ public class newfused extends Service implements LocationListener {
      * WakeLock since we only need the CPU on, not the screen.
      */
 
+    private TelephonyManager telephonyManager;
+
+    private PhoneStateListener phoneStateListener;
+    private TelephonyCallback telephonyCallback;
+
+    private  boolean callActive = false;
+
+    private  long callStartTime = 0;
+    private  long callEndTime = 0;
+    private Location latestLocation;
+
+    private Location callStartLocation;
+    private Location callEndLocation;
+    private boolean isCallListenerRegistered = false;
+    private int lastCallState = -1;
+
+    private float callStartSpeed = 0f;
+    private float maxSpeedDuringCall = 0f;
+    private long maxSpeedMilli = 0L;
+    private boolean speedViolation = false;
 
     @SuppressLint("InvalidWakeLockTag")
     synchronized private static PowerManager.WakeLock getLock(Context context) {
@@ -170,6 +174,7 @@ public class newfused extends Service implements LocationListener {
         //new service updatemilli
         checkServicemilli();
         startServUpdateTask();
+        registerCallListener();
 
         boolean isuploadlastentry = pref.getBoolean("isuploadlastentry",false);
 //        check location and upload in server
@@ -313,6 +318,7 @@ public class newfused extends Service implements LocationListener {
         super.onDestroy();
         insert("new_fused_stop");
         quite();
+        unregisterphonestate();
     }
 
 
@@ -350,7 +356,7 @@ public class newfused extends Service implements LocationListener {
                                 Math.abs(location.getLongitude()) < 0.0001) {
                             return;
                         }
-
+                        latestLocation = new Location(location);
                         //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
                         if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
 
@@ -411,6 +417,20 @@ public class newfused extends Service implements LocationListener {
 
     private void onLocationUpdate(Location location, float manualSpeed) {
 
+
+        if (callActive) {
+
+            float currentSpeed = location.getSpeed();
+            Log.d("CALL", "currentSpeed " + currentSpeed);
+            if (currentSpeed > maxSpeedDuringCall) {
+                maxSpeedDuringCall = currentSpeed;
+                maxSpeedMilli = System.currentTimeMillis();
+            }
+
+            if (currentSpeed > callStartSpeed) {
+                speedViolation = true;
+            }
+        }
 
         data d = new data();
 
@@ -509,7 +529,7 @@ public class newfused extends Service implements LocationListener {
                     Math.abs(location.getLongitude()) < 0.0001) {
                 return;
             }
-
+            latestLocation = new Location(location);
             //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
             if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
 
@@ -658,5 +678,285 @@ public class newfused extends Service implements LocationListener {
             }
         }
         return false;
+    }
+
+    @SuppressLint("MissingPermission")
+    private void registerCallListener() {
+
+        if (isCallListenerRegistered) {
+            Log.d("CALL", "Listener already registered");
+            return;
+        }
+
+
+        telephonyManager =
+                (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+
+        if (telephonyManager == null)
+            return;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+            telephonyCallback =
+                    new MyTelephonyCallback();
+
+            telephonyManager.registerTelephonyCallback(
+                    getMainExecutor(),
+                    telephonyCallback);
+
+        } else {
+
+            phoneStateListener =
+                    new PhoneStateListener() {
+
+                        @Override
+                        public void onCallStateChanged(int state,
+                                                       String phoneNumber) {
+
+                            handleCallState(state);
+
+                        }
+                    };
+
+            telephonyManager.listen(
+                    phoneStateListener,
+                    PhoneStateListener.LISTEN_CALL_STATE);
+
+        }
+
+        isCallListenerRegistered = true;
+
+    }
+    private  boolean isTripRunning() {
+
+        try {
+
+            Cursor tripCursor = database.rawQuery(
+                    "select * from lat_plug where trip_status = 0",
+                    null);
+
+            boolean running = tripCursor.getCount() > 0;
+
+            tripCursor.close();
+
+            return running;
+
+        } catch (Exception e) {
+
+            return false;
+        }
+    }
+
+    public  void handleCallState(int state) {
+
+        if (state == lastCallState) {
+            return;
+        }
+
+        lastCallState = state;
+
+        if (!isTripRunning())
+            return;
+
+        switch (state) {
+
+            case TelephonyManager.CALL_STATE_RINGING:
+
+                Log.d("CALL", "Incoming Call");
+
+                break;
+
+            case TelephonyManager.CALL_STATE_OFFHOOK:
+
+                if (!callActive) {
+
+                    callActive = true;
+
+                    callStartTime = System.currentTimeMillis();
+
+                    speedViolation = false;
+                    maxSpeedDuringCall = 0f;
+                    maxSpeedMilli = 0L;
+
+                    if (latestLocation != null) {
+                        callStartLocation = new Location(latestLocation);
+                        callStartSpeed = callStartLocation.getSpeed();
+//                        Log.d("CALL", "Start Time : " + callStartTime);
+//                        Log.d("CALL", "Start Lat : " + callStartLocation.getLatitude());
+//                        Log.d("CALL", "Start Lng : " + callStartLocation.getLongitude());
+//                        Log.d("CALL", "callStartSpeed : " + callStartSpeed);
+                    }
+
+                }
+
+                break;
+
+            case TelephonyManager.CALL_STATE_IDLE:
+
+                if (callActive) {
+
+                    callActive = false;
+
+                    callEndTime = System.currentTimeMillis();
+
+                    if (latestLocation != null) {
+                        callEndLocation = new Location(latestLocation);
+
+//                        Log.d("CALL", "End Time : " + callEndTime);
+//                        Log.d("CALL", "End Lat : " + callEndLocation.getLatitude());
+//                        Log.d("CALL", "End Lng : " + callEndLocation.getLongitude());
+                    }
+
+                    long duration = (callEndTime - callStartTime) ;
+
+//                    Log.d("CALL", "Duration : " + duration + " sec");
+
+                    if (callStartLocation != null && callEndLocation != null) {
+
+                        float meters = callStartLocation.distanceTo(callEndLocation);
+                        double km = meters / 1000.0;
+                        if (speedViolation) {
+
+                            boolean isInserted = calleventinsert(
+                                    callStartTime,
+                                    String.valueOf(callEndTime),
+                                    String.valueOf(duration),
+                                    callEndLocation);
+
+//                            Log.d("CALL","Start Speed : " + callStartSpeed);
+//                            Log.d("CALL","Max Speed : " + maxSpeedDuringCall);
+//                            Log.d("CALL","Max Speed Time : " + maxSpeedMilli);
+//
+//                            Log.d("CALL", "Distance : " + km + " KM");
+                            if (isInserted) {
+
+                                callStartLocation = null;
+                                callEndLocation = null;
+
+                                callStartTime = 0;
+                                callEndTime = 0;
+
+                                lastCallState = -1;
+                            }
+                        }
+                        else {
+
+                            Log.d("CALL","No speed violation during call.");
+                        }
+
+                    }
+
+                }
+
+                break;
+        }
+
+    }
+
+
+
+    private boolean calleventinsert(long callstarttime, String callendtime, String duration,Location callEndLocation)
+    {
+        try{
+            long currentTime = System.currentTimeMillis();
+            ContentValues c = new ContentValues();
+            c.put("username", d.getusername());
+            c.put("Event_type", "Call");
+            c.put("is_send", "0");
+            c.put("lat", callEndLocation.getLatitude());
+            c.put("lon", callEndLocation.getLongitude());
+            //New added Code
+            c.put("th_s", "Still");
+            c.put("battery", DeviceEventsUtils.getBatteryInfo());
+            c.put("timezone", DeviceEventsUtils.getTimeZone());
+            c.put("utcstart", DeviceEventsUtils.utcCalculationOffset(callstarttime));
+            c.put("utcend", DeviceEventsUtils.utcCalculationOffset(currentTime));
+            c.put("imei", DeviceEventsUtils.getLoginDetails().get(1));
+            c.put("appid", DeviceEventsUtils.getLoginDetails().get(2));
+            c.put("userid", DeviceEventsUtils.getLoginDetails().get(0));
+            c.put("Event_strt", callstarttime);
+            c.put("Event_end", currentTime);
+            c.put("duration", duration);
+
+            JSONObject maxViolation = new JSONObject();
+            maxViolation.put("callStartSpeed", callStartSpeed);
+            maxViolation.put("maxSpeedDuringCall", maxSpeedDuringCall);
+            maxViolation.put("maxSpeedTime", maxSpeedMilli);
+
+            c.put("maxviolation",maxViolation.toString());
+
+            String tid = gettid();
+
+            c.put("tid",tid);
+
+//        Log.d("##SPEED_FINALDETECT", String.valueOf(ac_speed));
+            long temp = database.insert("Events", null, c);
+            if (temp > 0) {
+                Intent z_n12 = new Intent(sqlitewraper.context, Event.class);
+                WakefulIntentService.sendWakefulWork(sqlitewraper.context, z_n12);
+                return true;
+
+            }
+            else {
+                return false;
+            }
+
+        }
+        catch (Exception e)
+        {
+            Log.d("Exception",e.toString());
+        }
+        return false;
+    }
+
+    public  String gettid(){
+
+        android.database.Cursor tripflag = database.rawQuery("select tid from lat_plug where trip_status = 0", null);
+        tripflag.moveToLast();
+        int tripflagCount = tripflag.getCount();
+
+        String tid = "0";
+
+        if (tripflagCount>0){
+            tid = tripflag.getString(0);
+        }
+
+        tripflag.close();
+        return tid;
+    }
+    private void unregisterphonestate()
+    {
+        if (telephonyManager != null) {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+                if (telephonyCallback != null) {
+                    telephonyManager.unregisterTelephonyCallback(telephonyCallback);
+                }
+
+            } else {
+
+                if (phoneStateListener != null) {
+                    telephonyManager.listen(phoneStateListener,
+                            PhoneStateListener.LISTEN_NONE);
+                }
+            }
+        }
+
+        isCallListenerRegistered = false;
+        lastCallState = -1;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private  class MyTelephonyCallback
+            extends TelephonyCallback
+            implements TelephonyCallback.CallStateListener {
+
+        @Override
+        public void onCallStateChanged(int state) {
+
+            handleCallState(state);
+
+        }
     }
 }

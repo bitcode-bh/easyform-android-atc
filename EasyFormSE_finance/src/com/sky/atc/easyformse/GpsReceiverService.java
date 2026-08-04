@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+import com.sky.atc.easyformse.trip.TripMapUtils;
 
 //to handle gps status
 @StringFogIgnore
@@ -238,7 +239,7 @@ public class GpsReceiverService extends WakefulIntentService {
                         insert_t(g_ontime, g_offtime, gp_ontime, gp_offtime,
                                 phone_on1, phone_off2, gp_duration, gprs_duration, phone_duration, date);
 
-                            if (!sqlitewraper.isMockAvailable) {
+                            if (TripMapUtils.MOCKLOCATION.equalsIgnoreCase("false")) {
                                 boolean isInserted = DeviceEventsUtils.insertIntoEvents(g_offtime, g_ontime, String.valueOf(gp_duration), "Gps_outage");
 
                                 if (isInserted) {

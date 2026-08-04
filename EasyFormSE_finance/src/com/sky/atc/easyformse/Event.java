@@ -81,7 +81,7 @@ public class Event extends WakefulIntentService {
                 // added more event type upload time 03/12/2024
                 check = database
                         .rawQuery(
-                                "select _id,Event_strt,Event_end,username,Event_type,lat,lon,duration,battery,timezone,utcstart,utcend,imei,appid,userid,maxviolation,tid from Events where is_send=0 and Event_type IN ('StillViolation','speed','Harsh Brake','Gps_outage','Gprs_outage','Phone_outage','App_outage','Service_outage','PowerSavingMode')",
+                                "select _id,Event_strt,Event_end,username,Event_type,lat,lon,duration,battery,timezone,utcstart,utcend,imei,appid,userid,maxviolation,tid from Events where is_send=0 and Event_type IN ('StillViolation','speed','Harsh Brake','Gps_outage','Gprs_outage','Phone_outage','App_outage','Service_outage','PowerSavingMode','Call')",
                                 null);
                 check.moveToFirst();
                 int id;
