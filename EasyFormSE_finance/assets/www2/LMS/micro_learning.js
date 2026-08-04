@@ -97,7 +97,19 @@ function toggleReelPlayback(button, event) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
+        if (event.stopImmediatePropagation) {
+            event.stopImmediatePropagation();
+        }
     }
+
+    // Framework7/Swiper can emit a synthetic click after the touch event on
+    // some WebViews. Treat both events as one user action so a play action is
+    // not immediately followed by a second toggle that pauses the video.
+    var now = Date.now();
+    if (button._lastPlaybackToggle && now - button._lastPlaybackToggle < 500) {
+        return false;
+    }
+    button._lastPlaybackToggle = now;
 
     var slideElement = button.closest('.swiper-slide');
     var video = slideElement && slideElement.querySelector('.reel-video');
@@ -289,7 +301,7 @@ function get_micro_learning_videos() {
 
                     reel_str += '<div class="video-progress"><div class="video-progress-fill"></div></div>';
                     reel_str += '<video class="reel-video" preload="auto" autoplay playsinline><source src="' + Video_Link + '" type="video/mp4" /></video>';
-                    reel_str += '<button type="button" class="reel-play-pause swiper-no-swiping" aria-label="Pause video" title="Pause video" onclick="return toggleReelPlayback(this, event)" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()" onmousedown="event.stopPropagation()"><span class="reel-play-pause-icon" aria-hidden="true"></span></button>';
+                    reel_str += '<button type="button" class="reel-play-pause swiper-no-swiping" aria-label="Pause video" title="Pause video" onclick="return toggleReelPlayback(this, event)" ontouchstart="event.stopPropagation()" ontouchend="event.preventDefault(); event.stopPropagation(); this.click()" onmousedown="event.stopPropagation()"><span class="reel-play-pause-icon" aria-hidden="true"></span></button>';
                     reel_str += '<div class="video-overlay">' + Title + '</div>';
                     reel_str += '<div class="video-overlay-sub">' + Description + '</div>';
 

@@ -41,6 +41,15 @@ $(document).ready(function () {
     var video = $("#vdo_Question")[0];
     var timeoutId = null;
 
+    // Keep taps on the native video controls inside the player. Framework7's
+    // fast-click handling and parent gesture handlers must not turn the same
+    // tap into a second navigation/playback action.
+    $(video)
+        .off("pointerdown.videoPlaybackIsolation pointerup.videoPlaybackIsolation touchstart.videoPlaybackIsolation touchend.videoPlaybackIsolation mousedown.videoPlaybackIsolation click.videoPlaybackIsolation")
+        .on("pointerdown.videoPlaybackIsolation pointerup.videoPlaybackIsolation touchstart.videoPlaybackIsolation touchend.videoPlaybackIsolation mousedown.videoPlaybackIsolation click.videoPlaybackIsolation", function (event) {
+            event.stopPropagation();
+        });
+
     $(video).on("loadedmetadata", function () {
         var skillId = $(video).attr("skil_id");
         var moduleId = $(video).attr("module_id");
@@ -130,18 +139,18 @@ function vibrate_device() {
 
 function back_button_LMS() {
     var level4_popup = $('.popup-level-4.modal-in:visible');
-    var level3_popup = $('.popup-level-3.modal-in:visible');
-    var level2_popup = $('.popup-level-2.modal-in:visible');
+    var level3_popup = $('.lms-module-preview-popup.modal-in:visible');
+    var level2_popup = $('.popup-assessment-que.modal-in:visible');
     if (level4_popup.length > 0) {
         myApp.popup.close('.popup-level-4');
         return false;
     }
     else if (level3_popup.length > 0) {
-        myApp.popup.close('.popup-level-3');
+        myApp.popup.close('.lms-module-preview-popup');
         return false;
     }
     else if (level2_popup.length > 0) {
-        myApp.popup.close('.popup-level-2');
+        myApp.popup.close('.popup-assessment-que');
         return false;
     }
 }
