@@ -232,6 +232,10 @@
         <param name="android-package" value="com.sky.atc.easyformse.plugins.VibrationPlugin"/>
     </feature>
 
+    <feature name="SafetyVideoOrientationPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.SafetyVideoOrientationPlugin"/>
+    </feature>
+
     <feature name="BiometricLoginPlugin">
         <param name="android-package" value="com.sky.atc.easyformse.plugins.BiometricLoginPlugin"/>
     </feature>

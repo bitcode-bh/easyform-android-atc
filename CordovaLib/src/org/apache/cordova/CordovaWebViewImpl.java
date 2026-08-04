@@ -69,6 +69,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     /** custom view created by the browser (a video player for example) */
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
+    private boolean restoreBackButtonAfterCustomView;
 
     private Set<Integer> boundKeyCodes = new HashSet<Integer>();
 
@@ -252,6 +253,12 @@ public class CordovaWebViewImpl implements CordovaWebView {
             return;
         }
 
+        // A WebView navigation/orientation callback may clear boundKeyCodes
+        // while the fullscreen custom view is active. Remember the state that
+        // existed before fullscreen so native back continues reaching Cordova
+        // JavaScript after the custom view is dismissed.
+        restoreBackButtonAfterCustomView = boundKeyCodes.contains(KeyEvent.KEYCODE_BACK);
+
         // Store the view and its callback for later (to kill it properly)
         mCustomView = view;
         mCustomViewCallback = callback;
@@ -286,9 +293,40 @@ public class CordovaWebViewImpl implements CordovaWebView {
         parent.removeView(mCustomView);
         mCustomView = null;
         mCustomViewCallback.onCustomViewHidden();
+        mCustomViewCallback = null;
+
+        if (restoreBackButtonAfterCustomView) {
+            boundKeyCodes.add(KeyEvent.KEYCODE_BACK);
+            // Fullscreen/orientation callbacks can finish after this method.
+            // Repeat restoration after the UI lifecycle has settled.
+            engine.getView().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    boundKeyCodes.add(KeyEvent.KEYCODE_BACK);
+                }
+            }, 250);
+            engine.getView().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    boundKeyCodes.add(KeyEvent.KEYCODE_BACK);
+                }
+            }, 750);
+        }
+        restoreBackButtonAfterCustomView = false;
 
         // Show the content view.
         engine.getView().setVisibility(View.VISIBLE);
+        // Android's fullscreen custom view owns focus while it is visible.
+        // Give focus back to the Cordova WebView so the next hardware back
+        // key reaches onDispatchKeyEvent instead of finishing the Activity.
+        engine.getView().setFocusableInTouchMode(true);
+        engine.getView().requestFocus();
+        engine.getView().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                engine.getView().requestFocus();
+            }
+        }, 250);
     }
 
     @Override

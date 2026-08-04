@@ -560,3 +560,55 @@ swiper-container.tabs > .tab {
 .md .tabbar:not(.tabbar-icons) .tab-link-highlight {
     height: 3px;
 }
+
+#safety-video-container {
+    position: relative;
+}
+
+#vdo_Question {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+}
+
+#safety-video-expand {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: #fff;
+    font-size: 20px;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    touch-action: manipulation;
+}
+
+#safety-video-container.safety-video-landscape,
+#safety-video-container:fullscreen,
+#safety-video-container:-webkit-full-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    inset: 0;
+    z-index: 13000;
+    width: 100vw;
+    height: 100vh;
+    margin: 0 !important;
+    background: #000;
+}
+
+#safety-video-container.safety-video-landscape #vdo_Question,
+#safety-video-container:fullscreen #vdo_Question,
+#safety-video-container:-webkit-full-screen #vdo_Question {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: contain;
+}

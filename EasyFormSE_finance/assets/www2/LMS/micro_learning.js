@@ -1,6 +1,5 @@
 ﻿
 var reelsSwiper;
-var reelTouchStartIndex = 0;
 function bind_micro_learning_events() {
     //setTimeout(function () {
 
@@ -30,26 +29,18 @@ function bind_micro_learning_events() {
                     // Autoplay the first video on load
                     playVideo(this.slides[this.activeIndex]);
                 },
-                touchStart: function () {
-                    reelTouchStartIndex = this.activeIndex;
-
-                    // // Pause all videos immediately when user starts dragging
+                sliderMove: function () {
+                    // Hide chrome only after an actual drag. A simple tap must
+                    // not change playback before the click handler runs.
                     $(".reel-actions, .video-overlay, .video-overlay-sub").css("visibility", "hidden");
-
-                    document.querySelectorAll('.reel-video').forEach(function (video) {
-                        video.pause();
-                    });
                 },
                 touchEnd: function () {
-                    // Resume active video when user releases
+                    // Playback is handled by slideChangeTransitionEnd. Keeping
+                    // touchEnd free of play/pause logic avoids racing a tap.
                     $(".reel-actions, .video-overlay, .video-overlay-sub").css("visibility", "visible");
-
-                    if (reelTouchStartIndex == this.slides.length - 1 && this.swipeDirection == "next") {
-                        playNextReelOrRestart();
-                        return;
-                    }
-
-                    playVideo(this.slides[this.activeIndex]);
+                },
+                slideChangeTransitionStart: function () {
+                    pauseAllVideos();
                 },
                 slideChangeTransitionEnd: function () {
                     // Play video in the active slide
@@ -92,7 +83,7 @@ function updateReelPlayPauseButton(slideElement, isPlaying) {
     button.setAttribute('title', isPlaying ? 'Pause video' : 'Play video');
 }
 
-function toggleReelPlayback(button, event) {
+function toggleReelPlayback(control, event) {
 
     if (event) {
         event.preventDefault();
@@ -102,16 +93,7 @@ function toggleReelPlayback(button, event) {
         }
     }
 
-    // Framework7/Swiper can emit a synthetic click after the touch event on
-    // some WebViews. Treat both events as one user action so a play action is
-    // not immediately followed by a second toggle that pauses the video.
-    var now = Date.now();
-    if (button._lastPlaybackToggle && now - button._lastPlaybackToggle < 500) {
-        return false;
-    }
-    button._lastPlaybackToggle = now;
-
-    var slideElement = button.closest('.swiper-slide');
+    var slideElement = control.closest('.swiper-slide');
     var video = slideElement && slideElement.querySelector('.reel-video');
     if (!video) return false;
 
@@ -300,8 +282,8 @@ function get_micro_learning_videos() {
                     let reel_str = '<div class="swiper-slide" Ml_id="' + Ml_id + '">';
 
                     reel_str += '<div class="video-progress"><div class="video-progress-fill"></div></div>';
-                    reel_str += '<video class="reel-video" preload="auto" autoplay playsinline><source src="' + Video_Link + '" type="video/mp4" /></video>';
-                    reel_str += '<button type="button" class="reel-play-pause swiper-no-swiping" aria-label="Pause video" title="Pause video" onclick="return toggleReelPlayback(this, event)" ontouchstart="event.stopPropagation()" ontouchend="event.preventDefault(); event.stopPropagation(); this.click()" onmousedown="event.stopPropagation()"><span class="reel-play-pause-icon" aria-hidden="true"></span></button>';
+                    reel_str += '<video class="reel-video" preload="auto" autoplay playsinline onclick="return toggleReelPlayback(this, event)"><source src="' + Video_Link + '" type="video/mp4" /></video>';
+                    reel_str += '<button type="button" class="reel-play-pause swiper-no-swiping" aria-label="Pause video" title="Pause video" onclick="return toggleReelPlayback(this, event)"><span class="reel-play-pause-icon" aria-hidden="true"></span></button>';
                     reel_str += '<div class="video-overlay">' + Title + '</div>';
                     reel_str += '<div class="video-overlay-sub">' + Description + '</div>';
 

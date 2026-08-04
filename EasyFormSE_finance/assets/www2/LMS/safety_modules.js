@@ -436,6 +436,7 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 
     glob_Module_Schedule_Id = Module_Schedule_Id;
 
+    safetyModulePreviewActive = true;
     myApp.popup.open('.lms-module-preview-popup');
     $(".lesson-preview-list").empty();
 
@@ -567,6 +568,8 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 var log_data = [];
 function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
 
+    safetyVideoPopupActive = true;
+    safetyVideoReturnedFromFullscreen = false;
     myApp.popup.open('.popup-level-4');
     $("#dv_Question_List").empty();
 

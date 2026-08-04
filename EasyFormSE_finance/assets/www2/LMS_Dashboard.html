@@ -69,13 +69,30 @@
         //var F7_view = JSON.parse(storage.getItem('F7_view'));
         //var F7_device = JSON.parse(storage.getItem('F7_device'));
 
-        document.addEventListener('deviceready', function showValues() {
-
-            document.addEventListener("backbutton", function (e) {
-                if (page_load_over == 1) {
-                    back_button_LMS();
+        function handleLMSNativeBackButton(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.stopImmediatePropagation) {
+                    e.stopImmediatePropagation();
                 }
-            }, true);
+            }
+
+            // Never let Android's default back action close the activity while
+            // the LMS is loading or while in-app navigation is available.
+            if (page_load_over != 1) return false;
+
+            var canExitLMS = back_button_LMS();
+            if (canExitLMS === true && navigator.app && navigator.app.exitApp) {
+                alert("back 2")
+                navigator.app.exitApp();
+            }
+            return false;
+        }
+
+        document.addEventListener('deviceready', function showValues() {
+            document.removeEventListener("backbutton", handleLMSNativeBackButton, true);
+            document.addEventListener("backbutton", handleLMSNativeBackButton, true);
         }, true);
 
 
@@ -294,10 +311,13 @@
                         <div class="que-container">
 
                             <!-- Video -->
-                            <div class="video-card mt-3 videoClass">
+                            <div id="safety-video-container" class="video-card mt-3 videoClass">
                                 <video id="vdo_Question" controls controlsList="nodownload" width="400">
                                     <source src="https://dev.easyform.in/Altius_LMS/7/7/2026/March/v1.mp4" type="video/mp4">
                                 </video>
+                                <button id="safety-video-expand" type="button" aria-label="Expand video in landscape" title="Expand video in landscape" onclick="return expandSafetyVideo(this, event)">
+                                    <i class="fa fa-expand" aria-hidden="true"></i>
+                                </button>
                             </div>
 
                             <!-- Description -->
