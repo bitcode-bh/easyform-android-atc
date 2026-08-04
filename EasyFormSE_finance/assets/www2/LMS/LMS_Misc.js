@@ -1,6 +1,11 @@
 ﻿
 $(document).ready(function () {
 
+    let t_color_name = JSON.parse(storage.getItem('viewsite_btn_color'));
+    let style_str = "<style>.navbar-bg, .sample-safety-titlebar,.sample-module-btn, .sample-module-progress span,.sample-safety-chip.active{background: " + t_color_name + " !important;}";
+    style_str += ".sample-safety-filter,.sample-module-percent,.sample-safety-sort-option.active{color:" + t_color_name + " !important;} }</style>";
+    $("head").append(style_str);
+
     get_safety_module_listing();
 
     $(document).on('tab:show', '.tab', function () {
@@ -8,12 +13,19 @@ $(document).ready(function () {
         pauseAllVideos();
 
         if (this.id == "tab-1") {
+            $(".navbar").show();
             $(".sample-safety-titlebar").html("Safety Modules");
             get_safety_module_listing();
         }
         else if (this.id == "tab-2") {
+            $(".navbar").show();
             $(".sample-safety-titlebar").html("Assessments");
             get_assessments_listing();
+        }
+        else if (this.id == "tab-3") {
+            $(".navbar").show();
+            $(".sample-safety-titlebar").html("My Dashboard");
+            get_dashboard_data();
         }
         else if (this.id == "tab-4") {
             $(".navbar").hide();
@@ -103,6 +115,8 @@ function loading_hide() {
     }, 10)
 }
 function onfail(e) {
+    safety_module_listing_requested = false;
+    assessment_listing_requested = false;
     loading_hide();
     alert(e);
 }

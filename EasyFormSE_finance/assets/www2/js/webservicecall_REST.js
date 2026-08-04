@@ -63,59 +63,66 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
                 }
                 // added for wcf web service [10/11/2017]
                 var data = JSON.parse(params);
-                if (data == '' || data == null || data == undefined) { }
-                else {
+                if (data == '' || data == null || data == undefined) {
+                    data = [];
+                }
+                // else {
 
-                    var username = JSON.parse(storage.getItem('username'));;
-                    var u_c = JSON.parse(storage.getItem('uniqcode'));
-                    var user_id = JSON.parse(storage.getItem('user_id'));
-                    var auth1 = [];
-                    auth1.push({
-                        'username': username,
-                        'u_c': u_c,
-                        'user_id': user_id
-                    });
+                var username = JSON.parse(storage.getItem('username'));;
+                var u_c = JSON.parse(storage.getItem('uniqcode'));
+                var user_id = JSON.parse(storage.getItem('user_id'));
+                var auth1 = [];
+                auth1.push({
+                    'username': username,
+                    'u_c': u_c,
+                    'user_id': user_id
+                });
 
+                try {
+                    // add auth in param if not found
                     let t_auth = data[0].auth1;
                     if (t_auth == '' || t_auth == null || t_auth == undefined) {
                         params = JSON.parse(params);
                         params[0]['auth1'] = auth1;
                         params = JSON.stringify(params);
                     }
+                }
+                catch (e) { }
 
-                    invocation.setRequestHeader('auth1', JSON.stringify(auth1[0]));
+                invocation.setRequestHeader('auth1', JSON.stringify(auth1[0]));
 
-                    var feature_id = localStorage.getItem('company_feature_id');
-                    var role_id = JSON.parse(storage.getItem('role_id'));
-                    var match_temp_id = localStorage.getItem('match_temp_id');
+                var feature_id = localStorage.getItem('company_feature_id');
+                var role_id = JSON.parse(storage.getItem('role_id'));
+                var match_temp_id = localStorage.getItem('match_temp_id');
 
-                    if (role_id == "" || role_id == null || role_id == undefined) {
-                        role_id = "0";
-                    }
-                    if (match_temp_id == '' || match_temp_id == null || match_temp_id == undefined) {
-                        match_temp_id = '';
-                    }
-
-                    invocation.setRequestHeader('Company_Feature_Id', feature_id);
-                    invocation.setRequestHeader('Role_Id', role_id);
-                    invocation.setRequestHeader('matchId', match_temp_id);
-
-                    // for aadhar
-                    var mock_response_name = localStorage.getItem('mock-response-name');
-                    if (mock_response_name == "" || mock_response_name == null || mock_response_name == undefined) { }
-                    else {
-                        invocation.setRequestHeader('x-mock-response-name', mock_response_name);
-                    }
-
-                    // for bank
-                    var Authorization = localStorage.getItem('Authorization');
-                    if (Authorization == "" || Authorization == null || Authorization == undefined) { }
-                    else {
-                        invocation.setRequestHeader('Authorization', Authorization);
-                    }
-
+                if (role_id == "" || role_id == null || role_id == undefined) {
+                    role_id = "0";
+                }
+                if (match_temp_id == '' || match_temp_id == null || match_temp_id == undefined) {
+                    match_temp_id = '';
                 }
 
+                invocation.setRequestHeader('Company_Feature_Id', feature_id);
+                invocation.setRequestHeader('Role_Id', role_id);
+                invocation.setRequestHeader('matchId', match_temp_id);
+
+                // for aadhar
+                var mock_response_name = localStorage.getItem('mock-response-name');
+                if (mock_response_name == "" || mock_response_name == null || mock_response_name == undefined) { }
+                else {
+                    invocation.setRequestHeader('x-mock-response-name', mock_response_name);
+                }
+
+                // for bank
+                var Authorization = localStorage.getItem('Authorization');
+                if (Authorization == "" || Authorization == null || Authorization == undefined) { }
+                else {
+                    invocation.setRequestHeader('Authorization', Authorization);
+                }
+
+                // }
+
+                //commented this code coz of ios IPA hang issue [FT-05112025]
                 //if (F7_device == "ios") {
                 //    clearTimeout(timer1);
                 //    req_count = 0;
@@ -131,8 +138,8 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
                 //    cordova.exec(sucesscallback, failcallback, 'FrontWebserviceCall', 'anAction', q_jsonobj);
                 //}
                 //else {
-                    invocation.onreadystatechange = handler;
-                    invocation.send(params);
+                invocation.onreadystatechange = handler;
+                invocation.send(params);
                 //}
             }
             //timer1 = setTimeout(networkerror, timeout);
@@ -267,7 +274,7 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
                 }
 
 
-                
+
             }
         }
     }

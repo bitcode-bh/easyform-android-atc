@@ -27,10 +27,12 @@
     <link href="LMS/LMS_Misc.css" rel="stylesheet" />
     <link href="LMS/safety_modules.css" rel="stylesheet" />
     <link href="LMS/assessments.css" rel="stylesheet" />
+    <link href="LMS/dashboard.css" rel="stylesheet" />
     <link href="LMS/micro learning.css" rel="stylesheet" />
 
     <script src="LMS/safety_modules.js"></script>
     <script src="LMS/assessments.js"></script>
+    <script src="LMS/dashboard.js"></script>
     <script src="LMS/micro_learning.js"></script>
     <script src="LMS/LMS_Misc.js"></script>
 
@@ -91,12 +93,12 @@
             <div class="page">
                 <div class="navbar">
                     <div class="navbar-bg"></div>
-                    <div class="navbar-inner sliding bg-[#215ba8]">
+                    <div class="navbar-inner sliding">
                         <!--<div class="left">
-                        <a class="link back">
-                            <i class="icon icon-back"></i>
-                        </a>
-                    </div>-->
+                            <a class="link back">
+                                <i class="icon icon-back"></i>
+                            </a>
+                        </div>-->
                         <div class="title sample-safety-titlebar">Safety Modules</div>
                     </div>
                 </div>
@@ -133,50 +135,50 @@
                         <div class="sample-safety-ui">
                             <!--<div class="sample-safety-titlebar">Safety Modules</div>-->
                             <div class="sample-safety-content">
-                                <!--<div class="sample-safety-search-row">
-                                <div class="sample-safety-search">
-                                    <i class="fa fa-search"></i>
-                                    <span>Search modules</span>
+                                <div class="sample-safety-search-row">
+                                    <div class="sample-safety-search">
+                                        <i class="fa fa-search"></i>
+                                        <span>Search modules</span>
+                                    </div>
+                                    <a href="#" class="sample-safety-filter">
+                                        <i class="fa fa-sort"></i>
+                                    </a>
                                 </div>
-                                <a href="#" class="sample-safety-filter">
-                                    <i class="fa fa-filter"></i>
-                                </a>
-                            </div>
 
-                            <div class="sample-safety-tabs">
-                                <div class="sample-safety-chip active">
-                                    <span class="sample-safety-check"><i class="fa fa-check"></i></span>
-                                    <span>All</span>
+                                <div class="sample-safety-tabs swiper-no-swiping">
+                                    <div class="sample-safety-chip active">
+                                        <span class="sample-safety-check"><i class="fa fa-check"></i></span>
+                                        <span>All</span>
+                                    </div>
+                                    <div class="sample-safety-chip">Safety</div>
+                                    <div class="sample-safety-chip">Field Ops</div>
+                                    <div class="sample-safety-chip">Compliance</div>
                                 </div>
-                                <div class="sample-safety-chip">Safety</div>
-                                <div class="sample-safety-chip">Field Ops</div>
-                                <div class="sample-safety-chip">Compliance</div>
-                            </div>-->
 
                                 <div id="dv_Module_List"></div>
 
                                 <!--<div class="sample-module-card">
-                                <div class="sample-module-image">
-                                    <img src="images/form_bg.jpg" alt="Field operations safety">
-                                    <span class="sample-module-tag">Field Ops</span>
-                                </div>
-                                <div class="sample-module-card-body">
-                                    <div class="sample-module-title">Remote Site Readiness</div>
-                                    <div class="sample-module-desc">Checklist habits for safe field work before starting a shift.</div>
-                                    <div class="sample-module-meta">
-                                        <div class="sample-module-lessons">
-                                            <span class="sample-module-help">?</span>
-                                            <span>6 lessons</span>
-                                        </div>
-                                        <div class="sample-module-percent">25%</div>
+                                    <div class="sample-module-image">
+                                        <img src="images/form_bg.jpg" alt="Field operations safety">
+                                        <span class="sample-module-tag">Field Ops</span>
                                     </div>
-                                    <div class="sample-module-progress"><span style="width:25%"></span></div>
-                                    <a href="#" class="sample-module-btn">
-                                        <i class="fa fa-play"></i>
-                                        <span>Continue</span>
-                                    </a>
-                                </div>
-                            </div>-->
+                                    <div class="sample-module-card-body">
+                                        <div class="sample-module-title">Remote Site Readiness</div>
+                                        <div class="sample-module-desc">Checklist habits for safe field work before starting a shift.</div>
+                                        <div class="sample-module-meta">
+                                            <div class="sample-module-lessons">
+                                                <span class="sample-module-help">?</span>
+                                                <span>6 lessons</span>
+                                            </div>
+                                            <div class="sample-module-percent">25%</div>
+                                        </div>
+                                        <div class="sample-module-progress"><span style="width:25%"></span></div>
+                                        <a href="#" class="sample-module-btn">
+                                            <i class="fa fa-play"></i>
+                                            <span>Continue</span>
+                                        </a>
+                                    </div>
+                                </div>-->
 
                             </div>
                         </div>
@@ -184,13 +186,29 @@
                     <swiper-slide id="tab-2" class="page-content tab bg-white">
                         <div class="sample-safety-ui">
                             <div class="sample-safety-content">
+                                <div class="sample-safety-search-row assessment-search-row">
+                                    <div class="sample-safety-search assessment-search"></div>
+                                    <a href="#" class="sample-safety-filter assessment-filter" aria-label="Sort assessments">
+                                        <i class="fa fa-sort"></i>
+                                    </a>
+                                </div>
+
+                                <div class="sample-safety-tabs assessment-tabs swiper-no-swiping"></div>
                                 <div id="dv_Assessments_List"></div>
                             </div>
                         </div>
                     </swiper-slide>
                     <swiper-slide id="tab-3" class="page-content tab bg-white">
-                        <div class="block block-strong inset !m-0 !bg-white">
-                            <p>Tab 3 content</p>
+                        <div class="sample-safety-ui">
+                            <div class="sample-safety-content">
+                                <!--<div class="sample-safety-search-row assessment-search-row">
+                                    <div class="sample-safety-search assessment-search"></div>
+                                    <a href="#" class="sample-safety-filter assessment-filter" aria-label="Sort assessments">
+                                        <i class="fa fa-sort"></i>
+                                    </a>
+                                </div>-->
+                                <div id="dv_Dashboard_List"></div>
+                            </div>
                         </div>
                     </swiper-slide>
                     <swiper-slide id="tab-4" class="page-content tab bg-white reels-page">
@@ -234,20 +252,20 @@
                             <div class="module-preview-section-title">Lessons</div>
                             <div class="lesson-preview-list">
                                 <!--<a href="#" class="lesson-preview-card">
-                                <div class="lesson-preview-thumb">
-                                    <img src="images/bg2.jpg" alt="Fall protection basics">
-                                    <span class="lesson-preview-check"><i class="fa fa-check"></i></span>
-                                </div>
-                                <div>
-                                    <div class="lesson-preview-name">Fall Protection Basics</div>
-                                    <div class="lesson-preview-subtitle">Harness, lanyards & anchor points</div>
-                                    <div class="lesson-preview-footer">
-                                        <span class="lesson-preview-time"><i class="fa-regular fa-clock"></i>6 min</span>
-                                        <span class="lesson-preview-status completed">Completed</span>
+                                    <div class="lesson-preview-thumb">
+                                        <img src="images/bg2.jpg" alt="Fall protection basics">
+                                        <span class="lesson-preview-check"><i class="fa fa-check"></i></span>
                                     </div>
-                                </div>
-                                <div class="lesson-preview-next"><i class="fa fa-chevron-right"></i></div>
-                            </a>-->
+                                    <div>
+                                        <div class="lesson-preview-name">Fall Protection Basics</div>
+                                        <div class="lesson-preview-subtitle">Harness, lanyards & anchor points</div>
+                                        <div class="lesson-preview-footer">
+                                            <span class="lesson-preview-time"><i class="fa-regular fa-clock"></i>6 min</span>
+                                            <span class="lesson-preview-status completed">Completed</span>
+                                        </div>
+                                    </div>
+                                    <div class="lesson-preview-next"><i class="fa fa-chevron-right"></i></div>
+                                </a>-->
 
                             </div>
                         </div>
@@ -277,7 +295,7 @@
 
                             <!-- Video -->
                             <div class="video-card mt-3 videoClass">
-                                <video id="vdo_Question" controls width="400">
+                                <video id="vdo_Question" controls controlsList="nodownload" width="400">
                                     <source src="https://dev.easyform.in/Altius_LMS/7/7/2026/March/v1.mp4" type="video/mp4">
                                 </video>
                             </div>
@@ -289,31 +307,31 @@
                             <!-- Question -->
                             <div class="question-list" id="dv_Question_List">
                                 <!--<div class="question-card">
-                                <div class="question-title">
-                                    What does ABC stand for in fall protection?
-                                </div>
+                                    <div class="question-title">
+                                        What does ABC stand for in fall protection?
+                                    </div>
 
-                                <div class="option">
-                                    <input type="checkbox" id="opt1">
-                                    <label for="opt1">a) Anchorage, Body Harness, Connectors</label>
-                                </div>
+                                    <div class="option">
+                                        <input type="checkbox" id="opt1">
+                                        <label for="opt1">a) Anchorage, Body Harness, Connectors</label>
+                                    </div>
 
-                                <div class="option">
-                                    <input type="checkbox" id="opt2" checked>
-                                    <label for="opt2">b) Anchorage, Base, Connection</label>
-                                </div>
+                                    <div class="option">
+                                        <input type="checkbox" id="opt2" checked>
+                                        <label for="opt2">b) Anchorage, Base, Connection</label>
+                                    </div>
 
-                                <div class="option">
-                                    <input type="checkbox" id="opt3">
-                                    <label for="opt3">c) Anchor, Body Asses, Connector</label>
-                                </div>
+                                    <div class="option">
+                                        <input type="checkbox" id="opt3">
+                                        <label for="opt3">c) Anchor, Body Asses, Connector</label>
+                                    </div>
 
-                                <div class="option">
-                                    <input type="checkbox" id="opt4">
-                                    <label for="opt4">d) Anchorage, Body Part, Connector</label>
-                                </div>
+                                    <div class="option">
+                                        <input type="checkbox" id="opt4">
+                                        <label for="opt4">d) Anchorage, Body Part, Connector</label>
+                                    </div>
 
-                            </div>-->
+                                </div>-->
                             </div>
                         </div>
 
@@ -403,31 +421,31 @@
                             <!-- Question -->
                             <div class="question-list" id="dv_Assessment_Question_List">
                                 <!--<div class="question-card">
-                                <div class="question-title">
-                                    What does ABC stand for in fall protection?
-                                </div>
+                                    <div class="question-title">
+                                        What does ABC stand for in fall protection?
+                                    </div>
 
-                                <div class="option">
-                                    <input type="checkbox" id="opt1">
-                                    <label for="opt1">a) Anchorage, Body Harness, Connectors</label>
-                                </div>
+                                    <div class="option">
+                                        <input type="checkbox" id="opt1">
+                                        <label for="opt1">a) Anchorage, Body Harness, Connectors</label>
+                                    </div>
 
-                                <div class="option">
-                                    <input type="checkbox" id="opt2" checked>
-                                    <label for="opt2">b) Anchorage, Base, Connection</label>
-                                </div>
+                                    <div class="option">
+                                        <input type="checkbox" id="opt2" checked>
+                                        <label for="opt2">b) Anchorage, Base, Connection</label>
+                                    </div>
 
-                                <div class="option">
-                                    <input type="checkbox" id="opt3">
-                                    <label for="opt3">c) Anchor, Body Asses, Connector</label>
-                                </div>
+                                    <div class="option">
+                                        <input type="checkbox" id="opt3">
+                                        <label for="opt3">c) Anchor, Body Asses, Connector</label>
+                                    </div>
 
-                                <div class="option">
-                                    <input type="checkbox" id="opt4">
-                                    <label for="opt4">d) Anchorage, Body Part, Connector</label>
-                                </div>
+                                    <div class="option">
+                                        <input type="checkbox" id="opt4">
+                                        <label for="opt4">d) Anchorage, Body Part, Connector</label>
+                                    </div>
 
-                            </div>-->
+                                </div>-->
                             </div>
                         </div>
 

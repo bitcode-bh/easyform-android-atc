@@ -1,7 +1,192 @@
 ﻿
 // Safety module listing (level 1)
 var glob_Module_Schedule_Id = 0;
-function get_safety_module_listing() {
+var safety_module_data = [];
+var selected_safety_tag = "All";
+var selected_safety_sort = "recommended";
+var safety_module_search_text = "";
+var safety_module_listing_requested = false;
+
+var safety_module_sort_options = {
+    recommended: "Recommended",
+    title_asc: "Title (A–Z)",
+    title_desc: "Title (Z–A)",
+    progress_desc: "Progress (High → Low)",
+    progress_asc: "Progress (Low → High)"
+};
+
+// Shared by Safety Modules and Assessments; all filtering remains client-side.
+function get_lms_item_tags(tag) {
+    if (tag == null) {
+        return [];
+    }
+
+    // A module can be returned with a comma-separated tag list; treat each value as a filterable tag.
+    return String(tag).split(",").map(function (item) {
+        return item.trim();
+    }).filter(function (item) {
+        return item !== "";
+    });
+}
+
+function get_lms_item_progress(item) {
+    var progress = Number(item.Progress);
+    return isNaN(progress) ? 0 : progress;
+}
+
+function get_lms_visible_items(items, selected_tag, search_text, sort_option, title_field, description_field) {
+    var normalized_search = String(search_text || "").trim().toLowerCase();
+    return items.filter(function (item) {
+        var tags = get_lms_item_tags(item.Tag != null ? item.Tag : item.tag);
+        var matches_tag = selected_tag === "All" || tags.some(function (tag) {
+            return tag.toLowerCase() === selected_tag.toLowerCase();
+        });
+        if (!matches_tag || normalized_search === "") {
+            return matches_tag;
+        }
+        return [item[title_field], item[description_field], item.Tag != null ? item.Tag : item.tag]
+            .filter(function (value) { return value != null; })
+            .join(" ").toLowerCase().indexOf(normalized_search) !== -1;
+    }).sort(function (a, b) {
+        if (sort_option === "title_asc") return String(a[title_field] || "").localeCompare(String(b[title_field] || ""));
+        if (sort_option === "title_desc") return String(b[title_field] || "").localeCompare(String(a[title_field] || ""));
+        if (sort_option === "progress_desc") return get_lms_item_progress(b) - get_lms_item_progress(a);
+        if (sort_option === "progress_asc") return get_lms_item_progress(a) - get_lms_item_progress(b);
+        return a._lms_item_order - b._lms_item_order;
+    });
+}
+
+function get_safety_module_tags(tag) {
+    return get_lms_item_tags(tag);
+}
+
+function get_safety_module_progress(module) {
+    return get_lms_item_progress(module);
+}
+
+function render_safety_module_search() {
+    var search = '<i class="fa fa-search"></i>';
+    search += '<input type="search" class="sample-safety-search-input" placeholder="Search modules" aria-label="Search modules" value="' + safety_module_search_text.replace(/"/g, '&quot;') + '">';
+    $(".sample-safety-search").not(".assessment-search").html(search);
+}
+
+function render_safety_module_tags() {
+    var tags = [];
+    var seen_tags = {};
+
+    safety_module_data.forEach(function (module) {
+        get_safety_module_tags(module.Tag != null ? module.Tag : module.tag).forEach(function (tag) {
+            var tag_key = tag.toLowerCase();
+            if (!seen_tags[tag_key]) {
+                seen_tags[tag_key] = true;
+                tags.push(tag);
+            }
+        });
+    });
+
+    var str = '<div class="sample-safety-chip' + (selected_safety_tag === "All" ? ' active' : '') + '" data-safety-tag="All">';
+    str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span></div>';
+    tags.forEach(function (tag) {
+        str += '<div class="sample-safety-chip' + (selected_safety_tag === tag ? ' active' : '') + '" data-safety-tag="' + tag.replace(/"/g, '&quot;') + '">';
+        str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span></div>';
+    });
+
+    $(".sample-safety-tabs").not(".assessment-tabs").html(str);
+}
+
+function render_safety_module_sort_menu() {
+    var str = '<div class="sample-safety-sort-menu" aria-hidden="true">';
+    str += '<div class="sample-safety-sort-title">Sort by</div>';
+    Object.keys(safety_module_sort_options).forEach(function (key) {
+        str += '<a href="#" class="sample-safety-sort-option' + (selected_safety_sort === key ? ' active' : '') + '" data-safety-sort="' + key + '">';
+        str += '<span>' + safety_module_sort_options[key] + '</span><i class="fa fa-check"></i></a>';
+    });
+    str += '</div>';
+
+    $(".sample-safety-sort-menu").not(".assessment-sort-menu").remove();
+    $(".sample-safety-search-row").not(".assessment-search-row").append(str);
+}
+
+function render_safety_module_cards() {
+    var visible_modules = get_lms_visible_items(safety_module_data, selected_safety_tag, safety_module_search_text, selected_safety_sort, "Module_Name", "Module_Description");
+
+    var str = '';
+    if (visible_modules.length === 0) {
+        str = '<div class="sample-safety-empty-state">No modules found</div>';
+    }
+    visible_modules.forEach(function (module) {
+        var Module_Id = module.Module_Id;
+        var Module_Name = module.Module_Name;
+        var Module_Description = module.Module_Description;
+        var Module_Schedule_Id = module.Module_Schedule_Id;
+        var Thumbnail_link = module.Thumbnail_link;
+        var Progress = Math.round(get_safety_module_progress(module));
+        var Score = (module.Score === "" || module.Score == null) ? "0" : module.Score;
+        var Tag = module.Tag != null ? module.Tag : module.tag;
+        var TotalSkill = module.TotalSkill;
+        var TotalQuestion = module.TotalQuestion;
+        var SubmitedSkill = module.SubmitedSkill;
+
+        if (Thumbnail_link === "" || Thumbnail_link == null) {
+            Thumbnail_link = "images/bg2.jpg";
+        }
+
+        var onclick_str = "get_target_skill_by_module_id('" + Module_Id + "', '" + Progress + "', '" + SubmitedSkill + "', '" + Module_Schedule_Id + "')";
+        str += '<div class="sample-module-card" Module_Id="' + Module_Id + '" onclick="' + onclick_str + '">';
+        str += '<div class="sample-module-image"><img src="' + Thumbnail_link + '">';
+        if (Tag !== "" && Tag != null) {
+            str += '<span class="sample-module-tag">' + Tag + '</span>';
+        }
+        if (SubmitedSkill > 0) {
+            str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
+        }
+        str += '</div><div class="sample-module-card-body">';
+        str += '<div class="sample-module-title">' + Module_Name + '</div>';
+        str += '<div class="sample-module-desc">' + Module_Description + '</div>';
+        str += '<div class="sample-module-meta"><div class="sample-module-lessons">';
+        str += '<span class="sample-module-help"><i class="fa fa-book-open"></i></span>';
+        str += '<span class="sample-lession-count">' + TotalSkill + ' lessons</span></div>';
+        str += '<div class="sample-module-percent">' + Progress + '%</div></div>';
+        str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div>';
+        str += '<a href="#" class="sample-module-btn"><i class="fa fa-play"></i><span>' + (Progress === 0 ? 'Start' : (Progress < 100 ? 'Continue' : 'Review')) + '</span></a>';
+        str += '</div></div>';
+    });
+
+    $("#dv_Module_List").html(str);
+}
+
+function bind_safety_module_controls() {
+    $(document).off("input.safetyModules", ".sample-safety-search-input:not(.assessment-search-input)").on("input.safetyModules", ".sample-safety-search-input:not(.assessment-search-input)", function () {
+        safety_module_search_text = $(this).val();
+        render_safety_module_cards();
+    });
+
+    $(document).off("click.safetyModules", ".sample-safety-tabs:not(.assessment-tabs) .sample-safety-chip").on("click.safetyModules", ".sample-safety-tabs:not(.assessment-tabs) .sample-safety-chip", function () {
+        selected_safety_tag = $(this).attr("data-safety-tag");
+        render_safety_module_tags();
+        render_safety_module_cards();
+    });
+
+    $(document).off("click.safetyModules", ".sample-safety-filter:not(.assessment-filter)").on("click.safetyModules", ".sample-safety-filter:not(.assessment-filter)", function (event) {
+        event.preventDefault();
+        var menu = $(".sample-safety-sort-menu").not(".assessment-sort-menu");
+        menu.toggleClass("visible");
+        menu.attr("aria-hidden", !menu.hasClass("visible"));
+    });
+
+    $(document).off("click.safetyModules", ".sample-safety-sort-menu:not(.assessment-sort-menu) .sample-safety-sort-option").on("click.safetyModules", ".sample-safety-sort-menu:not(.assessment-sort-menu) .sample-safety-sort-option", function (event) {
+        event.preventDefault();
+        selected_safety_sort = $(this).attr("data-safety-sort");
+        render_safety_module_sort_menu();
+        render_safety_module_cards();
+    });
+}
+
+function get_safety_module_listing(force_refresh) {
+    if (safety_module_listing_requested && !force_refresh) {
+        return;
+    }
+    safety_module_listing_requested = true;
     $("#dv_Module_List").empty();
 
     let role_id_array = localStorage.getItem('role_id_array');
@@ -21,7 +206,20 @@ function get_safety_module_listing() {
             let data = myArray[0]["data"];
             data = JSON.parse(data);
 
-            for (let m = 0; m < data.length; m++) {
+            safety_module_data = data.map(function (module, index) {
+                module._lms_item_order = index;
+                return module;
+            });
+            selected_safety_tag = "All";
+            selected_safety_sort = "recommended";
+            safety_module_search_text = "";
+            render_safety_module_search();
+            render_safety_module_tags();
+            render_safety_module_sort_menu();
+            bind_safety_module_controls();
+            render_safety_module_cards();
+
+            /*for (let m = 0; m < data.length; m++) {
                 let Module_Id = data[m].Module_Id;
                 let Module_Name = data[m].Module_Name;
                 let Module_Description = data[m].Module_Description;
@@ -45,6 +243,8 @@ function get_safety_module_listing() {
                     Score = "0"
                 }
 
+                let Tag = data[m].Tag;
+
                 let TotalSkill = data[m].TotalSkill;
                 let TotalQuestion = data[m].TotalQuestion;
                 let SubmitedQuestion = data[m].SubmitedQuestion;
@@ -59,7 +259,12 @@ function get_safety_module_listing() {
 
                 str += '<div class="sample-module-image" >';
                 str += '<img src="' + Thumbnail_link + '">';
-                str += '<span class="sample-module-tag">Safety</span>';
+
+
+                if (Tag == "" || Tag == null || Tag == undefined) { }
+                else {
+                    str += '<span class="sample-module-tag">' + Tag + '</span>';
+                }
 
                 if (SubmitedSkill > 0) {
                     str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
@@ -76,15 +281,28 @@ function get_safety_module_listing() {
                 str += '<div class="sample-module-percent">' + Progress + '%</div>';
                 str += '</div>';
                 str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div>';
+
+                if (Progress == 0) {
+                    str += '<a href="#" class="sample-module-btn"><i class="fa fa-play"></i><span>Start</span></a>';
+                }
+                else if (Progress > 0 && Progress < 100) {
+                    str += '<a href="#" class="sample-module-btn"><i class="fa fa-play"></i><span>Continue</span></a>';
+                }
+                else {
+                    str += '<a href="#" class="sample-module-btn"><i class="fa fa-play"></i><span>Review</span></a>';
+                }
+
+
                 str += '</div>';
                 str += '</div>';
 
                 $("#dv_Module_List").append(str);
 
                 //get_target_skill_tag_by_module_id(Module_Id);
-            }
+            }*/
         }
         else {
+            safety_module_listing_requested = false;
             var message = myArray[0].message;
             alert(message);
             myApp.popup.close('.popup-level-2');
@@ -233,7 +451,10 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
         var status = myArray[0].status;
 
         let module_bg = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-image").find("img").attr("src");
-        $(".module-preview-header").css("background-image", "linear-gradient(180deg, rgba(6, 18, 66, 0.45), rgba(4, 6, 20, 0.82)), url('" + module_bg + "')");
+        $(".module-preview-header").css("background-image", "linear-gradient(180deg, rgba(6, 18, 66, 0.20), rgba(4, 6, 20, 0.60)), url('" + module_bg + "')");
+
+        let module_tag = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("span.sample-module-tag").html();
+        $(".module-preview-tag").html(module_tag);
 
         let module_title = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-title").html();
         $(".module-preview-title").html(module_title);
@@ -243,7 +464,6 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 
         $(".module-preview-percent").html(Progress + "%");
         $(".module-preview-progress").find("span").css("width", "" + Progress + "%");
-
 
         if (status == 1) {
             let data = myArray[0]["data"];
@@ -256,6 +476,11 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 let Skill_Name = data[m].Skill_Name;
                 let Skill_Description = data[m].Skill_Description;
                 let Video_Link = data[m].Video_Link;
+                let Video_Time = data[m].Video_Time;
+                if (Video_Time == "" || Video_Time == null || Video_Time == undefined) {
+                    Video_Time = "00:00";
+                }
+                let Thumbnail_link = data[m].Thumbnail_link;
 
                 let Progress = data[m].Progress;
                 if (Progress == "" || Progress == null || Progress == undefined) {
@@ -277,14 +502,27 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 
                 let str = '<a href="#" class="lesson-preview-card" onclick="' + onclick_str + '">';
                 str += '<div class="lesson-preview-thumb" >';
-                str += '<img src="images/bg2.jpg">';
-                str += '<span class="lesson-preview-check"><i class="fa fa-check"></i></span>';
+
+                if (Thumbnail_link == "" || Thumbnail_link == null || Thumbnail_link == undefined) {
+                    str += '<img src="images/bg2.jpg">';
+                }
+                else {
+                    str += '<img src="' + Thumbnail_link + '">';
+                }
+
+                if (Progress == "100") {
+                    str += '<span class="lesson-preview-check" style="background: #2dbb72;"><i class="fa fa-check"></i></span>';
+                }
+                else {
+                    str += '<span class="lesson-preview-check"><i class="fa fa-play" style="font-size: 14px"></i></span>';
+                }
+
                 str += '</div>';
                 str += '<div>';
                 str += '<div class="lesson-preview-name">' + Skill_Name + '</div>';
                 str += '<div class="lesson-preview-subtitle">' + Skill_Description + '</div>';
                 str += '<div class="lesson-preview-footer">';
-                str += '<span class="lesson-preview-time"><i class="fa-regular fa-clock"></i>6 min</span>';
+                str += '<span class="lesson-preview-time"><i class="fa-regular fa-clock"></i>' + Video_Time + '</span>';
 
                 if (Progress == "100") {
                     str += '<span class="lesson-preview-status completed">Completed</span>';
@@ -416,7 +654,7 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
                         if (op_text === Valid_Answer) {
 
                             // Highlight the correct answer
-                             str += '<div class="option correct-answer">';
+                            str += '<div class="option correct-answer">';
 
                         }
                         else {
@@ -519,7 +757,7 @@ function submit_question_by_skill_id(flag) {
         if (flag == 'submit') {
             if (selectedAns.length == 0) {
                 is_valid = 0;
-                alert("Please select value.");
+                alert("All answers are required!");
                 return false;
             }
         }
@@ -718,7 +956,7 @@ function call_by_videolog(flag) {
             else if (flag == 'submit') {
                 myApp.popup.close('.popup-level-4');
                 myApp.popup.close('.lms-module-preview-popup');
-                get_safety_module_listing();
+                get_safety_module_listing(true);
             }
         }
         loading_hide();

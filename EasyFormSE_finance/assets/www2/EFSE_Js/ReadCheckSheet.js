@@ -4701,7 +4701,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
         }
 
         if (form_flag == 0) {
-            // for mobile log only
+            // for mobile log only (for readchecksheet / blank form)
             if (Type7_AI_photo_Array.length > 0) {
                 check_AI_photo_entry(Type7_AI_photo_Array);
             }

@@ -1,0 +1,18 @@
+﻿
+
+#dv_Dashboard_List .sample-module-progress {
+    margin-bottom: 8px;
+}
+
+.sample-rank-tag {
+    border-radius: 15px;
+    background: orange;
+    color: white;
+    font-size: 16px;
+    float: right;
+    font-weight: bold;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    padding-top: 3px;
+}

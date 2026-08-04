@@ -1,6 +1,105 @@
 ﻿
 var glob_Assessment_Schedule_Id = 0;
-function get_assessments_listing() {
+var assessment_data = [];
+var selected_assessment_tag = "All";
+var selected_assessment_sort = "recommended";
+var assessment_search_text = "";
+var assessment_listing_requested = false;
+
+function render_assessment_search() {
+    var search = '<i class="fa fa-search"></i>';
+    search += '<input type="search" class="sample-safety-search-input assessment-search-input" placeholder="Search assessments" aria-label="Search assessments" value="' + assessment_search_text.replace(/"/g, '&quot;') + '">';
+    $(".assessment-search").html(search);
+}
+
+function render_assessment_tags() {
+    var tags = [];
+    var seen_tags = {};
+    assessment_data.forEach(function (assessment) {
+        get_lms_item_tags(assessment.Tag != null ? assessment.Tag : assessment.tag).forEach(function (tag) {
+            var key = tag.toLowerCase();
+            if (!seen_tags[key]) {
+                seen_tags[key] = true;
+                tags.push(tag);
+            }
+        });
+    });
+
+    var str = '<div class="sample-safety-chip' + (selected_assessment_tag === "All" ? ' active' : '') + '" data-assessment-tag="All"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span></div>';
+    tags.forEach(function (tag) {
+        str += '<div class="sample-safety-chip' + (selected_assessment_tag === tag ? ' active' : '') + '" data-assessment-tag="' + tag.replace(/"/g, '&quot;') + '"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span></div>';
+    });
+    $(".assessment-tabs").html(str);
+}
+
+function render_assessment_sort_menu() {
+    var str = '<div class="sample-safety-sort-menu assessment-sort-menu" aria-hidden="true"><div class="sample-safety-sort-title">Sort by</div>';
+    Object.keys(safety_module_sort_options).forEach(function (key) {
+        str += '<a href="#" class="sample-safety-sort-option' + (selected_assessment_sort === key ? ' active' : '') + '" data-assessment-sort="' + key + '"><span>' + safety_module_sort_options[key] + '</span><i class="fa fa-check"></i></a>';
+    });
+    str += '</div>';
+    $(".assessment-sort-menu").remove();
+    $(".assessment-search-row").append(str);
+}
+
+function render_assessment_cards() {
+    var visible_assessments = get_lms_visible_items(assessment_data, selected_assessment_tag, assessment_search_text, selected_assessment_sort, "Name", "Description");
+    var str = '';
+    if (visible_assessments.length === 0) {
+        str = '<div class="sample-safety-empty-state">No assessments found</div>';
+    }
+
+    visible_assessments.forEach(function (assessment) {
+        var Assessment_Id = assessment.Assessment_Id;
+        var Name = assessment.Name;
+        var Description = assessment.Description;
+        var Assessment_Schedule_Id = assessment.Assessment_Schedule_Id;
+        var Thumbnail_link = assessment.Thumbnail_link || "images/bg2.jpg";
+        var Progress = Math.round(get_lms_item_progress(assessment));
+        var Score = assessment.Score === "" || assessment.Score == null ? "0" : assessment.Score;
+        var Tag = assessment.Tag != null ? assessment.Tag : assessment.tag;
+        var TotalQuestion = assessment.TotalQuestion == null || assessment.TotalQuestion === "" ? 0 : assessment.TotalQuestion;
+        var SubmitedQuestion = assessment.SubmitedQuestion == null || assessment.SubmitedQuestion === "" ? 0 : assessment.SubmitedQuestion;
+        var onclick_str = "get_questionlog_by_assessment_id('" + Assessment_Id + "', '" + Assessment_Schedule_Id + "', '" + Progress + "')";
+
+        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image"><img src="' + Thumbnail_link + '">';
+        if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag">' + Tag + '</span>';
+        if (SubmitedQuestion > 0) str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
+        str += '</div><div class="sample-module-card-body"><div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
+        str += '<div class="sample-module-meta"><div class="sample-module-lessons"><span class="sample-module-help"><i class="fa fa-book-open"></i></span><span class="sample-lession-count">' + TotalQuestion + ' Questions</span></div><div class="sample-module-percent">' + Progress + '%</div></div>';
+        str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div></div></div>';
+    });
+    $("#dv_Assessments_List").html(str);
+}
+
+function bind_assessment_controls() {
+    $(document).off("input.assessments", ".assessment-search-input").on("input.assessments", ".assessment-search-input", function () {
+        assessment_search_text = $(this).val();
+        render_assessment_cards();
+    });
+    $(document).off("click.assessments", ".assessment-tabs .sample-safety-chip").on("click.assessments", ".assessment-tabs .sample-safety-chip", function () {
+        selected_assessment_tag = $(this).attr("data-assessment-tag");
+        render_assessment_tags();
+        render_assessment_cards();
+    });
+    $(document).off("click.assessments", ".assessment-filter").on("click.assessments", ".assessment-filter", function (event) {
+        event.preventDefault();
+        var menu = $(".assessment-sort-menu");
+        menu.toggleClass("visible").attr("aria-hidden", !menu.hasClass("visible"));
+    });
+    $(document).off("click.assessments", ".assessment-sort-menu .sample-safety-sort-option").on("click.assessments", ".assessment-sort-menu .sample-safety-sort-option", function (event) {
+        event.preventDefault();
+        selected_assessment_sort = $(this).attr("data-assessment-sort");
+        render_assessment_sort_menu();
+        render_assessment_cards();
+    });
+}
+
+function get_assessments_listing(force_refresh) {
+    if (assessment_listing_requested && !force_refresh) {
+        return;
+    }
+    assessment_listing_requested = true;
     $("#dv_Assessments_List").empty();
 
     let role_id_array = localStorage.getItem('role_id_array');
@@ -20,7 +119,20 @@ function get_assessments_listing() {
             let data = myArray[0]["data"];
             data = JSON.parse(data);
 
-            for (let m = 0; m < data.length; m++) {
+            assessment_data = data.map(function (assessment, index) {
+                assessment._lms_item_order = index;
+                return assessment;
+            });
+            selected_assessment_tag = "All";
+            selected_assessment_sort = "recommended";
+            assessment_search_text = "";
+            render_assessment_search();
+            render_assessment_tags();
+            render_assessment_sort_menu();
+            bind_assessment_controls();
+            render_assessment_cards();
+
+            /*for (let m = 0; m < data.length; m++) {
                 let Assessment_Id = data[m].Assessment_Id;
                 let Name = data[m].Name;
                 let Description = data[m].Description;
@@ -44,6 +156,8 @@ function get_assessments_listing() {
                     Score = "0"
                 }
 
+                let Tag = data[m].Tag;
+
                 let TotalQuestion = data[m].TotalQuestion;
                 let SubmitedQuestion = data[m].SubmitedQuestion;
 
@@ -60,7 +174,12 @@ function get_assessments_listing() {
 
                 str += '<div class="sample-module-image" >';
                 str += '<img src="' + Thumbnail_link + '">';
-                str += '<span class="sample-module-tag">Safety</span>';
+
+                if (Tag == "" || Tag == null || Tag == undefined) { }
+                else {
+                    str += '<span class="sample-module-tag">' + Tag + '</span>';
+                }
+
 
                 if (SubmitedQuestion > 0) {
                     str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
@@ -81,9 +200,10 @@ function get_assessments_listing() {
                 str += '</div>';
 
                 $("#dv_Assessments_List").append(str);
-            }
+            }*/
         }
         else {
+            assessment_listing_requested = false;
             var message = myArray[0].message;
             alert(message);
         }
@@ -277,7 +397,7 @@ function submit_question_by_assessment_id() {
         let is_valid = 1;
         if (selectedAns.length == 0) {
             is_valid = 0;
-            alert("Please select value.");
+            alert("All answers are required!");
             return false;
         }
 
@@ -306,7 +426,7 @@ function submit_question_by_assessment_id() {
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
         if (status == 1) {
-            get_assessments_listing();
+            get_assessments_listing(true);
             myApp.popup.close('.popup-assessment-que')
         }
         else {

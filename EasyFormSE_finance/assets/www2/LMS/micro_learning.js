@@ -73,6 +73,52 @@ function pauseAllVideos() {
     });
 }
 
+var playpause_Timer;
+function updateReelPlayPauseButton(slideElement, isPlaying) {
+
+    $("button.reel-play-pause").show();
+    clearTimeout(playpause_Timer);
+    playpause_Timer = setTimeout(function () {
+        $("button.reel-play-pause").hide();
+    }, 5000);
+
+    if (!slideElement) return;
+
+    var button = slideElement.querySelector('.reel-play-pause');
+    if (!button) return;
+
+    button.classList.toggle('is-playing', isPlaying);
+    button.setAttribute('aria-label', isPlaying ? 'Pause video' : 'Play video');
+    button.setAttribute('title', isPlaying ? 'Pause video' : 'Play video');
+}
+
+function toggleReelPlayback(button, event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var slideElement = button.closest('.swiper-slide');
+    var video = slideElement && slideElement.querySelector('.reel-video');
+    if (!video) return false;
+
+    if (video.paused || video.ended) {
+        if (video.ended) {
+            video.currentTime = 0;
+        }
+
+        video.play().catch(function (error) {
+            console.log("Video play prevented", error);
+        });
+    }
+    else {
+        video.pause();
+    }
+
+    return false;
+}
+
 function playNextReelOrRestart() {
     if (!reelsSwiper || reelsSwiper.slides.length == 0) return;
 
@@ -118,6 +164,14 @@ function playVideo(slideElement) {
         });
     }
 
+    video.onplay = function () {
+        updateReelPlayPauseButton(slideElement, true);
+    };
+
+    video.onpause = function () {
+        updateReelPlayPauseButton(slideElement, false);
+    };
+
     video.ontimeupdate = function () {
         if (video.duration) {
             var percentage = (video.currentTime / video.duration) * 100;
@@ -126,6 +180,7 @@ function playVideo(slideElement) {
     };
 
     video.onended = function () {
+        updateReelPlayPauseButton(slideElement, false);
         //console.log("Video completed");
 
         let Ml_id = $(video).parent(".swiper-slide-active").attr("Ml_id");
@@ -234,16 +289,18 @@ function get_micro_learning_videos() {
 
                     reel_str += '<div class="video-progress"><div class="video-progress-fill"></div></div>';
                     reel_str += '<video class="reel-video" preload="auto" autoplay playsinline><source src="' + Video_Link + '" type="video/mp4" /></video>';
+                    reel_str += '<button type="button" class="reel-play-pause swiper-no-swiping" aria-label="Pause video" title="Pause video" onclick="return toggleReelPlayback(this, event)" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()" onmousedown="event.stopPropagation()"><span class="reel-play-pause-icon" aria-hidden="true"></span></button>';
                     reel_str += '<div class="video-overlay">' + Title + '</div>';
                     reel_str += '<div class="video-overlay-sub">' + Description + '</div>';
 
 
                     let like_str = "add_user_activitiy('" + Ml_id + "','LIKE', this)";
                     let dislike_str = "add_user_activitiy('" + Ml_id + "','DISLIKE', this)";
+                    let share_str = "share_video_link('" + Ml_id + "','SHARE', this, '" + Video_Link + "')";
 
                     reel_str += '<div class="reel-actions swiper-no-swiping">';
 
-                    var IsLiked = 0, IsDisliked = 0, Watch_Count = 0;
+                    var IsLiked = 0, IsDisliked = 0, Watch_Count = 0, Share_Count = 0;
                     if (user_activitiy_Array.length > 0) {
                         for (let a = 0; a < user_activitiy_Array.length; a++) {
                             let t_Ml_Id = user_activitiy_Array[a].Ml_Id;
@@ -251,6 +308,7 @@ function get_micro_learning_videos() {
                                 IsLiked = user_activitiy_Array[a].IsLiked;
                                 IsDisliked = user_activitiy_Array[a].IsDisliked;
                                 Watch_Count = user_activitiy_Array[a].Watch_Count;
+                                Share_Count = user_activitiy_Array[a].Share_Count;
                                 break;
                             }
                         }
@@ -263,14 +321,19 @@ function get_micro_learning_videos() {
                         reel_str += '<div class="action-item"><i class="fa-regular fa-thumbs-up" onclick="' + like_str + '"></i><span>' + Total_Likes + '</span></div>';
                     }
 
-                    if (IsDisliked == 1) {
-                        reel_str += '<div class="action-item"><i class="fa-solid fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
+                    // if (IsDisliked == 1) {
+                    //     reel_str += '<div class="action-item"><i class="fa-solid fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
+                    // }
+                    // else {
+                    //     reel_str += '<div class="action-item"><i class="fa-regular fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
+                    // }
+
+                    if (Share_Count == 1) {
+                        reel_str += '<div class="action-item"><i class="fa-solid fa-paper-plane" onclick="' + share_str + '"></i><span>' + Total_Shares + '</span></div>';
                     }
                     else {
-                        reel_str += '<div class="action-item"><i class="fa-regular fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
+                        reel_str += '<div class="action-item"><i class="fa-regular fa-paper-plane" onclick="' + share_str + '"></i><span>' + Total_Shares + '</span></div>';
                     }
-
-                    reel_str += '<div class="action-item"><i class="fa fa-share-alt"></i><span>' + Total_Shares + '</span></div>';
 
                     if (Watch_Count == 1) {
                         reel_str += '<div class="action-item"><i class="fa-solid fa-eye"></i><span>' + Total_Watch_Count + '</span></div></div>';
@@ -305,8 +368,8 @@ function add_user_activitiy(t_ML_id, activity_type, icon_ele) {
         // remove
         var action = "0";
 
-        if (activity_type == "WATCH") {
-            // do not call if user has already watched this video
+        if (activity_type == "WATCH" || activity_type == "SHARE") {
+            // do not call if user has already watched or share this video
             return false;
         }
     }
@@ -481,3 +544,57 @@ function submit_ML_question() {
     getdata.callOtherDomain();
 }
 
+function share_video_link(t_ML_id, activity_type, icon_ele, Video_Link) {
+    try {
+
+        pauseAllVideos();
+
+        var m_username = $("#txtusername").val();
+        if (m_username == "" || m_username == null || m_username == undefined) {
+            m_username = "";
+        }
+
+        Video_Link = encodeURI(Video_Link);
+
+        var body_str = 'Dear Team,\n\n Please find the video link below for your review:\n\n Video Link:\n ' + Video_Link + '\n\n Kindly review the video and let me know if you encounter any issues or have any feedback.\n\n Thank you.';
+        // var mail_str = ' , ' + body_str + ', Video Link for Review';
+        // mail_str = encodeURIComponent(mail_str);
+
+        // t_mail_details = decodeURIComponent(mail_str);
+        // var mail_array = t_mail_details.split(',');
+        // var email = mail_array[0];
+        // var body = '';
+        // var subject = '';
+        // if (mail_array.length > 1) {
+        //     body = mail_array[1];
+        //     subject = mail_array[2];
+        // }
+
+        //body = 'Disclaimer : The content of this application is confidential and intended for the specified recipient only. No User has the authority to conclude any binding contract/inference from the contents of this application. The data contained herein only provides an information regarding the project but not on a real-time basis. The accuracy of the information Vis-à-vis the real-time project progress is not guaranteed. The application users are advised to seek help of the Project Director for any further query that they may have with regards to the project progress. Thank you for your cooperation and understanding.';
+        //subject = '';
+
+        var q_jsonobj = [];
+        q_jsonobj.push({
+            'email': " ",
+            'body': body_str,
+            'subject': "Video Link for Review"
+        });
+        cordova.exec(function (e) {
+            // success
+
+            playVideo(reelsSwiper.slides[reelsSwiper.activeIndex]);
+            add_user_activitiy(t_ML_id, activity_type, icon_ele);
+
+        }, function (e) {
+            // onfail
+
+            playVideo(reelsSwiper.slides[reelsSwiper.activeIndex]);
+            add_user_activitiy(t_ML_id, activity_type, icon_ele);
+
+        }, 'openMailComposerPlugin', 'anAction', q_jsonobj);
+
+    }
+    catch (e) {
+        alert1(e + '_share_video_link()')
+    }
+}
