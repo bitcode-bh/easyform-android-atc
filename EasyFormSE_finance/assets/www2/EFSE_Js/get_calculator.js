@@ -1430,11 +1430,20 @@ function check_and_calculate_equation(input_str) {
 
         if (blank_found == 0) {
 
+            var temp_str = "" + first_no + "" + op + "" + second_no + "";
+
             end_bracket_outer = end_bracket_outer + i;
 
             if (second_no == '') {
                 op = '+';
                 second_no = '0';
+            }
+
+            if (input_str.indexOf("--") > -1 && (second_no == "" || second_no == "0")) {
+                // possible date(age) calcualtion with < 1970 year as 2nd date in calculation - mk - 27072026 (e.g. 24/10/2025 - 24/10/1966)
+                temp_str = input_str;
+                op = "+";
+                second_no = input_str.split("--")[1];
             }
 
             first_no = parseFloat(first_no).toFixed(2);
@@ -1444,7 +1453,6 @@ function check_and_calculate_equation(input_str) {
 
             temp_result = result;
 
-            var temp_str = "" + first_no + "" + op + "" + second_no + "";
             var temp_str_new = input_str.replace(temp_str, result);
 
             //try {
