@@ -340,9 +340,8 @@ function back_button_LMS() {
     }
 
     if (typeof mainView !== 'undefined' && mainView && mainView.history && mainView.history.length > 1 && mainView.router && mainView.router.back) {
-        alert("back 1");
-        mainView.router.back();
-        return false;
+        // mainView.router.back();
+        // return false;
     }
 
     var safetyTab = $('#tab-1');
