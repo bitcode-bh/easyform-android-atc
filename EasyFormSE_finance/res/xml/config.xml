@@ -277,6 +277,10 @@
         <param name="android-package" value="com.sky.atc.easyformse.plugins.TwoFAWithFaceDetectionPlugin"/>
     </feature>
 
+    <feature name="SafetyVideoOrientationPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.SafetyVideoOrientationPlugin"/>
+    </feature>
+
     <allow-intent href="http://*/*"></allow-intent>
     <allow-intent href="https://*/*"></allow-intent>
     <platform name="android">
