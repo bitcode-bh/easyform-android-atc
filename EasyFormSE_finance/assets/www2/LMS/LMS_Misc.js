@@ -1,4 +1,4 @@
-﻿
+
 $(document).ready(function () {
 
     let t_color_name = JSON.parse(storage.getItem('viewsite_btn_color'));
@@ -7,6 +7,9 @@ $(document).ready(function () {
     $("head").append(style_str);
 
     get_safety_module_listing();
+    get_assessments_listing();
+    get_user_activities();
+    get_dashboard_data();
 
     $(document).on('tab:show', '.tab', function () {
 
@@ -330,6 +333,15 @@ function back_button_LMS() {
     }
     else if (level2_popup.length > 0) {
         myApp.popup.close('.popup-assessment-que');
+        return false;
+    }
+
+    var ml_quiz_popup = $('#pnl_ML_Question.modal-in');
+    if (ml_quiz_popup.length > 0) {
+        myApp.sheet.close('#pnl_ML_Question');
+        if (typeof playNextReelOrRestart === 'function') {
+            playNextReelOrRestart();
+        }
         return false;
     }
 

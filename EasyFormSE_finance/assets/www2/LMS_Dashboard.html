@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html data-theme="light">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
     <title>LMS</title>
 
@@ -29,10 +29,12 @@
     <link href="LMS/assessments.css" rel="stylesheet" />
     <link href="LMS/dashboard.css" rel="stylesheet" />
     <link href="LMS/micro learning.css" rel="stylesheet" />
+    <link href="LMS/lms_ux_fixes.css" rel="stylesheet" />
 
     <script src="LMS/safety_modules.js"></script>
     <script src="LMS/assessments.js"></script>
     <script src="LMS/dashboard.js"></script>
+    <script src="LMS/ml_video_cache.js"></script>
     <script src="LMS/micro_learning.js"></script>
     <script src="LMS/LMS_Misc.js"></script>
 
@@ -92,12 +94,26 @@
         document.addEventListener('deviceready', function showValues() {
             document.removeEventListener("backbutton", handleLMSNativeBackButton, true);
             document.addEventListener("backbutton", handleLMSNativeBackButton, true);
+
+            // Free video decoders / stop network the instant the app is
+            // backgrounded, and restore the active reel on return.
+            if (typeof ml_on_app_pause === 'function') {
+                document.removeEventListener('pause', ml_on_app_pause, false);
+                document.addEventListener('pause', ml_on_app_pause, false);
+            }
+            if (typeof ml_on_app_resume === 'function') {
+                document.removeEventListener('resume', ml_on_app_resume, false);
+                document.addEventListener('resume', ml_on_app_resume, false);
+            }
         }, true);
 
 
     </script>
 </head>
 <body>
+
+    <!-- Cross-page fade veil (shared with selection.html) -->
+    <div id="page-veil" aria-hidden="true"><img alt="" /></div>
 
     <div id="app">
 
@@ -115,30 +131,36 @@
                                 <i class="icon icon-back"></i>
                             </a>
                         </div>-->
-                        <div class="title sample-safety-titlebar">Safety Modules</div>
+                        <div class="title sample-safety-titlebar">Dashboard</div>
+                        <div class="right">
+                            <div class="lms-search" id="lms_search">
+                                <input type="search" class="lms-search-input" placeholder="Search" aria-label="Search" oninput="lms_search_input(this.value)">
+                                <button type="button" class="lms-search-btn" aria-label="Search" onclick="return lms_toggle_search()"><i class="fa-solid fa-magnifying-glass"></i></button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="toolbar toolbar-bottom tabbar">
                     <div class="toolbar-inner">
                         <div class="toolbar-pane">
-                            <a href="#tab-1" class="tab-link">
-                                <i class="fa fa-hands-holding-circle"></i>
-                                <span class="tabbar-label mt-1">Safety Modules</span>
+                            <a href="#tab-1" class="tab-link" onclick="lms_set_title('Modules')">
+                                <span class="tab-ico"><i class="fa-regular fa-clipboard ico-outline"></i><i class="fa-solid fa-clipboard ico-filled"></i></span>
+                                <span class="tabbar-label mt-1">Modules</span>
                             </a>
-                            <a href="#tab-2" class="tab-link">
-                                <i class="fa fa-book-open-reader"></i>
+                            <a href="#tab-2" class="tab-link" onclick="lms_set_title('Assessments')">
+                                <span class="tab-ico"><i class="fa-regular fa-file-lines ico-outline"></i><i class="fa-solid fa-file-lines ico-filled"></i></span>
                                 <span class="tabbar-label mt-1">Assessments</span>
                             </a>
-                            <a href="#tab-3" class="tab-link">
-                                <i class="fa fa-area-chart"></i>
+                            <a href="#tab-3" class="tab-link tab-link-active" onclick="lms_set_title('Dashboard')">
+                                <span class="tab-ico"><i class="fa-regular fa-chart-bar ico-outline"></i><i class="fa-solid fa-chart-bar ico-filled"></i></span>
                                 <span class="tabbar-label mt-1">Dashboard</span>
                             </a>
-                            <a href="#tab-4" class="tab-link">
-                                <i class="fa fa-lightbulb"></i>
+                            <a href="#tab-4" class="tab-link" onclick="lms_set_title('Micro Learning')">
+                                <span class="tab-ico"><i class="fa-regular fa-lightbulb ico-outline"></i><i class="fa-solid fa-lightbulb ico-filled"></i></span>
                                 <span class="tabbar-label mt-1">Micro Learning</span>
                             </a>
-                            <a href="#tab-5" class="tab-link" onclick="changeurl('selection.html')">
-                                <i class="fa fa-home"></i>
+                            <a href="#tab-5" class="tab-link" onclick="return crossToLMS('selection.html')">
+                                <span class="tab-ico"><i class="fa-regular fa-house ico-outline"></i><i class="fa-solid fa-house ico-filled"></i></span>
                                 <span class="tabbar-label mt-1">Home</span>
                             </a>
 
@@ -146,19 +168,14 @@
                     </div>
                 </div>
                 <swiper-container class="tabs">
-                    <swiper-slide id="tab-1" class="page-content tab tab-active">
+                    <swiper-slide id="tab-1" class="page-content tab">
                         <!--<div id="dv_Module_List" class="block block-strong inset !p-0 !m-0 !bg-white"></div>-->
                         <div class="sample-safety-ui">
                             <!--<div class="sample-safety-titlebar">Safety Modules</div>-->
                             <div class="sample-safety-content">
-                                <div class="sample-safety-search-row">
-                                    <div class="sample-safety-search">
-                                        <i class="fa fa-search"></i>
-                                        <span>Search modules</span>
-                                    </div>
-                                    <a href="#" class="sample-safety-filter">
-                                        <i class="fa fa-sort"></i>
-                                    </a>
+                                <!-- search moved to the shared top app bar; sort removed -->
+                                <div class="sample-safety-search-row" style="display:none">
+                                    <div class="sample-safety-search"></div>
                                 </div>
 
                                 <div class="sample-safety-tabs swiper-no-swiping">
@@ -201,28 +218,44 @@
                     </swiper-slide>
                     <swiper-slide id="tab-2" class="page-content tab bg-white">
                         <div class="sample-safety-ui">
-                            <div class="sample-safety-content">
-                                <div class="sample-safety-search-row assessment-search-row">
+                            <div class="sample-safety-content assessment-content">
+                                <!-- search moved to the shared top app bar; sort removed -->
+                                <div class="assessment-search-row" style="display:none">
                                     <div class="sample-safety-search assessment-search"></div>
-                                    <a href="#" class="sample-safety-filter assessment-filter" aria-label="Sort assessments">
-                                        <i class="fa fa-sort"></i>
-                                    </a>
                                 </div>
-
                                 <div class="sample-safety-tabs assessment-tabs swiper-no-swiping"></div>
                                 <div id="dv_Assessments_List"></div>
                             </div>
                         </div>
                     </swiper-slide>
-                    <swiper-slide id="tab-3" class="page-content tab bg-white">
+                    <swiper-slide id="tab-3" class="page-content tab bg-white tab-active ptr-content" data-ptr-distance="55">
+                        <div class="ptr-preloader">
+                            <div class="preloader"></div>
+                            <div class="ptr-arrow"></div>
+                        </div>
                         <div class="sample-safety-ui">
                             <div class="sample-safety-content">
-                                <!--<div class="sample-safety-search-row assessment-search-row">
-                                    <div class="sample-safety-search assessment-search"></div>
-                                    <a href="#" class="sample-safety-filter assessment-filter" aria-label="Sort assessments">
-                                        <i class="fa fa-sort"></i>
-                                    </a>
-                                </div>-->
+                                <!-- KPI Cards -->
+                                <div class="lms-kpi-container">
+                                    <button type="button" class="lms-kpi-card is-active" aria-pressed="true" onclick="select_kpi('Modules', this)">
+                                        <i class="fa-regular fa-clipboard" aria-hidden="true"></i>
+                                        <div class="kpi-value" id="kpi_mod_count">0</div>
+                                        <div class="kpi-label">Modules</div>
+                                    </button>
+                                    <button type="button" class="lms-kpi-card" aria-pressed="false" onclick="select_kpi('Assessments', this)">
+                                        <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
+                                        <div class="kpi-value" id="kpi_ass_count">0</div>
+                                        <div class="kpi-label">Assessments</div>
+                                    </button>
+                                    <button type="button" class="lms-kpi-card" aria-pressed="false" onclick="select_kpi('Micro Learning', this)">
+                                        <i class="fa-regular fa-lightbulb" aria-hidden="true"></i>
+                                        <div class="kpi-value" id="kpi_reel_count">0</div>
+                                        <div class="kpi-label">Micro Learning</div>
+                                    </button>
+                                </div>
+
+                                <div id="lms-kpi-chart" style="margin: 15px; min-height: 250px;"></div>
+
                                 <div id="dv_Dashboard_List"></div>
                             </div>
                         </div>
@@ -230,6 +263,14 @@
                     <swiper-slide id="tab-4" class="page-content tab bg-white reels-page">
                         <div class="swiper reels-swiper">
                             <div class="swiper-wrapper" id="div_Reels">
+                            </div>
+                            <!-- Global Video Progress Bar -->
+                            <div class="video-progress global-video-progress" onpointerdown="ml_seekStart(event, this)" style="z-index: 10;">
+                                <div class="video-progress-track">
+                                    <div class="video-progress-buffered"></div>
+                                    <div class="video-progress-fill"></div>
+                                    <div class="video-progress-handle"></div>
+                                </div>
                             </div>
                         </div>
                     </swiper-slide>
@@ -244,8 +285,8 @@
                 <div class="page module-preview-page">
                     <div class="page-content">
                         <div class="module-preview-header">
-                            <a href="#" class="module-preview-back popup-close">
-                                <i class="fa fa-arrow-left"></i>
+                            <a href="#" class="module-preview-back popup-close" aria-label="Back">
+                                <i class="fa fa-arrow-left" aria-hidden="true"></i>
                             </a>
                             <div class="module-preview-title-wrap">
                                 <div class="module-preview-tag">Safety</div>
@@ -365,7 +406,7 @@
         <div class="sheet-modal" id="pnl_ML_Question">
             <div class="sheet-modal-inner">
                 <div class="block">
-                    <h3 class="font-bold" id="ML_Question"></h3>
+                    <h3 id="ML_Question"></h3>
 
                     <div class="list no-hairlines-md">
                         <ul>
@@ -436,7 +477,11 @@
 
                         <div class="que-container">
 
-                            <!--<a id="submit_vdo_btn" class="button button-fill color-gray" onclick="get_video_skill_by_module_id()">Submit Video</a>-->
+                            <div class="quiz-header" id="assessment_quiz_header" style="display:none">
+                                <div class="quiz-pos">Question <span id="q_cur">1</span> / <span id="q_total">0</span></div>
+                                <div class="quiz-timer" id="q_timer" aria-live="polite"></div>
+                            </div>
+
                             <!-- Question -->
                             <div class="question-list" id="dv_Assessment_Question_List">
                                 <!--<div class="question-card">
@@ -491,8 +536,95 @@
 
         var mainView = myApp.views.create('.view-main');
 
+        // Fade to a shared grey veil before the full-page reload so the
+        // Home<->LMS hop reads as a push, not a white flash.
+        function crossToLMS(url) {
+            try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { }
+            var v = document.getElementById('page-veil');
+            var img = v && v.querySelector('img');
+            if (img && !img.src) img.src = 'images/lms_shield_logo.png';
+            if (v) v.classList.add('show');
+            setTimeout(function () { changeurl(url); }, 200);
+            return false;
+        }
+
         function openTowerClimbingSafetyPopup() {
             myApp.popup.open('.lms-module-preview-popup');
+        }
+
+        // Initialize the top-bar state for the default (Dashboard) tab on load,
+        // so the search icon is visible without needing a tab tap first.
+        document.addEventListener('deviceready', function () { try { lms_set_title('Dashboard'); } catch (e) { } }, false);
+        window.addEventListener('load', function () { try { lms_set_title('Dashboard'); } catch (e) { } }, false);
+
+        // ---- Shared top-app-bar search (used by Assessments + Micro Learning) ----
+        var lms_active_tab = 'Dashboard';
+
+        // Same single icon toggles open/closed (no separate X).
+        function lms_toggle_search() {
+            try {
+                var wrap = document.getElementById('lms_search');
+                if (!wrap) return false;
+                var open = !wrap.classList.contains('expanded');
+                wrap.classList.toggle('expanded', open);
+                var navbar = document.querySelector('.navbar');
+                if (navbar) navbar.classList.toggle('nav-searching', open);   // hide title while expanded
+                var inp = wrap.querySelector('.lms-search-input');
+                if (open) {
+                    if (inp) setTimeout(function () { inp.focus(); }, 300);
+                } else if (inp) {
+                    inp.value = '';
+                    lms_search_input('');
+                    inp.blur();
+                }
+            } catch (e) { }
+            return false;
+        }
+
+        // Route the query to whichever module is active.
+        function lms_search_input(q) {
+            q = (q || '').toString();
+            try {
+                if (lms_active_tab === 'Modules') {
+                    window.safety_module_search_text = q;
+                    safety_module_search_text = q;
+                    if (typeof render_safety_module_cards === 'function') render_safety_module_cards();
+                } else if (lms_active_tab === 'Assessments') {
+                    window.assessment_search_text = q;
+                    assessment_search_text = q;
+                    if (typeof render_assessment_cards === 'function') render_assessment_cards();
+                } else if (lms_active_tab === 'Micro Learning') {
+                    if (typeof ml_filter_reels === 'function') ml_filter_reels(q);
+                }
+            } catch (e) { }
+        }
+
+        // Update the header title, switch the nav to dark on Micro Learning, and
+        // reset/scope the shared search when the active tab changes.
+        function lms_set_title(t) {
+            try {
+                lms_active_tab = t;
+                document.querySelector('.sample-safety-titlebar').textContent = t;
+                var tabbar = document.querySelector('.toolbar.tabbar');
+                if (tabbar) tabbar.classList.toggle('tabbar-dark', t === 'Micro Learning');
+                // top bar matches the page background: dark on the (black) reels screen
+                var navbar = document.querySelector('.navbar');
+                if (navbar) navbar.classList.toggle('navbar-dark', t === 'Micro Learning');
+
+                var wrap = document.getElementById('lms_search');
+                if (wrap) {
+                    // collapse + clear when switching tabs
+                    if (wrap.classList.contains('expanded')) {
+                        wrap.classList.remove('expanded');
+                        if (navbar) navbar.classList.remove('nav-searching');
+                        var inp = wrap.querySelector('.lms-search-input');
+                        if (inp) inp.value = '';
+                    }
+                    // search icon appears on the searchable modules
+                    // (must be 'flex', not '' — '' reverts to the CSS display:none)
+                    wrap.style.display = (t === 'Modules' || t === 'Assessments' || t === 'Micro Learning') ? 'flex' : 'none';
+                }
+            } catch (e) { }
         }
 
     </script>
