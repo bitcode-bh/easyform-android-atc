@@ -1,4 +1,4 @@
-﻿
+
 // Safety module listing (level 1)
 var glob_Module_Schedule_Id = 0;
 var safety_module_data = [];
@@ -133,7 +133,7 @@ function render_safety_module_cards() {
 
         var onclick_str = "get_target_skill_by_module_id('" + Module_Id + "', '" + Progress + "', '" + SubmitedSkill + "', '" + Module_Schedule_Id + "')";
         str += '<div class="sample-module-card" Module_Id="' + Module_Id + '" onclick="' + onclick_str + '">';
-        str += '<div class="sample-module-image"><img src="' + Thumbnail_link + '">';
+        str += '<div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Module_Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\')">';
         if (Tag !== "" && Tag != null) {
             str += '<span class="sample-module-tag">' + Tag + '</span>';
         }
@@ -148,11 +148,16 @@ function render_safety_module_cards() {
         str += '<span class="sample-lession-count">' + TotalSkill + ' lessons</span></div>';
         str += '<div class="sample-module-percent">' + Progress + '%</div></div>';
         str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div>';
-        str += '<a href="#" class="sample-module-btn"><i class="fa fa-play"></i><span>' + (Progress === 0 ? 'Start' : (Progress < 100 ? 'Continue' : 'Review')) + '</span></a>';
+        str += '<span class="sample-module-btn"><i class="fa fa-play"></i><span>' + (Progress === 0 ? 'Start' : (Progress < 100 ? 'Continue' : 'Review')) + '</span></span>';
         str += '</div></div>';
     });
 
     $("#dv_Module_List").html(str);
+
+    // Subtle staggered reveal (no overshoot on data-dense lists).
+    document.querySelectorAll('#dv_Module_List .sample-module-card').forEach(function (c, i) {
+        c.style.animationDelay = (i * 40) + 'ms';
+    });
 }
 
 function bind_safety_module_controls() {
@@ -303,9 +308,9 @@ function get_safety_module_listing(force_refresh) {
         }
         else {
             safety_module_listing_requested = false;
-            var message = myArray[0].message;
-            alert(message);
-            myApp.popup.close('.popup-level-2');
+            safety_module_data = [];
+            render_safety_module_cards();
+            // myApp.popup.close('.popup-level-2'); // Optional: Do we really want to close the popup if it was open? Actually the modules are on the main tab now, not a popup.
         }
 
         loading_hide();

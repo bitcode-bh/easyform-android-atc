@@ -2329,6 +2329,10 @@ div[id^=new_item_] input:focus, div[id^=new_item_] button:focus {
     height: 0px;
 }*/
 
+/* --- Login: retire the old "Fetching dashboard" popover; loading is shown by
+   the top progress bar only (no button animation, no round spinner). --- */
+.popover-login { display: none !important; }
+
 /* ------- New login page css end -------------------*/
 
 
@@ -2956,4 +2960,175 @@ li.w-75-25 {
     text-shadow: none !important;
     filter: none !important;
     backdrop-filter: none !important;
+}
+
+/* =========================================================================
+   Notification Screen Redesign (MD3)
+   ========================================================================= */
+
+.notification-navbar .navbar-bg {
+    background-color: #ffffff;
+}
+
+.notification-title-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    line-height: 1.2;
+}
+
+.notification-title-container .main-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111111;
+}
+
+.notification-title-container .sub-title {
+    font-size: 12px;
+    color: #0b57d0; /* Blue for unread count */
+    font-weight: 500;
+}
+
+#div_notification_container {
+    background-color: #f7f9fa !important;
+    padding: 12px 8px !important;
+}
+
+.notification-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.notification-card:active {
+    background-color: #f0f2f5;
+}
+
+/* Unread Indicator */
+.notification-card.unread .notification-indicator {
+    width: 8px;
+    height: 8px;
+    background-color: #0b57d0;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.notification-card.read .notification-indicator {
+    width: 8px;
+    height: 8px;
+    background-color: transparent;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+/* Icon Container */
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+    font-size: 20px;
+}
+
+/* Content Area */
+.notification-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.notification-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f1f1f;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 8px;
+}
+
+.notification-time {
+    font-size: 11px;
+    color: #757575;
+    flex-shrink: 0;
+}
+
+.notification-message {
+    font-size: 13px;
+    color: #444746;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Chevron */
+.notification-chevron {
+    color: #1f1f1f;
+    font-size: 14px;
+    margin-left: 12px;
+    flex-shrink: 0;
+}
+
+/* Icon Colors */
+.icon-blue { background-color: #e8f0fe; color: #1a73e8; }
+.icon-green { background-color: #e6f4ea; color: #1e8e3e; }
+.icon-orange { background-color: #fce8e6; color: #d93025; }
+.icon-purple { background-color: #f3e8fd; color: #9334e6; }
+.icon-teal { background-color: #e4f7fb; color: #12b5cb; }
+.icon-grey { background-color: #f1f3f4; color: #5f6368; }
+
+/* Empty & Error States */
+.notification-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 32px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    margin-top: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.notification-empty-state i {
+    font-size: 48px;
+    color: #5f6368;
+    margin-bottom: 16px;
+}
+
+.notification-empty-state .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f1f1f;
+    margin-bottom: 8px;
+}
+
+.notification-empty-state .subtitle {
+    font-size: 14px;
+    color: #444746;
 }

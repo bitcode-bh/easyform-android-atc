@@ -94,8 +94,7 @@ function loading() {
 
     var is_loading = $(".preloader-indicator-modal");
     if (is_loading.length == 0) {
-        myApp.showIndicator();
-
+        // Round spinner (showIndicator) removed — keep only the top progress bar.
         var container = $$('body');
         myApp.showProgressbar(container);
     }

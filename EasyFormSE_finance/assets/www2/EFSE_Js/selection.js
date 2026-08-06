@@ -1,4 +1,4 @@
-﻿
+
 var value_counter = [];
 
 function get_counter_for_online_flow() {
@@ -1497,59 +1497,75 @@ function onsuccess_get_user_notifications(e) {
         if (t_offset == 0) {
             $("#div_notification_container").empty();
         }
-
+       
         var status = myArray[0].status;
         if (status == 1) {
             var data = myArray[0].data;
             var message = JSON.parse(data);
 
-            //var last_eve_time = message[0].EventTime;
-            //var d = new Date(last_eve_time);
-            //var ms = d.getTime();
-            //localStorage.setItem("last_notification_ms", ms);
-
             $(".no_record_found").remove();
 
             for (var i = 0; i < message.length; i++) {
-                var msg = message[i].Message_;
+                var msg = message[i].Message_ || "";
                 msg = msg.replace(/\r\n/g, "<br/>");
-                var task_id = message[i].task_id;
+                var task_id = message[i].task_id || "";
 
-                //var str = '<li><a href="#" class="item-link item-content"><div class="item-inner">';
-                //str += '<div class="item-subtitle">' + msg + '</div>';
-                //str += '<div class="item-text">' + time + '</div>';
-                //str += '</div></a></li>';
-                //$(".popup-notifications ul").append(str);
+                var title = message[i].title || message[i].Title || (task_id ? "Task " + task_id : "Notification");
+                var time = message[i].EventTime || message[i].time || message[i].Time || "";
+                
+                // Format the time slightly if it looks like a raw datetime string
+                if (time.length > 10 && !time.includes("AM") && !time.includes("PM")) {
+                    try {
+                        var d = new Date(time);
+                        if (!isNaN(d.getTime())) {
+                            time = d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        }
+                    } catch(e) {}
+                }
 
+                var isRead = message[i].is_read == 1 || message[i].status == "read" || message[i].status == 1;
+                var readClass = isRead ? "read" : "unread";
+                
+                // Determine icon and color based on title/message content to match mockup variety
+                var iconClass = "fa-solid fa-bell";
+                var iconBgClass = "icon-grey";
+                var contentLower = (title + " " + msg).toLowerCase();
+                
+                if (contentLower.includes("permit")) { iconClass = "fa-regular fa-clipboard"; iconBgClass = "icon-blue"; }
+                else if (contentLower.includes("task") || contentLower.includes("assign")) { iconClass = "fa-solid fa-clipboard-list"; iconBgClass = "icon-green"; }
+                else if (contentLower.includes("alert") || contentLower.includes("warn") || contentLower.includes("safety")) { iconClass = "fa-solid fa-triangle-exclamation"; iconBgClass = "icon-orange"; }
+                else if (contentLower.includes("report")) { iconClass = "fa-regular fa-file-lines"; iconBgClass = "icon-purple"; }
+                else if (contentLower.includes("sync") || contentLower.includes("upload")) { iconClass = "fa-solid fa-cloud-arrow-up"; iconBgClass = "icon-teal"; }
+                else { iconClass = "fa-solid fa-circle-info"; iconBgClass = "icon-grey"; }
 
-                var str = '<div class="card">';
-                str += '<div class="card-content card-content-padding">' + msg + '</div>';
-                str += '<div class="card-footer">' + task_id + '</div>';
+                var str = '<div class="notification-card ' + readClass + '" onclick="close_notification_popup(this)">';
+                str += '  <div class="notification-indicator"></div>';
+                str += '  <div class="notification-icon ' + iconBgClass + '"><i class="' + iconClass + '"></i></div>';
+                str += '  <div class="notification-content">';
+                str += '    <div class="notification-header">';
+                str += '      <div class="notification-title">' + title + '</div>';
+                str += '      <div class="notification-time">' + time + '</div>';
+                str += '    </div>';
+                str += '    <div class="notification-message">' + msg + '</div>';
+                str += '  </div>';
+                str += '  <div class="notification-chevron"><i class="fa-solid fa-chevron-right"></i></div>';
                 str += '</div>';
 
                 $("#div_notification_container").append(str);
-                //div.insertAdjacentHTML('beforeend', str);
             }
         }
         else if (status == 2) {
-            //var len = $(".popup-notifications ul li").length;
-            //if (len == 0) {
-            //    var str = '<li style="text-align:center" class="no_record_found"><a href="#" class="item-link item-content"><div class="item-inner">';
-            //    str += '<div class="item-text">No Record Found</div>';
-            //    str += '</div></a></li>';
-            //$(".popup-notifications ul").append(str);
-
             if (t_offset != 0) {
                 $("#div_notification_container").unbind('scroll');
             }
             else {
-                var str = '<div class="card">';
-                str += '<div class="card-content card-content-padding">No Record Found</div>';
-                //str += '<div class="card-footer"></div>';
+                var str = '<div class="notification-empty-state">';
+                str += '<i class="fa-regular fa-bell"></i>';
+                str += '<div class="title">No notifications yet</div>';
+                str += '<div class="subtitle">You\'re all caught up!</div>';
                 str += '</div>';
                 $("#div_notification_container").append(str);
-            }
-            //}
+            }           
         }
         else {
             var message = myArray[0].message;

@@ -1,4 +1,102 @@
-﻿
+
 .correct-answer input[type='checkbox'] {
     margin-left: 10px;
+}
+
+/* ===== Assessments quiz identity ========================================= */
+/* Radio options: card-style rows, brand highlight on the chosen answer */
+.question-card .option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+}
+
+    .question-card .option input[type='radio'] {
+        width: 20px;
+        height: 20px;
+        margin-right: 0;
+        accent-color: var(--c-primary);
+        flex: 0 0 auto;
+    }
+
+    .question-card .option label {
+        flex: 1;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--c-fg);
+    }
+
+    /* restore full border on the last row (legacy rule removed its bottom border) */
+    .question-card .option:last-child {
+        border-bottom: 1px solid var(--c-border);
+    }
+
+    /* .selected is the JS fallback for WebViews without :has() support */
+    .question-card .option.selected,
+    .question-card .option:has(input:checked) {
+        border-color: var(--c-primary);
+        background: var(--c-primary-050);
+        transform: scale(1.01);
+    }
+
+/* Sticky quiz header: question stepper + timer */
+.quiz-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    margin: -12px -12px 12px;          /* bleed to the padded page edges */
+    background: var(--c-surface);
+    border-bottom: 1px solid var(--c-border);
+}
+
+.quiz-pos {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--c-fg);
+}
+
+.quiz-timer:empty { display: none; }
+
+.quiz-timer {
+    font-size: 13px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: var(--r-chip);
+    background: var(--c-primary-050);
+    color: var(--c-primary-600);
+    font-variant-numeric: tabular-nums;
+}
+
+    .quiz-timer.warn { background: #fff3e0; color: var(--c-warning); }
+    .quiz-timer.danger { background: #fdeaea; color: var(--c-danger); animation: quiz-pulse 0.8s ease infinite; }
+
+@keyframes quiz-pulse { 50% { opacity: 0.55; } }
+
+/* Submit button: full-width brand, clear disabled state during submit */
+#vdo_btn_div { display: block; float: none; margin-top: 8px; }
+
+    #vdo_btn_div .button {
+        width: 100%;
+        height: 44px;
+        line-height: 44px;
+        border-radius: 10px;
+        background: var(--c-primary);
+        color: var(--c-on-primary);
+        font-weight: 700;
+    }
+
+    #vdo_btn_div .button.disabled { opacity: 0.7; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .quiz-timer.danger { animation: none; }
 }

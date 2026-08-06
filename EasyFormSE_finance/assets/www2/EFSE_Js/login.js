@@ -1,4 +1,4 @@
-﻿/*-----start---------*/
+/*-----start---------*/
 
 function toHex(int) {
     var hex = int.toString(16);
@@ -590,7 +590,8 @@ function check_remember_me(internet) {
                 $('#chk_remember_me').prop('checked', true);
                 $("#btnSignup").hide();                                              // hide signup button for valid user
 
-                $("#btn_login_biometric").show();
+                // show_biometric() shows the button + prompts only if the user
+                // has enabled biometric (view_biometric == "true").
                 show_biometric();
             } else {
                 // remember me & offline
@@ -649,7 +650,9 @@ function getButtonValue() {
     try {
 
         var clickedLink = $("#btn_login_theme");
-        myApp.popover('.popover-login', clickedLink);
+        // Loading state shown on the button itself (subtle spinner + shimmer),
+        // replacing the old "Fetching dashboard" progress popover.
+        /* login progress shown via the top loading bar (loading()) */
 
 
         if (version == '' || version == null || version == undefined || imeino == '' || imeino == null || imeino == undefined) {
@@ -743,7 +746,8 @@ function getButtonValue() {
                     });
                     //alert1(JSON.stringify(login_obj));
 
-                    localStorage.setItem('view_biometric', 'true');
+                    // Biometric is NOT auto-enabled on login. The user opts in
+                    // via the Home menu toggle (sets view_biometric).
 
                     cordova.exec(default_login_response, onfail, 'SqlitePlugin', 'login_detail_plug1', login_obj);
                 }
@@ -2440,7 +2444,9 @@ function verify_otp() {
         //alert1(JSON.stringify(login_obj));
 
         var clickedLink = $("#btn_login_theme");
-        myApp.popover('.popover-login', clickedLink);
+        // Loading state shown on the button itself (subtle spinner + shimmer),
+        // replacing the old "Fetching dashboard" progress popover.
+        /* login progress shown via the top loading bar (loading()) */
         myApp.setProgressbar('#login_progressbar', 0);
         $("#lbl_progress_details").html("Verifying OTP");
 
@@ -2518,7 +2524,9 @@ show_biometric = () => {
 
 
     let view_biometric = localStorage.getItem("view_biometric");
-    if (view_biometric != "false") {
+    // Biometric is opt-in: only trigger when the user has explicitly enabled it
+    // from the Home menu toggle. Default (null / unset) = disabled.
+    if (view_biometric == "true") {
         $("#btn_login_biometric").show();
 
         var q_jsonobj = [];
@@ -2594,6 +2602,9 @@ function clear_localStorage() {
     else {
         livelink_watched_Array = JSON.parse(livelink_watched_Array);
     }
+    
+    let ml_last_index = localStorage.getItem('ml_last_index');
+    let ml_muted = localStorage.getItem('ml_muted');
 
     window.localStorage.clear();
     $.jStorage.flush();
@@ -2648,4 +2659,7 @@ function clear_localStorage() {
     localStorage.setItem('user_language', user_language);
     localStorage.setItem('deviceinfo', deviceinfo);
     localStorage.setItem('livelink_watched_Array', JSON.stringify(livelink_watched_Array));
+    
+    if (ml_last_index !== null) localStorage.setItem('ml_last_index', ml_last_index);
+    if (ml_muted !== null) localStorage.setItem('ml_muted', ml_muted);
 }

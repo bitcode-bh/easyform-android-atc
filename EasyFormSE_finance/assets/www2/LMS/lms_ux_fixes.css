@@ -1,0 +1,518 @@
+/* ==========================================================================
+   ATC LMS — UX / accessibility fixes layer  (Batch 1)
+   Additive only. Loaded LAST so it can refine existing screen CSS without
+   rewriting it. See design-system/atc-lms/MASTER.md for the full system.
+   ========================================================================== */
+
+:root {
+  /* Brand (existing #215ba8 blue) — available for gradual token adoption */
+  --c-primary: #215ba8;
+  --c-primary-600: #1b4c8f;
+  --c-primary-050: #eaf1fa;
+  --c-secondary: #2d2f8e;
+  --c-on-primary: #ffffff;
+
+  /* Semantic status (accessible on white) */
+  --c-success: #1e8e3e;
+  --c-warning: #b26a00;
+  --c-danger:  #dc2626;   /* replaces harsh #ff0000 */
+
+  /* Neutrals */
+  --c-fg: #1c2430;
+  --c-fg-muted: #5b6470;
+  --c-border: #e3e6ea;
+  --c-surface: #ffffff;
+  --c-surface-2: #f3f5f7;
+  --c-bg: #f7f9fb;
+
+  /* Radius / elevation */
+  --r-card: 14px;
+  --r-chip: 999px;
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .1);
+
+  --focus-ring: 2px solid var(--c-primary);
+}
+
+/* --- 1. Visible keyboard focus on all interactive controls --------------- */
+.tab-link:focus-visible,
+.sample-safety-filter:focus-visible,
+.sample-safety-chip:focus-visible,
+.sample-safety-search-input:focus-visible,
+.module-preview-back:focus-visible,
+.sample-module-btn:focus-visible,
+.lesson-preview-card:focus-visible,
+.popup-close:focus-visible,
+#safety-video-expand:focus-visible,
+.button:focus-visible,
+.item-radio:focus-within,
+.option:focus-within {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* --- 2. Minimum 44x44 touch targets (icon-only / small controls) --------- */
+.sample-safety-filter,
+#safety-video-expand,
+.module-preview-back,
+.popup-close {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tab-link { min-height: 48px; }               /* bottom tabbar row */
+.sample-safety-chip { min-height: 36px; }      /* filter chips: comfortable tap */
+
+/* --- 3. Destructive color: retire harsh pure red ------------------------- */
+.sample-safety-search .fa-search { color: var(--c-fg-muted); }
+
+/* --- 4. Respect reduced-motion ------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== Top header + bottom tab bar (reference redesign) ================== */
+/* Top header: clean white, bold left-aligned title */
+.navbar, .navbar .navbar-bg { background: #ecedef !important; }
+.navbar { box-shadow: none !important; }
+.navbar::after, .navbar-bg::after { display: none !important; }   /* remove hairline */
+.navbar .title {
+  color: #1f2937;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+/* Bottom tab bar */
+.toolbar.tabbar,
+.custom-tabbar {
+  background: #ecedef !important;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+  position: fixed !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  z-index: 5000 !important;
+  display: block !important;
+  height: calc(56px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.custom-tabbar .toolbar-inner {
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+}
+.toolbar.tabbar::before,
+.custom-tabbar::before { display: none !important; }             /* F7 hairline off */
+
+.tabbar .tab-link,
+.custom-tabbar .tab-link {
+  color: #111111;                 /* black icons; active shown by fill/outline, NOT color */
+  text-decoration: none !important;
+  opacity: 0.5;                   /* Inactive state */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+.tabbar .tab-link.tab-link-active,
+.custom-tabbar .tab-link.tab-link-active {
+  opacity: 1.0;                   /* Active state */
+  font-weight: 600;
+}
+.tabbar .tab-link .tabbar-label {
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 0 !important;
+}
+
+/* Active = filled icon, inactive = outlined icon. Two stacked <i>s crossfade;
+   no pill/underline/highlight, no color change. */
+.tab-ico {
+  position: relative;
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  font-size: 18px;
+  line-height: 1;
+}
+.tab-ico i {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.tab-ico .ico-outline { opacity: 1; transform: scale(1); }
+.tab-ico .ico-filled { opacity: 0; transform: scale(0.85); }
+.tab-link-active .tab-ico .ico-outline, .active .tab-ico .ico-outline,
+.custom-tabbar .tab-link-active .tab-ico .ico-outline { opacity: 0; transform: scale(0.85); }
+
+.tab-link-active .tab-ico .ico-filled, .active .tab-ico .ico-filled,
+.custom-tabbar .tab-link-active .tab-ico .ico-filled { opacity: 1; transform: scale(1); }
+
+/* Selected tab → company theme color (filled icon + label) */
+.tabbar .tab-link-active, .tabbar .active,
+.custom-tabbar .tab-link-active { color: #215ba8; }
+.tabbar.tabbar-dark .tab-link-active, .tabbar.tabbar-dark .active,
+.custom-tabbar.tabbar-dark .tab-link-active { color: #4a90d9; }   /* lighter brand tint on the dark nav */
+
+/* Immersive dark nav while on the Micro Learning (reels) screen —
+   icons switch to light so they stay visible (fill/outline still signals active). */
+.toolbar.tabbar.tabbar-dark {
+  background: #000000 !important;
+  border-top-color: #222a35;
+  box-shadow: 0 -4px 10px -1px rgba(0, 0, 0, 0.5);
+}
+.tabbar.tabbar-dark .tab-link { color: #e7ebf0; }
+
+/* ===== Compact clean top app bar + collapsible search =================== */
+:root { --f7-navbar-height: 48px; }               /* shorter app bar */
+
+/* Kill the old blue title container; clean, small, left-aligned title */
+.navbar .title.sample-safety-titlebar {
+  background: transparent !important;
+  color: #1f2937 !important;
+  padding: 0 !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+/* Assessments: search integrated into a compact app-bar row */
+.assessment-appbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  position: relative;                              /* anchor for sort menu */
+}
+.assessment-appbar .aa-search-toggle,
+.assessment-appbar .aa-search-close,
+.assessment-appbar .assessment-filter {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: #215ba8;
+  font-size: 18px;
+  cursor: pointer;
+}
+.assessment-appbar .assessment-filter { margin-left: auto; }   /* sort to the right */
+
+/* Collapsible search field (max-width animation = smooth expand/collapse) */
+.assessment-appbar .assessment-search {
+  flex: 1 1 auto;
+  max-width: 0;
+  opacity: 0;
+  padding: 0;
+  border-width: 0;
+  overflow: hidden;
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s ease, padding 0.3s ease;
+}
+.assessment-appbar.searching .assessment-search {
+  max-width: 100%;
+  opacity: 1;
+  padding: 0 14px;
+  border-width: 1px;
+}
+.assessment-appbar .aa-search-close { display: none; }
+.assessment-appbar.searching .aa-search-toggle { display: none; }
+.assessment-appbar.searching .aa-search-close { display: flex; }
+.assessment-appbar.searching .assessment-filter { margin-left: 8px; }
+
+/* Tighten vertical spacing on the Assessments screen */
+#tab-2 .assessment-content { padding-top: 8px; }
+#tab-2 .sample-safety-tabs { padding: 10px 0 12px; }
+
+/* ===== Shared search in the top app bar ================================= */
+#lms_search { display: none; }               /* JS shows it only on searchable tabs */
+.navbar .right { display: flex; align-items: center; padding-right: 4px; }
+.lms-search { display: flex; align-items: center; }
+.lms-search-input {
+  width: 0;
+  max-width: 0;
+  height: 34px;
+  opacity: 0;
+  border: 0;
+  outline: 0;
+  background: #eef1f4;
+  border-radius: 18px;
+  padding: 0;
+  font-size: 14px;
+  color: #303640;
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s ease, padding 0.3s ease;
+}
+.lms-search.expanded .lms-search-input {
+  width: 74vw;
+  max-width: 74vw;
+  opacity: 1;
+  padding: 0 12px;
+}
+
+/* Hide the page title while the search is expanded (make room for the field) */
+.navbar.nav-searching .title {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+}
+
+/* Seamless dark top bar on the Micro Learning (black reels) screen */
+.navbar.navbar-dark,
+.navbar.navbar-dark .navbar-bg { background: #0f141a !important; }
+.navbar.navbar-dark .title { color: #f3f3f7 !important; }
+.navbar.navbar-dark .lms-search-btn { color: #f3f3f7; }
+.navbar.navbar-dark .lms-search-input {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+.navbar.navbar-dark .lms-search-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.lms-search-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: #1f2937;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* Remove Framework7's default selected-tab highlight bar above the icon */
+.tabbar-highlight,
+.toolbar .tab-link-highlight { display: none !important; }
+.tabbar .tab-link::before,
+.tabbar .tab-link::after { display: none !important; }
+.tabbar .tab-link-active { box-shadow: none !important; }
+
+/* No tap ripple / active-state background behind the nav icons */
+.tabbar .tab-link .ripple-wave,
+.tabbar .tab-link .ripple { display: none !important; }
+.tabbar .tab-link.active-state,
+.tabbar .tab-link:active { background: transparent !important; }
+
+/* ===== Cross-page fade veil (Home <-> LMS handoff) ====================== */
+#page-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #ecedef;                 /* the grey both pages already share */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease;
+}
+#page-veil.show { opacity: 1; visibility: visible; }
+#page-veil img {
+  width: 64px;
+  height: 64px;
+  opacity: 0.9;
+  animation: veil-pulse 1s ease-in-out infinite alternate;
+}
+@keyframes veil-pulse { to { transform: scale(1.06); opacity: 1; } }
+/* Fade each page IN on arrival so the reload dips through grey, not white. */
+body { animation: page-in 0.28s ease both; }
+@keyframes page-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  #page-veil { transition: none; }
+  #page-veil img { animation: none; }
+  body { animation: none; }
+}
+
+/* ===== Lock light theme (all content cards are light; avoid F7 auto-dark) = */
+:root[data-theme="light"] .page,
+:root[data-theme="light"] .view,
+:root[data-theme="light"] .views,
+:root[data-theme="light"] .tabs,
+:root[data-theme="light"] swiper-container.tabs > .tab { background: #f3f5f7; }
+:root[data-theme="light"] body { background: #f3f5f7; }
+
+/* ===== Home (selection.html) legacy polish ============================== */
+/* Kill 8px attendance body copy; give tiny action buttons real touch size */
+#noti_Attendance2 .col-75,
+#noti_Attendance3 .col-75 {
+  font-size: 12px !important;
+  color: var(--c-fg-muted) !important;
+}
+#noti_Attendance2 .button,
+#noti_Attendance3 .button {
+  min-height: 40px !important;
+  min-width: 72px !important;
+  line-height: 40px !important;
+  border-radius: 8px !important;
+  transition: transform 0.15s ease;
+}
+#noti_Attendance2 .button:active,
+#noti_Attendance3 .button:active { transform: scale(0.96); }
+
+/* Softer red badge, lighter avatar ring, gentler card shadow */
+.notification-badge { background-color: var(--c-danger) !important; }
+#menu_img_profile { border: 1.5px solid rgba(0, 0, 0, 0.12) !important; }
+.card_td { box-shadow: var(--shadow-card) !important; }
+
+/* Home navbar bell: guarantee a 44x44 tap target */
+.views .navbar .right .link {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(12deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(6deg); }
+  80% { transform: rotate(-4deg); }
+}
+.fa-bell.has-new { animation: bell-ring 0.6s ease; }
+@media (prefers-reduced-motion: reduce) { .fa-bell.has-new { animation: none; } }
+
+/* ===== Home Screen UI Fixes ===== */
+
+/* 1. Fix cropped subtitles in module lists and style to match reference */
+#module_list .item-content,
+#card_module_list .card_td,
+.cls_task_ico,
+.item-inner,
+.item-title-row {
+  height: auto !important;
+  min-height: unset !important;
+  overflow: visible !important;
+}
+
+#module_list .item-content,
+#card_module_list .card_td {
+  background: #f4f4f4 !important;
+  border: none;
+  border-bottom: 1px solid #e5e5e5 !important;
+  border-radius: 0 !important;
+  margin-bottom: 0;
+  box-shadow: none !important;
+  padding: 12px 16px;
+}
+#module_list .item-content:last-child,
+#card_module_list .card_td:last-child {
+  border-bottom: none;
+}
+.item-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+}
+.item-subtitle {
+  font-size: 13px !important;
+  color: #6b7280 !important;
+  margin-top: 2px !important;
+}
+#card_module_list {
+  background: transparent !important;
+}
+#module_list {
+  background: transparent !important;
+  padding: 0;
+}
+
+/* 2. Home Greeting Header Stack */
+.home-greeting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.home-greeting img {
+  width: 44px !important;
+  height: 44px !important;
+  border: 1px solid #e5e7eb !important;
+}
+.home-greet-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.2;
+}
+.home-greet-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: #1f2937;
+  margin-bottom: 0 !important;
+}
+.home-greet-sub {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* 3. Search and Filter heights */
+.home-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px;
+}
+.home-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 0 16px;
+  height: 48px;
+  border: 1px solid #e5e7eb;
+  box-shadow: none;
+}
+.home-search input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  margin-left: 8px;
+  font-size: 15px;
+  outline: none;
+}
+.home-filter {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  color: #1f2937;
+  font-size: 18px;
+}
+
+/* 4. Chevron vertical alignment */
+#module_list .item-inner,
+#card_module_list .item-inner {
+  display: flex;
+  align-items: center !important;
+}
+.item-after i {
+  color: #9ca3af !important;
+  font-size: 16px !important;
+}

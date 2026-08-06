@@ -1,7 +1,67 @@
+$(document).ready(function() {
+    if (!document.getElementById('premium-transitions')) {
+        var style = document.createElement('style');
+        style.id = 'premium-transitions';
+        style.innerHTML = `
+            @keyframes premiumPageFadeIn {
+                0% { opacity: 0; transform: scale(0.98) translateY(10px); }
+                100% { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            body {
+                background-color: #f4f4f4 !important;
+            }
+            .page-content.premium-fade-in, swiper-container.tabs.premium-fade-in {
+                animation: premiumPageFadeIn 400ms cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+            }
+            .page-content.premium-fade-out, swiper-container.tabs.premium-fade-out {
+                transition: opacity 350ms cubic-bezier(0.4, 0.0, 0.2, 1), transform 350ms cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+                opacity: 0 !important;
+                transform: scale(0.98) translateY(-10px) !important;
+            }
+            
+            /* Premium Tab Transitions for LMS */
+            .tab .card, .tab .kpi-card, .tab .list-item, .tab .lms-kpi-chart {
+                opacity: 0;
+                transform: translateY(16px);
+                transition: opacity 400ms cubic-bezier(0.4, 0.0, 0.2, 1), transform 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
+            }
+            .swiper-slide-active .card, .swiper-slide-active .kpi-card, .swiper-slide-active .list-item, .swiper-slide-active .lms-kpi-chart,
+            .tab-active .card, .tab-active .kpi-card, .tab-active .list-item, .tab-active .lms-kpi-chart {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            /* Staggered entrances */
+            .swiper-slide-active .kpi-card:nth-child(1) { transition-delay: 50ms; }
+            .swiper-slide-active .kpi-card:nth-child(2) { transition-delay: 100ms; }
+            .swiper-slide-active .kpi-card:nth-child(3) { transition-delay: 150ms; }
+            .swiper-slide-active .lms-kpi-chart { transition-delay: 200ms; }
+            
+            /* CTA Button Scale-In */
+            .toolbar-bottom .tab-link {
+                transition: transform 300ms cubic-bezier(0.2, 0.0, 0, 1);
+            }
+            .toolbar-bottom .tab-link:active {
+                transform: scale(0.95);
+            }
+            
+            /* Background subtle glow */
+            .page-content {
+                background-image: radial-gradient(circle at top, rgba(100,150,255,0.04), transparent 70%);
+                background-attachment: fixed;
+            }
+        `;
+        document.head.appendChild(style);
+        $(".page-content, swiper-container.tabs").addClass("premium-fade-in");
+    }
+});
+
 function changeurl(url) {
     try {
         // alert1("" + url + "");
-        window.location.href = url;
+        $(".page-content, swiper-container.tabs").removeClass("premium-fade-in").addClass("premium-fade-out");
+        setTimeout(function() {
+            window.location.href = url;
+        }, 350);
         // navigator.app.loadUrl("file:///android_asset/www2/" + url + "");
 
     } catch (e) {

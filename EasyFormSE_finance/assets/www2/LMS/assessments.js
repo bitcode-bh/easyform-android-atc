@@ -1,4 +1,4 @@
-﻿
+
 var glob_Assessment_Schedule_Id = 0;
 var assessment_data = [];
 var selected_assessment_tag = "All";
@@ -123,6 +123,7 @@ function get_assessments_listing(force_refresh) {
                 assessment._lms_item_order = index;
                 return assessment;
             });
+            if (typeof update_lms_kpi === 'function') update_lms_kpi();
             selected_assessment_tag = "All";
             selected_assessment_sort = "recommended";
             assessment_search_text = "";
@@ -204,8 +205,8 @@ function get_assessments_listing(force_refresh) {
         }
         else {
             assessment_listing_requested = false;
-            var message = myArray[0].message;
-            alert(message);
+            assessment_data = [];
+            render_assessment_cards();
         }
 
         loading_hide();
@@ -309,10 +310,10 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                     }
 
                     if (ans_label == op_text) {
-                        str += '<input type="checkbox" alt="' + weightage + '" id="' + Assessment_Que_Id + '_' + j + '" checked="checked" style="font-weight: bold">';
+                        str += '<input type="radio" name="q_' + Assessment_Que_Id + '" alt="' + weightage + '" id="' + Assessment_Que_Id + '_' + j + '" checked="checked">';
                     }
                     else {
-                        str += '<input type="checkbox" alt="' + weightage + '" id="' + Assessment_Que_Id + '_' + j + '">';
+                        str += '<input type="radio" name="q_' + Assessment_Que_Id + '" alt="' + weightage + '" id="' + Assessment_Que_Id + '_' + j + '">';
                     }
 
                     str += '<label for="' + Assessment_Que_Id + '_' + j + '">' + op_text + '</label>';
@@ -323,30 +324,50 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
 
             }
 
+            // Question-count stepper in the sticky quiz header
+            var totalQ = document.querySelectorAll('#dv_Assessment_Question_List .question-card').length;
+            var qTotalEl = document.getElementById('q_total');
+            var qCurEl = document.getElementById('q_cur');
+            var qHeader = document.getElementById('assessment_quiz_header');
+            if (qTotalEl) qTotalEl.textContent = totalQ;
+            if (qCurEl) qCurEl.textContent = (Progress == "100") ? totalQ : 0;
+            if (qHeader) qHeader.style.display = totalQ > 0 ? 'flex' : 'none';
+
+            // Highlight any pre-checked option (prior answer / review mode) —
+            // covers WebViews without :has() and the disabled review state.
+            document.querySelectorAll('#dv_Assessment_Question_List input[type="radio"]:checked').forEach(function (inp) {
+                var opt = inp.closest('.option');
+                if (opt) opt.classList.add('selected');
+            });
+
             if (Progress == "100") {
-                $("#dv_Assessment_Question_List").find("input[type='checkbox']").attr("disabled", "disabled");
+                $("#dv_Assessment_Question_List").find("input[type='radio']").attr("disabled", "disabled");
                 $("#dv_Assessment_Question_List").show();
             }
             else {
                 let btn_str = '<div id="vdo_btn_div" class="buttons-row">'
-                btn_str += '<a href="#" class="button button-fill color-gray" onclick="submit_question_by_assessment_id()">Submit</a>'
+                btn_str += '<a href="#" class="button button-fill" id="btn_assessment_submit" onclick="submit_question_by_assessment_id()">Submit</a>'
                 btn_str += '</div>'
                 $("#dv_Assessment_Question_List").append(btn_str);
-            }
 
-            document.querySelectorAll('.question-card').forEach(card => {
-                const checkboxes = card.querySelectorAll('input[type="checkbox"]');
-                // select only one option in checkbox
-                checkboxes.forEach(cb => {
-                    cb.addEventListener('change', function () {
-                        if (this.checked) {
-                            checkboxes.forEach(other => {
-                                if (other !== this) other.checked = false;
-                            });
-                        }
+                // Radios are single-select natively — just keep the "answered"
+                // counter in the header current as the user picks options.
+                // Also toggle a .selected class as a highlight fallback for
+                // WebViews without :has() support (older Android devices).
+                $("#dv_Assessment_Question_List").off('change.assessQ').on('change.assessQ', 'input[type="radio"]', function () {
+                    var card = this.closest('.question-card');
+                    if (card) {
+                        card.querySelectorAll('.option').forEach(function (o) { o.classList.remove('selected'); });
+                        var opt = this.closest('.option');
+                        if (opt) opt.classList.add('selected');
+                    }
+                    var answered = 0;
+                    document.querySelectorAll('#dv_Assessment_Question_List .question-card').forEach(function (c) {
+                        if (c.querySelector('input[type="radio"]:checked')) answered++;
                     });
+                    if (qCurEl) qCurEl.textContent = answered;
                 });
-            });
+            }
 
         }
         else {
@@ -384,13 +405,13 @@ function submit_question_by_assessment_id() {
     for (let i = 0; i < questionCards.length; i++) {
         let questionCard = questionCards[i];
         let questionName = questionCard.querySelector('.question-title').textContent.trim();
-        let checkboxes = questionCard.querySelectorAll('input[type="checkbox"]');
+        let options = questionCard.querySelectorAll('input[type="radio"]');
 
         let selectedAns = [];
 
-        for (let j = 0; j < checkboxes.length; j++) {
-            if (checkboxes[j].checked) {
-                selectedAns.push(checkboxes[j].nextElementSibling.textContent.trim());
+        for (let j = 0; j < options.length; j++) {
+            if (options[j].checked) {
+                selectedAns.push(options[j].nextElementSibling.textContent.trim());
             }
         }
 
@@ -421,16 +442,27 @@ function submit_question_by_assessment_id() {
         }
     }
     loading();
+    var submitBtn = document.getElementById('btn_assessment_submit');
+    if (submitBtn) {
+        submitBtn.dataset.label = submitBtn.textContent;
+        submitBtn.classList.add('disabled');
+        submitBtn.textContent = 'Submitting…';
+    }
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_InsertUpdateDelete_Assessment_Question_Log_Master', JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
         if (status == 1) {
+            if (submitBtn) submitBtn.textContent = '✓ Submitted';
             get_assessments_listing(true);
             myApp.popup.close('.popup-assessment-que')
         }
         else {
             var message = myArray[0].message;
+            if (submitBtn) {
+                submitBtn.textContent = submitBtn.dataset.label || 'Submit';
+                submitBtn.classList.remove('disabled');
+            }
             alert(message);
         }
 
