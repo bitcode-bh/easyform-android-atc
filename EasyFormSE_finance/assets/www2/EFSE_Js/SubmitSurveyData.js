@@ -4315,6 +4315,24 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                             if (auto_trip == "true") {
                                 var myArray = JSON.parse(e);
                                 var t_tid = myArray[0].tid;
+
+                                try {
+                                    let vehicle_type = "";
+                                    for (let vt = 0; vt < json.length; vt++) {
+                                        let vt_qid = json[vt].que_id;
+                                        if (vt_qid == "1109") {
+                                            let t_ans = json[vt].ans[0];
+                                            if (t_ans == "" || t_ans == null || t_ans == undefined) { }
+                                            else {
+                                                vehicle_type = t_ans;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                    localStorage.setItem('trip_vehicle_type', vehicle_type);
+                                }
+                                catch (e) { }
+
                                 auto_start_trip_on_attendane_task_create(t_tid);
                             }
                             else {
