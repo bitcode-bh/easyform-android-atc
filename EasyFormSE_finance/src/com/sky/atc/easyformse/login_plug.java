@@ -410,6 +410,7 @@ public class login_plug implements Runnable {
                                     String user_id = "";
                                     String imageUrl = null;
                                     String filename = null;
+                                    String Emergency_Contact_No;
 
                                     try {
                                         uniqcode = jsonObject.getString("Uniq_Code");
@@ -445,6 +446,19 @@ public class login_plug implements Runnable {
 
 
                                                         Log.d("##URLPATH2", filename);
+                                                    }
+                                                }
+
+                                                if (questionId.equalsIgnoreCase("4010")) {
+
+                                                    if (jsonObject1.has("ans")) {
+//
+                                                        JSONArray array = jsonObject1.getJSONArray("ans");
+                                                        Emergency_Contact_No = array.get(0).toString();
+                                                        pref = sqlitewraper.getSecureShared("MyPref");
+                                                        pref.putString("Emergency_Contact_No", Emergency_Contact_No); // Saving string
+                                                        pref.commit();
+
                                                     }
                                                 }
                                             }

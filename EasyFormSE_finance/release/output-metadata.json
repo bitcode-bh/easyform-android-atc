@@ -4,17 +4,34 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.easyform.azurepower",
+  "applicationId": "com.easyform.atcpv",
   "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 96,
-      "versionName": "D_19.6.27.7_F7",
+      "versionCode": 107,
+      "versionName": "ATC_19.6.29_F7_V1.10.6",
       "outputFile": "EasyFormSE_finance-release.apk"
     }
   ],
-  "elementType": "File"
+  "elementType": "File",
+  "baselineProfiles": [
+    {
+      "minApi": 28,
+      "maxApi": 30,
+      "baselineProfiles": [
+        "baselineProfiles/1/EasyFormSE_finance-release.dm"
+      ]
+    },
+    {
+      "minApi": 31,
+      "maxApi": 2147483647,
+      "baselineProfiles": [
+        "baselineProfiles/0/EasyFormSE_finance-release.dm"
+      ]
+    }
+  ],
+  "minSdkVersionForDexing": 29
 }

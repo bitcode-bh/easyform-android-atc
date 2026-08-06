@@ -89,7 +89,7 @@ android {
         config {
             keyAlias 'key'
             keyPassword 'skypatel7'
-            storeFile file('E:/Android_Studio/key')  // atc live
+            storeFile (new File('E:/Android_Studio/key').exists() ? new File('E:/Android_Studio/key') : (new File(projectDir, 'keystore/easyform-debug.jks').exists() ? new File(projectDir, 'keystore/easyform-debug.jks') : new File(System.getProperty('user.home'), '.android/debug.keystore')))
 //            storeFile file('E:/Android_Studio/key1')   // for security
             storePassword 'skypatel7'
             v1SigningEnabled false

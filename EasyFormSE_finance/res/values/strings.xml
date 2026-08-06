@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">UAT WEB (Elevar)</string>
+    <string name="app_name">Local UAT WEB (Elevar)</string>
+    <string name="SAFETYDETECTION">SAFETYDETECTION</string>
     <string name="gps_not_found_title">location service off</string>
     <string name="gps_not_found_message">Would you like to start service?</string>
     <string name="yes">yes</string>

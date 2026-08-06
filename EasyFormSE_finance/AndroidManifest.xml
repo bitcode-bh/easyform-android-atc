@@ -39,6 +39,8 @@
 
     <uses-permission android:name="android.permission.POWER_SAVER" tools:ignore="ProtectedPermissions"/>
 
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+
 
     <!--    <uses-permission android:name="android.permission.WRITE_CALENDAR" />-->
     <!--    <uses-permission android:name="android.permission.READ_CALENDAR" />-->
@@ -54,6 +56,9 @@
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
 
 
     <!--<uses-feature
@@ -395,8 +400,8 @@
         </service>
         <service android:name=".TripService" />
         <service android:name=".AutoTripStopService" />
-        <service android:name=".GpsReceiverService" />
-        <service android:name=".geofencenew.GeofenceTrasitionService" />
+        <service android:name=".GpsReceiverService" android:enabled="true" />
+        <service android:name=".geofencenew.GeofenceTrasitionService"  android:enabled="true"/>
         <service android:name=".geofencenew.GeofenceTrasitionServicenew"  android:exported="false" />
         <service android:name=".geofencenew.GeofenceDownlodService" android:exported="false" />
 
