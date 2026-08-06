@@ -134,8 +134,9 @@ public class newfused extends Service implements LocationListener {
     private float callStartSpeed = 0f;
     private float maxSpeedDuringCall = 0f;
     private long maxSpeedMilli = 0L;
-    private boolean speedViolation = false;
-
+    private boolean speedViolation ;
+    private boolean callEventInserted = false;
+    private static final float CALL_SPEED_LIMIT = 15;
     @SuppressLint("InvalidWakeLockTag")
     synchronized private static PowerManager.WakeLock getLock(Context context) {
         if (lockStatic == null) {
@@ -357,6 +358,8 @@ public class newfused extends Service implements LocationListener {
                             return;
                         }
                         latestLocation = new Location(location);
+                        checkCallTimeSpeed(location);
+
                         //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
                         if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
 
@@ -410,27 +413,37 @@ public class newfused extends Service implements LocationListener {
         locationRequest.setFastestInterval(5000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        locationRequest.setSmallestDisplacement(100);
+        locationRequest.setSmallestDisplacement(80);
         return locationRequest;
     }
 
-
-    private void onLocationUpdate(Location location, float manualSpeed) {
-
-
+    private void checkCallTimeSpeed(Location location)
+    {
         if (callActive) {
 
-            float currentSpeed = location.getSpeed();
+            float currentSpeed = location.getSpeed() ;
+            Log.d("CALL_DEBUG",
+                    "callActive=" + callActive +
+                            " speedViolation=" + speedViolation +
+                            " speed=" + currentSpeed);
             Log.d("CALL", "currentSpeed " + currentSpeed);
+            if (currentSpeed > CALL_SPEED_LIMIT) {
+                Log.d("CALL", "speedViolation ");
+                speedViolation = true;
+
+            }
             if (currentSpeed > maxSpeedDuringCall) {
                 maxSpeedDuringCall = currentSpeed;
                 maxSpeedMilli = System.currentTimeMillis();
             }
 
-            if (currentSpeed > callStartSpeed) {
-                speedViolation = true;
-            }
+
         }
+    }
+    private void onLocationUpdate(Location location, float manualSpeed) {
+
+
+
 
         data d = new data();
 
@@ -530,6 +543,7 @@ public class newfused extends Service implements LocationListener {
                 return;
             }
             latestLocation = new Location(location);
+            checkCallTimeSpeed(location);
             //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
             if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
 
@@ -748,7 +762,7 @@ public class newfused extends Service implements LocationListener {
     }
 
     public  void handleCallState(int state) {
-
+        Log.e("CALL_DEBUG", "State = " + state);
         if (state == lastCallState) {
             return;
         }
@@ -773,14 +787,14 @@ public class newfused extends Service implements LocationListener {
                     callActive = true;
 
                     callStartTime = System.currentTimeMillis();
-
+                    callEventInserted = false;
                     speedViolation = false;
                     maxSpeedDuringCall = 0f;
                     maxSpeedMilli = 0L;
 
                     if (latestLocation != null) {
                         callStartLocation = new Location(latestLocation);
-                        callStartSpeed = callStartLocation.getSpeed();
+                       // callStartSpeed = callStartLocation.getSpeed();
 //                        Log.d("CALL", "Start Time : " + callStartTime);
 //                        Log.d("CALL", "Start Lat : " + callStartLocation.getLatitude());
 //                        Log.d("CALL", "Start Lng : " + callStartLocation.getLongitude());
@@ -806,18 +820,18 @@ public class newfused extends Service implements LocationListener {
 //                        Log.d("CALL", "End Lat : " + callEndLocation.getLatitude());
 //                        Log.d("CALL", "End Lng : " + callEndLocation.getLongitude());
                     }
-
-                    long duration = (callEndTime - callStartTime) ;
+                    Log.d("CALL_DEBUG", "speedViolation at IDLE = " + speedViolation);
+                    if (speedViolation && !callEventInserted)
+                    {
+                        long duration = (callEndTime - callStartTime) ;
 
 //                    Log.d("CALL", "Duration : " + duration + " sec");
-
-                    if (callStartLocation != null && callEndLocation != null) {
-
+                        callEventInserted = true;
                         float meters = callStartLocation.distanceTo(callEndLocation);
-                        double km = meters / 1000.0;
-                        if (speedViolation) {
+                        double  distanceKm  = meters / 1000.0;
 
-                            boolean isInserted = calleventinsert(
+
+                         calleventinsert(
                                     callStartTime,
                                     String.valueOf(callEndTime),
                                     String.valueOf(duration),
@@ -827,8 +841,10 @@ public class newfused extends Service implements LocationListener {
 //                            Log.d("CALL","Max Speed : " + maxSpeedDuringCall);
 //                            Log.d("CALL","Max Speed Time : " + maxSpeedMilli);
 //
-//                            Log.d("CALL", "Distance : " + km + " KM");
-                            if (isInserted) {
+//                            Log.d("CALL", "Distance : " + distanceKm  + " KM");
+
+                                callActive = false;
+                                speedViolation = false;
 
                                 callStartLocation = null;
                                 callEndLocation = null;
@@ -836,15 +852,18 @@ public class newfused extends Service implements LocationListener {
                                 callStartTime = 0;
                                 callEndTime = 0;
 
+                                maxSpeedDuringCall = 0;
+                                maxSpeedMilli = 0;
+
                                 lastCallState = -1;
-                            }
+
                         }
                         else {
 
                             Log.d("CALL","No speed violation during call.");
                         }
 
-                    }
+
 
                 }
 
@@ -879,7 +898,7 @@ public class newfused extends Service implements LocationListener {
             c.put("duration", duration);
 
             JSONObject maxViolation = new JSONObject();
-            maxViolation.put("callStartSpeed", callStartSpeed);
+//            maxViolation.put("callStartSpeed", callStartSpeed);
             maxViolation.put("maxSpeedDuringCall", maxSpeedDuringCall);
             maxViolation.put("maxSpeedTime", maxSpeedMilli);
 
@@ -954,7 +973,7 @@ public class newfused extends Service implements LocationListener {
 
         @Override
         public void onCallStateChanged(int state) {
-
+            Log.e("CALL_STATE", "TelephonyCallback state = " + state);
             handleCallState(state);
 
         }
