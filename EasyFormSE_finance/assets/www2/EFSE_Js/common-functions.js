@@ -32,6 +32,24 @@ function onsuccess_exit_app() {
 
 function onfail_exit_app(e) { }
 
+// VAPT: wipe the LMS offline action queue + cached reel videos on logout.
+function lms_clear_vapt_cache() {
+    try {
+        if (typeof cordova !== 'undefined' && cordova.exec) {
+            cordova.exec(null, null, 'SqlitePlugin', 'insertValuse', [{ data: "DELETE FROM lms_action_queue", p: "1" }]);
+            if (cordova.file && window.resolveLocalFileSystemURL) {
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
+                    dirEntry.getDirectory('ml_cache', { create: false }, function (cacheDir) {
+                        cacheDir.removeRecursively(function () { }, function () { });
+                    }, function () { });
+                }, function () { });
+            }
+        }
+        localStorage.removeItem('ml_video_cache_map');
+        localStorage.removeItem('ml_video_cache_order');
+    } catch (e) { }
+}
+
 // redirect to login page on logout button click
 function logout_on_click() {
     if (F7_device == 'ios') {
@@ -42,6 +60,7 @@ function logout_on_click() {
         var user_choice = confirm("Some data may get stuck in upload. Are you sure, you want to logout?");
     }
     if (user_choice == true) {
+        lms_clear_vapt_cache();
         changeurl("Login.html");
     }
 }
@@ -77,6 +96,7 @@ function logout_on_click_online() {
 function onsuccess_logout_on_click_online(e) {
 
     localStorage.setItem('view_biometric', 'false');
+    lms_clear_vapt_cache();
     changeurl("Login.html");
 }
 
