@@ -47,6 +47,7 @@ function lms_clear_vapt_cache() {
         }
         localStorage.removeItem('ml_video_cache_map');
         localStorage.removeItem('ml_video_cache_order');
+        if (typeof LmsData !== 'undefined' && LmsData.clearAll) LmsData.clearAll();
     } catch (e) { }
 }
 

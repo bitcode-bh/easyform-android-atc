@@ -31,6 +31,8 @@
     <link href="LMS/micro learning.css" rel="stylesheet" />
     <link href="LMS/lms_ux_fixes.css" rel="stylesheet" />
 
+    <script src="LMS/lms_state.js"></script>
+    <script src="LMS/lms_data.js"></script>
     <script src="LMS/safety_modules.js"></script>
     <script src="LMS/assessments.js"></script>
     <script src="LMS/dashboard.js"></script>
@@ -128,6 +130,9 @@
             setTimeout(hideVeil, 2000); // safety
         })();
     </script>
+
+    <!-- Phase 2: offline sync indicator (shown only while actions are queued) -->
+    <div id="lms-sync-indicator" class="lms-sync-indicator" style="display:none" aria-live="polite"><i class="fa-solid fa-rotate"></i><span id="lms-sync-count"></span></div>
 
     <div id="app">
 
@@ -570,6 +575,21 @@
         // so the search icon is visible without needing a tab tap first.
         document.addEventListener('deviceready', function () { try { lms_set_title('Dashboard'); } catch (e) { } }, false);
         window.addEventListener('load', function () { try { lms_set_title('Dashboard'); } catch (e) { } }, false);
+
+        // Phase 2: initialize the offline write queue and drive the sync indicator.
+        document.addEventListener('deviceready', function () {
+            try {
+                if (typeof LMS_State === 'undefined') return;
+                LMS_State.init();
+                LMS_State.onChange(function (n) {
+                    var el = document.getElementById('lms-sync-indicator');
+                    if (!el) return;
+                    var c = document.getElementById('lms-sync-count');
+                    if (c) c.textContent = n > 0 ? (' ' + n) : '';
+                    el.style.display = n > 0 ? 'inline-flex' : 'none';
+                });
+            } catch (e) { }
+        }, false);
 
         // ---- Shared top-app-bar search (used by Assessments + Micro Learning) ----
         var lms_active_tab = 'Dashboard';

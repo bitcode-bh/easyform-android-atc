@@ -113,69 +113,88 @@ function render_lms_kpi_chart(metric) {
     lms_kpi_chart_instance.render();
 }
 
-function get_dashboard_data() {
+function apply_dashboard(responseText) {
+    var myArray;
+    try { myArray = JSON.parse(responseText); } catch (e) { return; }
+    var status = myArray[0].status;
+    if (status != 1) return;
 
-    $("#dv_Dashboard_List").empty();
+    var data = JSON.parse(myArray[0]["data"]);
+    dashboard_kpi_data = data;
+
+    // Build the whole list as one string and commit it in a single write so the
+    // silent cache->network refresh doesn't flash an empty list.
+    var html = '';
+    if (!data || data.length === 0) {
+        html = '<div class="lms-dashboard-empty">No recent activity yet. Complete a lesson to see your progress here.</div>';
+    }
+    for (var m = 0; m < data.length; m++) {
+        var Module_Name = data[m].Module_Name;
+        var Skill_Name = data[m].Skill_Name;
+        var SubmittedDate = data[m].SubmittedDate;
+
+        var Achieve_Percentage = data[m].Achieve_Percentage;
+        if (Achieve_Percentage == "" || Achieve_Percentage == null || Achieve_Percentage == undefined) {
+            Achieve_Percentage = "0";
+        }
+        else {
+            Achieve_Percentage = Math.round(Achieve_Percentage);
+        }
+
+        var Achieve_Score = data[m].Achieve_Score;
+        var Total_Score = data[m].Total_Score;
+        var Rank = data[m].Rank;
+
+        html += '<div class="lms-activity-card">';
+        html += '<div class="act-main">';
+        html += '<div class="act-title">' + Module_Name + '</div>';
+        html += '<div class="act-sub">' + Skill_Name + ' &middot; Score ' + Achieve_Score + '/' + Total_Score + ' &middot; ' + SubmittedDate + '</div>';
+        html += '<div class="sample-module-progress"><span style="width:' + Achieve_Percentage + '%"></span></div>';
+        html += '</div>';
+        html += '<div class="act-side">';
+        html += '<span class="act-rank">Rank ' + Rank + '</span>';
+        html += '<span class="act-pct">' + Achieve_Percentage + '%</span>';
+        html += '</div>';
+        html += '</div>';
+    }
+    $("#dv_Dashboard_List").html(html);
+
+    update_lms_kpi();
+    setTimeout(function () {
+        var activeMetric = $('.is-active').find('.kpi-label').text().trim() || 'Modules';
+        render_lms_kpi_chart(activeMetric);
+    }, 500);
+}
+
+function get_dashboard_data() {
+    var lms_dash_url = global_wcf_url_lms + 'LMS_Select_Dashboard';
+    var lms_dash_cache_key = 'dashboard';
     var Param_obj = [];
 
-    loading();
-
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Dashboard', JSON.stringify(Param_obj), function (e) {
-        var responseText = e.responseText;
-        var myArray = JSON.parse(responseText);
-        var status = myArray[0].status;
-        if (status == 1) {
-            let data = myArray[0]["data"];
-            data = JSON.parse(data);
-            dashboard_kpi_data = data;
-
-            if (!data || data.length === 0) {
-                $("#dv_Dashboard_List").html('<div class="lms-dashboard-empty">No recent activity yet. Complete a lesson to see your progress here.</div>');
-            }
-
-            for (let m = 0; m < data.length; m++) {
-                let Module_Name = data[m].Module_Name;
-                let Skill_Name = data[m].Skill_Name;
-                let SubmittedDate = data[m].SubmittedDate;
-
-                let Achieve_Percentage = data[m].Achieve_Percentage;
-                if (Achieve_Percentage == "" || Achieve_Percentage == null || Achieve_Percentage == undefined) {
-                    Achieve_Percentage = "0";
-                }
-                else {
-                    Achieve_Percentage = Math.round(Achieve_Percentage);
-                }
-
-                let Achieve_Score = data[m].Achieve_Score;
-                let Total_Score = data[m].Total_Score;
-                let Rank = data[m].Rank;
-
-                let str = '<div class="lms-activity-card">';
-                str += '<div class="act-main">';
-                str += '<div class="act-title">' + Module_Name + '</div>';
-                str += '<div class="act-sub">' + Skill_Name + ' &middot; Score ' + Achieve_Score + '/' + Total_Score + ' &middot; ' + SubmittedDate + '</div>';
-                str += '<div class="sample-module-progress"><span style="width:' + Achieve_Percentage + '%"></span></div>';
-                str += '</div>';
-                str += '<div class="act-side">';
-                str += '<span class="act-rank">Rank ' + Rank + '</span>';
-                str += '<span class="act-pct">' + Achieve_Percentage + '%</span>';
-                str += '</div>';
-                str += '</div>';
-
-                $("#dv_Dashboard_List").append(str);
-            }
+    // Cache-first (see get_safety_module_listing); original path preserved as fallback.
+    if (typeof LmsData !== 'undefined') {
+        var had_cache = LmsData.getCache(lms_dash_cache_key) != null;
+        if (!had_cache) {
+            LmsData.showSkeletons("#dv_Dashboard_List", 3);
         }
-        loading_hide();
-        
-        // Update KPIs
-        update_lms_kpi();
-        
-        // Render default chart
-        setTimeout(function() {
-            var activeMetric = $('.is-active').find('.kpi-label').text().trim() || 'Modules';
-            render_lms_kpi_chart(activeMetric);
-        }, 500);
+        LmsData.fetch(lms_dash_cache_key, lms_dash_url, JSON.stringify(Param_obj),
+            function (txt, source) { apply_dashboard(txt); },
+            function (err) {
+                if (!had_cache) {
+                    $("#dv_Dashboard_List").empty();
+                    if (typeof onfail === 'function') onfail(err);
+                }
+            },
+            { timeout: 15000, retries: 1 }
+        );
+        return;
+    }
 
+    $("#dv_Dashboard_List").empty();
+    loading();
+    var getdata = new Webservicecall_REST(lms_dash_url, JSON.stringify(Param_obj), function (e) {
+        apply_dashboard(e.responseText);
+        loading_hide();
     }, onfail);
     getdata.callOtherDomain();
 }

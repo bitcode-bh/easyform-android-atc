@@ -186,12 +186,41 @@ function bind_safety_module_controls() {
     });
 }
 
+function apply_safety_modules(responseText, isRefresh) {
+    var myArray;
+    try { myArray = JSON.parse(responseText); } catch (e) { return; }
+    var status = myArray[0].status;
+    if (status == 1) {
+        var data = JSON.parse(myArray[0]["data"]);
+        safety_module_data = data.map(function (module, index) {
+            module._lms_item_order = index;
+            return module;
+        });
+        // On the silent background refresh, keep the user's active filter/sort/
+        // search instead of resetting them mid-interaction.
+        if (!isRefresh) {
+            selected_safety_tag = "All";
+            selected_safety_sort = "recommended";
+            safety_module_search_text = "";
+            render_safety_module_search();
+            render_safety_module_tags();
+            render_safety_module_sort_menu();
+            bind_safety_module_controls();
+        }
+        render_safety_module_cards();
+    }
+    else if (!isRefresh) {
+        safety_module_listing_requested = false;
+        safety_module_data = [];
+        render_safety_module_cards();
+    }
+}
+
 function get_safety_module_listing(force_refresh) {
     if (safety_module_listing_requested && !force_refresh) {
         return;
     }
     safety_module_listing_requested = true;
-    $("#dv_Module_List").empty();
 
     let role_id_array = localStorage.getItem('role_id_array');
 
@@ -200,9 +229,36 @@ function get_safety_module_listing(force_refresh) {
         'Role_Id': role_id_array
     });
 
+    var lms_modules_url = global_wcf_url_lms + 'LMS_Select_Module_RoleWise';
+    var lms_modules_cache_key = 'modules_' + role_id_array;
+
+    // Cache-first: paint cached modules instantly (skeletons only on the very
+    // first load), then refresh silently. Falls back to the original network-
+    // only path if the LmsData layer is unavailable.
+    if (typeof LmsData !== 'undefined') {
+        var had_cache = LmsData.getCache(lms_modules_cache_key) != null;
+        if (!had_cache) {
+            LmsData.showSkeletons("#dv_Module_List", 4);
+        }
+        LmsData.fetch(lms_modules_cache_key, lms_modules_url, JSON.stringify(Param_obj),
+            function (txt, source) {
+                apply_safety_modules(txt, source === 'network' && had_cache);
+            },
+            function (err) {
+                if (!had_cache) {
+                    $("#dv_Module_List").empty();
+                    if (typeof onfail === 'function') onfail(err);
+                }
+            },
+            { timeout: 15000, retries: 1 }
+        );
+        return;
+    }
+
+    $("#dv_Module_List").empty();
     loading();
 
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Module_RoleWise', JSON.stringify(Param_obj), function (e) {
+    var getdata = new Webservicecall_REST(lms_modules_url, JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
@@ -843,7 +899,7 @@ function get_video_skill_by_module_id(flag) {
     });
     loading();
 
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Skill_VideoLog_Master', JSON.stringify(Param_obj), function (e) {
+    var videolog_success = function (e) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
@@ -861,9 +917,16 @@ function get_video_skill_by_module_id(flag) {
         }
 
         loading_hide();
+    };
 
-    }, onfail);
-    getdata.callOtherDomain();
+    // Offline-tolerant: online this behaves exactly as before; offline / on a
+    // network drop the progress log is queued and replayed on reconnect.
+    if (typeof LmsData !== 'undefined' && LmsData.postAction) {
+        LmsData.postAction(global_wcf_url_lms + 'LMS_Skill_VideoLog_Master', JSON.stringify(Param_obj), 'skill_videolog', videolog_success, onfail);
+    } else {
+        var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Skill_VideoLog_Master', JSON.stringify(Param_obj), videolog_success, onfail);
+        getdata.callOtherDomain();
+    }
 }
 
 // video related logic ------//// 

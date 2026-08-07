@@ -95,12 +95,41 @@ function bind_assessment_controls() {
     });
 }
 
+function apply_assessments(responseText, isRefresh) {
+    var myArray;
+    try { myArray = JSON.parse(responseText); } catch (e) { return; }
+    var status = myArray[0].status;
+    if (status == 1) {
+        var data = JSON.parse(myArray[0]["data"]);
+        assessment_data = data.map(function (assessment, index) {
+            assessment._lms_item_order = index;
+            return assessment;
+        });
+        if (typeof update_lms_kpi === 'function') update_lms_kpi();
+        // Keep the user's active filter/sort/search on the silent refresh.
+        if (!isRefresh) {
+            selected_assessment_tag = "All";
+            selected_assessment_sort = "recommended";
+            assessment_search_text = "";
+            render_assessment_search();
+            render_assessment_tags();
+            render_assessment_sort_menu();
+            bind_assessment_controls();
+        }
+        render_assessment_cards();
+    }
+    else if (!isRefresh) {
+        assessment_listing_requested = false;
+        assessment_data = [];
+        render_assessment_cards();
+    }
+}
+
 function get_assessments_listing(force_refresh) {
     if (assessment_listing_requested && !force_refresh) {
         return;
     }
     assessment_listing_requested = true;
-    $("#dv_Assessments_List").empty();
 
     let role_id_array = localStorage.getItem('role_id_array');
 
@@ -109,9 +138,34 @@ function get_assessments_listing(force_refresh) {
         'Role_Id': role_id_array
     });
 
+    var lms_assess_url = global_wcf_url_lms + 'LMS_Select_Assessments_Master_RoleWise';
+    var lms_assess_cache_key = 'assessments_' + role_id_array;
+
+    // Cache-first (see get_safety_module_listing); original path preserved as fallback.
+    if (typeof LmsData !== 'undefined') {
+        var had_cache = LmsData.getCache(lms_assess_cache_key) != null;
+        if (!had_cache) {
+            LmsData.showSkeletons("#dv_Assessments_List", 4);
+        }
+        LmsData.fetch(lms_assess_cache_key, lms_assess_url, JSON.stringify(Param_obj),
+            function (txt, source) {
+                apply_assessments(txt, source === 'network' && had_cache);
+            },
+            function (err) {
+                if (!had_cache) {
+                    $("#dv_Assessments_List").empty();
+                    if (typeof onfail === 'function') onfail(err);
+                }
+            },
+            { timeout: 15000, retries: 1 }
+        );
+        return;
+    }
+
+    $("#dv_Assessments_List").empty();
     loading();
 
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Assessments_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
+    var getdata = new Webservicecall_REST(lms_assess_url, JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;

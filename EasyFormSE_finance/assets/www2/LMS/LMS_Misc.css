@@ -326,6 +326,77 @@
     .tab-link.tab-link-active .tab-ico { animation: none !important; }
 }
 
+/* ---- Skeleton screens (first-load placeholders, LmsData.showSkeletons) ----- */
+.lms-skel-card {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    margin: 12px;
+    padding: 12px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(22, 34, 51, 0.08);
+}
+
+.lms-skel-thumb { height: 72px; border-radius: 10px; }
+.lms-skel-body { display: flex; flex-direction: column; gap: 8px; }
+.lms-skel-line { height: 11px; border-radius: 6px; }
+.lms-skel-line.w80 { width: 80%; }
+.lms-skel-line.w60 { width: 60%; }
+.lms-skel-line.w40 { width: 40%; }
+
+.lms-skel-thumb,
+.lms-skel-line {
+    position: relative;
+    overflow: hidden;
+    background: #e9edf1;
+}
+
+    .lms-skel-thumb::after,
+    .lms-skel-line::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+        animation: lms-skel-shimmer 1.3s ease-in-out infinite;
+    }
+
+@keyframes lms-skel-shimmer { 100% { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .lms-skel-thumb::after,
+    .lms-skel-line::after { animation: none !important; }
+}
+
+/* ---- Offline sync indicator (Phase 2) ------------------------------------- */
+.lms-sync-indicator {
+    position: fixed;
+    left: 50%;
+    bottom: 70px;
+    transform: translateX(-50%);
+    z-index: 9000;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(20, 30, 45, 0.92);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+}
+
+    .lms-sync-indicator i { animation: lms-sync-spin 1s linear infinite; }
+
+@keyframes lms-sync-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .lms-sync-indicator i { animation: none; }
+}
+
 .sample-safety-ui {
     /*background: #f3f5f7;*/
     padding-bottom: 20px;
