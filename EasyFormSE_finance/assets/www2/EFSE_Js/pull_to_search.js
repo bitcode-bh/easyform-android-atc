@@ -56,7 +56,8 @@
         if (searchVisible) return; // already open
         searchVisible = true;
 
-        bar.style.display = 'block';
+        // animate open: the top bar "expands" to reveal the field (see #home_search_bar.open)
+        bar.classList.add('open');
         if (input) {
             setTimeout(function () {
                 input.focus();
@@ -71,7 +72,7 @@
 
         searchVisible = false;
 
-        if (bar) bar.style.display = 'none';
+        if (bar) bar.classList.remove('open'); // animate closed
         if (input) {
             input.value = '';
             input.blur();

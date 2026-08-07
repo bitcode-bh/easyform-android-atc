@@ -113,7 +113,21 @@
 <body>
 
     <!-- Cross-page fade veil (shared with selection.html) -->
-    <div id="page-veil" aria-hidden="true"><img alt="" /></div>
+    <div id="page-veil" class="show" aria-hidden="true"><img alt="" src="images/lms_shield_logo.png" /></div>
+    <script>
+        /* Hold the SHIELD veil over the incoming LMS page until its bottom tabbar
+           has laid out, so it never flashes as a vertical icon stack (FOUC). */
+        (function () {
+            function hideVeil() { var v = document.getElementById('page-veil'); if (v) v.classList.remove('show'); }
+            function arm() { requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(hideVeil, 350); }); }); }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', arm);
+            } else {
+                arm();
+            }
+            setTimeout(hideVeil, 2000); // safety
+        })();
+    </script>
 
     <div id="app">
 

@@ -1681,13 +1681,19 @@ function get_list_of_modules_online() {
         var id_Array = JSON.parse(storage.getItem('id_Array'));
         var module_count = 0;
         var module_layout = localStorage.getItem('module_layout');
-        if (module_layout == "cardview") {
-            $("#card_module_list").empty();
-            $("#card_module_list").show();
+        // ---- Home module-list cache: paint instantly on return from LMS, refresh in background ----
+        var _home_container = (module_layout == "cardview") ? "#card_module_list" : "#module_list";
+        var _home_idArr0 = JSON.parse(storage.getItem('id_Array'));
+        var _home_isTop = (_home_idArr0 == '' || _home_idArr0 == null || _home_idArr0 == undefined || (_home_idArr0.length || 0) === 0);
+        var _home_cacheKey = 'home_modules_' + module_layout + '_' + JSON.parse(storage.getItem('company_id')) + '_' + storage.getItem('user_id');
+        var _home_cached = _home_isTop ? localStorage.getItem(_home_cacheKey) : null;
+        if (_home_cached) {
+            // show cached list immediately; keep it visible while the fetch refreshes it silently (no blank, no spinner)
+            $(_home_container).html(_home_cached).show();
+            try { loading_hide(); } catch (e) { }
         }
         else {
-            $("#module_list").empty();
-            $("#module_list").show();
+            $(_home_container).empty().show();
         }
 
         $("#tab1").css("height", "auto");
@@ -1761,6 +1767,8 @@ function get_list_of_modules_online() {
                         }
                     }
                     else {
+                        // clear the cached/old list, then rebuild synchronously below (no visible blank)
+                        $(_home_container).empty();
                         // /// sort flow start
                         var newmyArray = [];
                         for (j = 0; j < myArray1.length; j++) {
@@ -2025,9 +2033,12 @@ function get_list_of_modules_online() {
                         ///////////
 
                         if (module_count % 2 != 0) {
-                            //if single last td then add colspan 
+                            //if single last td then add colspan
                             $("#card_module_list td").last().attr('colspan', '2');
                         }
+
+                        // cache the freshly rendered top-level list for instant paint on next return from LMS
+                        try { if (_home_isTop) localStorage.setItem(_home_cacheKey, $(_home_container).html()); } catch (e) { }
                     }
                 }
                 else if (status == 2) {

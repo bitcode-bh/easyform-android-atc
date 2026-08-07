@@ -311,12 +311,34 @@
             text-align: center;
             margin: 0px 5px;
         }*/
+
+        /* Cross-page fade veil (Home<->LMS) — mirrors LMS/lms_ux_fixes.css so the
+           switch dips through the shared grey instead of flicking the bottom bar */
+        #page-veil { position: fixed; inset: 0; z-index: 99999; background: #ecedef; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.22s ease; }
+        #page-veil.show { opacity: 1; visibility: visible; }
+        #page-veil img { width: 64px; height: 64px; opacity: 0.9; animation: veil-pulse 1s ease-in-out infinite alternate; }
+        @keyframes veil-pulse { to { transform: scale(1.06); opacity: 1; } }
+        /* Fade the page in on arrival so returning from LMS dips through grey, not a white blank */
+        body { animation: page-in 0.28s ease both; }
+        @keyframes page-in { from { opacity: 0; } to { opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { #page-veil { transition: none; } #page-veil img { animation: none; } body { animation: none; } }
     </style>
     <!-- LMS-style bottom nav (scoped, no module-list side effects) + FA7 icons -->
     <link href="LMS/font-awesome-7.0.0/css/all.min.css" rel="stylesheet" />
     <link href="css/home_nav.css" rel="stylesheet" />
 </head>
 <body>
+    <!-- Cross-page fade veil (shared look with LMS) so Home->LMS matches LMS->Home -->
+    <div id="page-veil" aria-hidden="true"><img alt="" src="images/lms_shield_logo.png" /></div>
+    <script>
+        function crossToLMS(url) {
+            try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { }
+            var v = document.getElementById('page-veil');
+            if (v) v.classList.add('show');
+            setTimeout(function () { changeurl(url); }, 200);
+            return false;
+        }
+    </script>
     <!--  F7 Start -->
     <div class="F7-view" style="width: 100%; height: 100%">
         <div class="statusbar-overlay"></div>
@@ -489,15 +511,40 @@
                                 <div class="pull-to-refresh-arrow"></div>
                             </div>
 
-                            <!-- Search Bar (hidden by default, shown on pull-down) -->
-                            <div id="home_search_bar" style="display: none; padding: 8px 12px; background: #f5f5f5; border-bottom: 1px solid #e0e0e0;">
-                                <div style="background-color: #ffffff; border-radius: 20px; height: 38px; display: flex; align-items: center; padding: 0 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); box-sizing: border-box;">
-                                    <i class="fa fa-search" style="color: #888; font-size: 15px; margin-right: 10px;"></i>
-                                    <style>
-                                        #home_search_input::-webkit-search-cancel-button { display: none; }
-                                    </style>
-                                    <input type="search" id="home_search_input" placeholder="Search modules..." style="border: none; outline: none; background: transparent; flex-grow: 1; font-size: 14px; color: #333;" />
-                                    <i class="fa fa-times-circle" id="home_search_clear" style="color: #bbb; font-size: 16px; display: none; cursor: pointer;" onclick="document.getElementById('home_search_input').value=''; document.getElementById('home_search_input').dispatchEvent(new Event('input'));"></i>
+                            <!-- Search Bar: a seamless downward extension of the top bar; expands on pull-down -->
+                            <style>
+                                /* Collapsed by default; expands so it reads as the top bar opening up a search field */
+                                #home_search_bar {
+                                    background: #ecedef;                 /* same surface as the navbar */
+                                    max-height: 0; opacity: 0; overflow: hidden;
+                                    padding: 0 12px; box-sizing: border-box;
+                                    transition: max-height 0.30s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease, padding 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+                                }
+                                #home_search_bar.open {
+                                    max-height: 60px; opacity: 1;
+                                    padding: 6px 12px 12px;
+                                    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.06);   /* one cohesive elevation shared with the bar */
+                                }
+                                .home-search-pill {
+                                    display: flex; align-items: center;
+                                    height: 40px; padding: 0 14px;
+                                    border-radius: 20px;
+                                    background: #ecedef;                 /* match the top bar background */
+                                    border: 1px solid rgba(0, 0, 0, 0.10);
+                                    box-shadow: inset 0 1px 2.5px rgba(0, 0, 0, 0.10);   /* gently recessed field */
+                                    box-sizing: border-box;
+                                }
+                                .home-search-ico { color: #6b7280; font-size: 15px; margin-right: 10px; }
+                                .home-search-input { border: none; outline: none; background: transparent; flex-grow: 1; font-size: 14px; color: #1f2937; }
+                                .home-search-input::placeholder { color: #9aa0a6; }
+                                .home-search-input::-webkit-search-cancel-button { display: none; }
+                                #home_search_clear { color: #b0b4bb; font-size: 16px; display: none; cursor: pointer; }
+                            </style>
+                            <div id="home_search_bar">
+                                <div class="home-search-pill">
+                                    <i class="fa fa-search home-search-ico"></i>
+                                    <input type="search" id="home_search_input" class="home-search-input" placeholder="Search modules..." />
+                                    <i class="fa fa-times-circle" id="home_search_clear" onclick="document.getElementById('home_search_input').value=''; document.getElementById('home_search_input').dispatchEvent(new Event('input'));"></i>
                                 </div>
                             </div>
 
@@ -673,7 +720,7 @@
                                     <span class="tab-ico"><i class="fa-regular fa-chart-bar ico-outline"></i><i class="fa-solid fa-chart-bar ico-filled"></i></span>
                                     <span class="tabbar-label mt-1">Report</span>
                                 </a>
-                                <a href="#" class="tab-link" id="btn_LMS" onclick="changeurl('LMS_Dashboard.html')">
+                                <a href="#" class="tab-link" id="btn_LMS" onclick="return crossToLMS('LMS_Dashboard.html')">
                                     <span class="tab-ico"><i class="fa-solid fa-shield ico-outline"></i><i class="fa-solid fa-shield ico-filled"></i></span>
                                     <span class="tabbar-label mt-1">LMS</span>
                                 </a>
