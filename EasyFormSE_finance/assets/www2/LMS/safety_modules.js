@@ -148,7 +148,6 @@ function render_safety_module_cards() {
         str += '<span class="sample-lession-count">' + TotalSkill + ' lessons</span></div>';
         str += '<div class="sample-module-percent">' + Progress + '%</div></div>';
         str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div>';
-        str += '<span class="sample-module-btn"><i class="fa fa-play"></i><span>' + (Progress === 0 ? 'Start' : (Progress < 100 ? 'Continue' : 'Review')) + '</span></span>';
         str += '</div></div>';
     });
 
@@ -286,17 +285,6 @@ function get_safety_module_listing(force_refresh) {
                 str += '<div class="sample-module-percent">' + Progress + '%</div>';
                 str += '</div>';
                 str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div>';
-
-                if (Progress == 0) {
-                    str += '<a href="#" class="sample-module-btn"><i class="fa fa-play"></i><span>Start</span></a>';
-                }
-                else if (Progress > 0 && Progress < 100) {
-                    str += '<a href="#" class="sample-module-btn"><i class="fa fa-play"></i><span>Continue</span></a>';
-                }
-                else {
-                    str += '<a href="#" class="sample-module-btn"><i class="fa fa-play"></i><span>Review</span></a>';
-                }
-
 
                 str += '</div>';
                 str += '</div>';
@@ -506,8 +494,11 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 
                 let onclick_str = "get_questionlog_by_skill_id('" + Skill_Id + "', '" + Video_Link + "', '" + Module_Id + "', '" + Progress + "')";
 
-                let str = '<a href="#" class="lesson-preview-card" onclick="' + onclick_str + '">';
-                str += '<div class="lesson-preview-thumb" >';
+                // Thumbnail opens the lesson directly; tapping the body toggles the
+                // full description. Chevron + question count removed; duration moved
+                // into the thumbnail overlay (clock icon removed).
+                let str = '<div class="lesson-preview-card">';
+                str += '<div class="lesson-preview-thumb" onclick="' + onclick_str + '">';
 
                 if (Thumbnail_link == "" || Thumbnail_link == null || Thumbnail_link == undefined) {
                     str += '<img src="images/bg2.jpg">';
@@ -523,26 +514,23 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                     str += '<span class="lesson-preview-check"><i class="fa fa-play" style="font-size: 14px"></i></span>';
                 }
 
+                str += '<span class="lesson-preview-duration">' + Video_Time + '</span>';
                 str += '</div>';
-                str += '<div>';
+                str += '<div class="lesson-preview-body" onclick="this.parentNode.classList.toggle(\'desc-expanded\')">';
                 str += '<div class="lesson-preview-name">' + Skill_Name + '</div>';
                 str += '<div class="lesson-preview-subtitle">' + Skill_Description + '</div>';
                 str += '<div class="lesson-preview-footer">';
-                str += '<span class="lesson-preview-time"><i class="fa-regular fa-clock"></i>' + Video_Time + '</span>';
 
                 if (Progress == "100") {
                     str += '<span class="lesson-preview-status completed">Completed</span>';
-                    str += '<span class="badge color-green">' + TotalQuestion + '</span>';
                 }
                 else {
                     str += '<span class="lesson-preview-status progress">Pending</span>';
-                    str += '<span class="badge color-orange">' + TotalQuestion + '</span>';
                 }
 
                 str += '</div>';
                 str += '</div>';
-                str += '<div class="lesson-preview-next"><i class="fa fa-chevron-right"></i></div>';
-                str += '</a> ';
+                str += '</div> ';
 
                 $(".lesson-preview-list").append(str);
 

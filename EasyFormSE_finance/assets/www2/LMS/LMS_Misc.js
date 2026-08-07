@@ -15,6 +15,22 @@ $(document).ready(function () {
 
         pauseAllVideos();
 
+        // Keep the top/bottom bar theme + active-tab state in sync on EVERY tab
+        // change — swipe and hardware-back included, not just tabbar taps. Only
+        // the Micro Learning (tab-4) reels screen uses the dark bars; all others
+        // are light, so switching away from it must clear the dark classes.
+        var _isML = (this.id == "tab-4");
+        var _tabbar = document.querySelector('.toolbar.tabbar');
+        if (_tabbar) _tabbar.classList.toggle('tabbar-dark', _isML);
+        var _navbar = document.querySelector('.navbar');
+        if (_navbar) _navbar.classList.toggle('navbar-dark', _isML);
+        try {
+            lms_active_tab = this.id == "tab-1" ? 'Modules'
+                : this.id == "tab-2" ? 'Assessments'
+                : this.id == "tab-3" ? 'Dashboard'
+                : this.id == "tab-4" ? 'Micro Learning' : lms_active_tab;
+        } catch (e) { }
+
         if (this.id == "tab-1") {
             $(".navbar").show();
             $(".sample-safety-titlebar").html("Safety Modules");
@@ -356,20 +372,20 @@ function back_button_LMS() {
         // return false;
     }
 
-    var safetyTab = $('#tab-1');
-    var isSafetyTabActive = safetyTab.hasClass('tab-active') ||
-        safetyTab.hasClass('swiper-slide-active') ||
-        $('a.tab-link[href="#tab-1"]').hasClass('tab-link-active');
+    var dashboardTab = $('#tab-3');
+    var isDashboardTabActive = dashboardTab.hasClass('tab-active') ||
+        dashboardTab.hasClass('swiper-slide-active') ||
+        $('a.tab-link[href="#tab-3"]').hasClass('tab-link-active');
 
-    if (!isSafetyTabActive) {
-        // Assessments, Dashboard and Micro Learning all return to the default
-        // Safety Modules tab. This pauses only .reel-video elements.
+    if (!isDashboardTabActive) {
+        // Modules, Assessments and Micro Learning all return to the Dashboard
+        // tab — the screen the LMS opens on. This pauses only .reel-video elements.
         pauseAllVideos();
-        myApp.tab.show('#tab-1');
+        myApp.tab.show('#tab-3');
         return false;
     }
 
-    // The Safety Modules tab with no popup, fullscreen player or router
-    // history is the sole LMS root state where exiting the app is allowed.
+    // The Dashboard tab with no popup, fullscreen player or router history is
+    // the sole LMS root state where exiting the app is allowed.
     return true;
 }
