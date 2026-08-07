@@ -820,16 +820,20 @@ public class newfused extends Service implements LocationListener {
 //                        Log.d("CALL", "End Lat : " + callEndLocation.getLatitude());
 //                        Log.d("CALL", "End Lng : " + callEndLocation.getLongitude());
                     }
-                    Log.d("CALL_DEBUG", "speedViolation at IDLE = " + speedViolation);
+                   // Log.d("CALL_DEBUG", "speedViolation at IDLE = " + speedViolation);
                     if (speedViolation && !callEventInserted)
                     {
                         long duration = (callEndTime - callStartTime) ;
 
 //                    Log.d("CALL", "Duration : " + duration + " sec");
                         callEventInserted = true;
-                        float meters = callStartLocation.distanceTo(callEndLocation);
-                        double  distanceKm  = meters / 1000.0;
+                        if (callStartLocation != null &&
+                                callEndLocation != null) {
 
+                            float meters =
+                                    callStartLocation.distanceTo(callEndLocation);
+                            double  distanceKm  = meters / 1000.0;
+                        }
 
                          calleventinsert(
                                     callStartTime,
@@ -843,20 +847,8 @@ public class newfused extends Service implements LocationListener {
 //
 //                            Log.d("CALL", "Distance : " + distanceKm  + " KM");
 
-                                callActive = false;
-                                speedViolation = false;
 
-                                callStartLocation = null;
-                                callEndLocation = null;
-
-                                callStartTime = 0;
-                                callEndTime = 0;
-
-                                maxSpeedDuringCall = 0;
-                                maxSpeedMilli = 0;
-
-                                lastCallState = -1;
-
+                        resetcalldata();
                         }
                         else {
 
@@ -872,7 +864,22 @@ public class newfused extends Service implements LocationListener {
 
     }
 
+ private void resetcalldata()
+ {
+     callActive = false;
+     speedViolation = false;
 
+     callStartLocation = null;
+     callEndLocation = null;
+
+     callStartTime = 0;
+     callEndTime = 0;
+
+     maxSpeedDuringCall = 0;
+     maxSpeedMilli = 0;
+
+     lastCallState = -1;
+ }
 
     private boolean calleventinsert(long callstarttime, String callendtime, String duration,Location callEndLocation)
     {
