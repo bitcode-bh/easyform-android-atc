@@ -44,9 +44,14 @@ function get_lms_visible_items(items, selected_tag, search_text, sort_option, ti
         if (!matches_tag || normalized_search === "") {
             return matches_tag;
         }
-        return [item[title_field], item[description_field], item.Tag != null ? item.Tag : item.tag]
-            .filter(function (value) { return value != null; })
-            .join(" ").toLowerCase().indexOf(normalized_search) !== -1;
+        // Build a lowercase search index once per item and reuse it across
+        // keystrokes instead of re-joining/-lowercasing on every filter pass.
+        if (item._lms_search_index === undefined) {
+            item._lms_search_index = [item[title_field], item[description_field], item.Tag != null ? item.Tag : item.tag]
+                .filter(function (value) { return value != null; })
+                .join(" ").toLowerCase();
+        }
+        return item._lms_search_index.indexOf(normalized_search) !== -1;
     }).sort(function (a, b) {
         if (sort_option === "title_asc") return String(a[title_field] || "").localeCompare(String(b[title_field] || ""));
         if (sort_option === "title_desc") return String(b[title_field] || "").localeCompare(String(a[title_field] || ""));
@@ -246,8 +251,8 @@ function get_safety_module_listing(force_refresh) {
             },
             function (err) {
                 if (!had_cache) {
-                    $("#dv_Module_List").empty();
-                    if (typeof onfail === 'function') onfail(err);
+                    safety_module_listing_requested = false;
+                    LmsData.showError("#dv_Module_List", "get_safety_module_listing(true)");
                 }
             },
             { timeout: 15000, retries: 1 }
@@ -681,6 +686,8 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
 
             let t_log_data = log_data;
             var merge_array = merge_question_data(data, t_log_data);
+            safety_quiz_data = merge_array;
+            safety_quiz_progress = String(Progress);
 
             for (let i = 0; i < merge_array.length; i++) {
                 let skill_que_id = merge_array[i].Skill_Que_Id;
@@ -786,6 +793,168 @@ function merge_question_data(template_data, log_data) {
     }
 
     return template_data;
+}
+
+// ============================================================================
+// Learning-video quiz — centered ML-style modal shown over the video (portrait
+// and container full-screen). One question at a time with a "N of M" counter,
+// local validation + correct/incorrect feedback, and a single batch submit at
+// the end via the existing module API. Pauses the video (timestamp preserved)
+// and resumes on completion/dismiss.
+// ============================================================================
+var safety_quiz_data = [];
+var safety_quiz_progress = "0";
+var safety_quiz_index = 0;
+var safety_quiz_answers = {};
+var safety_quiz_locked = false;
+
+function safety_quiz_review() { return safety_quiz_progress == "100"; }
+
+function safety_quiz_start() {
+    if (!safety_quiz_data || !safety_quiz_data.length) { $("#dv_Question_List").show(); return; }
+    safety_quiz_index = 0;
+    safety_quiz_answers = {};
+    var v = document.getElementById('vdo_Question');
+    if (v) { try { set_progress_local(); v.pause(); } catch (e) { } } // pause; timestamp preserved
+    safety_quiz_render();
+    var m = document.getElementById('safety-quiz-modal');
+    if (m) { m.style.display = 'flex'; m.setAttribute('aria-hidden', 'false'); requestAnimationFrame(function () { m.classList.add('open'); }); }
+}
+
+function safety_quiz_render() {
+    var q = safety_quiz_data[safety_quiz_index];
+    if (!q) return;
+    var total = safety_quiz_data.length;
+    var review = safety_quiz_review();
+    var opts = q.OptionText || [];
+    var valid = (q.Valid_Answer && q.Valid_Answer[0]) ? String(q.Valid_Answer[0]).trim() : '';
+
+    document.getElementById('safety-quiz-counter').textContent = (safety_quiz_index + 1) + ' of ' + total;
+    document.getElementById('safety-quiz-question').innerHTML =
+        '<i class="fa-solid fa-lightbulb" style="color:#fbbc05;margin-right:8px;"></i>' + q.Skill_Question_Name;
+
+    var html = '';
+    for (var j = 0; j < opts.length; j++) {
+        var txt = String(opts[j] || '').trim();
+        var cls = '';
+        var checked = '';
+        var dis = '';
+        if (review) {
+            dis = ' disabled';
+            if (txt === valid) cls = ' safety-correct';
+            else if (q.ans && String(q.ans).trim() === txt) cls = ' safety-incorrect';
+        }
+        html += '<li class="' + cls.trim() + '"><label class="item-radio item-content">' +
+            '<input type="radio" name="safety_quiz_opt" value="' + j + '"' + checked + dis + '>' +
+            '<i class="icon icon-radio"></i>' +
+            '<div class="item-inner"><div class="item-title">' + txt + '</div></div>' +
+            '</label></li>';
+    }
+    document.getElementById('safety-quiz-options').innerHTML = html;
+
+    safety_quiz_locked = false;
+    var btn = document.getElementById('safety-quiz-submit');
+    var last = (safety_quiz_index === total - 1);
+    btn.style.visibility = 'visible';
+    btn.textContent = review ? (last ? 'Done' : 'Next') : 'Submit';
+}
+
+// Single button handler: validates + shows feedback in normal mode, or advances
+// in review mode.
+function safety_quiz_action() {
+    if (safety_quiz_review()) { safety_quiz_next(); return false; }
+    if (safety_quiz_locked) { return false; } // feedback is animating; ignore taps
+
+    var q = safety_quiz_data[safety_quiz_index];
+    if (!q) return false;
+    var opts = q.OptionText || [];
+    var valid = (q.Valid_Answer && q.Valid_Answer[0]) ? String(q.Valid_Answer[0]).trim() : '';
+
+    var sel = document.querySelector('#safety-quiz-options input[name="safety_quiz_opt"]:checked');
+    if (!sel) { alert("Please select answer!"); return false; }
+
+    var selIdx = parseInt(sel.value, 10);
+    var selText = String(opts[selIdx] || '').trim();
+    safety_quiz_answers[q.Skill_Que_Id] = { name: q.Skill_Question_Name, ans: selText };
+
+    var lis = document.querySelectorAll('#safety-quiz-options li');
+    for (var k = 0; k < opts.length; k++) {
+        var t = String(opts[k] || '').trim();
+        if (t === valid) lis[k].classList.add('safety-correct');
+        else if (k === selIdx) lis[k].classList.add('safety-incorrect');
+    }
+    document.querySelectorAll('#safety-quiz-options input').forEach(function (inp) { inp.disabled = true; });
+    try { vibrate_device(); } catch (e) { }
+
+    safety_quiz_locked = true;
+    document.getElementById('safety-quiz-submit').style.visibility = 'hidden';
+    setTimeout(safety_quiz_next, 1600); // auto-advance (ML pattern)
+    return false;
+}
+
+function safety_quiz_next() {
+    safety_quiz_index++;
+    if (safety_quiz_index < safety_quiz_data.length) {
+        safety_quiz_render();
+    } else {
+        safety_quiz_finish();
+    }
+}
+
+function safety_quiz_finish() {
+    if (safety_quiz_review()) { safety_quiz_close(); return; }
+
+    var user_id = JSON.parse(storage.getItem('user_id'));
+    var user_name = JSON.parse(storage.getItem('user_name'));
+    var circle_name = JSON.parse(storage.getItem('circle_name'));
+    var Skill_Id = $("#vdo_Question").attr("skil_id");
+
+    var Param_obj = [];
+    for (var i = 0; i < safety_quiz_data.length; i++) {
+        var q = safety_quiz_data[i];
+        var rec = safety_quiz_answers[q.Skill_Que_Id];
+        Param_obj.push({
+            "User_ID": user_id,
+            "User_Name": user_name,
+            "Skill_Id": Skill_Id,
+            "Skill_Que_Id": q.Skill_Que_Id,
+            "Skill_Question_Name": q.Skill_Question_Name,
+            "Ans": rec ? [rec.ans] : [],
+            "Circle": circle_name,
+            "Module_Schedule_Id": glob_Module_Schedule_Id
+        });
+    }
+
+    loading();
+    var g = new Webservicecall_REST(global_wcf_url_lms + 'LMS_InsertUpdateDelete_Skill_Question_Log_Master', JSON.stringify(Param_obj), function (e) {
+        loading_hide();
+        var arr;
+        try { arr = JSON.parse(e.responseText); } catch (er) { arr = [{ status: 0, message: 'Error' }]; }
+        if (arr[0].status == 1) {
+            safety_quiz_close_modal();
+            get_video_skill_by_module_id('submit');
+            myApp.popup.close('.popup-level-4');
+        } else {
+            alert(arr[0].message);
+        }
+    }, onfail);
+    g.callOtherDomain();
+}
+
+function safety_quiz_close_modal() {
+    var m = document.getElementById('safety-quiz-modal');
+    if (m) {
+        m.classList.remove('open');
+        m.setAttribute('aria-hidden', 'true');
+        setTimeout(function () { m.style.display = 'none'; }, 240);
+    }
+}
+
+function safety_quiz_close() {
+    safety_quiz_close_modal();
+    var v = document.getElementById('vdo_Question');
+    if (v && !v.ended) { try { v.play(); } catch (e) { } } // resume from same timestamp
+    return false;
 }
 
 function submit_question_by_skill_id(flag) {

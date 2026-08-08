@@ -181,8 +181,7 @@ function get_dashboard_data() {
             function (txt, source) { apply_dashboard(txt); },
             function (err) {
                 if (!had_cache) {
-                    $("#dv_Dashboard_List").empty();
-                    if (typeof onfail === 'function') onfail(err);
+                    LmsData.showError("#dv_Dashboard_List", "get_dashboard_data()");
                 }
             },
             { timeout: 15000, retries: 1 }

@@ -115,6 +115,18 @@ var LmsData = (function () {
         el.innerHTML = html;
     }
 
+    // Error / retry state shown when a fetch fails and no cache was available.
+    function showError(selector, retryCall) {
+        var el = document.querySelector(selector);
+        if (!el) return;
+        el.innerHTML = '<div class="lms-state-card">' +
+            '<div class="lms-state-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>' +
+            '<div class="lms-state-title">Couldn\'t load</div>' +
+            '<div class="lms-state-sub">Check your connection and try again.</div>' +
+            '<button type="button" class="lms-state-retry" onclick="' + (retryCall || '') + '">Retry</button>' +
+            '</div>';
+    }
+
     // ---- Offline-tolerant write (Phase 2) -------------------------------------
     function isOnline() {
         if (navigator.connection && navigator.connection.type) return navigator.connection.type !== 'none';
@@ -163,6 +175,7 @@ var LmsData = (function () {
         clearCache: clearCache,
         clearAll: clearAll,
         showSkeletons: showSkeletons,
+        showError: showError,
         postAction: postAction,
         processOfflineQueue: processOfflineQueue,
         isOnline: isOnline,

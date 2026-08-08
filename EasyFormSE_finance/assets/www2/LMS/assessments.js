@@ -153,8 +153,8 @@ function get_assessments_listing(force_refresh) {
             },
             function (err) {
                 if (!had_cache) {
-                    $("#dv_Assessments_List").empty();
-                    if (typeof onfail === 'function') onfail(err);
+                    assessment_listing_requested = false;
+                    LmsData.showError("#dv_Assessments_List", "get_assessments_listing(true)");
                 }
             },
             { timeout: 15000, retries: 1 }

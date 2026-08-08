@@ -371,12 +371,26 @@
 
                             <!-- Video -->
                             <div id="safety-video-container" class="video-card mt-3 videoClass">
-                                <video id="vdo_Question" controls controlsList="nodownload" width="400">
+                                <video id="vdo_Question" controls controlsList="nodownload nofullscreen" width="400">
                                     <source src="https://dev.easyform.in/Altius_LMS/7/7/2026/March/v1.mp4" type="video/mp4">
                                 </video>
-                                <button id="safety-video-expand" type="button" aria-label="Expand video in landscape" title="Expand video in landscape" onclick="return expandSafetyVideo(this, event)">
+                                <button id="safety-video-expand" type="button" aria-label="Full screen (landscape)" title="Full screen (landscape)" onclick="return expandSafetyVideo(this, event)">
                                     <i class="fa fa-expand" aria-hidden="true"></i>
                                 </button>
+                                <!-- ML-style quiz modal — centered popup over the video (portrait + full-screen) -->
+                                <div id="safety-quiz-modal" class="safety-quiz-modal" style="display:none" aria-hidden="true">
+                                    <div class="safety-quiz-dialog">
+                                        <div class="safety-quiz-top">
+                                            <span class="safety-quiz-progress-text"><span id="safety-quiz-counter">1 of 1</span></span>
+                                            <a href="#" class="safety-quiz-x" aria-label="Close quiz" onclick="return safety_quiz_close()"><i class="fa fa-times"></i></a>
+                                        </div>
+                                        <h3 id="safety-quiz-question" class="safety-quiz-question"></h3>
+                                        <div class="list no-hairlines-md safety-quiz-list">
+                                            <ul id="safety-quiz-options"></ul>
+                                        </div>
+                                        <a href="#" id="safety-quiz-submit" class="button button-fill safety-quiz-submit-btn" onclick="return safety_quiz_action()">Submit</a>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Description -->
@@ -616,21 +630,30 @@
         }
 
         // Route the query to whichever module is active.
+        // Update the active tab's search text immediately, but debounce the
+        // re-render (~150ms) so typing stays smooth on large lists.
+        var _lms_search_timer = null;
         function lms_search_input(q) {
             q = (q || '').toString();
-            try {
-                if (lms_active_tab === 'Modules') {
-                    window.safety_module_search_text = q;
-                    safety_module_search_text = q;
-                    if (typeof render_safety_module_cards === 'function') render_safety_module_cards();
-                } else if (lms_active_tab === 'Assessments') {
-                    window.assessment_search_text = q;
-                    assessment_search_text = q;
-                    if (typeof render_assessment_cards === 'function') render_assessment_cards();
-                } else if (lms_active_tab === 'Micro Learning') {
-                    if (typeof ml_filter_reels === 'function') ml_filter_reels(q);
-                }
-            } catch (e) { }
+            if (lms_active_tab === 'Modules') {
+                window.safety_module_search_text = q;
+                safety_module_search_text = q;
+            } else if (lms_active_tab === 'Assessments') {
+                window.assessment_search_text = q;
+                assessment_search_text = q;
+            }
+            if (_lms_search_timer) clearTimeout(_lms_search_timer);
+            _lms_search_timer = setTimeout(function () {
+                try {
+                    if (lms_active_tab === 'Modules') {
+                        if (typeof render_safety_module_cards === 'function') render_safety_module_cards();
+                    } else if (lms_active_tab === 'Assessments') {
+                        if (typeof render_assessment_cards === 'function') render_assessment_cards();
+                    } else if (lms_active_tab === 'Micro Learning') {
+                        if (typeof ml_filter_reels === 'function') ml_filter_reels(q);
+                    }
+                } catch (e) { }
+            }, 150);
         }
 
         // Update the header title, switch the nav to dark on Micro Learning, and

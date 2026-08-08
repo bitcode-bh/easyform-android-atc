@@ -100,11 +100,17 @@ $(document).ready(function () {
 
     // clear timer properly
     $(video).on("ended", function () {
-        $("#dv_Question_List").show();
+        if (typeof safety_quiz_start === 'function' && safety_quiz_progress != "100") safety_quiz_start();
+        else $("#dv_Question_List").show();
         set_progress_local();
         clearInterval(progressInterval);
         console.log("Interval cleared");
     });
+
+    // Native <video> full-screen: some WebViews fire these on the element instead
+    // of a document fullscreenchange — drive the same landscape rotation.
+    $(video).on("webkitbeginfullscreen", function () { enterSafetyVideoLandscape(); });
+    $(video).on("webkitendfullscreen", function () { if (safetyVideoLandscapeMode) finishSafetyVideoLandscape(); });
 
 });
 
@@ -136,6 +142,27 @@ $(document).on("click", ".link.popup-close", function () {
 $(document).on("popup:closed", ".popup-level-4", function () {
     safetyVideoPopupActive = false;
     safetyVideoReturnedFromFullscreen = false;
+});
+
+// Pause + persist the lesson video and stop its progress timer whenever the
+// video popup closes by ANY route (hardware back, swipe, programmatic close) —
+// not just the "Close" link. Fixes: (1) the video kept playing in the background
+// after navigating back, and (2) the still-running 10s timer overwriting the
+// saved resume position with 0 on reopen, which made the video restart from the
+// beginning instead of resuming.
+$(document).on("popup:close", ".popup-level-4", function () {
+    try {
+        if (typeof safety_quiz_close_modal === 'function') safety_quiz_close_modal();
+        var v = $("#vdo_Question")[0];
+        if (v) {
+            set_progress_local(); // capture the resume position before pausing
+            v.pause();
+        }
+        if (progressInterval) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+        }
+    } catch (e) { }
 });
 
 $(document).on("popup:closed", ".lms-module-preview-popup", function () {
@@ -299,16 +326,33 @@ function exitSafetyVideoLandscape() {
     return false;
 }
 
+// The single expand control is now the native video-player full-screen button.
+// Rotate to landscape when the safety video enters full-screen (by any route)
+// and restore portrait on exit.
+function enterSafetyVideoLandscape() {
+    if (safetyVideoLandscapeMode) return;
+    safetyVideoReturnedFromFullscreen = false;
+    safetyVideoLandscapeMode = true;
+    setSafetyVideoOrientation('landscape');
+}
+
+function isSafetyVideoFsElement(el) {
+    if (!el) return false;
+    if (el.id === 'vdo_Question' || el.id === 'safety-video-container') return true;
+    var c = document.getElementById('safety-video-container');
+    return !!(c && c.contains(el));
+}
+
 document.addEventListener('fullscreenchange', function () {
-    if (!document.fullscreenElement && safetyVideoLandscapeMode) {
-        finishSafetyVideoLandscape();
-    }
+    var el = document.fullscreenElement;
+    if (isSafetyVideoFsElement(el)) enterSafetyVideoLandscape();
+    else if (!el && safetyVideoLandscapeMode) finishSafetyVideoLandscape();
 });
 
 document.addEventListener('webkitfullscreenchange', function () {
-    if (!document.webkitFullscreenElement && safetyVideoLandscapeMode) {
-        finishSafetyVideoLandscape();
-    }
+    var el = document.webkitFullscreenElement;
+    if (isSafetyVideoFsElement(el)) enterSafetyVideoLandscape();
+    else if (!el && safetyVideoLandscapeMode) finishSafetyVideoLandscape();
 });
 
 function back_button_LMS() {
