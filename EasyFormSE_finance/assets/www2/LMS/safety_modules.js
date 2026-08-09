@@ -138,18 +138,22 @@ function render_safety_module_cards() {
 
         var onclick_str = "get_target_skill_by_module_id('" + Module_Id + "', '" + Progress + "', '" + SubmitedSkill + "', '" + Module_Schedule_Id + "')";
         str += '<div class="sample-module-card" Module_Id="' + Module_Id + '" onclick="' + onclick_str + '">';
-        str += '<div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Module_Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\')">';
+        str += '<div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Module_Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\'); if(typeof lms_apply_corner_contrast===\'function\') lms_apply_corner_contrast(this.src, this.parentNode);">';
         if (Tag !== "" && Tag != null) {
             str += '<span class="sample-module-tag">' + Tag + '</span>';
         }
         if (SubmitedSkill > 0) {
-            str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
+            str += '<span class="sample-score-tag"><span class="sample-score-label">Score:</span> ';
+            str += '<span class="sample-score-current">' + Score + '</span><span class="sample-score-sep">/</span>';
+            str += '<span class="sample-score-total">' + TotalQuestion + '</span></span>';
         }
         if (typeof lms_format_clock_time === 'function') {
             var watchedSec = (typeof lms_get_watch_seconds_by_item === 'function') ? lms_get_watch_seconds_by_item('lms_watch_seconds_modules', Module_Id) : 0;
             var totalSec = (lms_module_video_totals && lms_module_video_totals[Module_Id]) ? lms_module_video_totals[Module_Id] : 0;
-            str += '<span class="sample-module-watchtime"><i class="fa-regular fa-clock" aria-hidden="true"></i>';
-            str += lms_format_clock_time(watchedSec) + ' / ' + lms_format_clock_time(totalSec) + '</span>';
+            str += '<span class="sample-module-watchtime">';
+            str += '<span class="sample-watchtime-elapsed">' + lms_format_clock_time(watchedSec) + '</span>';
+            str += '<span class="sample-watchtime-sep">/</span>';
+            str += '<span class="sample-watchtime-total">' + lms_format_clock_time(totalSec) + '</span></span>';
         }
         str += '</div><div class="sample-module-card-body">';
         str += '<div class="sample-module-title">' + Module_Name + '</div>';

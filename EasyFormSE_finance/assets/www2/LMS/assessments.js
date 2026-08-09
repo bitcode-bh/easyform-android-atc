@@ -62,9 +62,13 @@ function render_assessment_cards() {
         var SubmitedQuestion = assessment.SubmitedQuestion == null || assessment.SubmitedQuestion === "" ? 0 : assessment.SubmitedQuestion;
         var onclick_str = "get_questionlog_by_assessment_id('" + Assessment_Id + "', '" + Assessment_Schedule_Id + "', '" + Progress + "')";
 
-        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\')">';
+        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\'); if(typeof lms_apply_corner_contrast===\'function\') lms_apply_corner_contrast(this.src, this.parentNode);">';
         if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag">' + Tag + '</span>';
-        if (SubmitedQuestion > 0) str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
+        if (SubmitedQuestion > 0) {
+            str += '<span class="sample-score-tag"><span class="sample-score-label">Score:</span> ';
+            str += '<span class="sample-score-current">' + Score + '</span><span class="sample-score-sep">/</span>';
+            str += '<span class="sample-score-total">' + TotalQuestion + '</span></span>';
+        }
         str += '</div><div class="sample-module-card-body"><div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
         str += '<div class="sample-module-meta"><div class="sample-module-lessons"><span class="sample-module-help"><i class="fa fa-book-open"></i></span><span class="sample-lession-count">' + TotalQuestion + ' Questions</span></div><div class="sample-module-percent">' + Progress + '%</div></div>';
         str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div></div></div>';

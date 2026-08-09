@@ -263,17 +263,30 @@
 }
 
 
+/* Lightweight corner label (top-right) — no pill; current score is the
+   prominent/accented part, the total is secondary. */
 .sample-score-tag {
     position: absolute;
-    top: 13px;
-    right: 13px;
+    top: 12px;
+    right: 14px;
     z-index: 1;
-    border-radius: 15px;
-    background: rgba(16, 24, 34, 0.86);
     color: #fff;
-    padding: 5px 12px;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
+
+    .sample-score-label { font-weight: 500; opacity: 0.85; }
+    .sample-score-current { font-weight: 800; color: #7db6ff; }
+    .sample-score-sep { opacity: 0.7; }
+    .sample-score-total { font-weight: 600; opacity: 0.8; }
+
+    .sample-score-tag.on-light-bg {
+        color: #1c2027;
+        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
+    }
+
+        .sample-score-tag.on-light-bg .sample-score-current { color: #215ba8; }
 
 .correct-answer input[type='checkbox'] {
     margin-left: 10px;

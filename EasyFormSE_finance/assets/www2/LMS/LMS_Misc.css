@@ -705,6 +705,11 @@
         display: block;
     }
 
+    /* Original subtle top-only depth vignette (pre-dates the corner-label
+       work) — NOT a legibility mechanism. Real contrast now comes from
+       lms_apply_corner_contrast() (LMS_Misc.js) sampling each corner's actual
+       pixel brightness and toggling .on-light-bg per badge, so a forced
+       scrim would fight against a genuinely light corner. */
     .sample-module-image:after {
         content: "";
         position: absolute;
@@ -713,17 +718,43 @@
         pointer-events: none;
     }
 
+/* Lightweight corner label — no pill, just text + a small accent bar.
+   Default (below) = light text for a dark/unknown corner; .on-light-bg
+   overrides to dark text once lms_apply_corner_contrast() confirms the
+   corner is actually light — mirrors the reference design's plain
+   black-on-white treatment on a flat background, adapted per real photo. */
 .sample-module-tag {
     position: absolute;
-    top: 13px;
-    left: 13px;
+    top: 12px;
+    left: 14px;
     z-index: 1;
-    border-radius: 15px;
-    background: rgba(16, 24, 34, 0.86);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     color: #fff;
-    padding: 5px 12px;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
+
+    .sample-module-tag::before {
+        content: "";
+        display: inline-block;
+        width: 3px;
+        height: 12px;
+        border-radius: 2px;
+        background: #7db6ff;
+        flex-shrink: 0;
+    }
+
+    .sample-module-tag.on-light-bg {
+        color: #1c2027;
+        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
+    }
+
+        .sample-module-tag.on-light-bg::before {
+            background: #215ba8;
+        }
 
 .sample-module-card-body {
     padding: 16px 16px 14px;
@@ -777,28 +808,33 @@
     font-weight: 800;
 }
 
-/* Overlay badge on the thumbnail (bottom-left), matching the existing
-   .sample-module-tag/.sample-score-tag pill style used at the top corners. */
+/* Lightweight corner label (bottom-left) — no pill, compact inline text,
+   matching the tag/score corner treatment above. */
 .sample-module-watchtime {
     position: absolute;
-    bottom: 13px;
-    left: 13px;
+    bottom: 12px;
+    left: 14px;
     z-index: 1;
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    border-radius: 15px;
-    background: rgba(16, 24, 34, 0.86);
     color: #fff;
-    padding: 5px 12px;
-    font-size: 12px;
+    font-size: 12.5px;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
 
-    .sample-module-watchtime i {
-        font-size: 11px;
-        color: #fff;
+    .sample-watchtime-elapsed { opacity: 0.85; }
+    .sample-watchtime-sep { opacity: 0.6; }
+    .sample-watchtime-total { font-weight: 700; color: #7db6ff; }
+
+    .sample-module-watchtime.on-light-bg {
+        color: #1c2027;
+        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
     }
+
+        .sample-module-watchtime.on-light-bg .sample-watchtime-total { color: #215ba8; }
 
 /* Sits outside the padded card body as the card's own last child — flush,
    full-width footer strip, its corners clipped by the card's own

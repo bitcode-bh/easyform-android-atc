@@ -128,6 +128,57 @@ function lms_format_clock_time(totalSeconds) {
     return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
 }
 
+// ---- Adaptive corner-badge contrast (Tag/Score/Duration on card thumbnails) --
+// The reference design is plain black text on a flat white background — no
+// pill, no scrim. Our thumbnails are real photos, so instead of a fixed
+// color we sample each corner's actual pixel brightness and flip that badge
+// to dark text (light corner) or light text (dark corner), per-corner since
+// one photo can be bright top-left and dark bottom-left at once.
+//
+// The visible <img> is never given crossOrigin (that can make the browser
+// refuse to even display it if the asset host doesn't send CORS headers) —
+// sampling instead uses a throwaway probe Image() at the same URL. If the
+// host isn't CORS-enabled the probe's canvas read throws and this silently
+// leaves the badge at its default (light-text) styling; no visible harm.
+function lms_apply_corner_contrast(srcUrl, cardEl) {
+    if (!srcUrl || !cardEl || typeof document === 'undefined') return;
+    var probe = new Image();
+    probe.crossOrigin = 'anonymous';
+    probe.onload = function () {
+        try {
+            var w = probe.naturalWidth, h = probe.naturalHeight;
+            if (!w || !h) return;
+            var cw = Math.max(1, Math.round(w * 0.3));
+            var ch = Math.max(1, Math.round(h * 0.22));
+            var canvas = document.createElement('canvas');
+            canvas.width = 12;
+            canvas.height = 12;
+            var ctx = canvas.getContext('2d');
+            var corners = [
+                { sel: '.sample-module-tag', right: false, bottom: false },
+                { sel: '.sample-score-tag', right: true, bottom: false },
+                { sel: '.sample-module-watchtime', right: false, bottom: true }
+            ];
+            corners.forEach(function (c) {
+                var el = cardEl.querySelector(c.sel);
+                if (!el) return;
+                var sx = c.right ? (w - cw) : 0;
+                var sy = c.bottom ? (h - ch) : 0;
+                ctx.clearRect(0, 0, 12, 12);
+                ctx.drawImage(probe, sx, sy, cw, ch, 0, 0, 12, 12);
+                var data = ctx.getImageData(0, 0, 12, 12).data;
+                var sum = 0, n = 0;
+                for (var i = 0; i < data.length; i += 4) {
+                    sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                    n++;
+                }
+                el.classList.toggle('on-light-bg', (sum / n) > 165);
+            });
+        } catch (e) { /* CORS-tainted canvas — keep default light-text styling */ }
+    };
+    probe.src = srcUrl;
+}
+
 // Info-bar value updates fade rather than snap (150-250ms, per design spec) —
 // no-op if the text isn't actually changing, so re-renders don't flash.
 function lms_set_info_value(el, text) {
