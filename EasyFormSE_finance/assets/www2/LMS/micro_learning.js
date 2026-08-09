@@ -546,9 +546,8 @@ function get_user_activities() {
 // score field exists anywhere in this dataset.
 function update_ml_stat_badge() {
     var el = document.getElementById('ml_stat_watched_count');
-    if (el) {
-        var watched = (user_activitiy_Array || []).filter(function (a) { return Number(a.Watch_Count) > 0; }).length;
-        el.textContent = watched;
+    if (el && typeof lms_count_distinct_ml === 'function') {
+        el.textContent = lms_count_distinct_ml(user_activitiy_Array, 'Watch_Count');
     }
 
     var timeEl = document.getElementById('ml_stat_watch_time');
@@ -582,6 +581,7 @@ function lms_compute_ml_total_video_time(catalog) {
 
 // micro learning video listing
 var total_reels = 0;
+var ml_catalog_ml_ids = null; // { Ml_id: true, ... } for videos currently in the library
 function get_micro_learning_videos() {
 
     let role_id_array = localStorage.getItem('role_id_array');
@@ -598,6 +598,13 @@ function get_micro_learning_videos() {
         let status = All_data[0]["status"];
         if (status == 1) {
             let data = JSON.parse(All_data[0]["data"]);
+
+            // Track which Ml_Ids are actually in the current library — activity
+            // log rows can outlive their video (content rotated/removed), so
+            // "Watched"/"Liked" must be intersected with this or they can
+            // exceed the real library size. See lms_count_distinct_ml.
+            ml_catalog_ml_ids = {};
+            data.forEach(function (v) { ml_catalog_ml_ids[v.Ml_id] = true; });
 
             if (total_reels == 0) {
                 $('#div_Reels')[0].innerHTML = '';
@@ -893,6 +900,10 @@ function submit_ML_question() {
             $("#pnl_ML_Question .list li").removeClass("ml-correct-answer ml-incorrect-answer");
 
             let validAnswer = $("#ML_Question").attr("valid_ans");
+
+            if (typeof lms_add_ml_quiz_result === 'function') {
+                lms_add_ml_quiz_result(selectedAns.trim() === validAnswer);
+            }
 
             $("input[name='ML_Option']").each(function () {
 

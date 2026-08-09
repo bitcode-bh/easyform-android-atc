@@ -306,7 +306,7 @@
                                     <div class="lms-trend-range-label" id="lms_trend_range_label"></div>
                                 </div>
                                 <div id="lms-trend-chart" class="lms-trend-chart swiper-no-swiping"></div>
-                                <div id="lms-ml-coverage-chart" class="lms-trend-chart swiper-no-swiping" style="display:none; min-height:200px;"></div>
+                                <div id="lms-ml-coverage-chart" class="lms-trend-chart swiper-no-swiping" style="display:none;"></div>
 
                                 <!-- Context card: values AND which one drives the chart above depend on the
                                      category selected below. Cards 1-3 are tappable (pick the chart's single
@@ -327,11 +327,11 @@
                                         <div class="kpi-value" id="kpi_dashboard_metric3">0s</div>
                                         <div class="kpi-label" id="kpi_dashboard_metric3_label">Watch time</div>
                                     </button>
-                                    <div class="lms-kpi-card" id="kpi_dashboard_metric4_card">
+                                    <button type="button" class="lms-kpi-card is-selectable is-metric-selectable" id="kpi_dashboard_metric4_card" onclick="return select_lms_dashboard_metric(4, this)">
                                         <i class="fa-solid fa-film" aria-hidden="true"></i>
                                         <div class="kpi-value" id="kpi_dashboard_metric4">0s</div>
                                         <div class="kpi-label" id="kpi_dashboard_metric4_label">Total video time</div>
-                                    </div>
+                                    </button>
                                 </div>
 
                                 <!-- Category selector — choose which module feeds the context card + chart above -->

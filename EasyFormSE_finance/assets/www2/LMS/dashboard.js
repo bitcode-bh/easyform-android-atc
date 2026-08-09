@@ -125,6 +125,49 @@ function lms_trend_label_fmt(d) {
         : (d.getDate() + ' ' + d.toLocaleString('en-US', { month: 'short' }));
 }
 
+// Shared by the Modules chart AND its KPI cards so the two can never disagree —
+// both read the same day-bucketed dashboard_kpi_data over the same range.
+function lms_build_module_buckets(range) {
+    var buckets = {};
+    var cursor = new Date(range.start);
+    while (cursor <= range.end) {
+        buckets[lms_date_key(cursor)] = { count: 0, scoreSum: 0 };
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    (dashboard_kpi_data || []).forEach(function (rec) {
+        var d = lms_parse_submitted_date(rec.SubmittedDate);
+        if (!d || d < range.start || d > range.end) return;
+        var b = buckets[lms_date_key(d)];
+        if (!b) return;
+        b.count += 1;
+        b.scoreSum += Number(rec.Achieve_Percentage) || 0;
+    });
+    return buckets;
+}
+
+// Totals for the CURRENT Week/Month/Custom range — same numbers the
+// Completed/Avg score/Watch time cards show, so they always match whatever
+// the chart is plotting for that same period.
+function lms_compute_module_range_totals() {
+    var range = lms_trend_range_dates();
+    var buckets = lms_build_module_buckets(range);
+    var completions = 0, scoreSum = 0, scoreCount = 0, watchSeconds = 0;
+    var cursor = new Date(range.start);
+    while (cursor <= range.end) {
+        var b = buckets[lms_date_key(cursor)];
+        completions += b.count;
+        if (b.count) { scoreSum += b.scoreSum; scoreCount += b.count; }
+        watchSeconds += (typeof lms_get_watch_seconds_daily === 'function')
+            ? lms_get_watch_seconds_daily('lms_watch_seconds_modules_daily', cursor) : 0;
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    return {
+        completions: completions,
+        avgScorePct: scoreCount > 0 ? Math.round(scoreSum / scoreCount) : 0,
+        watchSeconds: watchSeconds
+    };
+}
+
 // Modules trend — mirrors its KPI cards: Completions (day count, same field as
 // the old "Submissions"), Score (avg Achieve_Percentage/day), Watch time (real,
 // locally day-bucketed — see lms_add_watch_seconds_daily). Total video time is
@@ -138,24 +181,14 @@ function render_lms_trend_chart() {
     if (!chartEl) return;
 
     var range = lms_trend_range_dates();
+    var buckets = lms_build_module_buckets(range);
 
-    var buckets = {};
     var categories = [];
     var cursor = new Date(range.start);
     while (cursor <= range.end) {
-        buckets[lms_date_key(cursor)] = { count: 0, scoreSum: 0 };
         categories.push(lms_trend_label_fmt(cursor));
         cursor.setDate(cursor.getDate() + 1);
     }
-
-    (dashboard_kpi_data || []).forEach(function (rec) {
-        var d = lms_parse_submitted_date(rec.SubmittedDate);
-        if (!d || d < range.start || d > range.end) return;
-        var b = buckets[lms_date_key(d)];
-        if (!b) return;
-        b.count += 1;
-        b.scoreSum += Number(rec.Achieve_Percentage) || 0;
-    });
 
     var seriesName, data = [], tooltipSuffix = '';
     cursor = new Date(range.start);
@@ -184,7 +217,7 @@ function render_lms_trend_chart() {
     if (typeof ApexCharts === 'undefined') return;
 
     var options = {
-        chart: { type: 'area', height: 260, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'inherit', animations: { speed: 350 } },
+        chart: { type: 'area', height: 260, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'inherit', animations: { speed: 300 } },
         series: [{ name: seriesName, data: data }],
         xaxis: { categories: categories, labels: { rotate: 0, style: { fontSize: '11px' } }, tooltip: { enabled: false }, axisBorder: { show: false }, axisTicks: { show: false } },
         yaxis: { min: 0, max: yMax, forceNiceScale: !yMax, labels: { style: { fontSize: '11px' } } },
@@ -200,16 +233,79 @@ function render_lms_trend_chart() {
     lms_render_apex_chart('lms-trend-chart', options, 'modules');
 }
 
+// Shared 2-bar comparison ("Watched" vs "Total") — used instead of a
+// pie/radial gauge everywhere in the LMS charts, per house style: graphs only.
+function lms_render_coverage_bar(elId, watchedVal, totalVal, valueFormatter) {
+    var el = document.getElementById(elId);
+    if (!el || typeof ApexCharts === 'undefined') return;
+
+    var options = {
+        // Same height as every other chart in this dashboard (260) so switching
+        // categories/metrics never resizes the container underneath it.
+        chart: { type: 'bar', height: 260, toolbar: { show: false }, fontFamily: 'inherit', animations: { speed: 300 } },
+        series: [{ name: '', data: [watchedVal, totalVal] }],
+        plotOptions: { bar: { borderRadius: 4, columnWidth: '45%', distributed: true } },
+        xaxis: { categories: ['Watched', 'Total'], labels: { style: { fontSize: '11px' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+        // Auto-generated tick values (not the raw data) come with float noise
+        // (e.g. 18.900000000000002) — round before formatting, independent of
+        // the data-label/tooltip formatter which gets the already-clean values.
+        yaxis: { min: 0, labels: { style: { fontSize: '11px' }, formatter: function (v) { return valueFormatter(Math.round(v * 10) / 10); } } },
+        colors: ['#215ba8', '#b26a00'],
+        dataLabels: { enabled: true, formatter: valueFormatter, style: { fontSize: '12px', colors: ['#fff'] } },
+        legend: { show: false },
+        grid: { borderColor: '#e3e6ea', strokeDashArray: 3 },
+        tooltip: { y: { formatter: valueFormatter } }
+    };
+
+    if (lms_ml_coverage_chart_instance) { lms_ml_coverage_chart_instance.destroy(); lms_ml_coverage_chart_instance = null; }
+    el.innerHTML = '';
+    lms_ml_coverage_chart_instance = new ApexCharts(el, options);
+    lms_ml_coverage_chart_instance.render();
+}
+
+// Modules coverage — real all-time watch time vs the real all-time
+// library-wide total video length (same numbers as the Watch time / Total
+// video time cards). Shares the chart element + instance with Micro
+// Learning's coverage view since only one category is shown at a time.
+function render_lms_module_video_coverage_chart() {
+    var watchSeconds = (typeof lms_get_watch_seconds === 'function') ? lms_get_watch_seconds('lms_watch_seconds_modules') : 0;
+    var totalCache = {};
+    try { totalCache = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { totalCache = {}; }
+    var totalSeconds = 0;
+    Object.keys(totalCache).forEach(function (id) { totalSeconds += totalCache[id]; });
+
+    var watchMin = Math.round(watchSeconds / 60 * 10) / 10;
+    var totalMin = Math.round(totalSeconds / 60 * 10) / 10;
+    lms_render_coverage_bar('lms-ml-coverage-chart', watchMin, totalMin, function (v) { return v + 'm'; });
+}
+
 // Week/Month/Custom is shared across Modules and Micro Learning (both have
 // real daily data); Assessments has no date dimension so never shows this filter.
 function lms_render_selected_category_chart() {
+    // Modules' KPI cards are range-scoped (see lms_compute_module_range_totals) —
+    // refresh them on every chart re-render (filter change, data refresh) so
+    // they never drift from what the chart is currently plotting.
+    render_lms_dashboard_context_kpi();
+
     if (lms_dashboard_selected_category === 'Modules') {
-        render_lms_trend_chart();
+        lms_render_module_chart_view();
     } else if (lms_dashboard_selected_category === 'Micro Learning') {
         lms_render_ml_chart_view();
     } else if (lms_dashboard_selected_category === 'Assessments') {
         render_lms_assessment_score_chart();
     }
+}
+
+// Modules shows one visualization at a time: the Completions/Score/Watch time
+// trend line, or (tapping Total video time) a watched-vs-total coverage gauge.
+function lms_render_module_chart_view() {
+    var chartEl = document.getElementById('lms-trend-chart');
+    var coverageEl = document.getElementById('lms-ml-coverage-chart');
+    var isCoverage = lms_module_chart_metric === 'videocoverage';
+    if (chartEl) chartEl.style.display = isCoverage ? 'none' : '';
+    if (coverageEl) coverageEl.style.display = isCoverage ? '' : 'none';
+    if (isCoverage) render_lms_module_video_coverage_chart();
+    else render_lms_trend_chart();
 }
 
 // Micro Learning shows one visualization at a time too: the watch-time trend
@@ -219,28 +315,48 @@ var lms_ml_chart_view = 'trend'; // 'trend' | 'coverage'
 function lms_render_ml_chart_view() {
     var chartEl = document.getElementById('lms-trend-chart');
     var coverageEl = document.getElementById('lms-ml-coverage-chart');
-    var isTrend = lms_ml_chart_view === 'trend';
-    if (chartEl) chartEl.style.display = isTrend ? '' : 'none';
-    if (coverageEl) coverageEl.style.display = isTrend ? 'none' : '';
-    if (isTrend) render_lms_ml_watch_trend_chart();
+    // 'trend'/'score' render into the main line-chart element; 'coverage'/
+    // 'timecoverage' render into the bar-comparison element.
+    var usesMainChart = lms_ml_chart_view === 'trend' || lms_ml_chart_view === 'score';
+    if (chartEl) chartEl.style.display = usesMainChart ? '' : 'none';
+    if (coverageEl) coverageEl.style.display = usesMainChart ? 'none' : '';
+
+    if (lms_ml_chart_view === 'trend') render_lms_ml_watch_trend_chart();
+    else if (lms_ml_chart_view === 'score') render_lms_ml_score_trend_chart();
+    else if (lms_ml_chart_view === 'timecoverage') render_lms_ml_video_time_coverage_chart();
     else render_lms_ml_coverage_chart();
 }
 
+// Micro Learning's own "Total video time" — real all-time watch time vs the
+// real all-time reel-library total length. Same shared bar + numbers as the
+// Watch time / Total video time cards.
+function render_lms_ml_video_time_coverage_chart() {
+    var watchSeconds = (typeof lms_get_watch_seconds === 'function') ? lms_get_watch_seconds('lms_watch_seconds_ml') : 0;
+    var totalCache = {};
+    try { totalCache = JSON.parse(localStorage.getItem('lms_video_durations_ml')) || {}; } catch (e) { totalCache = {}; }
+    var totalSeconds = 0;
+    Object.keys(totalCache).forEach(function (id) { totalSeconds += totalCache[id]; });
+
+    var watchMin = Math.round(watchSeconds / 60 * 10) / 10;
+    var totalMin = Math.round(totalSeconds / 60 * 10) / 10;
+    lms_render_coverage_bar('lms-ml-coverage-chart', watchMin, totalMin, function (v) { return v + 'm'; });
+}
+
 // Taps on the metric cards below the chart (slot 1-4, matching
-// kpi_dashboard_metricN) — picks which single line/visualization the chart
-// shows. Only metrics with a real per-day (or comparable) chart are wired;
-// Total video time (a static library-wide total) and Micro Learning's Liked
-// count have no associated chart view, so those slots are left non-interactive.
+// kpi_dashboard_metricN) — picks which single line/visualization the chart shows.
 function select_lms_dashboard_metric(slot, el) {
     if (lms_dashboard_selected_category === 'Modules') {
         if (slot === 1) lms_module_chart_metric = 'completions';
         else if (slot === 2) lms_module_chart_metric = 'score';
         else if (slot === 3) lms_module_chart_metric = 'watchtime';
+        else if (slot === 4) lms_module_chart_metric = 'videocoverage';
         else return false;
-        render_lms_trend_chart();
+        lms_render_module_chart_view();
     } else if (lms_dashboard_selected_category === 'Micro Learning') {
         if (slot === 1) lms_ml_chart_view = 'coverage';
+        else if (slot === 2) lms_ml_chart_view = 'score';
         else if (slot === 3) lms_ml_chart_view = 'trend';
+        else if (slot === 4) lms_ml_chart_view = 'timecoverage';
         else return false;
         lms_render_ml_chart_view();
     } else {
@@ -314,7 +430,7 @@ function render_lms_assessment_score_chart() {
     if (rangeLabelEl) { rangeLabelEl.textContent = items.length + ' assessment' + (items.length === 1 ? '' : 's'); }
 
     var options = {
-        chart: { type: 'bar', height: 260, toolbar: { show: false }, fontFamily: 'inherit' },
+        chart: { type: 'bar', height: 260, toolbar: { show: false }, fontFamily: 'inherit', animations: { speed: 300 } },
         series: [{ name: 'Score %', data: scores }],
         plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
         xaxis: { categories: categories, labels: { style: { fontSize: '10px' }, rotate: -35, trim: true }, axisBorder: { show: false }, axisTicks: { show: false } },
@@ -349,7 +465,7 @@ function render_lms_ml_watch_trend_chart() {
     if (rangeLabelEl) { rangeLabelEl.textContent = lms_trend_label_fmt(range.start) + ' – ' + lms_trend_label_fmt(range.end); }
 
     var options = {
-        chart: { type: 'area', height: 220, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'inherit', animations: { speed: 350 } },
+        chart: { type: 'area', height: 260, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'inherit', animations: { speed: 300 } },
         series: [{ name: 'Watch time (min)', data: minutes }],
         xaxis: { categories: categories, labels: { rotate: 0, style: { fontSize: '11px' } }, tooltip: { enabled: false }, axisBorder: { show: false }, axisTicks: { show: false } },
         yaxis: { min: 0, forceNiceScale: true, labels: { style: { fontSize: '11px' } } },
@@ -365,39 +481,50 @@ function render_lms_ml_watch_trend_chart() {
     lms_render_apex_chart('lms-trend-chart', options, 'ml-trend');
 }
 
+// Micro Learning quiz score — real day-bucketed correct/total (local tracking,
+// see lms_add_ml_quiz_result in LMS_Misc.js; no backend field persists this
+// anywhere). Respects the same Week/Month/Custom filter as the other trends.
+function render_lms_ml_score_trend_chart() {
+    if (typeof ApexCharts === 'undefined') return;
+    var range = lms_trend_range_dates();
+
+    var categories = [], scores = [];
+    var cursor = new Date(range.start);
+    while (cursor <= range.end) {
+        categories.push(lms_trend_label_fmt(cursor));
+        var day = (typeof lms_get_ml_quiz_daily === 'function') ? lms_get_ml_quiz_daily(cursor) : { correct: 0, total: 0 };
+        scores.push(day.total > 0 ? Math.round((day.correct / day.total) * 100) : 0);
+        cursor.setDate(cursor.getDate() + 1);
+    }
+
+    var rangeLabelEl = document.getElementById('lms_trend_range_label');
+    if (rangeLabelEl) { rangeLabelEl.textContent = lms_trend_label_fmt(range.start) + ' – ' + lms_trend_label_fmt(range.end); }
+
+    var options = {
+        chart: { type: 'area', height: 260, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'inherit', animations: { speed: 300 } },
+        series: [{ name: 'Score %', data: scores }],
+        xaxis: { categories: categories, labels: { rotate: 0, style: { fontSize: '11px' } }, tooltip: { enabled: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+        yaxis: { min: 0, max: 100, labels: { style: { fontSize: '11px' } } },
+        colors: ['#215ba8'],
+        stroke: { curve: 'smooth', width: 2.5 },
+        fill: { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.02, shadeIntensity: 1 } },
+        dataLabels: { enabled: false },
+        legend: { show: false },
+        grid: { borderColor: '#e3e6ea', strokeDashArray: 3, padding: { left: 4, right: 4 } },
+        tooltip: { y: { formatter: function (v) { return v + '%'; } } }
+    };
+
+    lms_render_apex_chart('lms-trend-chart', options, 'ml-score');
+}
+
 // Micro Learning coverage gauge — real watched-count vs total reels in the
 // library (same fields as the "Watched" KPI card / tab-4 overlay badge).
 function render_lms_ml_coverage_chart() {
-    var el = document.getElementById('lms-ml-coverage-chart');
-    if (!el || typeof ApexCharts === 'undefined') return;
-
     var arr = (typeof user_activitiy_Array !== 'undefined' && user_activitiy_Array) ? user_activitiy_Array : [];
-    var watched = arr.filter(function (a) { return Number(a.Watch_Count) > 0; }).length;
+    var watched = lms_count_distinct_ml(arr, 'Watch_Count');
     var total = (typeof total_reels !== 'undefined' && total_reels) ? total_reels : 0;
-    var pct = total > 0 ? Math.round((watched / total) * 100) : 0;
 
-    var options = {
-        chart: { type: 'radialBar', height: 200, toolbar: { show: false }, fontFamily: 'inherit' },
-        series: [pct],
-        labels: [watched + ' of ' + total + ' watched'],
-        colors: ['#215ba8'],
-        plotOptions: {
-            radialBar: {
-                hollow: { size: '62%' },
-                track: { background: '#e3e6ea' },
-                dataLabels: {
-                    name: { fontSize: '12px', color: '#5b6470', offsetY: 22 },
-                    value: { fontSize: '26px', fontWeight: 800, color: '#1c2430', offsetY: -12, formatter: function (v) { return v + '%'; } }
-                }
-            }
-        },
-        stroke: { lineCap: 'round' }
-    };
-
-    if (lms_ml_coverage_chart_instance) { lms_ml_coverage_chart_instance.destroy(); lms_ml_coverage_chart_instance = null; }
-    el.innerHTML = '';
-    lms_ml_coverage_chart_instance = new ApexCharts(el, options);
-    lms_ml_coverage_chart_instance.render();
+    lms_render_coverage_bar('lms-ml-coverage-chart', watched, total, function (v) { return String(v); });
 }
 
 function apply_dashboard(responseText) {
@@ -463,8 +590,8 @@ function update_lms_kpi() {
 // Context card above the Modules/Assessments/Micro Learning selector row.
 // Modules/Assessments have a real Completed %/Avg score % (see
 // lms_compute_completion_kpi in safety_modules.js). Micro Learning has no
-// completion or score concept in its data — Watched/Liked are the real
-// engagement metrics used there instead (same fields as the reels-feed badge).
+// completion concept, but does have a real, locally-tracked quiz score (see
+// lms_get_ml_quiz_score_pct) — Watched/Score are used there instead.
 function select_lms_dashboard_category(category, el) {
     lms_dashboard_selected_category = category;
     $('#tab-3 .lms-category-card').removeClass('is-active').attr('aria-pressed', 'false');
@@ -477,16 +604,29 @@ function select_lms_dashboard_category(category, el) {
     lms_ml_chart_view = 'trend';
 
     // Week/Month/Custom only makes sense where there's a real per-day trend
-    // (Modules, Micro Learning's watch-time line) — hidden for Assessments.
+    // (Modules, Micro Learning's watch-time line) — Assessments has no date
+    // field, so the pills are inert there. Hide only the pill buttons via
+    // visibility (not display), and only on the pills themselves (not the
+    // whole row) — this keeps the row's height/position reserved so the
+    // chart below never jumps, while the range-label text (e.g. "2
+    // assessments") stays visible on the right.
     var showsFilter = category === 'Modules' || category === 'Micro Learning';
-    var filterRow = document.getElementById('lms_trend_filter_row');
-    if (filterRow) filterRow.style.display = showsFilter ? '' : 'none';
+    var filterPills = document.getElementById('lms_trend_filter');
+    if (filterPills) filterPills.style.visibility = showsFilter ? '' : 'hidden';
 
+    // Reset both chart slots to their default visible/hidden state on every
+    // category switch. Modules/Micro Learning's view-functions will re-toggle
+    // #lms-trend-chart if their default view is the coverage gauge, but
+    // Assessments has no such wrapper — it always needs #lms-trend-chart
+    // visible, and would otherwise inherit "hidden" if the previous category
+    // left it that way (this was rendering the assessment bar chart into a
+    // display:none container — invisible, not actually missing).
+    var chartEl = document.getElementById('lms-trend-chart');
+    if (chartEl) chartEl.style.display = '';
     var coverageEl = document.getElementById('lms-ml-coverage-chart');
-    if (coverageEl) coverageEl.style.display = 'none'; // lms_render_ml_chart_view() re-shows it if needed
+    if (coverageEl) coverageEl.style.display = 'none';
 
-    render_lms_dashboard_context_kpi();
-    lms_render_selected_category_chart();
+    lms_render_selected_category_chart(); // also refreshes the context card
     return false;
 }
 
@@ -518,32 +658,37 @@ function render_lms_dashboard_context_kpi() {
         return total;
     }
 
-    if (lms_dashboard_selected_category === 'Modules' || lms_dashboard_selected_category === 'Assessments') {
-        var isModules = lms_dashboard_selected_category === 'Modules';
-        var items = isModules
-            ? (typeof safety_module_data !== 'undefined' ? safety_module_data : [])
-            : (typeof assessment_data !== 'undefined' ? assessment_data : []);
+    if (lms_dashboard_selected_category === 'Modules') {
+        // Same range + same dashboard_kpi_data the chart plots from — these
+        // numbers must always match what the Completions/Score/Watch time
+        // line sums to for the current Week/Month/Custom selection.
+        var mt = (typeof lms_compute_module_range_totals === 'function') ? lms_compute_module_range_totals() : { completions: 0, avgScorePct: 0, watchSeconds: 0 };
+        l1.textContent = 'Completions'; v1.textContent = String(mt.completions);
+        l2.textContent = 'Avg score'; v2.textContent = mt.avgScorePct + '%';
+        if (card3) card3.style.display = '';
+        if (card4) card4.style.display = '';
+        if (v3 && l3) {
+            l3.textContent = 'Watch time';
+            v3.textContent = lms_format_watch_time(mt.watchSeconds);
+        }
+        if (v4) {
+            v4.textContent = lms_format_watch_time(totalFromCache('lms_video_durations_modules'));
+        }
+    } else if (lms_dashboard_selected_category === 'Assessments') {
+        // Assessments has no per-day data — its chart is a per-item score bar
+        // (not a range trend), so these stay simple all-time snapshots.
+        var items = (typeof assessment_data !== 'undefined' ? assessment_data : []);
         var k = lms_compute_completion_kpi(items);
         l1.textContent = 'Completed'; v1.textContent = k.completedPct + '%';
         l2.textContent = 'Avg score'; v2.textContent = k.avgScorePct + '%';
-
-        // Watch time / total video time only apply to Modules (has a lesson
-        // video); Assessments has no video concept, so its context card stays 2-wide.
-        if (card3) card3.style.display = isModules ? '' : 'none';
-        if (card4) card4.style.display = isModules ? '' : 'none';
-        if (isModules && v3 && l3 && typeof lms_get_watch_seconds === 'function') {
-            l3.textContent = 'Watch time';
-            v3.textContent = lms_format_watch_time(lms_get_watch_seconds('lms_watch_seconds_modules'));
-        }
-        if (isModules && v4) {
-            v4.textContent = lms_format_watch_time(totalFromCache('lms_video_durations_modules'));
-        }
+        if (card3) card3.style.display = 'none';
+        if (card4) card4.style.display = 'none';
     } else { // Micro Learning
         var arr = (typeof user_activitiy_Array !== 'undefined' && user_activitiy_Array) ? user_activitiy_Array : [];
-        var watched = arr.filter(function (a) { return Number(a.Watch_Count) > 0; }).length;
-        var liked = arr.filter(function (a) { return Number(a.IsLiked) > 0; }).length;
+        var watched = lms_count_distinct_ml(arr, 'Watch_Count');
+        var mlScorePct = (typeof lms_get_ml_quiz_score_pct === 'function') ? lms_get_ml_quiz_score_pct() : 0;
         l1.textContent = 'Watched'; v1.textContent = String(watched);
-        l2.textContent = 'Liked'; v2.textContent = String(liked);
+        l2.textContent = 'Score'; v2.textContent = mlScorePct + '%';
 
         if (card3) card3.style.display = '';
         if (card4) card4.style.display = '';
@@ -559,9 +704,15 @@ function render_lms_dashboard_context_kpi() {
     // Highlight whichever metric card matches the chart's current selection.
     var activeSlot = 1;
     if (lms_dashboard_selected_category === 'Modules') {
-        activeSlot = lms_module_chart_metric === 'score' ? 2 : (lms_module_chart_metric === 'watchtime' ? 3 : 1);
+        activeSlot = lms_module_chart_metric === 'score' ? 2
+            : lms_module_chart_metric === 'watchtime' ? 3
+            : lms_module_chart_metric === 'videocoverage' ? 4
+            : 1;
     } else if (lms_dashboard_selected_category === 'Micro Learning') {
-        activeSlot = lms_ml_chart_view === 'coverage' ? 1 : 3;
+        activeSlot = lms_ml_chart_view === 'coverage' ? 1
+            : lms_ml_chart_view === 'score' ? 2
+            : lms_ml_chart_view === 'timecoverage' ? 4
+            : 3;
     } else {
         activeSlot = 0; // Assessments — nothing selectable, one fixed chart
     }

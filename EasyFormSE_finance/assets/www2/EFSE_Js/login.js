@@ -2606,6 +2606,19 @@ function clear_localStorage() {
     let ml_last_index = localStorage.getItem('ml_last_index');
     let ml_muted = localStorage.getItem('ml_muted');
 
+    // LMS local watch-time / video-duration tracking (no backend field exists
+    // for these — see LMS_Misc.js) must survive login or it silently resets
+    // every time the user signs back in.
+    let lms_watch_seconds_modules = localStorage.getItem('lms_watch_seconds_modules');
+    let lms_watch_seconds_modules_daily = localStorage.getItem('lms_watch_seconds_modules_daily');
+    let lms_watch_seconds_ml = localStorage.getItem('lms_watch_seconds_ml');
+    let lms_watch_seconds_ml_daily = localStorage.getItem('lms_watch_seconds_ml_daily');
+    let lms_video_durations_modules = localStorage.getItem('lms_video_durations_modules');
+    let lms_video_durations_ml = localStorage.getItem('lms_video_durations_ml');
+    let lms_ml_quiz_correct = localStorage.getItem('lms_ml_quiz_correct');
+    let lms_ml_quiz_total = localStorage.getItem('lms_ml_quiz_total');
+    let lms_ml_quiz_daily = localStorage.getItem('lms_ml_quiz_daily');
+
     window.localStorage.clear();
     $.jStorage.flush();
 
@@ -2662,4 +2675,14 @@ function clear_localStorage() {
     
     if (ml_last_index !== null) localStorage.setItem('ml_last_index', ml_last_index);
     if (ml_muted !== null) localStorage.setItem('ml_muted', ml_muted);
+
+    if (lms_watch_seconds_modules !== null) localStorage.setItem('lms_watch_seconds_modules', lms_watch_seconds_modules);
+    if (lms_watch_seconds_modules_daily !== null) localStorage.setItem('lms_watch_seconds_modules_daily', lms_watch_seconds_modules_daily);
+    if (lms_watch_seconds_ml !== null) localStorage.setItem('lms_watch_seconds_ml', lms_watch_seconds_ml);
+    if (lms_watch_seconds_ml_daily !== null) localStorage.setItem('lms_watch_seconds_ml_daily', lms_watch_seconds_ml_daily);
+    if (lms_video_durations_modules !== null) localStorage.setItem('lms_video_durations_modules', lms_video_durations_modules);
+    if (lms_video_durations_ml !== null) localStorage.setItem('lms_video_durations_ml', lms_video_durations_ml);
+    if (lms_ml_quiz_correct !== null) localStorage.setItem('lms_ml_quiz_correct', lms_ml_quiz_correct);
+    if (lms_ml_quiz_total !== null) localStorage.setItem('lms_ml_quiz_total', lms_ml_quiz_total);
+    if (lms_ml_quiz_daily !== null) localStorage.setItem('lms_ml_quiz_daily', lms_ml_quiz_daily);
 }

@@ -1,4 +1,22 @@
 
+// user_activitiy_Array can carry more than one row per Ml_Id (one per activity
+// event, not one per video — see the first-match/break lookup in
+// micro_learning.js's reel-render loop, which already assumes this). Always
+// count DISTINCT videos here, never raw rows, or "watched"/"liked" totals
+// overcount against the real size of the library.
+function lms_count_distinct_ml(arr, field) {
+    // Also intersect with the current reel catalog (see micro_learning.js) —
+    // activity rows can outlive their video (content rotated/removed since the
+    // activity happened), so counting them without this can exceed the real
+    // library size (e.g. "9 watched" out of 3 actual videos).
+    var validIds = (typeof ml_catalog_ml_ids !== 'undefined') ? ml_catalog_ml_ids : null;
+    var seen = {};
+    (arr || []).forEach(function (a) {
+        if (Number(a[field]) > 0 && (!validIds || validIds[a.Ml_Id])) seen[a.Ml_Id] = true;
+    });
+    return Object.keys(seen).length;
+}
+
 // ---- Local on-device watch-time tracking ------------------------------------
 // No backend field exists for "watch time" anywhere in the LMS API (checked
 // Modules' video-log call and every dashboard/listing response) — this
@@ -29,6 +47,43 @@ function lms_get_watch_seconds_daily(dailyKey, day) {
     try { daily = JSON.parse(localStorage.getItem(dailyKey)) || {}; } catch (e) { daily = {}; }
     var key = day.getFullYear() + '-' + (day.getMonth() + 1) + '-' + day.getDate();
     return daily[key] || 0;
+}
+
+// ---- Local Micro Learning quiz score tracking -------------------------------
+// Same situation as watch time: the submit call (LMS_InsertUpdateDelete_
+// Micro_Learning_Question_Log_Master) only logs the answer text — the server
+// never returns or stores a score/correctness anywhere. Correctness IS known
+// client-side at answer time (compared against valid_ans for the highlight
+// UI), so this persists it locally, both all-time and day-bucketed for a trend.
+function lms_add_ml_quiz_result(isCorrect) {
+    var correct = Number(localStorage.getItem('lms_ml_quiz_correct')) || 0;
+    var total = Number(localStorage.getItem('lms_ml_quiz_total')) || 0;
+    total += 1;
+    if (isCorrect) correct += 1;
+    localStorage.setItem('lms_ml_quiz_correct', String(correct));
+    localStorage.setItem('lms_ml_quiz_total', String(total));
+
+    var daily = {};
+    try { daily = JSON.parse(localStorage.getItem('lms_ml_quiz_daily')) || {}; } catch (e) { daily = {}; }
+    var d = new Date();
+    var key = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    if (!daily[key]) daily[key] = { correct: 0, total: 0 };
+    daily[key].total += 1;
+    if (isCorrect) daily[key].correct += 1;
+    localStorage.setItem('lms_ml_quiz_daily', JSON.stringify(daily));
+}
+
+function lms_get_ml_quiz_score_pct() {
+    var correct = Number(localStorage.getItem('lms_ml_quiz_correct')) || 0;
+    var total = Number(localStorage.getItem('lms_ml_quiz_total')) || 0;
+    return total > 0 ? Math.round((correct / total) * 100) : 0;
+}
+
+function lms_get_ml_quiz_daily(day) {
+    var daily = {};
+    try { daily = JSON.parse(localStorage.getItem('lms_ml_quiz_daily')) || {}; } catch (e) { daily = {}; }
+    var key = day.getFullYear() + '-' + (day.getMonth() + 1) + '-' + day.getDate();
+    return daily[key] || { correct: 0, total: 0 };
 }
 
 function lms_get_watch_seconds(storageKey) {
