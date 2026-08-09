@@ -241,7 +241,10 @@
 
 /* Tighten vertical spacing on the Assessments screen */
 #tab-2 .assessment-content { padding-top: 8px; }
-#tab-2 .sample-safety-tabs { padding: 10px 0 12px; }
+/* NOTE: the #tab-2 .sample-safety-tabs padding override was removed — this
+   file loads last, so it was silently winning over the compacted shared rule
+   in LMS_Misc.css and leaving Assessments with a looser chip row than
+   Modules. Both screens now share the one rule. */
 
 /* ===== Shared search in the top app bar ================================= */
 #lms_search { display: none; }               /* JS shows it only on searchable tabs */
@@ -349,8 +352,8 @@ body { animation: page-in 0.28s ease both; }
 :root[data-theme="light"] .view,
 :root[data-theme="light"] .views,
 :root[data-theme="light"] .tabs,
-:root[data-theme="light"] swiper-container.tabs > .tab { background: #f3f5f7; }
-:root[data-theme="light"] body { background: #f3f5f7; }
+:root[data-theme="light"] swiper-container.tabs > .tab { background: #f3f4f6; }
+:root[data-theme="light"] body { background: #f3f4f6; }
 
 /* ===== Home (selection.html) legacy polish ============================== */
 /* Kill 8px attendance body copy; give tiny action buttons real touch size */

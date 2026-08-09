@@ -75,10 +75,12 @@ function render_safety_module_search() {
     $(".sample-safety-search").not(".assessment-search").html(search);
 }
 
+// Chips carry the tag label only — the per-chip count badges were removed in
+// favour of the single .lms-filter-summary line below the row (rendered from
+// render_safety_module_cards(), where the real visible count lives).
 function render_safety_module_tags() {
     var tags = [];
     var seen_tags = {};
-    var counts = {};
 
     safety_module_data.forEach(function (module) {
         get_safety_module_tags(module.Tag != null ? module.Tag : module.tag).forEach(function (tag) {
@@ -87,17 +89,14 @@ function render_safety_module_tags() {
                 seen_tags[tag_key] = true;
                 tags.push(tag);
             }
-            counts[tag_key] = (counts[tag_key] || 0) + 1;
         });
     });
 
     var str = '<div class="sample-safety-chip' + (selected_safety_tag === "All" ? ' active' : '') + '" data-safety-tag="All">';
-    str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span>';
-    str += '<span class="sample-safety-chip-count">' + safety_module_data.length + '</span></div>';
+    str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span></div>';
     tags.forEach(function (tag) {
         str += '<div class="sample-safety-chip' + (selected_safety_tag === tag ? ' active' : '') + '" data-safety-tag="' + tag.replace(/"/g, '&quot;') + '">';
-        str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span>';
-        str += '<span class="sample-safety-chip-count">' + (counts[tag.toLowerCase()] || 0) + '</span></div>';
+        str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span></div>';
     });
 
     $(".sample-safety-tabs").not(".assessment-tabs").html(str);
@@ -118,6 +117,10 @@ function render_safety_module_sort_menu() {
 
 function render_safety_module_cards() {
     var visible_modules = get_lms_visible_items(safety_module_data, selected_safety_tag, safety_module_search_text, selected_safety_sort, "Module_Name", "Module_Description");
+
+    if (typeof lms_render_filter_summary === 'function') {
+        lms_render_filter_summary('lms_module_filter_summary', selected_safety_tag, visible_modules.length);
+    }
 
     var str = '';
     if (visible_modules.length === 0) {
@@ -701,10 +704,28 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 
                 let onclick_str = "get_questionlog_by_skill_id('" + Skill_Id + "', '" + Video_Link + "', '" + Module_Id + "', '" + Progress + "')";
 
+                // Server Progress is only ever 0 or 100 here, so fold in local
+                // playback progress to tell "part-watched" apart from "untouched".
+                let eff_progress = (typeof lms_get_lesson_effective_progress === 'function')
+                    ? lms_get_lesson_effective_progress(Skill_Id, Progress)
+                    : Number(Progress) || 0;
+
+                // Watched / total, e.g. "01:12/06:19". Elapsed comes from the saved
+                // resume position for this skill, so it matches where the video will
+                // actually pick up; a finished lesson always reads as its full length
+                // rather than wherever the last save happened to land.
+                let elapsed_str = (typeof lms_get_lesson_elapsed_seconds === 'function' && typeof lms_format_clock_time === 'function')
+                    ? (eff_progress >= 100 ? Video_Time : lms_format_clock_time(lms_get_lesson_elapsed_seconds(Skill_Id)))
+                    : "00:00";
+
                 // Thumbnail opens the lesson directly; tapping the body toggles the
-                // full description. Chevron + question count removed; duration moved
-                // into the thumbnail overlay (clock icon removed).
-                let str = '<div class="lesson-preview-card">';
+                // full description. Duration now sits under the thumbnail (it was an
+                // overlay pill on top of it) so it never covers the artwork.
+                // skill/module ids + video length live on the element so the row can
+                // be refreshed in place (see refresh_lesson_preview_rows) without
+                // re-fetching the whole lesson list.
+                let str = '<div class="lesson-preview-card" data-skill-id="' + Skill_Id + '" data-module-id="' + Module_Id + '" data-video-time="' + Video_Time + '" data-server-progress="' + Progress + '">';
+                str += '<div class="lesson-preview-media">';
                 str += '<div class="lesson-preview-thumb" onclick="' + onclick_str + '">';
 
                 if (Thumbnail_link == "" || Thumbnail_link == null || Thumbnail_link == undefined) {
@@ -714,25 +735,37 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                     str += '<img src="' + Thumbnail_link + '">';
                 }
 
-                if (Progress == "100") {
+                if (eff_progress >= 100) {
                     str += '<span class="lesson-preview-check" style="background: #2dbb72;"><i class="fa fa-check"></i></span>';
                 }
                 else {
                     str += '<span class="lesson-preview-check"><i class="fa fa-play" style="font-size: 14px"></i></span>';
                 }
 
-                str += '<span class="lesson-preview-duration">' + Video_Time + '</span>';
+                str += '</div>';
+                str += '<span class="lesson-preview-duration">';
+                str += '<span class="lesson-preview-elapsed">' + elapsed_str + '</span>';
+                str += '<span class="lesson-preview-time-sep">/</span>';
+                str += '<span class="lesson-preview-total">' + Video_Time + '</span>';
+                str += '</span>';
                 str += '</div>';
                 str += '<div class="lesson-preview-body" onclick="this.parentNode.classList.toggle(\'desc-expanded\')">';
                 str += '<div class="lesson-preview-name">' + Skill_Name + '</div>';
                 str += '<div class="lesson-preview-subtitle">' + Skill_Description + '</div>';
                 str += '<div class="lesson-preview-footer">';
 
-                if (Progress == "100") {
-                    str += '<span class="lesson-preview-status completed">Completed</span>';
-                }
-                else {
-                    str += '<span class="lesson-preview-status progress">Pending</span>';
+                // Three states, not two: a part-watched lesson used to be labelled
+                // "Pending" exactly like an untouched one.
+                str += lms_lesson_status_html(eff_progress);
+
+                // Score placeholder only — the value is filled in asynchronously by
+                // load_lesson_scores(). This listing's own `Score` field is NOT a
+                // score: it mirrors SubmitedQuestion exactly (a fully-answered
+                // 5-question lesson reports 5 whether or not any answer was right),
+                // which is why it used to render as "5/5". The real per-lesson score
+                // comes from LMS_Select_User_Assessment_Rating.
+                if (eff_progress >= 100 && Number(TotalQuestion) > 0) {
+                    str += '<span class="lesson-preview-score" style="display:none"></span>';
                 }
 
                 str += '</div>';
@@ -742,6 +775,8 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 $(".lesson-preview-list").append(str);
 
             }
+
+            load_lesson_scores(Module_Id);
         }
         else {
             $(".lession-count").html("0 lessons - 0 completed");
@@ -760,6 +795,87 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 
     }, onfail);
     getdata.callOtherDomain();
+}
+
+
+// Status chip markup for a lesson, from its effective (server + local) progress.
+function lms_lesson_status_html(effProgress) {
+    if (effProgress >= 100) return '<span class="lesson-preview-status completed">Completed</span>';
+    if (effProgress > 0) return '<span class="lesson-preview-status inprogress">In Progress</span>';
+    return '<span class="lesson-preview-status pending">Pending</span>';
+}
+
+// Real per-lesson score. LMS_Select_User_Assessment_Rating returns Score /
+// Total_Score (e.g. 2/5) — verified against the module card's own "Score: 3/20",
+// which is exactly the sum of its lessons' scores from this endpoint. Fired once
+// per completed lesson after the list paints, so the rows appear immediately and
+// scores fill in; deliberately no loading() spinner for a background top-up, and
+// a failure just leaves the score hidden rather than showing a wrong number.
+function load_lesson_scores(Module_Id) {
+    var user_id = JSON.parse(storage.getItem('user_id'));
+
+    $(".lesson-preview-card").each(function () {
+        var card = this;
+        var scoreEl = card.querySelector('.lesson-preview-score');
+        if (!scoreEl) return; // not completed / no questions
+
+        var Skill_Id = card.getAttribute('data-skill-id');
+        var Param_obj = [{ "User_Id": user_id, "Module_Id": Module_Id, "Course_Id": 0, "Skill_Id": Skill_Id }];
+
+        var call = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_User_Assessment_Rating', JSON.stringify(Param_obj), function (e) {
+            try {
+                var arr = JSON.parse(e.responseText);
+                if (arr[0].status != 1) return;
+                var row = JSON.parse(arr[0].data)[0];
+                if (!row || Number(row.Total_Score) <= 0) return;
+
+                scoreEl.innerHTML = '<span class="lesson-preview-score-label">Score</span>' +
+                                    '<span class="lesson-preview-score-value"></span>';
+                scoreEl.querySelector('.lesson-preview-score-value').textContent = row.Score + '/' + row.Total_Score;
+                scoreEl.style.display = '';
+            } catch (err) { /* leave hidden */ }
+        }, function () { /* leave hidden */ });
+        call.callOtherDomain();
+    });
+}
+
+// Update the open lesson list in place after the video popup closes, so watched
+// time and status reflect the session that just happened. Previously these only
+// refreshed when the module preview was reopened, which is why the play time
+// appeared to update "only when the screen is switched back".
+function refresh_lesson_preview_rows() {
+    $(".lesson-preview-card").each(function () {
+        var card = this;
+        var Skill_Id = card.getAttribute('data-skill-id');
+        if (!Skill_Id) return;
+
+        var serverProgress = card.getAttribute('data-server-progress');
+        var Video_Time = card.getAttribute('data-video-time') || '00:00';
+        var eff = (typeof lms_get_lesson_effective_progress === 'function')
+            ? lms_get_lesson_effective_progress(Skill_Id, serverProgress)
+            : Number(serverProgress) || 0;
+
+        var elapsedEl = card.querySelector('.lesson-preview-elapsed');
+        if (elapsedEl && typeof lms_format_clock_time === 'function') {
+            elapsedEl.textContent = (eff >= 100)
+                ? Video_Time
+                : lms_format_clock_time(lms_get_lesson_elapsed_seconds(Skill_Id));
+        }
+
+        var statusEl = card.querySelector('.lesson-preview-status');
+        if (statusEl) {
+            var tmp = document.createElement('div');
+            tmp.innerHTML = lms_lesson_status_html(eff);
+            statusEl.className = tmp.firstChild.className;
+            statusEl.textContent = tmp.firstChild.textContent;
+        }
+
+        var checkEl = card.querySelector('.lesson-preview-check');
+        if (checkEl && eff >= 100) {
+            checkEl.style.background = '#2dbb72';
+            checkEl.innerHTML = '<i class="fa fa-check"></i>';
+        }
+    });
 }
 
 

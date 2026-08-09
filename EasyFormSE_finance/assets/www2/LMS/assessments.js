@@ -12,10 +12,11 @@ function render_assessment_search() {
     $(".assessment-search").html(search);
 }
 
+// Label-only chips — see the matching note in safety_modules.js
+// render_safety_module_tags(); counts now live in .lms-filter-summary.
 function render_assessment_tags() {
     var tags = [];
     var seen_tags = {};
-    var counts = {};
     assessment_data.forEach(function (assessment) {
         get_lms_item_tags(assessment.Tag != null ? assessment.Tag : assessment.tag).forEach(function (tag) {
             var key = tag.toLowerCase();
@@ -23,15 +24,12 @@ function render_assessment_tags() {
                 seen_tags[key] = true;
                 tags.push(tag);
             }
-            counts[key] = (counts[key] || 0) + 1;
         });
     });
 
-    var str = '<div class="sample-safety-chip' + (selected_assessment_tag === "All" ? ' active' : '') + '" data-assessment-tag="All"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span>';
-    str += '<span class="sample-safety-chip-count">' + assessment_data.length + '</span></div>';
+    var str = '<div class="sample-safety-chip' + (selected_assessment_tag === "All" ? ' active' : '') + '" data-assessment-tag="All"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span></div>';
     tags.forEach(function (tag) {
-        str += '<div class="sample-safety-chip' + (selected_assessment_tag === tag ? ' active' : '') + '" data-assessment-tag="' + tag.replace(/"/g, '&quot;') + '"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span>';
-        str += '<span class="sample-safety-chip-count">' + (counts[tag.toLowerCase()] || 0) + '</span></div>';
+        str += '<div class="sample-safety-chip' + (selected_assessment_tag === tag ? ' active' : '') + '" data-assessment-tag="' + tag.replace(/"/g, '&quot;') + '"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span></div>';
     });
     $(".assessment-tabs").html(str);
 }
@@ -48,6 +46,11 @@ function render_assessment_sort_menu() {
 
 function render_assessment_cards() {
     var visible_assessments = get_lms_visible_items(assessment_data, selected_assessment_tag, assessment_search_text, selected_assessment_sort, "Name", "Description");
+
+    if (typeof lms_render_filter_summary === 'function') {
+        lms_render_filter_summary('lms_assessment_filter_summary', selected_assessment_tag, visible_assessments.length);
+    }
+
     var str = '';
     if (visible_assessments.length === 0) {
         str = '<div class="sample-safety-empty-state">No assessments found</div>';
@@ -299,6 +302,22 @@ function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id,
 
     $("#dv_Assessment_Question_List").attr("Assessment_Id", Assessment_Id);
 
+    // Description at the top of the screen (replaces the old stepper/timer
+    // header). Prefer the loaded record; fall back to the card's own text for
+    // the module-wise list, which opens this popup without populating
+    // assessment_data. Cleared first so a previous assessment's copy can't
+    // linger if neither source has one.
+    var assessment_desc = '';
+    if (typeof assessment_data !== 'undefined' && assessment_data.length) {
+        var match = assessment_data.filter(function (a) { return a.Assessment_Id == Assessment_Id; })[0];
+        if (match) assessment_desc = match.Description || '';
+    }
+    if (!assessment_desc) {
+        assessment_desc = $("#dv_Assessments_List").find("div[Module_Id='" + Assessment_Id + "']").find("div.sample-module-desc").html() || '';
+    }
+    $("#assessment_Description").html(assessment_desc);
+    $("#assessment_Description").toggle(!!assessment_desc);
+
     var user_id = JSON.parse(storage.getItem('user_id'));
     var Param_obj = [];
     Param_obj.push({
@@ -399,14 +418,16 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
 
             }
 
-            // Question-count stepper in the sticky quiz header
+            // Stepper values are still maintained (other code reads them) but the
+            // header itself stays hidden — the assessment description now occupies
+            // the top of this screen instead, matching the lesson video screen.
             var totalQ = document.querySelectorAll('#dv_Assessment_Question_List .question-card').length;
             var qTotalEl = document.getElementById('q_total');
             var qCurEl = document.getElementById('q_cur');
             var qHeader = document.getElementById('assessment_quiz_header');
             if (qTotalEl) qTotalEl.textContent = totalQ;
             if (qCurEl) qCurEl.textContent = (Progress == "100") ? totalQ : 0;
-            if (qHeader) qHeader.style.display = totalQ > 0 ? 'flex' : 'none';
+            if (qHeader) qHeader.style.display = 'none';
 
             // Highlight any pre-checked option (prior answer / review mode) —
             // covers WebViews without :has() and the disabled review state.

@@ -245,6 +245,8 @@
                                     <div class="sample-safety-chip">Field Ops</div>
                                     <div class="sample-safety-chip">Compliance</div>
                                 </div>
+                                <!-- Selected filter + live count; filled by lms_render_filter_summary(). -->
+                                <div class="lms-filter-summary" id="lms_module_filter_summary"></div>
                                 </div>
 
                                 <div id="dv_Module_List"></div>
@@ -305,6 +307,8 @@
                                     <div class="sample-safety-search assessment-search"></div>
                                 </div>
                                 <div class="sample-safety-tabs assessment-tabs swiper-no-swiping"></div>
+                                <!-- Selected filter + live count; filled by lms_render_filter_summary(). -->
+                                <div class="lms-filter-summary" id="lms_assessment_filter_summary"></div>
                                 </div>
 
                                 <div id="dv_Assessments_List"></div>
@@ -640,6 +644,12 @@
 
                         <div class="que-container">
 
+                            <!-- Assessment description, mirroring the lesson video screen's
+                                 #vdo_Description. Replaces the old stepper/timer quiz header. -->
+                            <div class="pill-card" id="assessment_Description"></div>
+
+                            <!-- Retained (hidden) so the stepper/timer wiring in assessments.js
+                                 keeps working without null checks; the counter is no longer shown. -->
                             <div class="quiz-header" id="assessment_quiz_header" style="display:none">
                                 <div class="quiz-pos">Question <span id="q_cur">1</span> / <span id="q_total">0</span></div>
                                 <div class="quiz-timer" id="q_timer" aria-live="polite"></div>

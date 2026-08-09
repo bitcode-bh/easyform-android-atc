@@ -1,25 +1,27 @@
 
-.correct-answer input[type='checkbox'] {
-    margin-left: 10px;
-}
-
-/* ===== Assessments quiz identity ========================================= */
-/* Radio options: card-style rows, brand highlight on the chosen answer */
+/* ===== Shared quiz option rows (Assessments + lesson video) ===============
+   One definition for both quizzes — they render identical
+   `.question-card > .option` markup, so this used to be a boxed "Assessments
+   identity" that leaked into the lesson quiz and had to be un-styled there.
+   Now both are plain, borderless rows: selection is shown by the ticked
+   radio/checkbox alone, with no border, fill, rounding or scale. */
 .question-card .option {
     display: flex;
     align-items: center;
     gap: 10px;
-    border: 1px solid var(--c-border);
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+    border: 0;
+    border-radius: 0;
+    padding: 7px 0;
+    margin-bottom: 0;
+    transition: none;
 }
 
-    .question-card .option input[type='radio'] {
+    .question-card .option input[type='radio'],
+    .question-card .option input[type='checkbox'] {
         width: 20px;
         height: 20px;
         margin-right: 0;
+        margin-left: 0;
         accent-color: var(--c-primary);
         flex: 0 0 auto;
     }
@@ -27,21 +29,49 @@
     .question-card .option label {
         flex: 1;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 13px;
         color: var(--c-fg);
     }
 
-    /* restore full border on the last row (legacy rule removed its bottom border) */
-    .question-card .option:last-child {
-        border-bottom: 1px solid var(--c-border);
-    }
-
-    /* .selected is the JS fallback for WebViews without :has() support */
+    /* .selected is the JS fallback for WebViews without :has() support. Both
+       are explicitly neutral — a picked answer must look no different from an
+       unpicked one apart from its tick. */
     .question-card .option.selected,
     .question-card .option:has(input:checked) {
-        border-color: var(--c-primary);
-        background: var(--c-primary-050);
-        transform: scale(1.01);
+        border: 0;
+        background: transparent;
+        transform: none;
+    }
+
+    /* The blue box around a chosen answer was this outline, not a border:
+       lms_ux_fixes.css sets `.option:focus-within` as a keyboard focus ring,
+       but :focus-within also fires on touch, so it stuck to the tapped row.
+       Suppressed for pointer input, re-asserted for :focus-visible so keyboard
+       users keep an indicator. */
+    .question-card .option:focus-within {
+        outline: none;
+    }
+
+    .question-card .option:has(input:focus-visible) {
+        outline: var(--focus-ring);
+        outline-offset: 2px;
+    }
+
+/* Correct answer in review mode — Micro Learning's treatment: green text only,
+   no filled block. `micro learning.css` defines a generic `.correct-answer`
+   with a green background and `border: ... !important`; it loads after this
+   file, so the border needs !important to undo, while the higher-specificity
+   selector handles the rest. */
+.question-card .option.correct-answer {
+    background: transparent;
+    border: 0 !important;
+    margin-bottom: 0;
+    animation: none;
+}
+
+    .question-card .option.correct-answer label {
+        color: #1e8e3e;
+        font-weight: 700;
     }
 
 /* Sticky quiz header: question stepper + timer */

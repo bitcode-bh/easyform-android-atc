@@ -46,3 +46,9 @@ local.properties
 /mobilertc
 EasyFormSE_finance/assets/www2/Web.config
 easyform-zoom-chat/build.gradle
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Local session catch-up (local-only; documents test bypass)
+CLAUDE.md

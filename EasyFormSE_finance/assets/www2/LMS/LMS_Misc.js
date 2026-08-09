@@ -128,6 +128,37 @@ function lms_format_clock_time(totalSeconds) {
     return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
 }
 
+// Seconds already watched of a lesson's video, read from the same
+// `video_progress_<Skill_Id>` store that set_progress_local() writes and that
+// the player's `loadedmetadata` handler resumes from — so the list and the
+// resume point can never disagree. 0 when the lesson has never been opened.
+function lms_get_lesson_elapsed_seconds(skillId) {
+    var saved = lms_get_lesson_local_record(skillId);
+    return (saved && saved.currentTime) ? (Number(saved.currentTime) || 0) : 0;
+}
+
+function lms_get_lesson_local_record(skillId) {
+    try {
+        var data = JSON.parse(localStorage.getItem('video_progress_' + skillId)) || [];
+        return data.find(function (item) { return item.Skill_Id == skillId; }) || null;
+    } catch (e) {
+        return null;
+    }
+}
+
+// The skill-listing API only ever reports Progress as 0 or 100 — it flips to 100
+// on quiz submit and stays 0 until then, so a part-watched lesson is
+// indistinguishable from an untouched one and could never show "In Progress".
+// Local playback progress fills that gap; the server still wins once it says
+// the lesson is complete.
+function lms_get_lesson_effective_progress(skillId, serverProgress) {
+    var server = Number(serverProgress) || 0;
+    if (server >= 100) return 100;
+    var rec = lms_get_lesson_local_record(skillId);
+    var local = rec ? (Number(rec.Progress) || 0) : 0;
+    return Math.max(server, local);
+}
+
 // ---- Adaptive corner-badge contrast (Tag/Score on card thumbnails) ----------
 // The reference design is plain black text on a flat white background — no
 // pill, no scrim. Our thumbnails are real photos, so instead of a fixed
@@ -154,12 +185,10 @@ function lms_apply_corner_contrast(srcUrl, cardEl) {
             canvas.width = 12;
             canvas.height = 12;
             var ctx = canvas.getContext('2d');
-            // .sample-module-watchtime isn't sampled — it carries its own
-            // opaque dark pill now (YouTube-style duration badge), so it no
-            // longer needs adaptive text color.
             var corners = [
                 { sel: '.sample-module-tag', right: false, bottom: false },
-                { sel: '.sample-score-tag', right: true, bottom: false }
+                { sel: '.sample-score-tag', right: true, bottom: false },
+                { sel: '.sample-module-watchtime', right: false, bottom: true }
             ];
             corners.forEach(function (c) {
                 var el = cardEl.querySelector(c.sel);
@@ -187,6 +216,28 @@ function lms_apply_corner_contrast(srcUrl, cardEl) {
         } catch (e) { /* CORS-tainted canvas — keep default light-text styling */ }
     };
     probe.src = srcUrl;
+}
+
+// Compact "<selected filter> · <count>" line under the filter chips (Modules /
+// Assessments). Replaces the per-chip count badges, which cluttered the pills.
+//
+// `count` is passed in by the card renderers as the length of the list they are
+// about to paint, deliberately rather than re-tallying tags here: that keeps the
+// number honest when tag + search + sort are combined, and means it can never
+// disagree with the cards actually on screen. Nothing is hardcoded — the label
+// is the live selected tag and the count is the live result set.
+function lms_render_filter_summary(elId, tagName, count) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+    if (!el.firstChild) {
+        el.innerHTML = '<span class="lms-filter-summary-name"></span>' +
+                       '<span class="lms-filter-summary-sep">·</span>' +
+                       '<span class="lms-filter-summary-count"></span>';
+    }
+    // textContent, not string-concatenated HTML — tag names come from the
+    // server and would otherwise be an injection point.
+    el.querySelector('.lms-filter-summary-name').textContent = tagName;
+    el.querySelector('.lms-filter-summary-count').textContent = count;
 }
 
 // Info-bar value updates fade rather than snap (150-250ms, per design spec) —
@@ -301,9 +352,22 @@ function lms_sum_video_durations(cacheKey, items, idField, urlField, onDone) {
 
 $(document).ready(function () {
 
+    // Server-driven site colour (`viewsite_btn_color`) — chrome only: the top
+    // bar, title bar and primary buttons.
+    //
+    // The LMS *content* accent is deliberately NOT this. It is --c-primary
+    // (#215ba8), the same blue as the bottom tab bar's active highlight, and it
+    // covers the selected filter chip, the card progress bars, the card percent
+    // label and the filter-summary count so they all read as one accent.
+    // Those four used to be in the lists below, where this !important rule
+    // forced them to the site colour (a grey on the current site) and overrode
+    // the #215ba8 already written for them in LMS_Misc.css — .sample-module-percent
+    // in particular was authored blue and silently painted grey. They were
+    // removed from here rather than fought with a louder rule in the CSS; do not
+    // add them back without moving the accent definition too.
     let t_color_name = JSON.parse(storage.getItem('viewsite_btn_color'));
-    let style_str = "<style>.navbar-bg, .sample-safety-titlebar,.sample-module-btn, .sample-module-progress span,.sample-safety-chip.active{background: " + t_color_name + " !important;}";
-    style_str += ".sample-safety-filter,.sample-module-percent,.sample-safety-sort-option.active{color:" + t_color_name + " !important;} }</style>";
+    let style_str = "<style>.navbar-bg, .sample-safety-titlebar,.sample-module-btn{background: " + t_color_name + " !important;}";
+    style_str += ".sample-safety-filter,.sample-safety-sort-option.active{color:" + t_color_name + " !important;}</style>";
     $("head").append(style_str);
 
     // tab-3 (Dashboard) is the initially-active tab, and has no top bar — hide
@@ -477,6 +541,9 @@ $(document).on("popup:close", ".popup-level-4", function () {
         // refresh the just-watched module's card (watched-time row) with the
         // seconds flushed by v.pause() above
         if (typeof render_safety_module_cards === 'function') render_safety_module_cards();
+        // ...and the lesson list still open behind this popup, so its watched
+        // time and status update right away instead of only on reopen.
+        if (typeof refresh_lesson_preview_rows === 'function') refresh_lesson_preview_rows();
     } catch (e) { }
 });
 
