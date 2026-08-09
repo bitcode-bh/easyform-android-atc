@@ -757,7 +757,7 @@
         }
 
 .sample-module-card-body {
-    padding: 16px 16px 14px;
+    padding: 16px 16px 6px;
 }
 
 .sample-module-title {
@@ -782,7 +782,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
 }
 
 .sample-module-lessons {

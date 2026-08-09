@@ -164,7 +164,15 @@ function lms_apply_corner_contrast(srcUrl, cardEl) {
                 if (!el) return;
                 var sx = c.right ? (w - cw) : 0;
                 var sy = c.bottom ? (h - ch) : 0;
+                // Some thumbnails are PNGs with mostly-transparent regions
+                // (icons, logos) — an unfilled canvas reads those pixels back
+                // as (0,0,0,0), which would score as pure black even though
+                // they visually show whatever sits behind them. Pre-fill with
+                // the real .sample-module-image background color so alpha
+                // compositing lands on the actual visible color, not black.
                 ctx.clearRect(0, 0, 12, 12);
+                ctx.fillStyle = '#d7e1ec';
+                ctx.fillRect(0, 0, 12, 12);
                 ctx.drawImage(probe, sx, sy, cw, ch, 0, 0, 12, 12);
                 var data = ctx.getImageData(0, 0, 12, 12).data;
                 var sum = 0, n = 0;
