@@ -543,15 +543,19 @@
 /* Freezes the info-bar + filter chips at the top of the tab's own scroll
    box (#tab-1/#tab-2 themselves — verified live via CDP: they're the actual
    overflow:auto container, not .sample-safety-content) while the card/
-   assessment list scrolls underneath. No background fill of its own — the
-   info-bar and chips are already opaque on their own (rounded white card /
-   solid pill backgrounds), so this stays a plain sticky positioning wrapper
-   rather than reading as an added panel behind the filter row. */
+   assessment list scrolls underneath. A fully transparent version of this
+   let scrolled cards bleed through the gap pixels around/between the
+   info-bar and chips — this subtle rounded fill (only the bottom corners,
+   since it's pinned flush to the top edge) keeps it opaque and reading as
+   its own distinct panel instead of a flat edge-to-edge slab. */
 .lms-sticky-header {
     position: sticky;
     top: 0;
     z-index: 5;
     padding-top: 13px;
+    background: #f3f5f7;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 4px 10px rgba(16, 24, 40, 0.06);
 }
 
 .sample-safety-search-row {
@@ -853,33 +857,31 @@
     font-weight: 800;
 }
 
-/* Lightweight corner label (bottom-left) — no pill, compact inline text,
-   matching the tag/score corner treatment above. */
+/* Compact duration badge (bottom-left), YouTube-style: small dark pill with
+   plain white text, always the same regardless of the thumbnail behind it —
+   unlike the tag/score corner labels, this doesn't need adaptive contrast
+   since it carries its own opaque background. */
 .sample-module-watchtime {
     position: absolute;
-    bottom: 12px;
-    left: 14px;
+    bottom: 10px;
+    left: 10px;
     z-index: 1;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 3px;
+    background: rgba(0, 0, 0, 0.78);
     color: #fff;
-    font-size: 12.5px;
-    font-weight: 600;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.3;
     font-variant-numeric: tabular-nums;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
 
-    .sample-watchtime-elapsed { opacity: 0.85; }
-    .sample-watchtime-sep { opacity: 0.6; }
-    .sample-watchtime-total { font-weight: 700; color: #7db6ff; }
-
-    .sample-module-watchtime.on-light-bg {
-        color: #1c2027;
-        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
-    }
-
-        .sample-module-watchtime.on-light-bg .sample-watchtime-total { color: #215ba8; }
+    .sample-watchtime-elapsed { opacity: 0.75; }
+    .sample-watchtime-sep { opacity: 0.55; }
+    .sample-watchtime-total { opacity: 1; }
 
 /* Sits outside the padded card body as the card's own last child — flush,
    full-width footer strip, its corners clipped by the card's own

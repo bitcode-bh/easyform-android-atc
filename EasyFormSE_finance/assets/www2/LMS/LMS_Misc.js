@@ -128,7 +128,7 @@ function lms_format_clock_time(totalSeconds) {
     return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
 }
 
-// ---- Adaptive corner-badge contrast (Tag/Score/Duration on card thumbnails) --
+// ---- Adaptive corner-badge contrast (Tag/Score on card thumbnails) ----------
 // The reference design is plain black text on a flat white background — no
 // pill, no scrim. Our thumbnails are real photos, so instead of a fixed
 // color we sample each corner's actual pixel brightness and flip that badge
@@ -154,10 +154,12 @@ function lms_apply_corner_contrast(srcUrl, cardEl) {
             canvas.width = 12;
             canvas.height = 12;
             var ctx = canvas.getContext('2d');
+            // .sample-module-watchtime isn't sampled — it carries its own
+            // opaque dark pill now (YouTube-style duration badge), so it no
+            // longer needs adaptive text color.
             var corners = [
                 { sel: '.sample-module-tag', right: false, bottom: false },
-                { sel: '.sample-score-tag', right: true, bottom: false },
-                { sel: '.sample-module-watchtime', right: false, bottom: true }
+                { sel: '.sample-score-tag', right: true, bottom: false }
             ];
             corners.forEach(function (c) {
                 var el = cardEl.querySelector(c.sel);
