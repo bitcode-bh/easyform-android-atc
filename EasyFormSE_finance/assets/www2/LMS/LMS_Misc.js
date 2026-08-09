@@ -90,6 +90,25 @@ function lms_get_watch_seconds(storageKey) {
     return Number(localStorage.getItem(storageKey)) || 0;
 }
 
+// Per-item companion to lms_add_watch_seconds — same total, broken out by
+// module/lesson id so a listing card can show its own watched time instead
+// of just the category-wide sum.
+function lms_add_watch_seconds_by_item(storageKey, itemId, seconds) {
+    if (!seconds || seconds <= 0 || itemId == null || itemId === '') return;
+    var key = storageKey + '_by_item';
+    var map = {};
+    try { map = JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { map = {}; }
+    map[itemId] = (Number(map[itemId]) || 0) + seconds;
+    localStorage.setItem(key, JSON.stringify(map));
+}
+
+function lms_get_watch_seconds_by_item(storageKey, itemId) {
+    var key = storageKey + '_by_item';
+    var map = {};
+    try { map = JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { map = {}; }
+    return Number(map[itemId]) || 0;
+}
+
 function lms_format_watch_time(totalSeconds) {
     totalSeconds = Math.round(totalSeconds || 0);
     if (totalSeconds < 60) return totalSeconds + 's';
@@ -100,10 +119,35 @@ function lms_format_watch_time(totalSeconds) {
     return hours + 'h ' + mins + 'm';
 }
 
+// Clock-style mm:ss (vs. lms_format_watch_time's compact "4m"/"1h 4m") — used
+// on listing cards showing "watched / total" for a single item.
+function lms_format_clock_time(totalSeconds) {
+    totalSeconds = Math.max(0, Math.round(totalSeconds || 0));
+    var m = Math.floor(totalSeconds / 60);
+    var s = totalSeconds % 60;
+    return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+}
+
+// Info-bar value updates fade rather than snap (150-250ms, per design spec) —
+// no-op if the text isn't actually changing, so re-renders don't flash.
+function lms_set_info_value(el, text) {
+    if (!el || el.textContent === text) return;
+    el.style.opacity = '0';
+    setTimeout(function () {
+        el.textContent = text;
+        el.style.opacity = '1';
+    }, 120);
+}
+
 // Attach once per <video> element — accumulates the wall-clock gap between
 // "play" and the next "pause"/"ended", regardless of which code path called
 // .play()/.pause() (native controls, custom buttons, or programmatic).
-function lms_track_watch_time(videoEl, storageKey) {
+// itemIdAttr (optional): a DOM attribute name (e.g. "module_id") read at
+// flush time, so the same elapsed seconds are also credited to that item's
+// own per-item bucket (see lms_add_watch_seconds_by_item) — read at flush
+// rather than at play-start since the shared video element's attributes only
+// change between lessons, never mid-play.
+function lms_track_watch_time(videoEl, storageKey, itemIdAttr) {
     if (!videoEl || videoEl._lmsWatchTracked) return;
     videoEl._lmsWatchTracked = true;
     var playStartedAt = null;
@@ -114,6 +158,10 @@ function lms_track_watch_time(videoEl, storageKey) {
         playStartedAt = null;
         lms_add_watch_seconds(storageKey, elapsed);
         lms_add_watch_seconds_daily(storageKey + '_daily', elapsed);
+        if (itemIdAttr) {
+            var itemId = videoEl.getAttribute(itemIdAttr);
+            if (itemId) lms_add_watch_seconds_by_item(storageKey, itemId, elapsed);
+        }
     }
 
     $(videoEl).on('play', function () { playStartedAt = Date.now(); });
@@ -228,12 +276,12 @@ $(document).ready(function () {
         } catch (e) { }
 
         if (this.id == "tab-1") {
-            $(".navbar").show();
+            $(".navbar").hide();
             $(".sample-safety-titlebar").html("Safety Modules");
             get_safety_module_listing();
         }
         else if (this.id == "tab-2") {
-            $(".navbar").show();
+            $(".navbar").hide();
             $(".sample-safety-titlebar").html("Assessments");
             get_assessments_listing();
         }
@@ -293,7 +341,7 @@ $(document).ready(function () {
         set_progress();
     });
 
-    lms_track_watch_time(video, 'lms_watch_seconds_modules');
+    lms_track_watch_time(video, 'lms_watch_seconds_modules', 'module_id');
 
     // clear timer properly
     $(video).on("ended", function () {
@@ -365,6 +413,9 @@ $(document).on("popup:close", ".popup-level-4", function () {
             progressInterval = null;
         }
         if (typeof update_module_kpi === 'function') update_module_kpi();
+        // refresh the just-watched module's card (watched-time row) with the
+        // seconds flushed by v.pause() above
+        if (typeof render_safety_module_cards === 'function') render_safety_module_cards();
     } catch (e) { }
 });
 

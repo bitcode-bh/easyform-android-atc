@@ -62,7 +62,7 @@ function render_assessment_cards() {
         var SubmitedQuestion = assessment.SubmitedQuestion == null || assessment.SubmitedQuestion === "" ? 0 : assessment.SubmitedQuestion;
         var onclick_str = "get_questionlog_by_assessment_id('" + Assessment_Id + "', '" + Assessment_Schedule_Id + "', '" + Progress + "')";
 
-        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image"><img src="' + Thumbnail_link + '">';
+        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\')">';
         if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag">' + Tag + '</span>';
         if (SubmitedQuestion > 0) str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
         str += '</div><div class="sample-module-card-body"><div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
@@ -133,8 +133,8 @@ function update_assessment_kpi() {
     var scoreEl = document.getElementById('kpi_assessment_avg_score');
     if (!completedEl && !scoreEl) return;
     var k = lms_compute_completion_kpi(assessment_data);
-    if (completedEl) completedEl.textContent = k.completedPct + '%';
-    if (scoreEl) scoreEl.textContent = k.avgScorePct + '%';
+    if (completedEl) lms_set_info_value(completedEl, k.completedPct + '%');
+    if (scoreEl) lms_set_info_value(scoreEl, k.avgScorePct + '%');
 }
 
 function get_assessments_listing(force_refresh) {

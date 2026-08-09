@@ -1,11 +1,92 @@
 
 
-/* tab-3 has no navbar (see LMS_Misc.js), but F7 still reserves top padding for
-   one (--f7-page-navbar-offset). With the navbar gone there's nothing drawn
-   over that reserved space, so it exposed the pull-to-refresh spinner sitting
-   at rest there. Zero it out — this tab needs no navbar clearance at all. */
-#tab-3 {
+/* tab-1/2/3 all run with no navbar (see LMS_Misc.js), but F7 still reserves
+   top padding for one (--f7-page-navbar-offset) on every page. With the
+   navbar gone there's nothing drawn over that reserved space — on tab-3 that
+   exposed the pull-to-refresh spinner sitting at rest there, and on tab-1/2 it
+   just leaves a dead gap above the content. Zero it out everywhere. */
+#tab-1, #tab-2, #tab-3 {
     padding-top: 0 !important;
+}
+
+/* ===== Info bar — compact single pill, divider-separated stats ==========
+   (Modules/Assessments/Micro Learning). Fixed height (not content-driven) so
+   it never resizes across tab switches, whether it's showing 2 or 4 items.
+   Side margin 0 — .sample-safety-content's own 14px padding is the only
+   inset, matching the module cards/filter chips below (which rely on that
+   same padding rather than their own margin) so the bar spans full width. */
+.lms-info-bar {
+    display: flex;
+    align-items: stretch;
+    height: 82px;
+    background: var(--c-surface);
+    border-radius: 16px;
+    box-shadow: var(--shadow-card);
+    margin: 10px 0 12px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.lms-info-item {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    padding: 0 2px;
+}
+
+.lms-info-top {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.lms-info-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .lms-info-icon i {
+        font-size: 13px;
+        color: var(--c-primary);
+    }
+
+.lms-info-value {
+    font-size: 15px;
+    line-height: 1.1;
+    font-weight: 800;
+    color: var(--c-fg);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    transition: opacity 200ms ease;
+}
+
+.lms-info-label {
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: -0.1px;
+    color: var(--c-fg-muted);
+    text-align: center;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.lms-info-divider {
+    align-self: center;
+    height: 40px;
+    width: 1px;
+    background: var(--c-border);
 }
 
 /* ===== Trend chart — date-range filter + 3-line area chart ============== */
@@ -139,4 +220,33 @@
     .lms-kpi-card.is-selectable:focus-visible {
         outline: var(--focus-ring);
         outline-offset: 2px;
+    }
+
+/* Dashboard tab (tab-3): its two tappable rows (metric picker, category
+   picker) reuse the exact same info-bar pill as Modules/Assessments, so all
+   three tabs share one visual language. .lms-kpi-card/.is-selectable/
+   .is-active stay on the buttons purely as functional hooks for the existing
+   JS selectors above — every visual property is reset here so the box
+   styling comes from .lms-info-item instead, and higher selector specificity
+   (4 classes) beats the plain-card rules regardless of source order. */
+.lms-info-bar .lms-info-item.lms-kpi-card {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    box-shadow: none;
+    border-radius: 0;
+    min-height: 0;
+    transition: background 0.18s ease;
+}
+
+    .lms-info-bar .lms-info-item.lms-kpi-card:active { transform: scale(0.97); }
+
+    .lms-info-bar .lms-info-item.lms-kpi-card.is-active { background: var(--c-primary-050); }
+
+    .lms-info-bar .lms-info-item.lms-kpi-card:focus-visible {
+        outline: var(--focus-ring);
+        outline-offset: -2px;
     }

@@ -726,7 +726,7 @@
 }
 
 .sample-module-card-body {
-    padding: 16px 16px 20px;
+    padding: 16px 16px 14px;
 }
 
 .sample-module-title {
@@ -777,12 +777,37 @@
     font-weight: 800;
 }
 
+/* Overlay badge on the thumbnail (bottom-left), matching the existing
+   .sample-module-tag/.sample-score-tag pill style used at the top corners. */
+.sample-module-watchtime {
+    position: absolute;
+    bottom: 13px;
+    left: 13px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 15px;
+    background: rgba(16, 24, 34, 0.86);
+    color: #fff;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+    .sample-module-watchtime i {
+        font-size: 11px;
+        color: #fff;
+    }
+
+/* Sits outside the padded card body as the card's own last child — flush,
+   full-width footer strip, its corners clipped by the card's own
+   border-radius via overflow:hidden rather than its own radius. */
 .sample-module-progress {
-    height: 5px;
+    height: 4px;
     overflow: hidden;
-    border-radius: 6px;
     background: #dfe6ed;
-    margin-bottom: 17px;
+    margin: 0;
 }
 
     .sample-module-progress span {

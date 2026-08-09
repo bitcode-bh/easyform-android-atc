@@ -145,6 +145,12 @@ function render_safety_module_cards() {
         if (SubmitedSkill > 0) {
             str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
         }
+        if (typeof lms_format_clock_time === 'function') {
+            var watchedSec = (typeof lms_get_watch_seconds_by_item === 'function') ? lms_get_watch_seconds_by_item('lms_watch_seconds_modules', Module_Id) : 0;
+            var totalSec = (lms_module_video_totals && lms_module_video_totals[Module_Id]) ? lms_module_video_totals[Module_Id] : 0;
+            str += '<span class="sample-module-watchtime"><i class="fa-regular fa-clock" aria-hidden="true"></i>';
+            str += lms_format_clock_time(watchedSec) + ' / ' + lms_format_clock_time(totalSec) + '</span>';
+        }
         str += '</div><div class="sample-module-card-body">';
         str += '<div class="sample-module-title">' + Module_Name + '</div>';
         str += '<div class="sample-module-desc">' + Module_Description + '</div>';
@@ -152,8 +158,9 @@ function render_safety_module_cards() {
         str += '<span class="sample-module-help"><i class="fa fa-book-open"></i></span>';
         str += '<span class="sample-lession-count">' + TotalSkill + ' lessons</span></div>';
         str += '<div class="sample-module-percent">' + Progress + '%</div></div>';
+        str += '</div>';
         str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div>';
-        str += '</div></div>';
+        str += '</div>';
     });
 
     $("#dv_Module_List").html(str);
@@ -257,17 +264,17 @@ function update_module_kpi() {
     var totalEl = document.getElementById('kpi_module_total_time');
     if (!completedEl && !scoreEl && !watchEl && !totalEl) return;
     var k = lms_compute_completion_kpi(safety_module_data);
-    if (completedEl) completedEl.textContent = k.completedPct + '%';
-    if (scoreEl) scoreEl.textContent = k.avgScorePct + '%';
+    if (completedEl) lms_set_info_value(completedEl, k.completedPct + '%');
+    if (scoreEl) lms_set_info_value(scoreEl, k.avgScorePct + '%');
     if (watchEl && typeof lms_get_watch_seconds === 'function') {
-        watchEl.textContent = lms_format_watch_time(lms_get_watch_seconds('lms_watch_seconds_modules'));
+        lms_set_info_value(watchEl, lms_format_watch_time(lms_get_watch_seconds('lms_watch_seconds_modules')));
     }
     if (totalEl) {
         var cached = {};
         try { cached = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { cached = {}; }
         var total = 0;
         Object.keys(cached).forEach(function (id) { total += cached[id]; });
-        totalEl.textContent = lms_format_watch_time(total);
+        lms_set_info_value(totalEl, lms_format_watch_time(total));
     }
 }
 
@@ -289,7 +296,15 @@ function lms_fetch_all_module_skills(modules, onDone) {
         var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Skill_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
             try {
                 var arr = JSON.parse(e.responseText);
-                if (arr[0].status == 1) { cb(JSON.parse(arr[0].data)); return; }
+                if (arr[0].status == 1) {
+                    var skills = JSON.parse(arr[0].data);
+                    // The response doesn't echo Module_Id back (it's already scoped
+                    // by the request) — tag it here so per-module totals can be
+                    // grouped back out after allSkills gets flattened below.
+                    skills.forEach(function (s) { s._lms_module_id = mod.Module_Id; });
+                    cb(skills);
+                    return;
+                }
             } catch (err) { }
             cb([]);
         }, function () { cb([]); });
@@ -311,6 +326,11 @@ function lms_fetch_all_module_skills(modules, onDone) {
     for (var i = 0; i < starters; i++) pump();
 }
 
+// Module_Id -> total seconds across that module's lessons, derived from the
+// same lms_video_durations_modules cache (keyed by Skill_Id) the library-wide
+// KPI total already uses — powers the per-card "watched / total" row.
+var lms_module_video_totals = {};
+
 function lms_compute_module_total_video_time() {
     if (lms_module_total_time_started) return;
     if (!safety_module_data || !safety_module_data.length) return;
@@ -318,7 +338,20 @@ function lms_compute_module_total_video_time() {
 
     lms_fetch_all_module_skills(safety_module_data, function (allSkills) {
         lms_sum_video_durations('lms_video_durations_modules', allSkills, 'Skill_Id', 'Video_Link', function () {
+            var cached = {};
+            try { cached = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { cached = {}; }
+            var totals = {};
+            allSkills.forEach(function (s) {
+                var modId = s._lms_module_id;
+                var dur = cached[String(s.Skill_Id)];
+                if (modId != null && typeof dur === 'number') {
+                    totals[modId] = (totals[modId] || 0) + dur;
+                }
+            });
+            lms_module_video_totals = totals;
             update_module_kpi();
+            // per-card watched/total row now has real totals to show
+            if (typeof render_safety_module_cards === 'function') render_safety_module_cards();
         });
     });
 }

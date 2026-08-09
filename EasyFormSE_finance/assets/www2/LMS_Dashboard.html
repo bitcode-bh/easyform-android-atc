@@ -193,27 +193,38 @@
                         <div class="sample-safety-ui">
                             <!--<div class="sample-safety-titlebar">Safety Modules</div>-->
                             <div class="sample-safety-content">
-                                <!-- Summary cards -->
-                                <div class="lms-kpi-container cols-4">
-                                    <div class="lms-kpi-card">
-                                        <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_module_completed_pct">0%</div>
-                                        <div class="kpi-label">Completed</div>
+                                <!-- Summary bar -->
+                                <div class="lms-info-bar">
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_module_completed_pct">0%</div>
+                                        </div>
+                                        <div class="lms-info-label">Completed</div>
                                     </div>
-                                    <div class="lms-kpi-card">
-                                        <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_module_avg_score">0%</div>
-                                        <div class="kpi-label">Avg score</div>
+                                    <div class="lms-info-divider"></div>
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_module_avg_score">0%</div>
+                                        </div>
+                                        <div class="lms-info-label">Avg score</div>
                                     </div>
-                                    <div class="lms-kpi-card">
-                                        <i class="fa-regular fa-clock" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_module_watch_time">0s</div>
-                                        <div class="kpi-label">Watch time</div>
+                                    <div class="lms-info-divider"></div>
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_module_watch_time">0s</div>
+                                        </div>
+                                        <div class="lms-info-label">Watch time</div>
                                     </div>
-                                    <div class="lms-kpi-card">
-                                        <i class="fa-solid fa-film" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_module_total_time">0s</div>
-                                        <div class="kpi-label">Total video time</div>
+                                    <div class="lms-info-divider"></div>
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-film" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_module_total_time">0s</div>
+                                        </div>
+                                        <div class="lms-info-label">Total video time</div>
                                     </div>
                                 </div>
 
@@ -263,17 +274,22 @@
                     <swiper-slide id="tab-2" class="page-content tab bg-white">
                         <div class="sample-safety-ui">
                             <div class="sample-safety-content assessment-content">
-                                <!-- Summary cards -->
-                                <div class="lms-kpi-container">
-                                    <div class="lms-kpi-card">
-                                        <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_assessment_completed_pct">0%</div>
-                                        <div class="kpi-label">Completed</div>
+                                <!-- Summary bar -->
+                                <div class="lms-info-bar">
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_assessment_completed_pct">0%</div>
+                                        </div>
+                                        <div class="lms-info-label">Completed</div>
                                     </div>
-                                    <div class="lms-kpi-card">
-                                        <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_assessment_avg_score">0%</div>
-                                        <div class="kpi-label">Avg score</div>
+                                    <div class="lms-info-divider"></div>
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_assessment_avg_score">0%</div>
+                                        </div>
+                                        <div class="lms-info-label">Avg score</div>
                                     </div>
                                 </div>
 
@@ -311,45 +327,64 @@
                                 <!-- Context card: values AND which one drives the chart above depend on the
                                      category selected below. Cards 1-3 are tappable (pick the chart's single
                                      line/view); card 4 (Total video time) is a static total, not a trend. -->
-                                <div class="lms-kpi-container cols-4" id="lms_dashboard_context_kpi">
-                                    <button type="button" class="lms-kpi-card is-selectable is-metric-selectable is-active" onclick="return select_lms_dashboard_metric(1, this)">
-                                        <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_dashboard_metric1">0%</div>
-                                        <div class="kpi-label" id="kpi_dashboard_metric1_label">Completed</div>
+                                <div class="lms-info-bar" id="lms_dashboard_context_kpi">
+                                    <button type="button" class="lms-info-item lms-kpi-card is-selectable is-metric-selectable is-active" onclick="return select_lms_dashboard_metric(1, this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_dashboard_metric1">0%</div>
+                                        </div>
+                                        <div class="lms-info-label" id="kpi_dashboard_metric1_label">Completed</div>
                                     </button>
-                                    <button type="button" class="lms-kpi-card is-selectable is-metric-selectable" onclick="return select_lms_dashboard_metric(2, this)">
-                                        <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_dashboard_metric2">0%</div>
-                                        <div class="kpi-label" id="kpi_dashboard_metric2_label">Avg score</div>
+                                    <div class="lms-info-divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card is-selectable is-metric-selectable" onclick="return select_lms_dashboard_metric(2, this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_dashboard_metric2">0%</div>
+                                        </div>
+                                        <div class="lms-info-label" id="kpi_dashboard_metric2_label">Avg score</div>
                                     </button>
-                                    <button type="button" class="lms-kpi-card is-selectable is-metric-selectable" id="kpi_dashboard_metric3_card" onclick="return select_lms_dashboard_metric(3, this)">
-                                        <i class="fa-regular fa-clock" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_dashboard_metric3">0s</div>
-                                        <div class="kpi-label" id="kpi_dashboard_metric3_label">Watch time</div>
+                                    <div class="lms-info-divider" id="kpi_dashboard_metric3_divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card is-selectable is-metric-selectable" id="kpi_dashboard_metric3_card" onclick="return select_lms_dashboard_metric(3, this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_dashboard_metric3">0s</div>
+                                        </div>
+                                        <div class="lms-info-label" id="kpi_dashboard_metric3_label">Watch time</div>
                                     </button>
-                                    <button type="button" class="lms-kpi-card is-selectable is-metric-selectable" id="kpi_dashboard_metric4_card" onclick="return select_lms_dashboard_metric(4, this)">
-                                        <i class="fa-solid fa-film" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_dashboard_metric4">0s</div>
-                                        <div class="kpi-label" id="kpi_dashboard_metric4_label">Total video time</div>
+                                    <div class="lms-info-divider" id="kpi_dashboard_metric4_divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card is-selectable is-metric-selectable" id="kpi_dashboard_metric4_card" onclick="return select_lms_dashboard_metric(4, this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-film" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_dashboard_metric4">0s</div>
+                                        </div>
+                                        <div class="lms-info-label" id="kpi_dashboard_metric4_label">Total video time</div>
                                     </button>
                                 </div>
 
                                 <!-- Category selector — choose which module feeds the context card + chart above -->
-                                <div class="lms-kpi-container">
-                                    <button type="button" class="lms-kpi-card lms-category-card is-selectable is-active" aria-pressed="true" onclick="return select_lms_dashboard_category('Modules', this)">
-                                        <i class="fa-regular fa-clipboard" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_mod_count">0</div>
-                                        <div class="kpi-label">Modules</div>
+                                <div class="lms-info-bar">
+                                    <button type="button" class="lms-info-item lms-kpi-card lms-category-card is-selectable is-active" aria-pressed="true" onclick="return select_lms_dashboard_category('Modules', this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-clipboard" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_mod_count">0</div>
+                                        </div>
+                                        <div class="lms-info-label">Modules</div>
                                     </button>
-                                    <button type="button" class="lms-kpi-card lms-category-card is-selectable" aria-pressed="false" onclick="return select_lms_dashboard_category('Assessments', this)">
-                                        <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_ass_count">0</div>
-                                        <div class="kpi-label">Assessments</div>
+                                    <div class="lms-info-divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card lms-category-card is-selectable" aria-pressed="false" onclick="return select_lms_dashboard_category('Assessments', this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-file-lines" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_ass_count">0</div>
+                                        </div>
+                                        <div class="lms-info-label">Assessments</div>
                                     </button>
-                                    <button type="button" class="lms-kpi-card lms-category-card is-selectable" aria-pressed="false" onclick="return select_lms_dashboard_category('Micro Learning', this)">
-                                        <i class="fa-regular fa-lightbulb" aria-hidden="true"></i>
-                                        <div class="kpi-value" id="kpi_reel_count">0</div>
-                                        <div class="kpi-label">Micro Learning</div>
+                                    <div class="lms-info-divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card lms-category-card is-selectable" aria-pressed="false" onclick="return select_lms_dashboard_category('Micro Learning', this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-lightbulb" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_reel_count">0</div>
+                                        </div>
+                                        <div class="lms-info-label">Micro Learning</div>
                                     </button>
                                 </div>
 

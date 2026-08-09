@@ -638,17 +638,11 @@ function render_lms_dashboard_context_kpi() {
     var v3 = document.getElementById('kpi_dashboard_metric3');
     var l3 = document.getElementById('kpi_dashboard_metric3_label');
     var card3 = document.getElementById('kpi_dashboard_metric3_card');
+    var div3 = document.getElementById('kpi_dashboard_metric3_divider');
     var v4 = document.getElementById('kpi_dashboard_metric4');
     var card4 = document.getElementById('kpi_dashboard_metric4_card');
-    var container = document.getElementById('lms_dashboard_context_kpi');
+    var div4 = document.getElementById('kpi_dashboard_metric4_divider');
     if (!v1 || !v2 || typeof lms_compute_completion_kpi !== 'function') return;
-
-    // 4 real metrics for Modules/Micro Learning (force one line); Assessments
-    // only has 2 (no video), so it falls back to a clean 2-up auto-fit instead
-    // of leaving two empty column tracks in a forced 4-column grid.
-    if (container) {
-        container.classList.toggle('cols-4', lms_dashboard_selected_category !== 'Assessments');
-    }
 
     function totalFromCache(cacheKey) {
         var cached = {};
@@ -666,7 +660,9 @@ function render_lms_dashboard_context_kpi() {
         l1.textContent = 'Completions'; v1.textContent = String(mt.completions);
         l2.textContent = 'Avg score'; v2.textContent = mt.avgScorePct + '%';
         if (card3) card3.style.display = '';
+        if (div3) div3.style.display = '';
         if (card4) card4.style.display = '';
+        if (div4) div4.style.display = '';
         if (v3 && l3) {
             l3.textContent = 'Watch time';
             v3.textContent = lms_format_watch_time(mt.watchSeconds);
@@ -682,7 +678,9 @@ function render_lms_dashboard_context_kpi() {
         l1.textContent = 'Completed'; v1.textContent = k.completedPct + '%';
         l2.textContent = 'Avg score'; v2.textContent = k.avgScorePct + '%';
         if (card3) card3.style.display = 'none';
+        if (div3) div3.style.display = 'none';
         if (card4) card4.style.display = 'none';
+        if (div4) div4.style.display = 'none';
     } else { // Micro Learning
         var arr = (typeof user_activitiy_Array !== 'undefined' && user_activitiy_Array) ? user_activitiy_Array : [];
         var watched = lms_count_distinct_ml(arr, 'Watch_Count');
@@ -691,7 +689,9 @@ function render_lms_dashboard_context_kpi() {
         l2.textContent = 'Score'; v2.textContent = mlScorePct + '%';
 
         if (card3) card3.style.display = '';
+        if (div3) div3.style.display = '';
         if (card4) card4.style.display = '';
+        if (div4) div4.style.display = '';
         if (v3 && l3 && typeof lms_get_watch_seconds === 'function') {
             l3.textContent = 'Watch time';
             v3.textContent = lms_format_watch_time(lms_get_watch_seconds('lms_watch_seconds_ml'));

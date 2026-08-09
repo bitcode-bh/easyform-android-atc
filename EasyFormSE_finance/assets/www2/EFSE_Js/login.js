@@ -2611,6 +2611,7 @@ function clear_localStorage() {
     // every time the user signs back in.
     let lms_watch_seconds_modules = localStorage.getItem('lms_watch_seconds_modules');
     let lms_watch_seconds_modules_daily = localStorage.getItem('lms_watch_seconds_modules_daily');
+    let lms_watch_seconds_modules_by_item = localStorage.getItem('lms_watch_seconds_modules_by_item');
     let lms_watch_seconds_ml = localStorage.getItem('lms_watch_seconds_ml');
     let lms_watch_seconds_ml_daily = localStorage.getItem('lms_watch_seconds_ml_daily');
     let lms_video_durations_modules = localStorage.getItem('lms_video_durations_modules');
@@ -2678,6 +2679,7 @@ function clear_localStorage() {
 
     if (lms_watch_seconds_modules !== null) localStorage.setItem('lms_watch_seconds_modules', lms_watch_seconds_modules);
     if (lms_watch_seconds_modules_daily !== null) localStorage.setItem('lms_watch_seconds_modules_daily', lms_watch_seconds_modules_daily);
+    if (lms_watch_seconds_modules_by_item !== null) localStorage.setItem('lms_watch_seconds_modules_by_item', lms_watch_seconds_modules_by_item);
     if (lms_watch_seconds_ml !== null) localStorage.setItem('lms_watch_seconds_ml', lms_watch_seconds_ml);
     if (lms_watch_seconds_ml_daily !== null) localStorage.setItem('lms_watch_seconds_ml_daily', lms_watch_seconds_ml_daily);
     if (lms_video_durations_modules !== null) localStorage.setItem('lms_video_durations_modules', lms_video_durations_modules);
