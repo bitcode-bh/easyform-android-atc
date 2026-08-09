@@ -1,10 +1,151 @@
 
+// ---- Local on-device watch-time tracking ------------------------------------
+// No backend field exists for "watch time" anywhere in the LMS API (checked
+// Modules' video-log call and every dashboard/listing response) — this
+// accumulates real wall-clock seconds while a video element is actually
+// playing, stored in localStorage. It's genuine measured data, just kept
+// on-device rather than server-side, so it resets on reinstall/cache-clear.
+function lms_add_watch_seconds(storageKey, seconds) {
+    if (!seconds || seconds <= 0) return;
+    var total = Number(localStorage.getItem(storageKey)) || 0;
+    total += seconds;
+    localStorage.setItem(storageKey, String(total));
+}
+
+// Day-bucketed companion to lms_add_watch_seconds — powers watch-time trend
+// charts. Only buckets from the point this shipped forward (nothing retroactive).
+function lms_add_watch_seconds_daily(dailyKey, seconds) {
+    if (!seconds || seconds <= 0) return;
+    var daily = {};
+    try { daily = JSON.parse(localStorage.getItem(dailyKey)) || {}; } catch (e) { daily = {}; }
+    var d = new Date();
+    var key = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    daily[key] = (daily[key] || 0) + seconds;
+    localStorage.setItem(dailyKey, JSON.stringify(daily));
+}
+
+function lms_get_watch_seconds_daily(dailyKey, day) {
+    var daily = {};
+    try { daily = JSON.parse(localStorage.getItem(dailyKey)) || {}; } catch (e) { daily = {}; }
+    var key = day.getFullYear() + '-' + (day.getMonth() + 1) + '-' + day.getDate();
+    return daily[key] || 0;
+}
+
+function lms_get_watch_seconds(storageKey) {
+    return Number(localStorage.getItem(storageKey)) || 0;
+}
+
+function lms_format_watch_time(totalSeconds) {
+    totalSeconds = Math.round(totalSeconds || 0);
+    if (totalSeconds < 60) return totalSeconds + 's';
+    var totalMinutes = Math.round(totalSeconds / 60);
+    if (totalMinutes < 60) return totalMinutes + 'm';
+    var hours = Math.floor(totalMinutes / 60);
+    var mins = totalMinutes % 60;
+    return hours + 'h ' + mins + 'm';
+}
+
+// Attach once per <video> element — accumulates the wall-clock gap between
+// "play" and the next "pause"/"ended", regardless of which code path called
+// .play()/.pause() (native controls, custom buttons, or programmatic).
+function lms_track_watch_time(videoEl, storageKey) {
+    if (!videoEl || videoEl._lmsWatchTracked) return;
+    videoEl._lmsWatchTracked = true;
+    var playStartedAt = null;
+
+    function flush() {
+        if (playStartedAt === null) return;
+        var elapsed = (Date.now() - playStartedAt) / 1000;
+        playStartedAt = null;
+        lms_add_watch_seconds(storageKey, elapsed);
+        lms_add_watch_seconds_daily(storageKey + '_daily', elapsed);
+    }
+
+    $(videoEl).on('play', function () { playStartedAt = Date.now(); });
+    $(videoEl).on('pause ended', flush);
+}
+
+// ---- Library-wide total video time ------------------------------------------
+// No API field reliably carries video duration (Modules' Video_Time is present
+// in the schema but empty in practice; Micro Learning has no duration field at
+// all), so this reads real durations directly off each video file via
+// preload="metadata" (fetches just enough of the file for the browser to know
+// its length, not the whole video) and sums them. Per-item durations are
+// cached by id in localStorage so repeat runs only fetch videos not seen
+// before — still a real bandwidth cost on first encounter, by design (user-
+// approved tradeoff for a true library-wide total).
+function lms_sum_video_durations(cacheKey, items, idField, urlField, onDone) {
+    var cache = {};
+    try { cache = JSON.parse(localStorage.getItem(cacheKey)) || {}; } catch (e) { cache = {}; }
+
+    var validIds = {};
+    var toFetch = [];
+    (items || []).forEach(function (item) {
+        var id = String(item[idField] || '');
+        var url = item[urlField];
+        if (!id || !url) return;
+        validIds[id] = true;
+        if (typeof cache[id] !== 'number') toFetch.push({ id: id, url: url });
+    });
+
+    function finish() {
+        localStorage.setItem(cacheKey, JSON.stringify(cache));
+        var total = 0;
+        Object.keys(cache).forEach(function (id) { if (validIds[id]) total += cache[id]; });
+        if (onDone) onDone(total);
+    }
+
+    if (toFetch.length === 0) { finish(); return; }
+
+    var CONCURRENCY = 3;
+    var nextIdx = 0;
+    var pending = toFetch.length;
+
+    function loadOne(entry, cb) {
+        var v = document.createElement('video');
+        v.preload = 'metadata';
+        v.muted = true;
+        var settled = false;
+        function done(duration) {
+            if (settled) return;
+            settled = true;
+            v.removeAttribute('src');
+            try { v.load(); } catch (e) { }
+            cb(duration);
+        }
+        v.addEventListener('loadedmetadata', function () { done(v.duration); });
+        v.addEventListener('error', function () { done(null); });
+        v.src = entry.url;
+    }
+
+    function pump() {
+        if (nextIdx >= toFetch.length) return;
+        var entry = toFetch[nextIdx++];
+        loadOne(entry, function (duration) {
+            if (typeof duration === 'number' && isFinite(duration) && duration > 0) {
+                cache[entry.id] = duration;
+            }
+            pending--;
+            if (pending <= 0) { finish(); }
+            else { pump(); }
+        });
+    }
+
+    var starters = Math.min(CONCURRENCY, toFetch.length);
+    for (var i = 0; i < starters; i++) pump();
+}
+
 $(document).ready(function () {
 
     let t_color_name = JSON.parse(storage.getItem('viewsite_btn_color'));
     let style_str = "<style>.navbar-bg, .sample-safety-titlebar,.sample-module-btn, .sample-module-progress span,.sample-safety-chip.active{background: " + t_color_name + " !important;}";
     style_str += ".sample-safety-filter,.sample-module-percent,.sample-safety-sort-option.active{color:" + t_color_name + " !important;} }</style>";
     $("head").append(style_str);
+
+    // tab-3 (Dashboard) is the initially-active tab, and has no top bar — hide
+    // it immediately rather than waiting for the first tab:show, which only
+    // fires on a subsequent switch, not for the pre-active tab on page load.
+    $(".navbar").hide();
 
     get_safety_module_listing();
     get_assessments_listing();
@@ -42,8 +183,7 @@ $(document).ready(function () {
             get_assessments_listing();
         }
         else if (this.id == "tab-3") {
-            $(".navbar").show();
-            $(".sample-safety-titlebar").html("My Dashboard");
+            $(".navbar").hide();
             get_dashboard_data();
         }
         else if (this.id == "tab-4") {
@@ -92,16 +232,23 @@ $(document).ready(function () {
 
     $(video).on("play", function () {
         if (this.currentTime < 0.5) {
-            call_by_videolog('start'); // call api            
+            call_by_videolog('start'); // call api
         }
         set_progress_local();
         set_progress();
     });
 
+    lms_track_watch_time(video, 'lms_watch_seconds_modules');
+
     // clear timer properly
     $(video).on("ended", function () {
-        if (typeof safety_quiz_start === 'function' && safety_quiz_progress != "100") safety_quiz_start();
-        else $("#dv_Question_List").show();
+        // Full-screen: mandatory quiz popup. Minimized/normal mode (or an
+        // already-completed lesson): existing inline question-list behaviour.
+        if (safety_quiz_progress != "100" && safetyVideoLandscapeMode && typeof safety_quiz_start === 'function') {
+            safety_quiz_start();
+        } else {
+            $("#dv_Question_List").show();
+        }
         set_progress_local();
         clearInterval(progressInterval);
         console.log("Interval cleared");
@@ -156,12 +303,13 @@ $(document).on("popup:close", ".popup-level-4", function () {
         var v = $("#vdo_Question")[0];
         if (v) {
             set_progress_local(); // capture the resume position before pausing
-            v.pause();
+            v.pause(); // flushes this session into lms_watch_seconds_modules (see lms_track_watch_time)
         }
         if (progressInterval) {
             clearInterval(progressInterval);
             progressInterval = null;
         }
+        if (typeof update_module_kpi === 'function') update_module_kpi();
     } catch (e) { }
 });
 
@@ -356,6 +504,11 @@ document.addEventListener('webkitfullscreenchange', function () {
 });
 
 function back_button_LMS() {
+    // Mandatory full-screen quiz in progress — swallow back until it's submitted.
+    if (typeof safety_quiz_mandatory_active !== 'undefined' && safety_quiz_mandatory_active) {
+        return false;
+    }
+
     if (safetyVideoLandscapeMode || document.fullscreenElement === document.getElementById('safety-video-container') || document.webkitFullscreenElement === document.getElementById('safety-video-container')) {
         exitSafetyVideoLandscape();
         return false;

@@ -106,6 +106,7 @@ function apply_assessments(responseText, isRefresh) {
             return assessment;
         });
         if (typeof update_lms_kpi === 'function') update_lms_kpi();
+        update_assessment_kpi();
         // Keep the user's active filter/sort/search on the silent refresh.
         if (!isRefresh) {
             selected_assessment_tag = "All";
@@ -121,8 +122,19 @@ function apply_assessments(responseText, isRefresh) {
     else if (!isRefresh) {
         assessment_listing_requested = false;
         assessment_data = [];
+        update_assessment_kpi();
         render_assessment_cards();
     }
+}
+
+// Summary cards at the top of the Assessments tab.
+function update_assessment_kpi() {
+    var completedEl = document.getElementById('kpi_assessment_completed_pct');
+    var scoreEl = document.getElementById('kpi_assessment_avg_score');
+    if (!completedEl && !scoreEl) return;
+    var k = lms_compute_completion_kpi(assessment_data);
+    if (completedEl) completedEl.textContent = k.completedPct + '%';
+    if (scoreEl) scoreEl.textContent = k.avgScorePct + '%';
 }
 
 function get_assessments_listing(force_refresh) {
@@ -178,6 +190,7 @@ function get_assessments_listing(force_refresh) {
                 return assessment;
             });
             if (typeof update_lms_kpi === 'function') update_lms_kpi();
+        update_assessment_kpi();
             selected_assessment_tag = "All";
             selected_assessment_sort = "recommended";
             assessment_search_text = "";

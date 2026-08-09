@@ -518,6 +518,7 @@ function get_user_activities() {
             let data = JSON.parse(All_data[0]["data"]);
 
             user_activitiy_Array = data;
+            update_ml_stat_badge();
 
             //for (let i = 0; i < data.length; i++) {
             //    let Activity_Id = data[i].Activity_Id;
@@ -538,6 +539,45 @@ function get_user_activities() {
         loading_hide();
     }, onfail);
     getdata.callOtherDomain();
+}
+
+// Compact reels-feed overlay — total videos watched. The only real per-user ML
+// metric available (Watch_Count on user_activitiy_Array); no watch-time or
+// score field exists anywhere in this dataset.
+function update_ml_stat_badge() {
+    var el = document.getElementById('ml_stat_watched_count');
+    if (el) {
+        var watched = (user_activitiy_Array || []).filter(function (a) { return Number(a.Watch_Count) > 0; }).length;
+        el.textContent = watched;
+    }
+
+    var timeEl = document.getElementById('ml_stat_watch_time');
+    if (timeEl && typeof lms_get_watch_seconds === 'function') {
+        timeEl.textContent = lms_format_watch_time(lms_get_watch_seconds('lms_watch_seconds_ml'));
+    }
+
+    var totalEl = document.getElementById('ml_stat_total_time');
+    if (totalEl) {
+        var cached = {};
+        try { cached = JSON.parse(localStorage.getItem('lms_video_durations_ml')) || {}; } catch (e) { cached = {}; }
+        var total = 0;
+        Object.keys(cached).forEach(function (id) { total += cached[id]; });
+        totalEl.textContent = lms_format_watch_time(total);
+    }
+}
+
+// Library-wide total reel length — real durations read directly off every
+// reel's video file (no duration field exists anywhere in the ML data/API).
+// Runs once per session; real bandwidth cost, accepted for a true total.
+var lms_ml_total_time_started = false;
+function lms_compute_ml_total_video_time(catalog) {
+    if (lms_ml_total_time_started) return;
+    if (!catalog || !catalog.length) return;
+    lms_ml_total_time_started = true;
+
+    lms_sum_video_durations('lms_video_durations_ml', catalog, 'Ml_id', 'Video_Link', function () {
+        update_ml_stat_badge();
+    });
 }
 
 // micro learning video listing
@@ -570,6 +610,7 @@ function get_micro_learning_videos() {
                 }
             }
             if (typeof update_lms_kpi === 'function') update_lms_kpi();
+            lms_compute_ml_total_video_time(data);
 
             let reelsContent = $('#div_Reels')[0].innerHTML;
             if (reelsContent == '') {
@@ -668,6 +709,13 @@ function get_micro_learning_videos() {
                     ml_remote_links.push(Video_Link);
                 }
                 $('#div_Reels')[0].innerHTML = reels_html;   // single commit
+
+                if (typeof lms_track_watch_time === 'function') {
+                    document.querySelectorAll('.reel-video').forEach(function (v) {
+                        lms_track_watch_time(v, 'lms_watch_seconds_ml');
+                        $(v).on('pause ended', function () { update_ml_stat_badge(); });
+                    });
+                }
 
                 // Warm the local cache in the background (no-op unless enabled).
                 if (typeof ml_cache_warm === 'function') ml_cache_warm(ml_remote_links);

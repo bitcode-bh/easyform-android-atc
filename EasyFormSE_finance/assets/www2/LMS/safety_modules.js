@@ -213,12 +213,114 @@ function apply_safety_modules(responseText, isRefresh) {
             bind_safety_module_controls();
         }
         render_safety_module_cards();
+        update_module_kpi();
+        lms_compute_module_total_video_time();
     }
     else if (!isRefresh) {
         safety_module_listing_requested = false;
         safety_module_data = [];
+        update_module_kpi();
         render_safety_module_cards();
     }
+}
+
+// Shared: Completed % (Progress >= 100) and Avg score % (Score/TotalQuestion) across
+// attempted items — used by the Modules tab card, Assessments tab card, and the
+// Dashboard tab's per-category card.
+function lms_compute_completion_kpi(items) {
+    var total = (items || []).length;
+    var completed = 0;
+    var scoreSum = 0, scoreCount = 0;
+
+    (items || []).forEach(function (item) {
+        if (get_lms_item_progress(item) >= 100) completed++;
+        var totalQ = Number(item.TotalQuestion) || 0;
+        var submitted = Number(item.SubmitedQuestion) || 0;
+        var score = Number(item.Score);
+        if (submitted > 0 && totalQ > 0 && !isNaN(score)) {
+            scoreSum += (score / totalQ) * 100;
+            scoreCount++;
+        }
+    });
+
+    return {
+        completedPct: total > 0 ? Math.round((completed / total) * 100) : 0,
+        avgScorePct: scoreCount > 0 ? Math.round(scoreSum / scoreCount) : 0
+    };
+}
+
+// Summary cards at the top of the Modules tab.
+function update_module_kpi() {
+    var completedEl = document.getElementById('kpi_module_completed_pct');
+    var scoreEl = document.getElementById('kpi_module_avg_score');
+    var watchEl = document.getElementById('kpi_module_watch_time');
+    var totalEl = document.getElementById('kpi_module_total_time');
+    if (!completedEl && !scoreEl && !watchEl && !totalEl) return;
+    var k = lms_compute_completion_kpi(safety_module_data);
+    if (completedEl) completedEl.textContent = k.completedPct + '%';
+    if (scoreEl) scoreEl.textContent = k.avgScorePct + '%';
+    if (watchEl && typeof lms_get_watch_seconds === 'function') {
+        watchEl.textContent = lms_format_watch_time(lms_get_watch_seconds('lms_watch_seconds_modules'));
+    }
+    if (totalEl) {
+        var cached = {};
+        try { cached = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { cached = {}; }
+        var total = 0;
+        Object.keys(cached).forEach(function (id) { total += cached[id]; });
+        totalEl.textContent = lms_format_watch_time(total);
+    }
+}
+
+// Library-wide total video length across every module — fetches each module's
+// skill list (LMS_Select_Skill_Master_RoleWise), then real durations for every
+// lesson video (see lms_sum_video_durations in LMS_Misc.js). Runs once per
+// session; real network/bandwidth cost, accepted for a true course-wide total.
+var lms_module_total_time_started = false;
+function lms_fetch_all_module_skills(modules, onDone) {
+    var allSkills = [];
+    if (!modules || !modules.length) { onDone(allSkills); return; }
+
+    var CONCURRENCY = 3;
+    var nextIdx = 0;
+    var pending = modules.length;
+
+    function fetchOne(mod, cb) {
+        var Param_obj = [{ 'Module_Id': mod.Module_Id }];
+        var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Skill_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
+            try {
+                var arr = JSON.parse(e.responseText);
+                if (arr[0].status == 1) { cb(JSON.parse(arr[0].data)); return; }
+            } catch (err) { }
+            cb([]);
+        }, function () { cb([]); });
+        getdata.callOtherDomain();
+    }
+
+    function pump() {
+        if (nextIdx >= modules.length) return;
+        var mod = modules[nextIdx++];
+        fetchOne(mod, function (skills) {
+            allSkills = allSkills.concat(skills || []);
+            pending--;
+            if (pending <= 0) { onDone(allSkills); }
+            else { pump(); }
+        });
+    }
+
+    var starters = Math.min(CONCURRENCY, modules.length);
+    for (var i = 0; i < starters; i++) pump();
+}
+
+function lms_compute_module_total_video_time() {
+    if (lms_module_total_time_started) return;
+    if (!safety_module_data || !safety_module_data.length) return;
+    lms_module_total_time_started = true;
+
+    lms_fetch_all_module_skills(safety_module_data, function (allSkills) {
+        lms_sum_video_durations('lms_video_durations_modules', allSkills, 'Skill_Id', 'Video_Link', function () {
+            update_module_kpi();
+        });
+    });
 }
 
 function get_safety_module_listing(force_refresh) {
@@ -283,6 +385,8 @@ function get_safety_module_listing(force_refresh) {
             render_safety_module_sort_menu();
             bind_safety_module_controls();
             render_safety_module_cards();
+            update_module_kpi();
+            lms_compute_module_total_video_time();
 
             /*for (let m = 0; m < data.length; m++) {
                 let Module_Id = data[m].Module_Id;
@@ -358,6 +462,7 @@ function get_safety_module_listing(force_refresh) {
         else {
             safety_module_listing_requested = false;
             safety_module_data = [];
+            update_module_kpi();
             render_safety_module_cards();
             // myApp.popup.close('.popup-level-2'); // Optional: Do we really want to close the popup if it was open? Actually the modules are on the main tab now, not a popup.
         }
@@ -807,6 +912,9 @@ var safety_quiz_progress = "0";
 var safety_quiz_index = 0;
 var safety_quiz_answers = {};
 var safety_quiz_locked = false;
+// Full-screen only: while true, the quiz is mandatory — back_button_LMS() and the
+// popup's own backdrop-click-to-close are both blocked until the quiz is submitted.
+var safety_quiz_mandatory_active = false;
 
 function safety_quiz_review() { return safety_quiz_progress == "100"; }
 
@@ -817,6 +925,9 @@ function safety_quiz_start() {
     var v = document.getElementById('vdo_Question');
     if (v) { try { set_progress_local(); v.pause(); } catch (e) { } } // pause; timestamp preserved
     safety_quiz_render();
+    safety_quiz_mandatory_active = true;
+    var popupEl = document.querySelector('.popup-level-4');
+    if (popupEl && popupEl.f7Modal) { popupEl.f7Modal.params.closeByBackdropClick = false; }
     var m = document.getElementById('safety-quiz-modal');
     if (m) { m.style.display = 'flex'; m.setAttribute('aria-hidden', 'false'); requestAnimationFrame(function () { m.classList.add('open'); }); }
 }
@@ -942,6 +1053,9 @@ function safety_quiz_finish() {
 }
 
 function safety_quiz_close_modal() {
+    safety_quiz_mandatory_active = false;
+    var popupEl = document.querySelector('.popup-level-4');
+    if (popupEl && popupEl.f7Modal) { popupEl.f7Modal.params.closeByBackdropClick = true; }
     var m = document.getElementById('safety-quiz-modal');
     if (m) {
         m.classList.remove('open');
