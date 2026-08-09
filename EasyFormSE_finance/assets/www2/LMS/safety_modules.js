@@ -78,6 +78,7 @@ function render_safety_module_search() {
 function render_safety_module_tags() {
     var tags = [];
     var seen_tags = {};
+    var counts = {};
 
     safety_module_data.forEach(function (module) {
         get_safety_module_tags(module.Tag != null ? module.Tag : module.tag).forEach(function (tag) {
@@ -86,14 +87,17 @@ function render_safety_module_tags() {
                 seen_tags[tag_key] = true;
                 tags.push(tag);
             }
+            counts[tag_key] = (counts[tag_key] || 0) + 1;
         });
     });
 
     var str = '<div class="sample-safety-chip' + (selected_safety_tag === "All" ? ' active' : '') + '" data-safety-tag="All">';
-    str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span></div>';
+    str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span>';
+    str += '<span class="sample-safety-chip-count">' + safety_module_data.length + '</span></div>';
     tags.forEach(function (tag) {
         str += '<div class="sample-safety-chip' + (selected_safety_tag === tag ? ' active' : '') + '" data-safety-tag="' + tag.replace(/"/g, '&quot;') + '">';
-        str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span></div>';
+        str += '<span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span>';
+        str += '<span class="sample-safety-chip-count">' + (counts[tag.toLowerCase()] || 0) + '</span></div>';
     });
 
     $(".sample-safety-tabs").not(".assessment-tabs").html(str);

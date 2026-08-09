@@ -15,6 +15,7 @@ function render_assessment_search() {
 function render_assessment_tags() {
     var tags = [];
     var seen_tags = {};
+    var counts = {};
     assessment_data.forEach(function (assessment) {
         get_lms_item_tags(assessment.Tag != null ? assessment.Tag : assessment.tag).forEach(function (tag) {
             var key = tag.toLowerCase();
@@ -22,12 +23,15 @@ function render_assessment_tags() {
                 seen_tags[key] = true;
                 tags.push(tag);
             }
+            counts[key] = (counts[key] || 0) + 1;
         });
     });
 
-    var str = '<div class="sample-safety-chip' + (selected_assessment_tag === "All" ? ' active' : '') + '" data-assessment-tag="All"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span></div>';
+    var str = '<div class="sample-safety-chip' + (selected_assessment_tag === "All" ? ' active' : '') + '" data-assessment-tag="All"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>All</span>';
+    str += '<span class="sample-safety-chip-count">' + assessment_data.length + '</span></div>';
     tags.forEach(function (tag) {
-        str += '<div class="sample-safety-chip' + (selected_assessment_tag === tag ? ' active' : '') + '" data-assessment-tag="' + tag.replace(/"/g, '&quot;') + '"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span></div>';
+        str += '<div class="sample-safety-chip' + (selected_assessment_tag === tag ? ' active' : '') + '" data-assessment-tag="' + tag.replace(/"/g, '&quot;') + '"><span class="sample-safety-check"><i class="fa fa-check"></i></span><span>' + tag + '</span>';
+        str += '<span class="sample-safety-chip-count">' + (counts[tag.toLowerCase()] || 0) + '</span></div>';
     });
     $(".assessment-tabs").html(str);
 }

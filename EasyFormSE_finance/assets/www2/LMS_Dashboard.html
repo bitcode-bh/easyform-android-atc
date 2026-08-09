@@ -193,6 +193,9 @@
                         <div class="sample-safety-ui">
                             <!--<div class="sample-safety-titlebar">Safety Modules</div>-->
                             <div class="sample-safety-content">
+                                <!-- Frozen while the module list below scrolls (position:sticky against
+                                     #tab-1's own scroll box — verified live via CDP before shipping). -->
+                                <div class="lms-sticky-header">
                                 <!-- Summary bar -->
                                 <div class="lms-info-bar">
                                     <div class="lms-info-item">
@@ -242,6 +245,7 @@
                                     <div class="sample-safety-chip">Field Ops</div>
                                     <div class="sample-safety-chip">Compliance</div>
                                 </div>
+                                </div>
 
                                 <div id="dv_Module_List"></div>
 
@@ -274,6 +278,9 @@
                     <swiper-slide id="tab-2" class="page-content tab bg-white">
                         <div class="sample-safety-ui">
                             <div class="sample-safety-content assessment-content">
+                                <!-- Frozen while the assessments list below scrolls — same sticky treatment
+                                     as Modules (#tab-1). -->
+                                <div class="lms-sticky-header">
                                 <!-- Summary bar -->
                                 <div class="lms-info-bar">
                                     <div class="lms-info-item">
@@ -298,6 +305,8 @@
                                     <div class="sample-safety-search assessment-search"></div>
                                 </div>
                                 <div class="sample-safety-tabs assessment-tabs swiper-no-swiping"></div>
+                                </div>
+
                                 <div id="dv_Assessments_List"></div>
                             </div>
                         </div>

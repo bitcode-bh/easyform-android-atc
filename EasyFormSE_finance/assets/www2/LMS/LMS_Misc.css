@@ -528,6 +528,31 @@
     padding: 13px 14px 0;
 }
 
+/* tab-1/tab-2 only (Modules/Assessments): top padding moves onto
+   .lms-sticky-header itself (below) instead of staying on this shared
+   ancestor — it needs to apply whether the header is in normal flow or
+   stuck at the scroll container's edge, and an ancestor's padding doesn't
+   follow it there. Scoped to these two tabs so tab-3 (Dashboard), which
+   also uses .sample-safety-content but has no sticky header, keeps its
+   original top gap untouched. */
+#tab-1 .sample-safety-content,
+#tab-2 .sample-safety-content {
+    padding-top: 0;
+}
+
+/* Freezes the info-bar + filter chips at the top of the tab's own scroll
+   box (#tab-1/#tab-2 themselves — verified live via CDP: they're the actual
+   overflow:auto container, not .sample-safety-content) while the card/
+   assessment list scrolls underneath. Opaque background so scrolled-past
+   cards don't show through while it's stuck. */
+.lms-sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #fff;
+    padding-top: 13px;
+}
+
 .sample-safety-search-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 38px;
@@ -664,6 +689,20 @@
     .sample-safety-chip.active {
         background: #215ba8;
         color: #fff;
+    }
+
+/* Dynamic item count per filter — kept as plain small text alongside the
+   label (not a separate pill/badge) so it stays lightweight and doesn't
+   disturb the chip's existing 31px height or spacing. */
+.sample-safety-chip-count {
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+}
+
+    .sample-safety-chip.active .sample-safety-chip-count {
+        opacity: 0.85;
     }
 
 .sample-safety-check {
