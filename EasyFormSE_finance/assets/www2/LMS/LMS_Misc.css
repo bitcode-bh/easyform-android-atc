@@ -543,13 +543,14 @@
 /* Freezes the info-bar + filter chips at the top of the tab's own scroll
    box (#tab-1/#tab-2 themselves — verified live via CDP: they're the actual
    overflow:auto container, not .sample-safety-content) while the card/
-   assessment list scrolls underneath. Opaque background so scrolled-past
-   cards don't show through while it's stuck. */
+   assessment list scrolls underneath. No background fill of its own — the
+   info-bar and chips are already opaque on their own (rounded white card /
+   solid pill backgrounds), so this stays a plain sticky positioning wrapper
+   rather than reading as an added panel behind the filter row. */
 .lms-sticky-header {
     position: sticky;
     top: 0;
     z-index: 5;
-    background: #fff;
     padding-top: 13px;
 }
 
@@ -671,6 +672,7 @@
     }
 
 .sample-safety-chip {
+    position: relative;
     flex: 0 0 auto;
     height: 31px;
     display: inline-flex;
@@ -691,18 +693,22 @@
         color: #fff;
     }
 
-/* Dynamic item count per filter — kept as plain small text alongside the
-   label (not a separate pill/badge) so it stays lightweight and doesn't
-   disturb the chip's existing 31px height or spacing. */
+/* Dynamic item count per filter — tucked into the pill's top-right corner,
+   out of the label's own text flow, kept tiny/muted so it stays clearly
+   secondary to the label. Not a separate badge/pill of its own. */
 .sample-safety-chip-count {
-    font-size: 11px;
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    font-size: 8px;
     font-weight: 700;
-    opacity: 0.6;
+    line-height: 1;
+    opacity: 0.5;
     font-variant-numeric: tabular-nums;
 }
 
     .sample-safety-chip.active .sample-safety-chip-count {
-        opacity: 0.85;
+        opacity: 0.7;
     }
 
 .sample-safety-check {
