@@ -497,6 +497,8 @@ function lms_prune_module_catalog(activeModules) {
     } catch (e) { }
 }
 
+// The role the user is currently acting as. Use for change DETECTION and cache
+// keys only — never as a listing API's Role_Id (see lms_get_listing_role_ids).
 function lms_get_active_role_id() {
     try {
         var active = JSON.parse(storage.getItem('role_id'));
@@ -504,6 +506,24 @@ function lms_get_active_role_id() {
     } catch (e) { }
     var roleArray = localStorage.getItem('role_id_array');
     return (roleArray != null && roleArray !== '') ? String(roleArray) : '';
+}
+
+// Every *_RoleWise listing endpoint takes a comma-separated Role_Id list and
+// returns the union. LMS content is assigned to a user across all the roles
+// they hold, so the listings must ask for role_id_array — not just whichever
+// role happens to be active on Home. This also matches how the rest of the app
+// scopes role-based content ("rollid in (role_id_array)" in selection.js /
+// common-functions.js); the LMS was the only place using a single role.
+//
+// Sending only the active role silently empties the whole LMS for any user
+// whose content sits on a different role than the one they're currently in.
+// Verified live against UAT for user 41127 (roles "305,375", all 3 modules on
+// role 305): Role_Id "375" -> status 2 "No Record Found"; Role_Id "305,375"
+// -> status 1 with all 3 modules.
+function lms_get_listing_role_ids() {
+    var roleArray = localStorage.getItem('role_id_array');
+    if (roleArray != null && roleArray !== '') return String(roleArray);
+    return lms_get_active_role_id();
 }
 
 function lms_reset_listings_if_role_changed() {

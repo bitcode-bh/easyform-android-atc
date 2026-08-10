@@ -584,8 +584,8 @@ var total_reels = 0;
 var ml_catalog_ml_ids = null; // { Ml_id: true, ... } for videos currently in the library
 function get_micro_learning_videos() {
 
-    let role_id = (typeof lms_get_active_role_id === 'function')
-        ? lms_get_active_role_id()
+    let role_id = (typeof lms_get_listing_role_ids === 'function')
+        ? lms_get_listing_role_ids()
         : localStorage.getItem('role_id_array');
 
     var Param_obj = [];

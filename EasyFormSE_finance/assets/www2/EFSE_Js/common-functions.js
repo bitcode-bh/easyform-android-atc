@@ -45,13 +45,16 @@ function lms_clear_vapt_cache() {
                 }, function () { });
             }
         }
-        if (typeof lms_clear_all_local_state === 'function') {
-            lms_clear_all_local_state();
-        } else {
-            localStorage.removeItem('ml_video_cache_map');
-            localStorage.removeItem('ml_video_cache_order');
-            if (typeof LmsData !== 'undefined' && LmsData.clearAll) LmsData.clearAll();
-        }
+        // Cached SERVER CONTENT only. Deliberately NOT lms_clear_all_local_state()
+        // — that also deletes lms_watch_seconds_*, lms_ml_quiz_* and
+        // video_progress_*, which are the user's own locally-measured progress
+        // with no server copy to re-fetch, so a logout destroyed them forever.
+        // Cross-user leakage is already handled at LOGIN: lms_finalize_login_user()
+        // restores that backup only for the same user_id and wipes everything
+        // when a different user signs in.
+        localStorage.removeItem('ml_video_cache_map');
+        localStorage.removeItem('ml_video_cache_order');
+        if (typeof LmsData !== 'undefined' && LmsData.clearAll) LmsData.clearAll();
     } catch (e) { }
 }
 

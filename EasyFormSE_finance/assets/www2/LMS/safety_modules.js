@@ -409,8 +409,8 @@ function get_safety_module_listing(force_refresh) {
     }
     safety_module_listing_requested = true;
 
-    let role_id = (typeof lms_get_active_role_id === 'function')
-        ? lms_get_active_role_id()
+    let role_id = (typeof lms_get_listing_role_ids === 'function')
+        ? lms_get_listing_role_ids()
         : localStorage.getItem('role_id_array');
 
     var Param_obj = [];
