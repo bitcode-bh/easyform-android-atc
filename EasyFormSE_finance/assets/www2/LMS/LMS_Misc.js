@@ -173,7 +173,21 @@ function lms_get_lesson_elapsed_seconds(skillId) {
     }
     var saved = lms_get_lesson_local_record(skillId);
     var fromResume = (saved && saved.currentTime) ? (Number(saved.currentTime) || 0) : 0;
-    return Math.max(wall, fromResume);
+    var best = Math.max(wall, fromResume);
+
+    // Server-recorded progress wins when the backend provides it (see
+    // LmsBackend / LMS_API_SPEC.md): it survives reinstalls and follows the
+    // learner across devices, which the local measurement cannot. Inert until
+    // the server actually returns these fields, so this is a no-op today.
+    // Still takes the max, because a session watched since the last upload is
+    // only known locally — the server can lag, it can never be ahead.
+    if (typeof LmsBackend !== 'undefined') {
+        var serverWatch = LmsBackend.watchSeconds(skillId);
+        var serverResume = LmsBackend.resumeSeconds(skillId);
+        if (serverWatch !== null) best = Math.max(best, serverWatch);
+        if (serverResume !== null) best = Math.max(best, serverResume);
+    }
+    return best;
 }
 
 function lms_sum_module_lesson_watched(moduleId) {
@@ -448,6 +462,11 @@ function lms_restore_login_backup(backup) {
 function lms_clear_all_local_state() {
     try {
         if (typeof LmsData !== 'undefined' && LmsData.clearAll) LmsData.clearAll();
+    } catch (e) { }
+    // In-memory server-reported progress belongs to the outgoing user — drop
+    // it here too, or the next login on this device could read it.
+    try {
+        if (typeof LmsBackend !== 'undefined') LmsBackend.reset();
     } catch (e) { }
     var toRemove = [];
     for (var i = 0; i < localStorage.length; i++) {
@@ -1226,11 +1245,16 @@ function loading_hide() {
         myApp.preloader.hide();
     }, 10)
 }
+// Shared failure handler for LMS network calls. `e` is the raw XHR/error
+// object, so alerting it directly showed users "[object XMLHttpRequest]" and
+// leaked internals without telling them what to do. Show a plain, actionable
+// message instead and keep the detail in the console for diagnostics.
 function onfail(e) {
     safety_module_listing_requested = false;
     assessment_listing_requested = false;
     loading_hide();
-    alert(e);
+    try { console.error('LMS request failed:', e); } catch (ignored) { }
+    alert("Couldn't reach the server. Check your connection and try again.");
 }
 function vibrate_device() {
     try {

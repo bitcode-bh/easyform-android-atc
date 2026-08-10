@@ -713,6 +713,12 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
             let data = myArray[0]["data"];
             data = JSON.parse(data);
 
+            // Hand the raw server rows to the integration seam before anything
+            // renders. Today they carry no progress fields and this does
+            // nothing; once the backend ships Watch_Seconds / Resume_Position
+            // it starts serving them with no further client change.
+            if (typeof LmsBackend !== 'undefined') LmsBackend.ingestSkillRows(data);
+
             $(".lession-count").html(data.length + " lessons - " + SubmitedSkill + " completed");
 
             let lms_video_durations_cache = {};
