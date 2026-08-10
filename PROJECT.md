@@ -20,6 +20,7 @@ file only summarizes.
 
 | Commit | Summary |
 |---|---|
+| `5393a69` | Quiz frozen header/footer layout (description pinned top, submit pinned bottom, only questions scroll), shared radio-only quiz option design, disabled-until-answered submit button, **real per-lesson scores** (was answered-count not correct-count), genuine "In Progress" lesson status, local-progress capped at 99 so watching alone can't mark Completed, real cached video duration preferred over the often-empty server field, **fixed async pause-event race** in watch-time tracking (item id captured at play-start, not at flush — was misattributing watch seconds to whichever module opened next), `video_progress_<Skill_Id>` keys preserved across login instead of resetting |
 | `827ca85` | Top-bar/page bg unification (one literal color, not three near-misses), filter chip redesign (counters → summary line), theme-color accents (selected chip/progress bars now track the live brand color instead of a server-driven site color), lesson list overhaul (time under thumbnail, real "In Progress" state, **fixed lesson scores that were showing answered-count instead of correct-count**), video-playback screen pinned player, quiz restyle shared between lesson video and Assessments (fixed a persistent focus-ring outline that looked like a selection border) |
 | `8c0852c` | Opaque rounded sticky header, YouTube-style duration badge |
 | `e971fe3` | Filter-chip count → corner badge, dropped sticky header bg fill |
@@ -40,6 +41,16 @@ Full detail (why, not just what) for each is in the local `CLAUDE.md`'s dedicate
 
 ## Pending / next
 
+- **Open bug, not yet fixed:** home module-card watch-time and in-lesson watch-time still don't agree
+  (module 19's card showed `00:50` while both its lessons showed `00:00`, even after the `5393a69`
+  play-start-attribution fix). These are two architecturally different metrics — card total is
+  wall-clock play/pause time (`lms_watch_seconds_modules_by_item`), lesson elapsed is playhead
+  position (`video_progress_<Skill_Id>.currentTime`) — so "sync" may need a real design decision, not
+  just a bug fix. Live CDP dump for that module: `lms_watch_seconds_modules_by_item["19"] = 50.46`,
+  but `video_progress_18 = {currentTime:0}` and no `video_progress_<other skill>` key existed at all —
+  suggests the lesson-level tracker isn't writing for this module's skills, not just a display mismatch.
+  Investigate `video_progress_` writes for module 19/22's actual skill ids before assuming the two
+  metrics were ever meant to match.
 - On-device end-to-end verification of `827ca85`'s video-playback screen: confirm the sticky player
   actually stays pinned against the real scroll container (an assumption that was wrong once already
   for the filter header in this same session), and spot-check the Assessments quiz restyle on a fresh
