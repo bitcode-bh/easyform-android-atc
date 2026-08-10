@@ -148,7 +148,11 @@ function update_assessment_kpi() {
     if (scoreEl) lms_set_info_value(scoreEl, k.avgScorePct + '%');
 }
 
-function get_assessments_listing(force_refresh) {
+// onNetworkApplied (optional): invoked after fresh SERVER data has been applied
+// to assessment_data — never after a cache-only paint. Callers that must read a
+// server-updated field (e.g. a score right after submitting) use this instead of
+// guessing at a delay.
+function get_assessments_listing(force_refresh, onNetworkApplied) {
     if (typeof lms_reset_listings_if_role_changed === 'function' && lms_reset_listings_if_role_changed()) {
         force_refresh = true;
     }
@@ -183,6 +187,9 @@ function get_assessments_listing(force_refresh) {
         LmsData.fetch(lms_assess_cache_key, lms_assess_url, JSON.stringify(Param_obj),
             function (txt, source) {
                 apply_assessments(txt, source === 'network' && had_cache);
+                if (source === 'network' && typeof onNetworkApplied === 'function') {
+                    onNetworkApplied();
+                }
             },
             function (err) {
                 if (!had_cache) {
@@ -220,6 +227,9 @@ function get_assessments_listing(force_refresh) {
             render_assessment_sort_menu();
             bind_assessment_controls();
             render_assessment_cards();
+            // Same contract as the LmsData path above: this branch is always a
+            // live network response, so the caller's post-refresh hook runs here.
+            if (typeof onNetworkApplied === 'function') onNetworkApplied();
 
             /*for (let m = 0; m < data.length; m++) {
                 let Assessment_Id = data[m].Assessment_Id;
@@ -607,17 +617,27 @@ function submit_question_by_assessment_id() {
             if (submitBtn) submitBtn.textContent = '✓ Submitted';
             if (typeof lms_flush_assessment_watch === 'function') lms_flush_assessment_watch();
             var submittedId = $("#dv_Assessment_Question_List").attr("Assessment_Id");
-            get_assessments_listing(true);
-            setTimeout(function () {
+
+            // Record the completion only once the refreshed listing has actually
+            // landed, and only with the score the SERVER reports. This used to
+            // run on a 1600ms timer and fall back to a hardcoded 100 when the
+            // assessment wasn't found in assessment_data yet — so a slow refresh
+            // logged a fabricated perfect score into the dashboard. The score is
+            // not computable on the client (answers are submitted without their
+            // Valid_Answer), so if it can't be read, nothing is logged rather
+            // than something invented.
+            get_assessments_listing(true, function () {
                 if (!submittedId || typeof lms_log_assessment_completion !== 'function') return;
                 var match = (typeof assessment_data !== 'undefined' && assessment_data)
                     ? assessment_data.filter(function (a) { return String(a.Assessment_Id) === String(submittedId); })[0]
                     : null;
-                var pct = (typeof lms_assessment_score_pct === 'function' && match)
-                    ? lms_assessment_score_pct(match) : 100;
+                var pct = (match && typeof lms_assessment_score_pct === 'function')
+                    ? lms_assessment_score_pct(match)
+                    : null;
+                if (pct == null || !isFinite(pct)) return; // no real score -> no record
                 lms_log_assessment_completion(submittedId, pct);
                 if (typeof update_lms_kpi === 'function') update_lms_kpi();
-            }, 1600);
+            });
             myApp.popup.close('.popup-assessment-que')
         }
         else {

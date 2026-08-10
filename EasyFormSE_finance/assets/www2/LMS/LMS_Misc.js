@@ -301,8 +301,16 @@ function lms_get_assessment_completion_log() {
     catch (e) { return []; }
 }
 
+// scorePct must be a REAL score obtained from the server (see
+// lms_assessment_score_pct). A null/NaN score is rejected rather than coerced:
+// "|| 0" would have silently recorded a 0% pass for an assessment whose score
+// simply wasn't known yet, which is a fabricated result, not a missing one.
+// This log feeds dashboard KPIs, so an absent entry is always preferable to an
+// invented one.
 function lms_log_assessment_completion(assessmentId, scorePct) {
     if (!assessmentId) return;
+    var pct = Number(scorePct);
+    if (scorePct == null || !isFinite(pct)) return;
     var id = String(assessmentId);
     var todayKey = new Date().toISOString().slice(0, 10);
     var log = lms_get_assessment_completion_log().filter(function (e) {
@@ -311,7 +319,7 @@ function lms_log_assessment_completion(assessmentId, scorePct) {
     log.push({
         id: id,
         date: new Date().toISOString(),
-        scorePct: Math.round(Number(scorePct) || 0)
+        scorePct: Math.round(pct)
     });
     localStorage.setItem('lms_assessment_completion_log', JSON.stringify(log));
 }
