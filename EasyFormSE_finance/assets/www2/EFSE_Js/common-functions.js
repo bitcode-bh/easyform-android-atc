@@ -45,9 +45,13 @@ function lms_clear_vapt_cache() {
                 }, function () { });
             }
         }
-        localStorage.removeItem('ml_video_cache_map');
-        localStorage.removeItem('ml_video_cache_order');
-        if (typeof LmsData !== 'undefined' && LmsData.clearAll) LmsData.clearAll();
+        if (typeof lms_clear_all_local_state === 'function') {
+            lms_clear_all_local_state();
+        } else {
+            localStorage.removeItem('ml_video_cache_map');
+            localStorage.removeItem('ml_video_cache_order');
+            if (typeof LmsData !== 'undefined' && LmsData.clearAll) LmsData.clearAll();
+        }
     } catch (e) { }
 }
 

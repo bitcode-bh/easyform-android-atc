@@ -149,20 +149,30 @@ function update_assessment_kpi() {
 }
 
 function get_assessments_listing(force_refresh) {
+    if (typeof lms_reset_listings_if_role_changed === 'function' && lms_reset_listings_if_role_changed()) {
+        force_refresh = true;
+    }
+    if (force_refresh) {
+        assessment_listing_requested = false;
+    }
     if (assessment_listing_requested && !force_refresh) {
         return;
     }
     assessment_listing_requested = true;
 
-    let role_id_array = localStorage.getItem('role_id_array');
+    let role_id = (typeof lms_get_active_role_id === 'function')
+        ? lms_get_active_role_id()
+        : localStorage.getItem('role_id_array');
 
     var Param_obj = [];
     Param_obj.push({
-        'Role_Id': role_id_array
+        'Role_Id': role_id
     });
 
     var lms_assess_url = global_wcf_url_lms + 'LMS_Select_Assessments_Master_RoleWise';
-    var lms_assess_cache_key = 'assessments_' + role_id_array;
+    var lms_assess_cache_key = (typeof lms_listing_cache_key === 'function')
+        ? lms_listing_cache_key('assessments', role_id)
+        : ('assessments_' + role_id);
 
     // Cache-first (see get_safety_module_listing); original path preserved as fallback.
     if (typeof LmsData !== 'undefined') {
@@ -180,7 +190,7 @@ function get_assessments_listing(force_refresh) {
                     LmsData.showError("#dv_Assessments_List", "get_assessments_listing(true)");
                 }
             },
-            { timeout: 15000, retries: 1 }
+            { timeout: 15000, retries: 1, force: !!force_refresh }
         );
         return;
     }
@@ -305,6 +315,8 @@ function assessment_update_submit_enabled(answered, total) {
 function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id, Progress) {
 
     glob_Assessment_Schedule_Id = Assessment_Schedule_Id;
+
+    if (typeof lms_start_assessment_watch === 'function') lms_start_assessment_watch(Assessment_Id);
 
     myApp.popup.open('.popup-assessment-que');
     $("#dv_Assessment_Question_List").empty();
@@ -593,7 +605,19 @@ function submit_question_by_assessment_id() {
         var status = myArray[0].status;
         if (status == 1) {
             if (submitBtn) submitBtn.textContent = '✓ Submitted';
+            if (typeof lms_flush_assessment_watch === 'function') lms_flush_assessment_watch();
+            var submittedId = $("#dv_Assessment_Question_List").attr("Assessment_Id");
             get_assessments_listing(true);
+            setTimeout(function () {
+                if (!submittedId || typeof lms_log_assessment_completion !== 'function') return;
+                var match = (typeof assessment_data !== 'undefined' && assessment_data)
+                    ? assessment_data.filter(function (a) { return String(a.Assessment_Id) === String(submittedId); })[0]
+                    : null;
+                var pct = (typeof lms_assessment_score_pct === 'function' && match)
+                    ? lms_assessment_score_pct(match) : 100;
+                lms_log_assessment_completion(submittedId, pct);
+                if (typeof update_lms_kpi === 'function') update_lms_kpi();
+            }, 1600);
             myApp.popup.close('.popup-assessment-que')
         }
         else {

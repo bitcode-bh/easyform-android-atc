@@ -20,6 +20,7 @@ file only summarizes.
 
 | Commit | Summary |
 |---|---|
+| *(uncommitted)* | **Partial** LMS listing/dashboard refresh work — user-scoped `LmsData` keys (`modules_<userId>_<roleId>` etc.), login backup only restored for same `user_id`, logout/full `lms_clear_all_local_state()`, fixed broken dashboard pull-to-refresh handlers (`get_safety_module_listing(true)` etc.), `LmsData.fetch({ force: true })` bypasses cache/inflight dedup, force API on LMS page load + tab switch + role change. **Still open on device:** newly assigned/removed modules, assessments, and micro-learning reels do not reliably update; dashboard KPIs can show stale values after user switch or admin assignment — see Pending below. |
 | `5393a69` | Quiz frozen header/footer layout (description pinned top, submit pinned bottom, only questions scroll), shared radio-only quiz option design, disabled-until-answered submit button, **real per-lesson scores** (was answered-count not correct-count), genuine "In Progress" lesson status, local-progress capped at 99 so watching alone can't mark Completed, real cached video duration preferred over the often-empty server field, **fixed async pause-event race** in watch-time tracking (item id captured at play-start, not at flush — was misattributing watch seconds to whichever module opened next), `video_progress_<Skill_Id>` keys preserved across login instead of resetting |
 | `827ca85` | Top-bar/page bg unification (one literal color, not three near-misses), filter chip redesign (counters → summary line), theme-color accents (selected chip/progress bars now track the live brand color instead of a server-driven site color), lesson list overhaul (time under thumbnail, real "In Progress" state, **fixed lesson scores that were showing answered-count instead of correct-count**), video-playback screen pinned player, quiz restyle shared between lesson video and Assessments (fixed a persistent focus-ring outline that looked like a selection border) |
 | `8c0852c` | Opaque rounded sticky header, YouTube-style duration badge |
@@ -41,6 +42,24 @@ Full detail (why, not just what) for each is in the local `CLAUDE.md`'s dedicate
 
 ## Pending / next
 
+- **Open bug, NOT fixed (reported 2026-08-10): LMS listings and dashboard do not reliably refresh**
+  when modules/assessments/micro-learning are assigned or removed, or when a different user logs in.
+  Symptoms: stale module/assessment counts on Dashboard, old cards still visible, new assignments
+  missing even after Home→LMS navigation or dashboard pull-to-refresh. Partial mitigations landed in
+  the uncommitted work (see Progress table) but **device verification still fails** — treat as open.
+  **Next investigation (before more patches):**
+  1. CDP/network trace on `LMS_Select_Module_RoleWise`, `LMS_Select_Assessments_Master_RoleWise`,
+     `LMS_Select_Micro_Learning_Master_RoleWise`, `LMS_Select_Dashboard` — confirm the API returns the
+     new list and that `apply_safety_modules` / `apply_assessments` / `apply_dashboard` run on the
+     `network` callback (not cache-only).
+  2. Confirm `Role_Id` sent matches active `storage.role_id` after Home role switch (not stale
+     `role_id_array` from login).
+  3. Check whether `safety_module_listing_requested` / `LmsData` inflight dedup still blocks the
+     second fetch when `document.ready` and `tab:show` both fire on LMS open.
+  4. Micro Learning has **no `LmsData` cache layer** — if reels don't update, the bug is API/role or
+     in-memory `ml_catalog_ml_ids` / reel render, not listing cache.
+  5. Dashboard KPIs mix **server** data (`LMS_Select_Dashboard` → `dashboard_kpi_data`) with **local**
+     watch-time/completion logs — stale KPIs may be local metrics not cleared even when listings refresh.
 - **Open bug, not yet fixed:** home module-card watch-time and in-lesson watch-time still don't agree
   (module 19's card showed `00:50` while both its lessons showed `00:00`, even after the `5393a69`
   play-start-attribution fix). These are two architecturally different metrics — card total is

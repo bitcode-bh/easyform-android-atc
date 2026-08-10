@@ -584,11 +584,13 @@ var total_reels = 0;
 var ml_catalog_ml_ids = null; // { Ml_id: true, ... } for videos currently in the library
 function get_micro_learning_videos() {
 
-    let role_id_array = localStorage.getItem('role_id_array');
+    let role_id = (typeof lms_get_active_role_id === 'function')
+        ? lms_get_active_role_id()
+        : localStorage.getItem('role_id_array');
 
     var Param_obj = [];
     Param_obj.push({
-        'Role_Id': role_id_array
+        'Role_Id': role_id
     });
 
     loading();

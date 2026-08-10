@@ -1061,6 +1061,7 @@ function updateuniquecode_android(invocation, res_type) {
             storage.setItem('contactno', JSON.stringify(Contact_Number));
             storage.setItem('server_date', JSON.stringify(server_date));
             storage.setItem('user_id', JSON.stringify(user_id));
+            finalize_login_lms_storage(user_id);
             storage.setItem('user_name', JSON.stringify(user));
             storage.setItem('company_id', JSON.stringify(Company_id));
             storage.setItem('role_id', JSON.stringify(role_id));
@@ -2538,6 +2539,37 @@ show_biometric = () => {
 }
 
 
+function finalize_login_lms_storage(newUserId) {
+    var backup = window._lmsLoginBackup || null;
+    window._lmsLoginBackup = null;
+    if (typeof lms_finalize_login_user === 'function') {
+        window._lmsLoginBackup = backup;
+        lms_finalize_login_user(newUserId);
+        return;
+    }
+    var prev = backup && backup._userId ? String(backup._userId) : '';
+    var next = newUserId != null && newUserId !== '' ? String(newUserId) : '';
+    if (prev && next && prev === next && backup) {
+        var keys = [
+            'lms_watch_seconds_modules', 'lms_watch_seconds_modules_daily', 'lms_watch_seconds_modules_by_item',
+            'lms_watch_seconds_skills', 'lms_watch_seconds_skills_by_item', 'lms_watch_seconds_skills_daily',
+            'lms_watch_seconds_ml', 'lms_watch_seconds_ml_daily',
+            'lms_watch_seconds_assessments', 'lms_watch_seconds_assessments_daily', 'lms_watch_seconds_assessments_by_item',
+            'lms_assessment_completion_log', 'lms_module_skill_index', 'lms_skill_total_seconds',
+            'lms_video_durations_modules', 'lms_video_durations_ml',
+            'lms_ml_quiz_correct', 'lms_ml_quiz_total', 'lms_ml_quiz_daily',
+            'ml_last_index', 'ml_muted', 'ml_answered_quizzes'
+        ];
+        keys.forEach(function (key) {
+            if (backup[key] != null) localStorage.setItem(key, backup[key]);
+        });
+        Object.keys(backup._video_progress || {}).forEach(function (k) {
+            localStorage.setItem(k, backup._video_progress[k]);
+        });
+    }
+    if (next) localStorage.setItem('lms_owner_user_id', next);
+}
+
 function clear_localStorage() {
 
     let global_url = JSON.parse(storage.getItem('global_url'));
@@ -2606,32 +2638,29 @@ function clear_localStorage() {
     let ml_last_index = localStorage.getItem('ml_last_index');
     let ml_muted = localStorage.getItem('ml_muted');
 
-    // LMS local watch-time / video-duration tracking (no backend field exists
-    // for these — see LMS_Misc.js) must survive login or it silently resets
-    // every time the user signs back in.
-    let lms_watch_seconds_modules = localStorage.getItem('lms_watch_seconds_modules');
-    let lms_watch_seconds_modules_daily = localStorage.getItem('lms_watch_seconds_modules_daily');
-    let lms_watch_seconds_modules_by_item = localStorage.getItem('lms_watch_seconds_modules_by_item');
-    let lms_watch_seconds_ml = localStorage.getItem('lms_watch_seconds_ml');
-    let lms_watch_seconds_ml_daily = localStorage.getItem('lms_watch_seconds_ml_daily');
-    let lms_video_durations_modules = localStorage.getItem('lms_video_durations_modules');
-    let lms_video_durations_ml = localStorage.getItem('lms_video_durations_ml');
-    let lms_ml_quiz_correct = localStorage.getItem('lms_ml_quiz_correct');
-    let lms_ml_quiz_total = localStorage.getItem('lms_ml_quiz_total');
-    let lms_ml_quiz_daily = localStorage.getItem('lms_ml_quiz_daily');
-
-    // video_progress_<Skill_Id> (per-lesson resume position + local watch
-    // progress, set_progress_local() in safety_modules.js) is a DYNAMIC key —
-    // one per lesson ever opened, not a single fixed name — so it can't be
-    // captured by the single get/set-by-name pattern above like the other LMS
-    // keys were. Left out of that list, every in-progress lesson's resume
-    // point and "In Progress" status would silently reset back to untouched on
-    // every login. Sweep every matching key instead so all of them survive.
-    let lms_video_progress_keys = {};
+    var lmsLoginBackup = { _userId: '', _video_progress: {} };
+    try {
+        var prevUid = JSON.parse(storage.getItem('user_id'));
+        if (prevUid != null && prevUid !== '') lmsLoginBackup._userId = String(prevUid);
+    } catch (e) { }
+    var lmsPersistKeys = [
+        'lms_watch_seconds_modules', 'lms_watch_seconds_modules_daily', 'lms_watch_seconds_modules_by_item',
+        'lms_watch_seconds_skills', 'lms_watch_seconds_skills_by_item', 'lms_watch_seconds_skills_daily',
+        'lms_watch_seconds_ml', 'lms_watch_seconds_ml_daily',
+        'lms_watch_seconds_assessments', 'lms_watch_seconds_assessments_daily', 'lms_watch_seconds_assessments_by_item',
+        'lms_assessment_completion_log', 'lms_module_skill_index', 'lms_skill_total_seconds',
+        'lms_video_durations_modules', 'lms_video_durations_ml',
+        'lms_ml_quiz_correct', 'lms_ml_quiz_total', 'lms_ml_quiz_daily',
+        'ml_last_index', 'ml_muted', 'ml_answered_quizzes'
+    ];
+    lmsPersistKeys.forEach(function (key) {
+        var val = localStorage.getItem(key);
+        if (val !== null) lmsLoginBackup[key] = val;
+    });
     for (let i = 0; i < localStorage.length; i++) {
         let k = localStorage.key(i);
         if (k && k.indexOf('video_progress_') === 0) {
-            lms_video_progress_keys[k] = localStorage.getItem(k);
+            lmsLoginBackup._video_progress[k] = localStorage.getItem(k);
         }
     }
 
@@ -2688,22 +2717,6 @@ function clear_localStorage() {
     localStorage.setItem('user_language', user_language);
     localStorage.setItem('deviceinfo', deviceinfo);
     localStorage.setItem('livelink_watched_Array', JSON.stringify(livelink_watched_Array));
-    
-    if (ml_last_index !== null) localStorage.setItem('ml_last_index', ml_last_index);
-    if (ml_muted !== null) localStorage.setItem('ml_muted', ml_muted);
 
-    if (lms_watch_seconds_modules !== null) localStorage.setItem('lms_watch_seconds_modules', lms_watch_seconds_modules);
-    if (lms_watch_seconds_modules_daily !== null) localStorage.setItem('lms_watch_seconds_modules_daily', lms_watch_seconds_modules_daily);
-    if (lms_watch_seconds_modules_by_item !== null) localStorage.setItem('lms_watch_seconds_modules_by_item', lms_watch_seconds_modules_by_item);
-    if (lms_watch_seconds_ml !== null) localStorage.setItem('lms_watch_seconds_ml', lms_watch_seconds_ml);
-    if (lms_watch_seconds_ml_daily !== null) localStorage.setItem('lms_watch_seconds_ml_daily', lms_watch_seconds_ml_daily);
-    if (lms_video_durations_modules !== null) localStorage.setItem('lms_video_durations_modules', lms_video_durations_modules);
-    if (lms_video_durations_ml !== null) localStorage.setItem('lms_video_durations_ml', lms_video_durations_ml);
-    if (lms_ml_quiz_correct !== null) localStorage.setItem('lms_ml_quiz_correct', lms_ml_quiz_correct);
-    if (lms_ml_quiz_total !== null) localStorage.setItem('lms_ml_quiz_total', lms_ml_quiz_total);
-    if (lms_ml_quiz_daily !== null) localStorage.setItem('lms_ml_quiz_daily', lms_ml_quiz_daily);
-
-    Object.keys(lms_video_progress_keys).forEach(function (k) {
-        localStorage.setItem(k, lms_video_progress_keys[k]);
-    });
+    window._lmsLoginBackup = lmsLoginBackup;
 }

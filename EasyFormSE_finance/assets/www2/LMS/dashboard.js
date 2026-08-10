@@ -41,10 +41,10 @@ function lms_render_apex_chart(elId, options, kind) {
 
 $(document).on('ptr:refresh', '.ptr-content', function (e) {
     try {
-        if (typeof get_safety_module_data === 'function') get_safety_module_data();
-        if (typeof get_assessment_data === 'function') get_assessment_data();
-        if (typeof get_micro_learning_data === 'function') get_micro_learning_data();
-        get_dashboard_data();
+        if (typeof get_safety_module_listing === 'function') get_safety_module_listing(true);
+        if (typeof get_assessments_listing === 'function') get_assessments_listing(true);
+        if (typeof get_user_activities === 'function') get_user_activities();
+        get_dashboard_data(true);
     } catch (err) { console.error(err); }
 
     setTimeout(function () {
@@ -125,13 +125,25 @@ function lms_trend_label_fmt(d) {
         : (d.getDate() + ' ' + d.toLocaleString('en-US', { month: 'short' }));
 }
 
+// Stable per-module key for dashboard activity rows — rewatches and extra lesson
+// submits for the same module must collapse to one completion.
+function lms_dashboard_module_key(rec) {
+    if (!rec) return null;
+    if (rec.Module_Id != null && rec.Module_Id !== '') return String(rec.Module_Id);
+    if (rec.Module_Schedule_Id != null && rec.Module_Schedule_Id !== '') return 'ms:' + rec.Module_Schedule_Id;
+    if (rec.Module_Name) return 'n:' + String(rec.Module_Name).trim().toLowerCase();
+    return null;
+}
+
 // Shared by the Modules chart AND its KPI cards so the two can never disagree —
 // both read the same day-bucketed dashboard_kpi_data over the same range.
+// Completions count UNIQUE modules per day (rewatches / extra lesson submits for
+// the same module do not add another tick).
 function lms_build_module_buckets(range) {
     var buckets = {};
     var cursor = new Date(range.start);
     while (cursor <= range.end) {
-        buckets[lms_date_key(cursor)] = { count: 0, scoreSum: 0 };
+        buckets[lms_date_key(cursor)] = { moduleScores: {} };
         cursor.setDate(cursor.getDate() + 1);
     }
     (dashboard_kpi_data || []).forEach(function (rec) {
@@ -139,8 +151,24 @@ function lms_build_module_buckets(range) {
         if (!d || d < range.start || d > range.end) return;
         var b = buckets[lms_date_key(d)];
         if (!b) return;
-        b.count += 1;
-        b.scoreSum += Number(rec.Achieve_Percentage) || 0;
+        var modKey = lms_dashboard_module_key(rec);
+        if (!modKey || !lms_is_active_dashboard_module(modKey)) return;
+        var modScore = (typeof lms_get_module_score_pct_by_id === 'function')
+            ? lms_get_module_score_pct_by_id(modKey) : null;
+        if (modScore != null) {
+            b.moduleScores[modKey] = modScore;
+        }
+    });
+    Object.keys(buckets).forEach(function (key) {
+        var b = buckets[key];
+        var mods = Object.keys(b.moduleScores);
+        b.count = mods.length;
+        b.scoreSum = 0;
+        b.scoreCount = 0;
+        mods.forEach(function (mk) {
+            b.scoreSum += b.moduleScores[mk];
+            b.scoreCount++;
+        });
     });
     return buckets;
 }
@@ -150,21 +178,112 @@ function lms_build_module_buckets(range) {
 // the chart is plotting for that same period.
 function lms_compute_module_range_totals() {
     var range = lms_trend_range_dates();
-    var buckets = lms_build_module_buckets(range);
-    var completions = 0, scoreSum = 0, scoreCount = 0, watchSeconds = 0;
+    var uniqueModules = {};
+    (dashboard_kpi_data || []).forEach(function (rec) {
+        var d = lms_parse_submitted_date(rec.SubmittedDate);
+        if (!d || d < range.start || d > range.end) return;
+        var modKey = lms_dashboard_module_key(rec);
+        if (!modKey || !lms_is_active_dashboard_module(modKey)) return;
+        var prev = uniqueModules[modKey];
+        if (!prev || d >= prev.date) {
+            uniqueModules[modKey] = { date: d };
+        }
+    });
+
+    var modKeys = Object.keys(uniqueModules);
+
+    // Same Score/TotalQuestion average as the Modules tab header — not a
+    // range-filtered lesson Achieve_Percentage rollup from dashboard rows.
+    var moduleKpi = (typeof lms_compute_completion_kpi === 'function' && typeof safety_module_data !== 'undefined')
+        ? lms_compute_completion_kpi(safety_module_data)
+        : { avgScorePct: 0 };
+
+    var watchSeconds = (typeof lms_sum_active_modules_watch_seconds_in_range === 'function')
+        ? lms_sum_active_modules_watch_seconds_in_range(range)
+        : 0;
+
+    return {
+        completions: modKeys.length,
+        avgScorePct: moduleKpi.avgScorePct,
+        watchSeconds: watchSeconds
+    };
+}
+
+function lms_dashboard_assessment_key(rec) {
+    if (!rec) return null;
+    return rec.id != null && rec.id !== '' ? String(rec.id) : null;
+}
+
+function lms_build_assessment_buckets(range) {
+    var buckets = {};
     var cursor = new Date(range.start);
     while (cursor <= range.end) {
-        var b = buckets[lms_date_key(cursor)];
-        completions += b.count;
-        if (b.count) { scoreSum += b.scoreSum; scoreCount += b.count; }
-        watchSeconds += (typeof lms_get_watch_seconds_daily === 'function')
-            ? lms_get_watch_seconds_daily('lms_watch_seconds_modules_daily', cursor) : 0;
+        buckets[lms_date_key(cursor)] = { assessmentScores: {} };
         cursor.setDate(cursor.getDate() + 1);
     }
+    (typeof lms_get_assessment_completion_log === 'function' ? lms_get_assessment_completion_log() : []).forEach(function (rec) {
+        var d = lms_parse_submitted_date(rec.date);
+        if (!d || d < range.start || d > range.end) return;
+        var b = buckets[lms_date_key(d)];
+        if (!b) return;
+        var key = lms_dashboard_assessment_key(rec);
+        if (!key || (typeof lms_is_active_dashboard_assessment === 'function' && !lms_is_active_dashboard_assessment(key))) return;
+        b.assessmentScores[key] = Number(rec.scorePct) || 0;
+    });
+    Object.keys(buckets).forEach(function (key) {
+        var b = buckets[key];
+        var ids = Object.keys(b.assessmentScores);
+        b.count = ids.length;
+        b.scoreSum = 0;
+        ids.forEach(function (id) { b.scoreSum += b.assessmentScores[id]; });
+    });
+    return buckets;
+}
+
+function lms_compute_assessment_range_totals() {
+    var range = lms_trend_range_dates();
+    var uniqueAssessments = {};
+    (typeof lms_get_assessment_completion_log === 'function' ? lms_get_assessment_completion_log() : []).forEach(function (rec) {
+        var d = lms_parse_submitted_date(rec.date);
+        if (!d || d < range.start || d > range.end) return;
+        var key = lms_dashboard_assessment_key(rec);
+        if (!key || (typeof lms_is_active_dashboard_assessment === 'function' && !lms_is_active_dashboard_assessment(key))) return;
+        var prev = uniqueAssessments[key];
+        if (!prev || d >= prev.date) {
+            uniqueAssessments[key] = { date: d, scorePct: Number(rec.scorePct) || 0 };
+        }
+    });
+
+    var assKeys = Object.keys(uniqueAssessments);
+    var scoreSum = 0, scoreCount = 0;
+    assKeys.forEach(function (id) {
+        scoreSum += uniqueAssessments[id].scorePct;
+        scoreCount++;
+    });
+
+    var watchSeconds = 0;
+    var cursor = new Date(range.start);
+    while (cursor <= range.end) {
+        watchSeconds += (typeof lms_get_watch_seconds_daily === 'function')
+            ? lms_get_watch_seconds_daily('lms_watch_seconds_assessments_daily', cursor) : 0;
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    var globalTime = (typeof lms_get_watch_seconds === 'function')
+        ? lms_get_watch_seconds('lms_watch_seconds_assessments') : 0;
+    var activeTime = (typeof lms_sum_active_assessments_watch_seconds === 'function')
+        ? lms_sum_active_assessments_watch_seconds() : globalTime;
+    if (globalTime > 0 && activeTime < globalTime) {
+        watchSeconds = watchSeconds * (activeTime / globalTime);
+    }
+
     return {
-        completions: completions,
+        completions: assKeys.length,
         avgScorePct: scoreCount > 0 ? Math.round(scoreSum / scoreCount) : 0,
-        watchSeconds: watchSeconds
+        timeSpentSeconds: watchSeconds,
+        totalQuestions: (typeof lms_sum_active_assessments_total_questions === 'function')
+            ? lms_sum_active_assessments_total_questions() : 0,
+        answeredQuestions: (typeof lms_sum_active_assessments_answered_questions === 'function')
+            ? lms_sum_active_assessments_answered_questions() : 0
     };
 }
 
@@ -175,6 +294,7 @@ function lms_compute_module_range_totals() {
 // Shows exactly ONE line at a time, matching whichever metric card below the
 // chart is selected (see select_lms_dashboard_metric).
 var lms_module_chart_metric = 'completions'; // 'completions' | 'score' | 'watchtime'
+var lms_assessment_chart_metric = 'completions';
 
 function render_lms_trend_chart() {
     var chartEl = document.getElementById('lms-trend-chart');
@@ -195,10 +315,10 @@ function render_lms_trend_chart() {
     while (cursor <= range.end) {
         var b = buckets[lms_date_key(cursor)];
         if (lms_module_chart_metric === 'score') {
-            data.push(b.count ? Math.round(b.scoreSum / b.count) : 0);
+            data.push(b.scoreCount ? Math.round(b.scoreSum / b.scoreCount) : 0);
         } else if (lms_module_chart_metric === 'watchtime') {
-            var daySeconds = (typeof lms_get_watch_seconds_daily === 'function')
-                ? lms_get_watch_seconds_daily('lms_watch_seconds_modules_daily', cursor) : 0;
+            var daySeconds = (typeof lms_get_module_daily_watch_seconds === 'function')
+                ? lms_get_module_daily_watch_seconds(cursor) : 0;
             data.push(Math.round(daySeconds / 60 * 10) / 10); // minutes, 1dp
         } else {
             data.push(b.count);
@@ -233,11 +353,78 @@ function render_lms_trend_chart() {
     lms_render_apex_chart('lms-trend-chart', options, 'modules');
 }
 
+function render_lms_assessment_trend_chart() {
+    var chartEl = document.getElementById('lms-trend-chart');
+    if (!chartEl) return;
+
+    var range = lms_trend_range_dates();
+    var buckets = lms_build_assessment_buckets(range);
+
+    var categories = [];
+    var cursor = new Date(range.start);
+    while (cursor <= range.end) {
+        categories.push(lms_trend_label_fmt(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+    }
+
+    var seriesName, data = [], tooltipSuffix = '';
+    cursor = new Date(range.start);
+    while (cursor <= range.end) {
+        var b = buckets[lms_date_key(cursor)];
+        if (lms_assessment_chart_metric === 'score') {
+            data.push(b.count ? Math.round(b.scoreSum / b.count) : 0);
+        } else if (lms_assessment_chart_metric === 'timespent') {
+            var daySeconds = (typeof lms_get_watch_seconds_daily === 'function')
+                ? lms_get_watch_seconds_daily('lms_watch_seconds_assessments_daily', cursor) : 0;
+            data.push(Math.round(daySeconds / 60 * 10) / 10);
+        } else {
+            data.push(b.count);
+        }
+        cursor.setDate(cursor.getDate() + 1);
+    }
+
+    var yMax;
+    if (lms_assessment_chart_metric === 'score') { seriesName = 'Score'; tooltipSuffix = '%'; yMax = 100; }
+    else if (lms_assessment_chart_metric === 'timespent') { seriesName = 'Time spent (min)'; tooltipSuffix = ' min'; }
+    else { seriesName = 'Completions'; }
+
+    var rangeLabelEl = document.getElementById('lms_trend_range_label');
+    if (rangeLabelEl) { rangeLabelEl.textContent = lms_trend_label_fmt(range.start) + ' – ' + lms_trend_label_fmt(range.end); }
+
+    if (typeof ApexCharts === 'undefined') return;
+
+    var options = {
+        chart: { type: 'area', height: 260, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'inherit', animations: { speed: 300 } },
+        series: [{ name: seriesName, data: data }],
+        xaxis: { categories: categories, labels: { rotate: 0, style: { fontSize: '11px' } }, tooltip: { enabled: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+        yaxis: { min: 0, max: yMax, forceNiceScale: !yMax, labels: { style: { fontSize: '11px' } } },
+        colors: ['#215ba8'],
+        stroke: { curve: 'smooth', width: 2.5 },
+        fill: { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.02, shadeIntensity: 1 } },
+        dataLabels: { enabled: false },
+        legend: { show: false },
+        grid: { borderColor: '#e3e6ea', strokeDashArray: 3, padding: { left: 4, right: 4 } },
+        tooltip: { y: { formatter: function (v) { return v + tooltipSuffix; } } }
+    };
+
+    lms_render_apex_chart('lms-trend-chart', options, 'assessments-trend');
+}
+
+function render_lms_assessment_question_coverage_chart() {
+    var answered = (typeof lms_sum_active_assessments_answered_questions === 'function')
+        ? lms_sum_active_assessments_answered_questions() : 0;
+    var total = (typeof lms_sum_active_assessments_total_questions === 'function')
+        ? lms_sum_active_assessments_total_questions() : 0;
+
+    lms_render_coverage_bar('lms-ml-coverage-chart', answered, total, function (v) { return String(Math.round(v)); }, ['Answered', 'Total']);
+}
+
 // Shared 2-bar comparison ("Watched" vs "Total") — used instead of a
 // pie/radial gauge everywhere in the LMS charts, per house style: graphs only.
-function lms_render_coverage_bar(elId, watchedVal, totalVal, valueFormatter) {
+function lms_render_coverage_bar(elId, watchedVal, totalVal, valueFormatter, categoryLabels) {
     var el = document.getElementById(elId);
     if (!el || typeof ApexCharts === 'undefined') return;
+    var categories = categoryLabels || ['Watched', 'Total'];
 
     var options = {
         // Same height as every other chart in this dashboard (260) so switching
@@ -245,7 +432,7 @@ function lms_render_coverage_bar(elId, watchedVal, totalVal, valueFormatter) {
         chart: { type: 'bar', height: 260, toolbar: { show: false }, fontFamily: 'inherit', animations: { speed: 300 } },
         series: [{ name: '', data: [watchedVal, totalVal] }],
         plotOptions: { bar: { borderRadius: 4, columnWidth: '45%', distributed: true } },
-        xaxis: { categories: ['Watched', 'Total'], labels: { style: { fontSize: '11px' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+        xaxis: { categories: categories, labels: { style: { fontSize: '11px' } }, axisBorder: { show: false }, axisTicks: { show: false } },
         // Auto-generated tick values (not the raw data) come with float noise
         // (e.g. 18.900000000000002) — round before formatting, independent of
         // the data-label/tooltip formatter which gets the already-clean values.
@@ -268,11 +455,17 @@ function lms_render_coverage_bar(elId, watchedVal, totalVal, valueFormatter) {
 // video time cards). Shares the chart element + instance with Micro
 // Learning's coverage view since only one category is shown at a time.
 function render_lms_module_video_coverage_chart() {
-    var watchSeconds = (typeof lms_get_watch_seconds === 'function') ? lms_get_watch_seconds('lms_watch_seconds_modules') : 0;
-    var totalCache = {};
-    try { totalCache = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { totalCache = {}; }
-    var totalSeconds = 0;
-    Object.keys(totalCache).forEach(function (id) { totalSeconds += totalCache[id]; });
+    var watchSeconds = (typeof lms_sum_active_modules_watch_seconds === 'function')
+        ? lms_sum_active_modules_watch_seconds()
+        : ((typeof lms_get_watch_seconds === 'function') ? lms_get_watch_seconds('lms_watch_seconds_modules') : 0);
+    var totalSeconds = (typeof lms_sum_active_modules_total_video_seconds === 'function')
+        ? lms_sum_active_modules_total_video_seconds() : 0;
+    if (totalSeconds <= 0) {
+        try {
+            var totalCache = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {};
+            Object.keys(totalCache).forEach(function (id) { totalSeconds += totalCache[id]; });
+        } catch (e) { }
+    }
 
     var watchMin = Math.round(watchSeconds / 60 * 10) / 10;
     var totalMin = Math.round(totalSeconds / 60 * 10) / 10;
@@ -292,8 +485,16 @@ function lms_render_selected_category_chart() {
     } else if (lms_dashboard_selected_category === 'Micro Learning') {
         lms_render_ml_chart_view();
     } else if (lms_dashboard_selected_category === 'Assessments') {
-        render_lms_assessment_score_chart();
+        lms_render_assessment_chart_view();
     }
+}
+
+function lms_render_assessment_chart_view() {
+    var chartEl = document.getElementById('lms-trend-chart');
+    var coverageEl = document.getElementById('lms-ml-coverage-chart');
+    if (chartEl) chartEl.style.display = '';
+    if (coverageEl) coverageEl.style.display = 'none';
+    render_lms_assessment_trend_chart();
 }
 
 // Modules shows one visualization at a time: the Completions/Score/Watch time
@@ -359,8 +560,13 @@ function select_lms_dashboard_metric(slot, el) {
         else if (slot === 4) lms_ml_chart_view = 'timecoverage';
         else return false;
         lms_render_ml_chart_view();
+    } else if (lms_dashboard_selected_category === 'Assessments') {
+        if (slot === 1) lms_assessment_chart_metric = 'completions';
+        else if (slot === 2) lms_assessment_chart_metric = 'score';
+        else return false;
+        lms_render_assessment_chart_view();
     } else {
-        return false; // Assessments has one fixed view (the score bar chart)
+        return false;
     }
     $('#lms_dashboard_context_kpi .lms-kpi-card.is-metric-selectable').removeClass('is-active');
     if (el) $(el).addClass('is-active');
@@ -540,14 +746,16 @@ function apply_dashboard(responseText) {
     lms_render_selected_category_chart();
 }
 
-function get_dashboard_data() {
+function get_dashboard_data(force_refresh) {
     var lms_dash_url = global_wcf_url_lms + 'LMS_Select_Dashboard';
-    var lms_dash_cache_key = 'dashboard';
+    var lms_dash_cache_key = (typeof lms_listing_cache_key === 'function')
+        ? lms_listing_cache_key('dashboard')
+        : 'dashboard';
     var Param_obj = [];
 
     // Cache-first (see get_safety_module_listing); original path preserved as fallback.
     if (typeof LmsData !== 'undefined') {
-        var had_cache = LmsData.getCache(lms_dash_cache_key) != null;
+        var had_cache = !force_refresh && LmsData.getCache(lms_dash_cache_key) != null;
         if (!had_cache) {
             LmsData.showSkeletons("#lms-trend-chart", 3);
         }
@@ -555,10 +763,10 @@ function get_dashboard_data() {
             function (txt, source) { apply_dashboard(txt); },
             function (err) {
                 if (!had_cache) {
-                    LmsData.showError("#lms-trend-chart", "get_dashboard_data()");
+                    LmsData.showError("#lms-trend-chart", "get_dashboard_data(true)");
                 }
             },
-            { timeout: 15000, retries: 1 }
+            { timeout: 15000, retries: 1, force: !!force_refresh }
         );
         return;
     }
@@ -601,16 +809,11 @@ function select_lms_dashboard_category(category, el) {
     // Modules/Micro Learning have a real chart; Assessments has the score bar
     // chart (no per-metric switching there, so no default to reset).
     lms_module_chart_metric = 'completions';
+    lms_assessment_chart_metric = 'completions';
     lms_ml_chart_view = 'trend';
 
-    // Week/Month/Custom only makes sense where there's a real per-day trend
-    // (Modules, Micro Learning's watch-time line) — Assessments has no date
-    // field, so the pills are inert there. Hide only the pill buttons via
-    // visibility (not display), and only on the pills themselves (not the
-    // whole row) — this keeps the row's height/position reserved so the
-    // chart below never jumps, while the range-label text (e.g. "2
-    // assessments") stays visible on the right.
-    var showsFilter = category === 'Modules' || category === 'Micro Learning';
+    // Week/Month/Custom applies to Modules, Assessments, and Micro Learning.
+    var showsFilter = category === 'Modules' || category === 'Micro Learning' || category === 'Assessments';
     var filterPills = document.getElementById('lms_trend_filter');
     if (filterPills) filterPills.style.visibility = showsFilter ? '' : 'hidden';
 
@@ -640,6 +843,7 @@ function render_lms_dashboard_context_kpi() {
     var card3 = document.getElementById('kpi_dashboard_metric3_card');
     var div3 = document.getElementById('kpi_dashboard_metric3_divider');
     var v4 = document.getElementById('kpi_dashboard_metric4');
+    var l4 = document.getElementById('kpi_dashboard_metric4_label');
     var card4 = document.getElementById('kpi_dashboard_metric4_card');
     var div4 = document.getElementById('kpi_dashboard_metric4_divider');
     if (!v1 || !v2 || typeof lms_compute_completion_kpi !== 'function') return;
@@ -667,16 +871,17 @@ function render_lms_dashboard_context_kpi() {
             l3.textContent = 'Watch time';
             v3.textContent = lms_format_watch_time(mt.watchSeconds);
         }
+        if (l4) l4.textContent = 'Total video time';
         if (v4) {
-            v4.textContent = lms_format_watch_time(totalFromCache('lms_video_durations_modules'));
+            var totalSec = (typeof lms_sum_active_modules_total_video_seconds === 'function')
+                ? lms_sum_active_modules_total_video_seconds() : totalFromCache('lms_video_durations_modules');
+            v4.textContent = lms_format_watch_time(totalSec);
         }
     } else if (lms_dashboard_selected_category === 'Assessments') {
-        // Assessments has no per-day data — its chart is a per-item score bar
-        // (not a range trend), so these stay simple all-time snapshots.
         var items = (typeof assessment_data !== 'undefined' ? assessment_data : []);
-        var k = lms_compute_completion_kpi(items);
-        l1.textContent = 'Completed'; v1.textContent = k.completedPct + '%';
-        l2.textContent = 'Avg score'; v2.textContent = k.avgScorePct + '%';
+        var ak = lms_compute_completion_kpi(items);
+        l1.textContent = 'Completed'; v1.textContent = ak.completedPct + '%';
+        l2.textContent = 'Avg score'; v2.textContent = ak.avgScorePct + '%';
         if (card3) card3.style.display = 'none';
         if (div3) div3.style.display = 'none';
         if (card4) card4.style.display = 'none';
@@ -696,6 +901,7 @@ function render_lms_dashboard_context_kpi() {
             l3.textContent = 'Watch time';
             v3.textContent = lms_format_watch_time(lms_get_watch_seconds('lms_watch_seconds_ml'));
         }
+        if (l4) l4.textContent = 'Total video time';
         if (v4) {
             v4.textContent = lms_format_watch_time(totalFromCache('lms_video_durations_ml'));
         }
@@ -708,13 +914,13 @@ function render_lms_dashboard_context_kpi() {
             : lms_module_chart_metric === 'watchtime' ? 3
             : lms_module_chart_metric === 'videocoverage' ? 4
             : 1;
+    } else if (lms_dashboard_selected_category === 'Assessments') {
+        activeSlot = lms_assessment_chart_metric === 'score' ? 2 : 1;
     } else if (lms_dashboard_selected_category === 'Micro Learning') {
         activeSlot = lms_ml_chart_view === 'coverage' ? 1
             : lms_ml_chart_view === 'score' ? 2
             : lms_ml_chart_view === 'timecoverage' ? 4
             : 3;
-    } else {
-        activeSlot = 0; // Assessments — nothing selectable, one fixed chart
     }
     $('#lms_dashboard_context_kpi .lms-kpi-card.is-metric-selectable').removeClass('is-active');
     if (activeSlot > 0) {

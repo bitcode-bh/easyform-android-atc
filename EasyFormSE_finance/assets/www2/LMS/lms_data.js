@@ -56,14 +56,21 @@ var LmsData = (function () {
         opts = opts || {};
         var timeout = opts.timeout || 15000;
         var maxRetries = opts.retries != null ? opts.retries : 1;
+        var force = opts.force === true;
 
-        var cached = getCache(cacheKey);
-        if (cached != null && onData) {
-            try { onData(cached, 'cache'); } catch (e) { }
+        var cached = null;
+        if (!force) {
+            cached = getCache(cacheKey);
+            if (cached != null && onData) {
+                try { onData(cached, 'cache'); } catch (e) { }
+            }
         }
 
         var dedupKey = url + '|' + paramsStr;
-        if (inflight[dedupKey]) return;             // a refresh for the same request is already running
+        if (inflight[dedupKey]) {
+            if (!force) return;                       // a refresh for the same request is already running
+            delete inflight[dedupKey];                // force: allow a fresh network fetch
+        }
         inflight[dedupKey] = true;
 
         var attempt = 0;
