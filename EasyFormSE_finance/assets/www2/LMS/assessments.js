@@ -293,6 +293,15 @@ function get_assessments_listing(force_refresh) {
     getdata.callOtherDomain();
 }
 
+// Replaces the old alert("All answers are required!") pattern: the button
+// itself is disabled/enabled as the user answers, so an incomplete submit is
+// simply not tappable rather than being caught after the fact with a popup.
+function assessment_update_submit_enabled(answered, total) {
+    var btn = document.getElementById('btn_assessment_submit');
+    if (!btn) return;
+    btn.classList.toggle('disabled', answered < total);
+}
+
 function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id, Progress) {
 
     glob_Assessment_Schedule_Id = Assessment_Schedule_Id;
@@ -301,6 +310,19 @@ function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id,
     $("#dv_Assessment_Question_List").empty();
 
     $("#dv_Assessment_Question_List").attr("Assessment_Id", Assessment_Id);
+
+    // Submit footer is now a persistent element (see LMS_Dashboard.html) rather
+    // than one freshly injected per assessment, so its state has to be reset
+    // explicitly here — otherwise a previous assessment's "Submitting…"/disabled
+    // state, or its visibility, would carry over into this one. Starts disabled
+    // — nothing is answered yet — and assessment_update_submit_enabled() turns
+    // it on once every question has a selection.
+    $("#assessment_submit_footer").hide();
+    var resetBtn = document.getElementById('btn_assessment_submit');
+    if (resetBtn) {
+        resetBtn.classList.add('disabled');
+        resetBtn.textContent = 'Submit';
+    }
 
     // Description at the top of the screen (replaces the old stepper/timer
     // header). Prefer the loaded record; fall back to the card's own text for
@@ -441,10 +463,19 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                 $("#dv_Assessment_Question_List").show();
             }
             else {
-                let btn_str = '<div id="vdo_btn_div" class="buttons-row">'
-                btn_str += '<a href="#" class="button button-fill" id="btn_assessment_submit" onclick="submit_question_by_assessment_id()">Submit</a>'
-                btn_str += '</div>'
-                $("#dv_Assessment_Question_List").append(btn_str);
+                // Button itself is static markup (#assessment_submit_footer, pinned
+                // to the bottom of the popup) — just reveal it, rather than
+                // injecting a fresh copy into the scrolling list each time.
+                $("#assessment_submit_footer").show();
+
+                function recomputeAnswered() {
+                    var answered = 0;
+                    document.querySelectorAll('#dv_Assessment_Question_List .question-card').forEach(function (c) {
+                        if (c.querySelector('input[type="radio"]:checked')) answered++;
+                    });
+                    if (qCurEl) qCurEl.textContent = answered;
+                    assessment_update_submit_enabled(answered, totalQ);
+                }
 
                 // Radios are single-select natively — just keep the "answered"
                 // counter in the header current as the user picks options.
@@ -457,12 +488,17 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                         var opt = this.closest('.option');
                         if (opt) opt.classList.add('selected');
                     }
-                    var answered = 0;
-                    document.querySelectorAll('#dv_Assessment_Question_List .question-card').forEach(function (c) {
-                        if (c.querySelector('input[type="radio"]:checked')) answered++;
-                    });
-                    if (qCurEl) qCurEl.textContent = answered;
+                    recomputeAnswered();
                 });
+
+                // Setting `checked` in the rendered HTML (resuming an assessment with
+                // prior answers) does NOT fire a 'change' event, so without this the
+                // button stayed stuck disabled on load even when every question already
+                // had an answer — confirmed live: it only started working after the
+                // first tap touched *any* radio, since that tap's change handler was
+                // the first time the count ever got recomputed. Runs once, immediately,
+                // off whatever the server actually returned.
+                recomputeAnswered();
             }
 
         }
@@ -495,6 +531,14 @@ function merge_question_data_assessments(template_data, log_data) {
 }
 
 function submit_question_by_assessment_id() {
+    // The button is disabled until every question is answered (see
+    // assessment_update_submit_enabled(), driven off the change handler in
+    // get_questionlog_by_assessment_id) and disabled buttons don't fire
+    // onclick, so this is a defensive fallback, not the normal path — no
+    // alert, just decline to submit silently.
+    var btnGuard = document.getElementById('btn_assessment_submit');
+    if (btnGuard && btnGuard.classList.contains('disabled')) return false;
+
     let Param_obj = [];
     let questionCards = $('#dv_Assessment_Question_List .question-card');
 
@@ -514,7 +558,6 @@ function submit_question_by_assessment_id() {
         let is_valid = 1;
         if (selectedAns.length == 0) {
             is_valid = 0;
-            alert("All answers are required!");
             return false;
         }
 

@@ -675,13 +675,28 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 
             $(".lession-count").html(data.length + " lessons - " + SubmitedSkill + " completed");
 
+            let lms_video_durations_cache = {};
+            try { lms_video_durations_cache = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { }
+
             for (let m = 0; m < data.length; m++) {
                 let Skill_Id = data[m].Skill_Id;
                 let Skill_Name = data[m].Skill_Name;
                 let Skill_Description = data[m].Skill_Description;
                 let Video_Link = data[m].Video_Link;
+                // The server's own Video_Time field is present in the schema but
+                // empty in practice (see lms_sum_video_durations's own comment) —
+                // prefer the real fetched duration this module's card total
+                // already uses (lms_video_durations_modules, keyed by Skill_Id,
+                // populated by lms_compute_module_total_video_time()) before
+                // falling back to the raw field, then to a bare placeholder.
+                // A module opened before that background fetch reaches it is
+                // topped up by the lms_sum_video_durations call below.
                 let Video_Time = data[m].Video_Time;
-                if (Video_Time == "" || Video_Time == null || Video_Time == undefined) {
+                let real_duration_sec = lms_video_durations_cache[String(Skill_Id)];
+                if (typeof real_duration_sec === 'number' && typeof lms_format_clock_time === 'function') {
+                    Video_Time = lms_format_clock_time(real_duration_sec);
+                }
+                else if (Video_Time == "" || Video_Time == null || Video_Time == undefined) {
                     Video_Time = "00:00";
                 }
                 let Thumbnail_link = data[m].Thumbnail_link;
@@ -777,6 +792,27 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
             }
 
             load_lesson_scores(Module_Id);
+
+            // Top up any durations this module's own background pass hasn't
+            // reached yet (shares the same cache key as
+            // lms_compute_module_total_video_time(), so nothing is fetched
+            // twice) and patch the placeholders in place once real numbers
+            // land — otherwise a module opened quickly after the list loads
+            // is stuck showing "00:00" for its lessons' total time forever.
+            if (typeof lms_sum_video_durations === 'function') {
+                lms_sum_video_durations('lms_video_durations_modules', data, 'Skill_Id', 'Video_Link', function () {
+                    var fresh_cache = {};
+                    try { fresh_cache = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { }
+                    $(".lesson-preview-list .lesson-preview-card").each(function () {
+                        var card = this;
+                        var skillId = card.getAttribute('data-skill-id');
+                        var dur = fresh_cache[skillId];
+                        if (typeof dur !== 'number' || typeof lms_format_clock_time !== 'function') return;
+                        card.setAttribute('data-video-time', lms_format_clock_time(dur));
+                    });
+                    if (typeof refresh_lesson_preview_rows === 'function') refresh_lesson_preview_rows();
+                });
+            }
         }
         else {
             $(".lession-count").html("0 lessons - 0 completed");
@@ -855,6 +891,13 @@ function refresh_lesson_preview_rows() {
             ? lms_get_lesson_effective_progress(Skill_Id, serverProgress)
             : Number(serverProgress) || 0;
 
+        // data-video-time is the source of truth for the displayed total — a
+        // caller can update the attribute (e.g. once a real fetched duration
+        // resolves, see the lms_sum_video_durations call in
+        // get_target_skill_by_module_id) and this reflects it in the DOM.
+        var totalEl = card.querySelector('.lesson-preview-total');
+        if (totalEl) totalEl.textContent = Video_Time;
+
         var elapsedEl = card.querySelector('.lesson-preview-elapsed');
         if (elapsedEl && typeof lms_format_clock_time === 'function') {
             elapsedEl.textContent = (eff >= 100)
@@ -888,6 +931,17 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
     safetyVideoReturnedFromFullscreen = false;
     myApp.popup.open('.popup-level-4');
     $("#dv_Question_List").empty();
+
+    // Submit footer is persistent markup now, so reset it per lesson — hidden
+    // until we know the lesson isn't already completed, disabled until every
+    // question is answered, and label restored in case the last submit left it
+    // reading "Submitting…".
+    $("#lesson_submit_footer").hide();
+    var lessonBtn = document.getElementById('btn_lesson_submit');
+    if (lessonBtn) {
+        lessonBtn.classList.add('disabled');
+        lessonBtn.textContent = 'Submit';
+    }
 
     $("#vdo_Question").attr("src", Video_Link);
     $("#vdo_Question").attr("skil_id", Skill_Id);
@@ -988,10 +1042,10 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
                     }
 
                     if (ans_label == op_text) {
-                        str += '<input type="checkbox" alt="' + weightage + '" id="' + skill_que_id + '_' + j + '" checked="checked" style="font-weight: bold">';
+                        str += '<input type="radio" name="skill_que_' + skill_que_id + '" alt="' + weightage + '" id="' + skill_que_id + '_' + j + '" checked="checked" style="font-weight: bold">';
                     }
                     else {
-                        str += '<input type="checkbox" alt="' + weightage + '" id="' + skill_que_id + '_' + j + '">';
+                        str += '<input type="radio" name="skill_que_' + skill_que_id + '" alt="' + weightage + '" id="' + skill_que_id + '_' + j + '">';
                     }
 
                     str += '<label for="' + skill_que_id + '_' + j + '">' + op_text + '</label>';
@@ -1003,30 +1057,32 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
             }
 
             if (Progress == "100") {
-                $("#dv_Question_List").find("input[type='checkbox']").attr("disabled", "disabled");
+                // Completed lesson: review mode, questions are visible immediately
+                // and there's nothing to submit, so no footer.
+                $("#dv_Question_List").find("input[type='radio']").attr("disabled", "disabled");
                 $("#dv_Question_List").show();
+                lms_sync_lesson_submit_footer(); // no-op visually (Progress 100 -> stays hidden), kept for consistency
             }
-            else {
-                let on_submit = "submit_question_by_skill_id('submit')";
-                let btn_str = '<div id="vdo_btn_div" class="buttons-row">'
-                btn_str += '<a href="#" class="button button-fill color-gray" onclick="' + on_submit + '">Submit</a>'
-                btn_str += '</div>'
-                $("#dv_Question_List").append(btn_str);
-            }
+            // NOT shown here for an unanswered lesson. #dv_Question_List is
+            // display:none until the video ends (safety_modules.css + the "ended"
+            // handler in LMS_Misc.js), and the submit footer is a sibling OUTSIDE
+            // that container — revealing it at load time put a Submit button on
+            // screen before the video had even played. lms_sync_lesson_submit_footer()
+            // ties the footer's visibility to the question list's instead.
 
-            document.querySelectorAll('.question-card').forEach(card => {
-                const checkboxes = card.querySelectorAll('input[type="checkbox"]');
-                // select only one option in checkbox
-                checkboxes.forEach(cb => {
-                    cb.addEventListener('change', function () {
-                        if (this.checked) {
-                            checkboxes.forEach(other => {
-                                if (other !== this) other.checked = false;
-                            });
-                        }
-                    });
-                });
+            // Radios are single-select natively via the shared per-question `name`
+            // above — no manual "uncheck the others" handler needed (that was only
+            // required back when these were checkboxes).
+
+            $("#dv_Question_List").off('change.lessonQuiz').on('change.lessonQuiz', 'input[type="radio"]', function () {
+                lms_update_lesson_submit_enabled();
             });
+
+            // A resumed lesson can render with prior answers already `checked` in
+            // the HTML — that never fires a 'change' event, so without this initial
+            // call the button stayed stuck disabled until the user touched any
+            // radio. Same bug and same fix as the Assessments quiz (assessments.js).
+            if (Progress != "100") lms_update_lesson_submit_enabled();
 
         }
         else {
@@ -1076,7 +1132,15 @@ var safety_quiz_mandatory_active = false;
 function safety_quiz_review() { return safety_quiz_progress == "100"; }
 
 function safety_quiz_start() {
-    if (!safety_quiz_data || !safety_quiz_data.length) { $("#dv_Question_List").show(); return; }
+    if (!safety_quiz_data || !safety_quiz_data.length) {
+        // No quiz data to run the full-screen modal with — fall back to
+        // whatever's in the inline list (there won't be any .question-card
+        // either in practice, but keep the footer's visibility consistent
+        // with the list's regardless).
+        $("#dv_Question_List").show();
+        lms_sync_lesson_submit_footer();
+        return;
+    }
     safety_quiz_index = 0;
     safety_quiz_answers = {};
     var v = document.getElementById('vdo_Question');
@@ -1228,20 +1292,53 @@ function safety_quiz_close() {
     return false;
 }
 
+// Companion to assessment_update_submit_enabled() (assessments.js) — same
+// disabled-until-complete pattern, kept as a separate function since this
+// button is freshly re-injected per lesson (assessments.js's is persistent).
+function lms_update_lesson_submit_enabled() {
+    var btn = document.getElementById('btn_lesson_submit');
+    if (!btn) return;
+    var allAnswered = true;
+    document.querySelectorAll('#dv_Question_List .question-card').forEach(function (c) {
+        if (!c.querySelector('input[type="radio"]:checked')) allAnswered = false;
+    });
+    btn.classList.toggle('disabled', !allAnswered);
+}
+
+// #lesson_submit_footer is a sibling of #dv_Question_List (pinned to the
+// bottom of the popup, outside the scrolling content), so it has no CSS
+// relationship to that container's own display:none/show() — it needs to be
+// told to match. Call this everywhere #dv_Question_List's visibility changes,
+// instead of showing/hiding the footer independently at each call site (that
+// mismatch is exactly what let it appear before the video had played).
+// Never shown in review mode (Progress 100 — nothing left to submit).
+function lms_sync_lesson_submit_footer() {
+    var visible = $("#dv_Question_List").is(':visible') && safety_quiz_progress != "100";
+    $("#lesson_submit_footer").toggle(visible);
+}
+
 function submit_question_by_skill_id(flag) {
+    // Defensive fallback: the button is disabled until every question is
+    // answered, so a real tap can't reach here while incomplete. Only guards
+    // the 'submit' flag — 'savenexit' intentionally allows a partial save.
+    if (flag == 'submit') {
+        var btnGuard = document.getElementById('btn_lesson_submit');
+        if (btnGuard && btnGuard.classList.contains('disabled')) return false;
+    }
+
     let Param_obj = [];
     let questionCards = $('#dv_Question_List .question-card');
 
     for (let i = 0; i < questionCards.length; i++) {
         let questionCard = questionCards[i];
         let questionName = questionCard.querySelector('.question-title').textContent.trim();
-        let checkboxes = questionCard.querySelectorAll('input[type="checkbox"]');
+        let options = questionCard.querySelectorAll('input[type="radio"]');
 
         let selectedAns = [];
 
-        for (let j = 0; j < checkboxes.length; j++) {
-            if (checkboxes[j].checked) {
-                selectedAns.push(checkboxes[j].nextElementSibling.textContent.trim());
+        for (let j = 0; j < options.length; j++) {
+            if (options[j].checked) {
+                selectedAns.push(options[j].nextElementSibling.textContent.trim());
             }
         }
 
@@ -1249,7 +1346,6 @@ function submit_question_by_skill_id(flag) {
         if (flag == 'submit') {
             if (selectedAns.length == 0) {
                 is_valid = 0;
-                alert("All answers are required!");
                 return false;
             }
         }
@@ -1260,7 +1356,7 @@ function submit_question_by_skill_id(flag) {
         }
 
         if (is_valid == 1) {
-            let firstId = checkboxes[0]?.id || "";
+            let firstId = options[0]?.id || "";
             let Skill_Que_Id = $(questionCard).find('.question-title').attr('skill_que_id');
             let is_active = $(questionCard).find('.question-title').attr('IsActive');
 

@@ -2620,6 +2620,21 @@ function clear_localStorage() {
     let lms_ml_quiz_total = localStorage.getItem('lms_ml_quiz_total');
     let lms_ml_quiz_daily = localStorage.getItem('lms_ml_quiz_daily');
 
+    // video_progress_<Skill_Id> (per-lesson resume position + local watch
+    // progress, set_progress_local() in safety_modules.js) is a DYNAMIC key —
+    // one per lesson ever opened, not a single fixed name — so it can't be
+    // captured by the single get/set-by-name pattern above like the other LMS
+    // keys were. Left out of that list, every in-progress lesson's resume
+    // point and "In Progress" status would silently reset back to untouched on
+    // every login. Sweep every matching key instead so all of them survive.
+    let lms_video_progress_keys = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        let k = localStorage.key(i);
+        if (k && k.indexOf('video_progress_') === 0) {
+            lms_video_progress_keys[k] = localStorage.getItem(k);
+        }
+    }
+
     window.localStorage.clear();
     $.jStorage.flush();
 
@@ -2687,4 +2702,8 @@ function clear_localStorage() {
     if (lms_ml_quiz_correct !== null) localStorage.setItem('lms_ml_quiz_correct', lms_ml_quiz_correct);
     if (lms_ml_quiz_total !== null) localStorage.setItem('lms_ml_quiz_total', lms_ml_quiz_total);
     if (lms_ml_quiz_daily !== null) localStorage.setItem('lms_ml_quiz_daily', lms_ml_quiz_daily);
+
+    Object.keys(lms_video_progress_keys).forEach(function (k) {
+        localStorage.setItem(k, lms_video_progress_keys[k]);
+    });
 }

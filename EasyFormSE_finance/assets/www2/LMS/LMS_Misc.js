@@ -149,13 +149,18 @@ function lms_get_lesson_local_record(skillId) {
 // The skill-listing API only ever reports Progress as 0 or 100 — it flips to 100
 // on quiz submit and stays 0 until then, so a part-watched lesson is
 // indistinguishable from an untouched one and could never show "In Progress".
-// Local playback progress fills that gap; the server still wins once it says
-// the lesson is complete.
+// Local playback progress fills that gap, but it must never be able to signal
+// 100 on its own: "Completed" has to mean the quiz was submitted, not that the
+// video was watched to the end. video_progress_<id>.Progress is
+// (currentTime/duration)*100 — a viewer who watches the whole video without
+// ever touching the quiz would otherwise read as Completed (checkmark, status,
+// and load_lesson_scores() would fetch a score for a lesson never submitted).
+// Capped at 99 so it can only ever push the lesson into "In Progress".
 function lms_get_lesson_effective_progress(skillId, serverProgress) {
     var server = Number(serverProgress) || 0;
     if (server >= 100) return 100;
     var rec = lms_get_lesson_local_record(skillId);
-    var local = rec ? (Number(rec.Progress) || 0) : 0;
+    var local = rec ? Math.min(Number(rec.Progress) || 0, 99) : 0;
     return Math.max(server, local);
 }
 
@@ -254,29 +259,41 @@ function lms_set_info_value(el, text) {
 // Attach once per <video> element — accumulates the wall-clock gap between
 // "play" and the next "pause"/"ended", regardless of which code path called
 // .play()/.pause() (native controls, custom buttons, or programmatic).
-// itemIdAttr (optional): a DOM attribute name (e.g. "module_id") read at
-// flush time, so the same elapsed seconds are also credited to that item's
-// own per-item bucket (see lms_add_watch_seconds_by_item) — read at flush
-// rather than at play-start since the shared video element's attributes only
-// change between lessons, never mid-play.
+// itemIdAttr (optional): a DOM attribute name (e.g. "module_id") whose value is
+// captured AT PLAY-START, so the elapsed seconds are also credited to that
+// item's own per-item bucket (see lms_add_watch_seconds_by_item).
+//
+// Captured at play-start rather than read at flush time because the "pause"
+// event is ASYNCHRONOUS (verified live: pause() followed by an immediate
+// attribute reassignment fires the handler AFTER the reassignment). This
+// element is shared across every lesson, and closing one lesson to open
+// another does exactly that — pause(), then get_questionlog_by_skill_id()
+// overwrites skil_id/module_id. Reading at flush therefore credited the
+// just-watched seconds to the NEXT lesson's module: the module card showed
+// watch time its own lessons never accounted for.
 function lms_track_watch_time(videoEl, storageKey, itemIdAttr) {
     if (!videoEl || videoEl._lmsWatchTracked) return;
     videoEl._lmsWatchTracked = true;
     var playStartedAt = null;
+    var playStartedItemId = null;
 
     function flush() {
         if (playStartedAt === null) return;
         var elapsed = (Date.now() - playStartedAt) / 1000;
+        var itemId = playStartedItemId;
         playStartedAt = null;
+        playStartedItemId = null;
         lms_add_watch_seconds(storageKey, elapsed);
         lms_add_watch_seconds_daily(storageKey + '_daily', elapsed);
-        if (itemIdAttr) {
-            var itemId = videoEl.getAttribute(itemIdAttr);
-            if (itemId) lms_add_watch_seconds_by_item(storageKey, itemId, elapsed);
+        if (itemIdAttr && itemId) {
+            lms_add_watch_seconds_by_item(storageKey, itemId, elapsed);
         }
     }
 
-    $(videoEl).on('play', function () { playStartedAt = Date.now(); });
+    $(videoEl).on('play', function () {
+        playStartedAt = Date.now();
+        playStartedItemId = itemIdAttr ? videoEl.getAttribute(itemIdAttr) : null;
+    });
     $(videoEl).on('pause ended', flush);
 }
 
@@ -466,6 +483,16 @@ $(document).ready(function () {
         set_progress();
     });
 
+    // Otherwise a manual seek/scrub only gets captured by the 10s interval
+    // (set_progress()) or on pause/close — up to a 10s window where the
+    // resume position and effective-progress ("In Progress" vs "Completed")
+    // don't reflect where the user actually dragged to. "seeked" (not
+    // "seeking") fires once the scrub settles, so this doesn't fire on every
+    // intermediate frame while dragging.
+    $(video).on("seeked", function () {
+        set_progress_local();
+    });
+
     lms_track_watch_time(video, 'lms_watch_seconds_modules', 'module_id');
 
     // clear timer properly
@@ -476,6 +503,7 @@ $(document).ready(function () {
             safety_quiz_start();
         } else {
             $("#dv_Question_List").show();
+            if (typeof lms_sync_lesson_submit_footer === 'function') lms_sync_lesson_submit_footer();
         }
         set_progress_local();
         clearInterval(progressInterval);
@@ -498,6 +526,7 @@ $(document).on("click", ".link.popup-close", function () {
         safetyModulePreviewActive = false;
     }
     $("#dv_Question_List").hide();
+    $("#lesson_submit_footer").hide();
     set_progress_local();
 
     var video = $("#vdo_Question")[0];
@@ -528,6 +557,11 @@ $(document).on("popup:closed", ".popup-level-4", function () {
 $(document).on("popup:close", ".popup-level-4", function () {
     try {
         if (typeof safety_quiz_close_modal === 'function') safety_quiz_close_modal();
+        // Any close route, not just the "Close" link's own handler below —
+        // matches this handler's own reason for existing (hardware back, swipe,
+        // programmatic close all bypass a plain click handler).
+        $("#dv_Question_List").hide();
+        $("#lesson_submit_footer").hide();
         var v = $("#vdo_Question")[0];
         if (v) {
             set_progress_local(); // capture the resume position before pausing

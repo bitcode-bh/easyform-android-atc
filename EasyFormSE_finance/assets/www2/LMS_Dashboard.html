@@ -564,6 +564,13 @@
 
 
                     </div>
+
+                    <!-- Submit footer, same pinned-bottom treatment as the Assessments
+                         quiz. Sibling of .page-content so it is a flex row of .page
+                         rather than the last item inside the scrolling list. -->
+                    <div class="quiz-submit-footer" id="lesson_submit_footer" style="display:none">
+                        <a href="#" class="button button-fill" id="btn_lesson_submit" onclick="submit_question_by_skill_id('submit')">Submit</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -640,13 +647,17 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Description top bar — a sibling of .page-content, NOT inside it.
+                         It was previously a position:sticky element within the scroll
+                         area, which pinned it correctly but let question content pass
+                         underneath it (sticky elements overlap; they don't reserve
+                         space). As a flex row of .page it occupies its own band, so
+                         the list scrolls below it instead of behind it. -->
+                    <div class="quiz-desc-header" id="assessment_Description"></div>
+
                     <div class="page-content p-3">
 
                         <div class="que-container">
-
-                            <!-- Assessment description, mirroring the lesson video screen's
-                                 #vdo_Description. Replaces the old stepper/timer quiz header. -->
-                            <div class="pill-card" id="assessment_Description"></div>
 
                             <!-- Retained (hidden) so the stepper/timer wiring in assessments.js
                                  keeps working without null checks; the counter is no longer shown. -->
@@ -687,6 +698,17 @@
                         </div>
 
 
+                    </div>
+
+                    <!-- Submit footer -- a sibling of .page-content (the actual scroll
+                         container, confirmed live via CDP), not a child of it, so it's
+                         pinned at the bottom of the popup while only the question list
+                         scrolls above it. Static/persistent rather than injected per
+                         question set, so assessments.js resets its state (enabled,
+                         "Submit" label) on each open instead of relying on a fresh
+                         element replacing a stale one. -->
+                    <div class="quiz-submit-footer" id="assessment_submit_footer" style="display:none">
+                        <a href="#" class="button button-fill" id="btn_assessment_submit" onclick="submit_question_by_assessment_id()">Submit</a>
                     </div>
                 </div>
             </div>
