@@ -6,6 +6,11 @@
 ##
 ##############################################################################
 
+# [LOCAL-BUILD WORKAROUND — DO NOT COMMIT] point JDK17 for this Mac
+if [ -z "$JAVA_HOME" ] && [ -d "/Users/anupsharma/.jdks/jdk-17.0.19+10/Contents/Home" ]; then
+    export JAVA_HOME="/Users/anupsharma/.jdks/jdk-17.0.19+10/Contents/Home"
+fi
+
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 DEFAULT_JVM_OPTS=""
 

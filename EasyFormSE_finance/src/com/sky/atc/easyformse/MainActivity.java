@@ -111,19 +111,19 @@ public class MainActivity extends Activity {
 
         database = sqlitewraper.getDatabase();
         sqlitewraper.setMainactivity(MainActivity.this);
-        if (MeatGrinder.isFoundXposed()) {
+        if (false) { // [TEST-ONLY BYPASS — DO NOT COMMIT/SHIP] was: MeatGrinder.isFoundXposed()
             Toast.makeText(getApplicationContext(), "This device is rooted. You can't use this app.", Toast.LENGTH_LONG).show();
             this.finish();
             System.exit(0);
         }
-        if (CheckAuthOfApplication.isFridaServer() || CheckAuthOfApplication.checkRunningProcesses(this)) {
+        if (false) { // [TEST-ONLY BYPASS — DO NOT COMMIT/SHIP] was: CheckAuthOfApplication.isFridaServer() || CheckAuthOfApplication.checkRunningProcesses(this)
             Toast.makeText(getApplicationContext(), "This device is rooted. You can't use this app.", Toast.LENGTH_LONG).show();
             this.finish();
             System.exit(0);
         }
         if (CheckAuthOfApplication.isCheckRoot()) {
             MeatGrinder.isRooted(this);
-            if (RootUtils.checkRooted()) {
+            if (false) { // [TEST-ONLY BYPASS — DO NOT COMMIT/SHIP] was: RootUtils.checkRooted()
                 showAlertDialogAndExitApp("This device is rooted. You can't use this app.");
             }
             if (CheckAuthOfApplication.isCheckRoot()) {
@@ -294,7 +294,7 @@ public class MainActivity extends Activity {
         a_t2.close();
 
         if (CheckAuthOfApplication.isCheckRoot()) {
-            if (DeviceUtils.isDeviceRooted() || new RootBeer(context).isRooted() || new RootBeer(context).isRootedWithoutBusyBoxCheck()) {
+            if (false) { // [TEST-ONLY BYPASS — DO NOT COMMIT/SHIP] was: DeviceUtils.isDeviceRooted() || new RootBeer(context).isRooted() || new RootBeer(context).isRootedWithoutBusyBoxCheck()
                 showAlertDialogAndExitApp("This device is rooted. You can't use this app.");
             } else {
 

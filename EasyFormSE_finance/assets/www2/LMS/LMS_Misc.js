@@ -489,7 +489,18 @@ $(document).ready(function () {
     // don't reflect where the user actually dragged to. "seeked" (not
     // "seeking") fires once the scrub settles, so this doesn't fire on every
     // intermediate frame while dragging.
-    $(video).on("seeked", function () {
+    //
+    // "pause" is bound here too — this is the ONLY save path that fires on a
+    // bare native pause (tapping the native control, or the WebView auto-
+    // pausing when the app is backgrounded/screen-locked/interrupted by a
+    // call). Every other save point (play-start, seeked, ended, the explicit
+    // popup-close handlers) requires an app-level route that a background
+    // interruption bypasses entirely. lms_track_watch_time already binds its
+    // own flush to raw "pause ended" for the same reason (see its comment
+    // above) — the module card's watch-time badge was updating correctly
+    // while this per-lesson resume position stayed stuck at 0 until this was
+    // added, because only the former was actually listening for a bare pause.
+    $(video).on("pause seeked", function () {
         set_progress_local();
     });
 
