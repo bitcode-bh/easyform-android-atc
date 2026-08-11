@@ -31,7 +31,13 @@ session/agent picking up LMS work.
 
 6. **Build & deploy** from this worktree (see [Build & device](#build--device)).
 
-7. **Optional:** if a local `CLAUDE.md` exists in this worktree, it has longer session history and
+7. **Never send a raw APK file or share a debug build without a distribution channel** — Chat/Gmail
+   auto-remove it as malware, and tap-installing it gets blocked by Play Protect. Use
+   [Distributing QA builds](#distributing-qa-builds-2026-08-11) (Firebase App Distribution). This is
+   not a bug to fix client-side — the permission audit in that section confirmed the app's real
+   permission set is inherent to genuine features.
+
+8. **Optional:** if a local `CLAUDE.md` exists in this worktree, it has longer session history and
    Mac-specific notes (gitignored).
 
 ---
@@ -76,6 +82,26 @@ device and a release build is safe by construction rather than by checklist.
 > and hardcoded to `true` / `false` — they are NOT wired to the Gradle `buildConfigField` of the same
 > name. That mismatch is why a crude `if (false)` was used in the first place.
 
+### Manifest permission audit (2026-08-11, `8107b33`)
+
+Investigated after real-device Play Protect blocks (see "Distributing QA builds" below) — for each
+permission that looked like it could be part of the risk cluster, confirmed whether live code
+actually uses it before touching anything.
+
+| Permission | Status | Used by |
+|---|---|---|
+| `READ_PRIVILEGED_PHONE_STATE` | **Removed (`8107b33`)** | Nothing — signature/system-only permission a third-party app can never be granted; zero code references |
+| `SEND_SMS` | **Kept — genuinely used** | Fall-detection SOS alert (`FallAlertActivity`), trip/driving safety (`TripMapUi`) |
+| `SYSTEM_ALERT_WINDOW` | **Kept — genuinely used** | `FloatingBubbleService` (trip-tracking floating bubble) |
+| `REQUEST_INSTALL_PACKAGES` | **Kept — genuinely used** | In-app self-update (`AppDownloadActivity`) |
+| `RECEIVE_BOOT_COMPLETED` + `BootReceiver` | **Kept — genuinely used** | Redraws geofences on reboot |
+| `ACCESS_BACKGROUND_LOCATION` | **Kept — genuinely used** | Field-worker tracking (`TripMapUi`, `MainActivity`, `ph_s`) |
+
+**Conclusion: this app's real permission cluster (SMS + overlay + install-packages + boot receiver +
+background location) is inherent to its actual safety/tracking features, not vestigial.** There is
+no client-side permission trim that makes this "Play Protect safe" without removing a real feature —
+see "Distributing QA builds" below for what actually unblocks installs instead.
+
 ---
 
 ## Build & device
@@ -94,6 +120,53 @@ adb shell am start -n com.easyform.atctesting/com.sky.atc.easyformse.MainActivit
 - **Login is manual** — never auto-enter credentials. Reinstall sends user back to login.
 - **CDP:** `adb forward tcp:9222 localabstract:chrome_devtools_remote` → inspect
   `LMS_Dashboard.html` / `selection.html` WebViews.
+
+---
+
+## Distributing QA builds (2026-08-11)
+
+**Do not send the raw `.apk` file directly** (Chat/Gmail attachment) — Google's scanner treats an
+unpublished, debug-signed APK with this app's permission set (see the manifest audit above) as
+malware and silently removes it on upload. Separately, tap-installing that same file on a phone
+gets blocked by **Play Protect's live scan** (confirmed via logcat: `com.android.vending`'s
+`PackageVerificationReceiver` fires and blocks the install) — neither is a bug in this branch, both
+are Google's reputation system reacting to a genuinely unpublished package + real permission cluster.
+Reducing the manifest further isn't the fix (see above); **the fix is the distribution channel.**
+
+**Use Firebase App Distribution instead** — testers install through Google's own trusted pipeline,
+which sidesteps both problems:
+
+- Firebase project: **`bitcode-mwfm`** (owner: `bitcode.bh@gmail.com`) — a fresh project made for
+  this purpose, separate from the app's existing Crashlytics/push project (`wipro-86aed`, whose
+  `google-services.json` is what's checked into the repo; `bitcode.bh@gmail.com` does not have
+  access to that org's project, hence the new one).
+- Registered app: `com.easyform.atctesting` → App ID `1:188691984700:android:3db2ac1f17f48a069fae39`
+- CLI: `npm install -g firebase-tools`, then `firebase login` (interactive browser auth — cannot be
+  scripted, has to be done by whoever owns the distributing account).
+
+```bash
+# One-time: add a tester
+firebase appdistribution:testers:add someone@example.com --project bitcode-mwfm
+
+# Upload + distribute (re-running with an unchanged APK just grants access
+# to new testers without re-uploading — safe to re-run after adding testers)
+firebase appdistribution:distribute \
+  EasyFormSE_finance/build/outputs/apk/debug/EasyFormSE_finance-debug.apk \
+  --app "1:188691984700:android:3db2ac1f17f48a069fae39" \
+  --testers "email1@x.com,email2@x.com" \
+  --release-notes "..." \
+  --project bitcode-mwfm
+```
+
+**Current testers:** `bitcode.bh@gmail.com`, `rahul.sharma@skyproductivity.com`,
+`mukesh.m@skyproductivity.com`, `jayanti.suthar@skyproductivity.com`.
+
+**What this does and doesn't fix:** solves the sharing block completely, and likely reduces the
+Play Protect warning (install goes through the Firebase App Tester app instead of a bare file tap).
+**Does not remove the underlying cause** — still debug-signed, security checks still off, still an
+unpublished package. A tester may still see a Play Protect warning; the actual fix for that is the
+release-build conversion in "Release blockers" above, which needs the real release keystore this Mac
+doesn't have.
 
 ---
 
@@ -304,6 +377,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `8107b33` | Remove unused `READ_PRIVILEGED_PHONE_STATE` permission — the only manifest permission with zero code references; everything else in the flagged cluster confirmed genuinely load-bearing (see the manifest audit above) |
 | `07d22b5` | `LmsBackend` server-progress integration seam (auto-detecting, inert until the backend ships the fields) + real user-facing message in `onfail()` instead of alerting the raw XHR object |
 | `0ee7e3c` | `LMS_API_SPEC.md` — prioritised (P0–P3) backend requirements, written from a live audit of the UAT API |
 | `e3e9aa4` | Never record a fabricated assessment score (hardcoded `100` fallback + `\|\| 0` coercion both removed) |
@@ -357,6 +431,9 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 ---
 
-*Last updated: 2026-08-11 — after `07d22b5`. LMS verified working against UAT test data (3 modules,
+*Last updated: 2026-08-11 — after `8107b33`. LMS verified working against UAT test data (3 modules,
 2 assessments, 3 reels, no errors); watch-time, role and fabricated-score bugs fixed and verified
-on-device. Remaining work is backend-dependent (`LMS_API_SPEC.md`) plus the release blockers above.*
+on-device. Manifest permission audit done — one dead permission removed, the rest confirmed
+load-bearing. QA distribution moved to Firebase App Distribution (project `bitcode-mwfm`) after
+confirming raw-APK sharing gets removed as malware and sideloaded installs get blocked by Play
+Protect. Remaining work is backend-dependent (`LMS_API_SPEC.md`) plus the release blockers above.*
