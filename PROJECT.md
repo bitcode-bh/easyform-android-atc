@@ -15,17 +15,23 @@ session/agent picking up LMS work.
 
 2. **UI scope:** `EasyFormSE_finance/assets/www2/` — Cordova WebView app (Framework7 9 + jQuery).
 
-3. **Top priority open bug:** LMS listings and dashboard **do not reliably refresh** when content is
-   assigned/removed or when a different user logs in. Commit `56c957c` added partial mitigations;
-   **device verification still fails** — see [Open bugs](#open-bugs-prioritized).
+3. **⛔ This branch cannot be released as-is.** Commit `1334d16` committed the TEST-ONLY security
+   bypasses: four disabled root/anti-tamper checks in `MainActivity.java` plus a UAT/debug build
+   config. See [Release blockers](#release-blockers-must-fix-before-any-production-build). Older
+   notes claiming these are "uncommitted" are wrong.
 
-4. **Before patching again:** trace the four listing APIs over CDP/network (see investigation
-   checklist). Do not add more cache layers until you know whether the API response or the apply
-   callback is wrong.
+4. **Role Ids: never send a single role to a listing API.** `*_RoleWise` endpoints take the
+   comma-separated `role_id_array` and return the union. Use `lms_get_listing_role_ids()`, never
+   `lms_get_active_role_id()`, for an API `Role_Id`. Sending one role empties the whole LMS for
+   multi-role users; this has already been broken once (`56c957c`) and fixed (`c9a83b8`).
 
-5. **Build & deploy** from this worktree (see [Build & device](#build--device)).
+5. **Never fabricate a value to fill a gap.** Unknown must stay unknown — no estimates, no
+   placeholder scores, no deriving a resume position from a percentage. Two real bugs came from
+   exactly that (`e3e9aa4`, and the reverted seed logic described in `LMS_API_SPEC.md`).
 
-6. **Optional:** if a local `CLAUDE.md` exists in this worktree, it has longer session history and
+6. **Build & deploy** from this worktree (see [Build & device](#build--device)).
+
+7. **Optional:** if a local `CLAUDE.md` exists in this worktree, it has longer session history and
    Mac-specific notes (gitignored).
 
 ---
@@ -36,6 +42,39 @@ session/agent picking up LMS work.
 `bitcode.bh/lms-ui-improvements` (base `b60360d`). **Not merged back** to user's branch yet.
 
 Package on device (test build): `com.easyform.atctesting` (UAT `mwfm-uat.altiusinfra.com`).
+
+---
+
+## Release blockers (must fix before any production build)
+
+These are **committed on this branch** (swept in by `1334d16`, a checkpoint commit). A release
+built from this branch today ships with device security disabled, under the test package id,
+pointed at UAT, signed with a debug key.
+
+| Item | Current (test) | Production |
+|---|---|---|
+| `MainActivity.java` L114 | `if (false)` — Xposed detection disabled | `MeatGrinder.isFoundXposed()` |
+| `MainActivity.java` L119 | `if (false)` — Frida / process scan disabled | `CheckAuthOfApplication.isFridaServer() \|\| checkRunningProcesses(this)` |
+| `MainActivity.java` L126 | `if (false)` — root check disabled | `RootUtils.checkRooted()` |
+| `MainActivity.java` L297 | `if (false)` — root check disabled | `DeviceUtils.isDeviceRooted() \|\| RootBeer(...).isRooted() \|\| ...isRootedWithoutBusyBoxCheck()` |
+| `build.gradle` applicationId | `com.easyform.atctesting` | `com.easyform.atcpv` |
+| `build.gradle` URLs | `mwfm-uat.altiusinfra.com` | `atcmwfm.americantower.com` (OCR already prod) |
+| `build.gradle` signing | falls back to `easyform-debug.jks` | real release keystore (**secret — ask the owner**) |
+| `AndroidManifest.xml` | `usesCleartextTraffic="true"` | `false` (all URLs are https) |
+| `res/xml/network_security_config.xml` | trusts user CAs, **unreferenced/dead** | delete |
+
+**The bypasses exist because the test handset (CPH2717) is rooted** — restoring them stops the app
+launching there, which ends on-device testing. Do not silently flip them.
+
+**Recommended fix** — the project already has the right mechanism and the bypasses ignored it:
+`buildTypes` already define `isCheckRoot` / `isCheckDebug` build config fields per build type. Gate
+the restored checks on build type (debug = skip, release = enforce) instead of hardcoding `false`,
+and move the URL `resValue`s into a `release` override. Then debug keeps working on the rooted
+device and a release build is safe by construction rather than by checklist.
+
+> Note: `CheckAuthOfApplication.isCheckRoot()` / `isCheckDebug()` are **native** (`cpp/native-lib.cpp`)
+> and hardcoded to `true` / `false` — they are NOT wired to the Gradle `buildConfigField` of the same
+> name. That mismatch is why a crude `if (false)` was used in the first place.
 
 ---
 
@@ -70,6 +109,7 @@ adb shell am start -n com.easyform.atctesting/com.sky.atc.easyformse.MainActivit
 | Shared helpers, tabs, watch-time | `LMS/LMS_Misc.js`, `LMS/LMS_Misc.css` |
 | Cache-first API layer | `LMS/lms_data.js` (`LmsData`) |
 | Offline write queue | `LMS/lms_state.js` (`LMS_State`) — only video log wired |
+| **Server-progress seam** | `LMS/lms_backend.js` (`LmsBackend`) — see below |
 | Login / localStorage wipe | `EFSE_Js/login.js` → `clear_localStorage()`, `finalize_login_lms_storage()` |
 | Logout cache wipe | `EFSE_Js/common-functions.js` → `lms_clear_vapt_cache()` |
 | Home role switch | `EFSE_Js/selection.js` → `redirect_on_module_click()` updates `storage.role_id` |
@@ -77,8 +117,9 @@ adb shell am start -n com.easyform.atctesting/com.sky.atc.easyformse.MainActivit
 
 ### Script load order (`LMS_Dashboard.html`)
 
-`lms_state.js` → `lms_data.js` → `safety_modules.js` → `assessments.js` → `dashboard.js` →
-`ml_video_cache.js` → `micro_learning.js` → **`LMS_Misc.js` last** (owns `$(document).ready` init).
+`lms_state.js` → `lms_data.js` → **`lms_backend.js`** → `safety_modules.js` → `assessments.js` →
+`dashboard.js` → `ml_video_cache.js` → `micro_learning.js` → **`LMS_Misc.js` last**
+(owns `$(document).ready` init). `lms_backend.js` must load before any consumer.
 
 ---
 
@@ -142,6 +183,27 @@ Watch time, ML quiz scores, assessment completion trend logs are **client localS
 (`lms_watch_seconds_*`, `lms_ml_quiz_*`, `lms_assessment_completion_log`). Dashboard mixes these with
 server listing data — stale local keys can show wrong KPIs even when API lists are correct.
 
+### `LmsBackend` — the server-progress seam (`LMS/lms_backend.js`)
+
+The single place the app asks *"how far has this lesson been watched"*. Built so the backend work in
+`LMS_API_SPEC.md` is a drop-in rather than a client rewrite. **It changes nothing today.**
+
+- **Auto-detecting, no flag.** The first skill row carrying a numeric `Watch_Seconds` or
+  `Resume_Position` flips that capability on for the session. No constant to edit, no release needed.
+- **Ingest:** `get_target_skill_by_module_id()` passes raw server rows to
+  `LmsBackend.ingestSkillRows(data)` before rendering.
+- **Read:** `lms_get_lesson_elapsed_seconds()` takes `max(server, local)`. The server can lag (a
+  session watched since the last upload is only known on-device) but can never be ahead.
+- **Reset:** `lms_clear_all_local_state()` calls `LmsBackend.reset()`, so a shared device cannot show
+  one learner's server progress to the next.
+- **Capability is per-session and never persisted** — pointing the app at a different environment
+  cannot leave a stale "supported" flag behind.
+
+**A resume position is never derived from `Progress% × duration`.** That reconstructs a playhead the
+learner never reached. If the server does not send `Resume_Position`, the seam reports `null` and the
+real local measurement is used. An earlier client-side implementation that did derive it was written
+and deliberately reverted — see the "Client status" section of `LMS_API_SPEC.md`.
+
 ### Listing guard flags
 
 - `safety_module_listing_requested` / `assessment_listing_requested` — block duplicate fetches unless
@@ -149,7 +211,7 @@ server listing data — stale local keys can show wrong KPIs even when API lists
 
 ---
 
-## Commit `56c957c` — partial refresh fix (still open on device)
+## Commit `56c957c` — refresh fix (two of its changes were later reverted)
 
 **Intent:** Fix stale modules/assessments/dashboard after user switch, role switch, admin assignment,
 and pull-to-refresh.
@@ -167,47 +229,74 @@ and pull-to-refresh.
 | `EFSE_Js/login.js` | LMS backup only restored for same `user_id`; `finalize_login_lms_storage()` |
 | `EFSE_Js/common-functions.js` | Logout calls full `lms_clear_all_local_state()` |
 
-**User report after deploy:** still not fixed — treat as open.
+**Outcome:** two of its changes were regressions and were reverted in `c9a83b8` (see below). The
+rest stands.
+
+---
+
+## Fixed and verified (do not re-investigate)
+
+### Empty listings for multi-role users — fixed `c9a83b8`
+
+`56c957c` switched every `*_RoleWise` `Role_Id` from `role_id_array` to a single active role, so any
+user whose content sits on a different role saw an empty LMS. Proven against UAT for user 41127
+(roles `305,375`, content on 305): `Role_Id "375"` → `status 2 No Record Found`;
+`Role_Id "305,375"` → `status 1`, 3 modules. Fixed via `lms_get_listing_role_ids()`.
+
+This is very likely the same root cause as the original "assignments don't appear" report — content
+assigned under a non-active role could never show. **If that symptom recurs, retest with a real
+assignment change before assuming it is a cache bug.**
+
+### Logout destroying watch history — fixed `c9a83b8`
+
+`56c957c` pointed the VAPT logout wipe at `lms_clear_all_local_state()`, deleting watch time, ML quiz
+scores and resume positions that have no server copy. Logout now clears cached server content only.
+Verified by running the real `lms_clear_vapt_cache()` on-device: watch seconds and
+`video_progress_*` preserved, `lms_cache_*` keys 3 → 0.
+
+### Module card vs lesson watch-time mismatch — fixed, verified `c9a83b8` era
+
+Previously "module 19 card `00:50`, lessons `00:00`". Root cause was that a bare native `pause`
+(backgrounding, screen lock, native control) had no save path, while the wall-clock tracker did.
+Verified end-to-end on device: after playing lesson 22 and closing via the **programmatic** route,
+module 19 card and lesson row both read `00:27`, `..._modules_by_item {"19":27.7}` matches
+`..._skills_by_item {"22":27.7}`, and lesson 18 correctly stayed `00:00` (no cross-attribution).
+
+### Fabricated assessment score — fixed `e3e9aa4`
+
+Submit logged completion on a 1600ms timer and fell back to a hardcoded `100` when the assessment was
+not yet in refreshed data, writing a fake 100% into the dashboard log. Now driven by a real
+post-refresh callback, and an unknown score records nothing. 8/8 logic tests.
 
 ---
 
 ## Open bugs (prioritized)
 
-### 1. Listings / dashboard do not refresh (BLOCKER)
+### 1. Graded submits are fire-and-forget (data loss)
 
-**Symptoms:** New or removed modules, assessments, micro-learning not appearing; old cards remain;
-dashboard KPI counts wrong after user switch or admin assignment; pull-to-refresh and Home→LMS don't
-help reliably.
+`LMS_InsertUpdateDelete_{Assessment,Skill,Micro_Learning}_Question_Log_Master` and
+`LMS_InsertUpdate_User_Assessment_Rating` are called with **no queue and no retry**. A network drop
+during submit permanently loses a completed attempt; the shared `onfail` just shows a message.
 
-**Investigation checklist (do this before more code):**
+**Deliberately not fixed on the client.** The SQLite offline queue exists (`LMS/lms_state.js`) but
+routing submits through it is unsafe until the server accepts an `Attempt_Guid` and dedupes replays —
+otherwise retries create duplicate attempts and double-counted scores, which is worse. See P0 in
+`LMS_API_SPEC.md`. Currently accepted: dev/test only, data loss tolerated at this stage.
 
-1. **CDP network tab** on `LMS_Dashboard.html` — do the four APIs return updated JSON when you
-   reproduce? If API is stale, this is server/role assignment, not client cache.
-2. **Log apply callbacks** — does `apply_safety_modules(txt, isRefresh)` run with `source === 'network'`?
-   Add temporary `console.log` in the LmsData onData callback if needed.
-3. **`Role_Id` param** — `Runtime.evaluate`: `lms_get_active_role_id()` vs what admin assigned under.
-4. **Inflight race** — `document.ready` and `tab:show` both call `get_safety_module_listing(true)` on
-   first open; verify second call isn't swallowed (force should clear inflight — confirm on device).
-5. **Micro Learning** — no LmsData; if stale, check `get_micro_learning_videos` response and
-   `ml_catalog_ml_ids` / reel re-render in `micro_learning.js`.
-6. **Dashboard KPIs** — distinguish server (`dashboard_kpi_data` from `LMS_Select_Dashboard`) vs local
-   (`lms_watch_seconds_*`, completion logs). Clear local keys in repro to see if KPIs fix without API
-   change.
+### 2. All learner metrics are device-local
 
-### 2. Module card vs lesson watch-time mismatch (open since `5393a69`)
-
-Module card shows wall-clock total (`lms_get_module_watched_seconds`); lesson row shows playhead
-(`video_progress_<Skill_Id>`). Module 19 example: card `00:50`, lessons `00:00` — lesson tracker may
-not be writing for that module's skill IDs. Investigate `set_progress_local()` before assuming one
-metric should mirror the other.
+Watch time, ML quiz scores and the assessment completion log live only in `localStorage`, so they die
+on app-data clear / reinstall / device change, and dashboard KPIs are per-device rather than per-user.
+The client seam for this is already built and inert (`LMS/lms_backend.js`) — it needs the server
+fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 ### 3. Other deferred
 
 - Video-playback sticky player on-device verify (`827ca85`)
-- Wire assessment/skill/ML submits through offline queue (only video log queued today)
-- Security manifest hardening (`usesCleartextTraffic`)
 - Port biometric login from sibling branch
 - Sync branch to `bitcode.bh/lms-ui-improvements` when stable
+- Test account `anup.vt` (role 364) has **no LMS content assigned** — confirmed server-side, all
+  endpoints return `No Record Found`. Test-data gap, not an app bug.
 
 ---
 
@@ -215,7 +304,11 @@ metric should mirror the other.
 
 | Commit | Summary |
 |---|---|
-| `56c957c` | **Partial** listing/dashboard refresh: user-scoped LmsData keys, login/logout LMS guards, fixed dashboard ptr handlers, force API on LMS open/tab switch. **Open on device.** |
+| `07d22b5` | `LmsBackend` server-progress integration seam (auto-detecting, inert until the backend ships the fields) + real user-facing message in `onfail()` instead of alerting the raw XHR object |
+| `0ee7e3c` | `LMS_API_SPEC.md` — prioritised (P0–P3) backend requirements, written from a live audit of the UAT API |
+| `e3e9aa4` | Never record a fabricated assessment score (hardcoded `100` fallback + `\|\| 0` coercion both removed) |
+| `c9a83b8` | Fix two regressions from `56c957c`: empty listings for multi-role users, and logout wiping all locally-measured progress |
+| `56c957c` | Listing/dashboard refresh: user-scoped LmsData keys, login/logout LMS guards, fixed dashboard ptr handlers, force API on LMS open/tab switch. Two of its changes were regressions — see `c9a83b8`. |
 | `5393a69` | Quiz frozen header/footer, radio-only options, real lesson scores, video-time race fix, `video_progress_*` preserved across login |
 | `827ca85` | Top-bar unification, filter chip redesign, lesson list + quiz overhaul, theme accents |
 | `8c0852c` | Opaque sticky header, YouTube-style duration badge |
@@ -241,8 +334,16 @@ metric should mirror the other.
 2. **Fix root cause** — don't stack overrides; grep all rules touching an element first.
 3. **Minimize scope** — this branch already has a large `LMS_Misc.js`; don't add parallel abstractions.
 4. **Do not merge** sibling `lms-ui-improvements` / APK wholesale — port features deliberately.
-5. **Uncommitted test-only** (do not ship): `applicationId com.easyform.atctesting`, MainActivity root
-   bypass, `gradlew` JDK17 patch — see local `CLAUDE.md` if present.
+5. **Never fabricate a value.** No estimates, placeholder scores, or values derived to fill a gap —
+   record nothing rather than something invented. Two shipped bugs came from this.
+6. **Never send a single `Role_Id`** to a `*_RoleWise` listing API — use `lms_get_listing_role_ids()`.
+7. **If the correct fix needs the backend, don't work around it locally** — add it to
+   `LMS_API_SPEC.md` and raise it. A local workaround for a server problem has already had to be
+   written and reverted once.
+8. **Test-only, do not ship** — the root bypasses and UAT build config are **committed** on this
+   branch (not uncommitted, as older notes claimed): see
+   [Release blockers](#release-blockers-must-fix-before-any-production-build). The `gradlew` JDK17
+   patch is a local, uncommitted Mac workaround.
 
 ---
 
@@ -256,4 +357,6 @@ metric should mirror the other.
 
 ---
 
-*Last updated: 2026-08-10 — after commit `56c957c` (listing refresh partial, still open on device).*
+*Last updated: 2026-08-11 — after `07d22b5`. LMS verified working against UAT test data (3 modules,
+2 assessments, 3 reels, no errors); watch-time, role and fabricated-score bugs fixed and verified
+on-device. Remaining work is backend-dependent (`LMS_API_SPEC.md`) plus the release blockers above.*
