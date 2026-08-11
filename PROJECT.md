@@ -159,7 +159,7 @@ firebase appdistribution:distribute \
 ```
 
 **Current testers:** `bitcode.bh@gmail.com`, `rahul.sharma@skyproductivity.com`,
-`mukesh.m@skyproductivity.com`, `jayanti.suthar@skyproductivity.com`.
+`mukesh.m@skyproductivity.com`, `jayanti.suthar@skyproductivity.com`, `aakash@skyproductivity.com`.
 
 **What this does and doesn't fix:** solves the sharing block completely, and likely reduces the
 Play Protect warning (install goes through the Firebase App Tester app instead of a bare file tap).
