@@ -18,6 +18,11 @@ public class MapSite {
     public String clusterId = "";
     // Epoch ms for the survey date; 0 means the listing did not supply one.
     public long surveyMs;
+    // Informational only — lets the detail sheet say which module a site
+    // belongs to. "" means unknown (e.g. geofence_tracking has no module
+    // concept at all); never guessed from another field.
+    public String moduleId = "";
+    public String moduleName = "";
 
     private MapSite(String siteId, String siteName, double lat, double lon, String status, String serverTaskId) {
         this.siteId = siteId;
@@ -50,6 +55,8 @@ public class MapSite {
                 json.optString("status", ""),
                 json.optString("server_task_id", ""));
         site.clusterId = json.optString("cluster_id", "");
+        site.moduleId = json.optString("module_id", "");
+        site.moduleName = json.optString("module_name", "");
         site.surveyMs = parseMillis(json.opt("survey_ms"));
         return site;
     }

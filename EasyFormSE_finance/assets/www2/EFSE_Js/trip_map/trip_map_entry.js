@@ -37,7 +37,9 @@ var TripSiteMap = (function () {
                 status: s.status,
                 server_task_id: s.server_task_id,
                 survey_ms: s.survey_ms,
-                cluster_id: s.cluster_id
+                cluster_id: s.cluster_id,
+                module_id: s.module_id,
+                module_name: s.module_name
             });
         }
         return out;

@@ -27,7 +27,7 @@ public final class OfflineTaskReader {
     // it unambiguous.
     private static final String SQL =
             "select tm.siteid, tm.site_name, tm.lat, tm.long, tm.status, tm.server_task_id, "
-                    + "tm.survey_ms, tm.moduleid "
+                    + "tm.survey_ms, tm.moduleid, tm.module_name "
                     + "from task_master tm where tm.username = ? and tm.is_down_complete = 1 "
                     + "and tm.lat is not null and tm.lat <> '' and tm.lat <> '0' "
                     + "and tm.long is not null and tm.long <> '' and tm.long <> '0'";
@@ -110,7 +110,15 @@ public final class OfflineTaskReader {
                 row.put("status", c.getString(4));
                 row.put("server_task_id", c.getString(5));
                 row.put("survey_ms", c.getString(6));
-                row.put("cluster_id", c.getString(7));
+                // No circle_id column exists in task_master — cluster_id is
+                // deliberately left unset (MapSite.fromJson defaults it to
+                // "") rather than fabricated from moduleid, which is a real
+                // bug this replaced: a stray "cluster_id": moduleid here
+                // would silently break ASSIGNED_CLUSTER filtering for any
+                // site sourced from this offline fallback, since it would
+                // never equal the user's real circle_id.
+                row.put("module_id", c.getString(7));
+                row.put("module_name", c.getString(8));
                 out.put(row);
             }
         } catch (Exception e) {

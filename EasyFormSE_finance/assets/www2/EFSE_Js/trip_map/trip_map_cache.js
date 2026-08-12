@@ -54,6 +54,8 @@ var TripMapCache = (function () {
             // server/tenant dependent.
             survey_ms: pick(row, ['millisecond', 'survey_ms']),
             cluster_id: pick(row, ['circle_id', 'cluster_id']),
+            module_id: pick(row, ['moduleid', 'module_id']),
+            module_name: pick(row, ['module_name']),
             raw: row
         };
     }

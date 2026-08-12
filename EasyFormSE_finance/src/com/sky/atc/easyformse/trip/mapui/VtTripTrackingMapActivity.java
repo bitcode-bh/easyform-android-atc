@@ -683,6 +683,17 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         if (site.status != null && site.status.length() > 0) {
             text.append("\nStatus: ").append(site.status);
         }
+        if (site.moduleName != null && site.moduleName.length() > 0) {
+            // Informational only, not a deep link (see PRD open question
+            // OQ-3): every site-click and module-click handler in this app
+            // reads DOM state (a hidden input, a rendered list row) that
+            // only exists on the page that rendered it, so none is safely
+            // callable from here. Telling the user where to look is the
+            // safe version of this feature.
+            text.append("\nModule: ").append(site.moduleName)
+                    .append("\nOpen ").append(site.moduleName)
+                    .append(" from Home to view this site");
+        }
         detailText.setText(text.toString());
         selectedSite = site;
         // Without a known origin there is no route to ask for.
