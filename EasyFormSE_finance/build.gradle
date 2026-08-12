@@ -80,6 +80,14 @@ android {
             assets.srcDirs = ['assets']
         }
 
+        // main.java.srcDirs above claims the whole 'src' tree (not the
+        // Android-standard 'src/main/java'), so the plain-JVM unit test
+        // sourceSet has to live outside 'src' entirely — otherwise its files
+        // get swept into main's own compile too, which has no JUnit on its
+        // classpath and fails to build.
+        test {
+            java.srcDirs = ['test/java']
+        }
         androidTest.setRoot('tests')
         debug.setRoot('build-types/debug')
         release.setRoot('build-types/release')
@@ -146,6 +154,15 @@ android {
         buildConfig = true
 
     }
+    testOptions {
+        // Standard Android unit-test stub config: without this, any test that
+        // reaches an unmocked framework call (e.g. android.location.Location's
+        // static distanceBetween(), used by MapSiteLoader) throws instead of
+        // running. Test-classpath only — no runtime/app behavior change.
+        unitTests {
+            returnDefaultValues = true
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -202,6 +219,11 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
     implementation 'androidx.constraintlayout:constraintlayout-solver:2.0.4'
     testImplementation 'junit:junit:4.13.2'
+    // org.json is bundled in android.jar's unit-test stub too (same class of
+    // problem as Location above), and its JSONObject/JSONArray constructors
+    // don't benefit from returnDefaultValues — a real implementation on the
+    // test classpath takes priority over the stub.
+    testImplementation 'org.json:json:20230227'
     implementation 'ch.acra:acra:4.9.2'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'

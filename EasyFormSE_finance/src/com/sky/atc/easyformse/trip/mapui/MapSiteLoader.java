@@ -80,6 +80,14 @@ public final class MapSiteLoader {
             }
         }
 
+        // Independent of isCluster(): DATE_RANGE is its own top-level type, not
+        // a cluster variant. A half-configured range (hasDateRange() false)
+        // leaves the list untouched rather than filtering to nothing.
+        if (MapProfile.TYPE_DATE_RANGE.equals(profile.type) && profile.hasDateRange()) {
+            kept = filterByDateRange(kept, profile.startMs, profile.endMs);
+            dateApplied = true;
+        }
+
         boolean radiusApplied = false;
         boolean sortedByDistance = false;
         if (radiusOverrideKm != null && radiusOverrideKm > 0 && user != null) {
@@ -143,6 +151,20 @@ public final class MapSiteLoader {
         for (int i = 0; i < sites.size(); i++) {
             long ms = sites.get(i).surveyMs;
             if (ms >= start && ms < end) {
+                out.add(sites.get(i));
+            }
+        }
+        return out;
+    }
+
+    // [startMs, endMs) — same half-open convention as filterByToday().
+    private static List<MapSite> filterByDateRange(List<MapSite> sites, long startMs, long endMs) {
+        List<MapSite> out = new ArrayList<MapSite>();
+        for (int i = 0; i < sites.size(); i++) {
+            long ms = sites.get(i).surveyMs;
+            // surveyMs 0 = no date on the row; excluded rather than assumed
+            // to fall inside the range.
+            if (ms >= startMs && ms < endMs) {
                 out.add(sites.get(i));
             }
         }

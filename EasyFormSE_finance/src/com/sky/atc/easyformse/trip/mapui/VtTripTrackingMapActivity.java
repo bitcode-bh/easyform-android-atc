@@ -43,8 +43,11 @@ import com.sky.atc.easyformse.DeviceEventsUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 // Read-only site map. Owns no location client: the user position comes from
 // what the engine has already recorded, and updates arrive on the engine's
@@ -414,8 +417,17 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         } else if (userPosition == null) {
             text.append(" (location unknown)");
         }
+        boolean isDateRange = MapProfile.TYPE_DATE_RANGE.equals(profile.type);
         if (result != null && result.dateApplied) {
-            text.append(", today");
+            // dateApplied covers two distinct meanings depending on type —
+            // ASSIGNED_CLUSTER_TODAY's fixed "today" window, or DATE_RANGE's
+            // configured [start, end). Say whichever is actually true.
+            text.append(isDateRange ? ", " + dateRangeLabel() : ", today");
+        } else if (isDateRange) {
+            // Configured as DATE_RANGE but start/end were missing or invalid
+            // — filter silently skipped, so say so rather than implying every
+            // site shown is date-scoped.
+            text.append(", no date range set");
         }
         if (result != null && profile.isCluster() && !result.clusterApplied) {
             text.append(", cluster unknown");
@@ -443,6 +455,11 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             return String.valueOf((long) km);
         }
         return String.valueOf(km);
+    }
+
+    private String dateRangeLabel() {
+        SimpleDateFormat fmt = new SimpleDateFormat("MMM d", Locale.getDefault());
+        return fmt.format(new Date(profile.startMs)) + " – " + fmt.format(new Date(profile.endMs));
     }
 
     private void drawRadiusCircle(boolean radiusApplied) {

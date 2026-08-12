@@ -23,7 +23,8 @@ var TripMapConfig = (function () {
         NEARBY_RADIUS: true,
         ASSIGNED_CLUSTER: true,
         ASSIGNED_CLUSTER_TODAY: true,
-        GEOFENCE_DOWNLOAD: true
+        GEOFENCE_DOWNLOAD: true,
+        DATE_RANGE: true
     };
 
     // marker_cluster is deliberately absent here: when a profile does not set it
@@ -58,6 +59,15 @@ var TripMapConfig = (function () {
             radius_km: 50,
             limit: 500,
             data_source: 'geofence_tracking'
+        },
+        // start_date/end_date have no static default (epoch ms — see
+        // MapProfile.hasDateRange()) — a profile must actually set them; the
+        // native side treats a missing/invalid range as "filter skipped",
+        // not an error.
+        DATE_RANGE: {
+            limit: 200,
+            use_cached_list: true,
+            data_source: 'listing_cache'
         }
     };
 
