@@ -615,7 +615,7 @@ public class TripUploadNew {
         Cursor check = database.rawQuery(
                 "select _id,Event_strt,Event_end,Event_type,lat,lon,th_s from Events where Event_strt>="
                         + min_milli + " and Event_strt <=" + max_milli
-                        + " and Event_type IN ('Still','vehicle','ACC','DEACC','speed')", null);
+                        + " and Event_type IN ('Still','vehicle','ACC','DEACC','speed','Call','continuous_driving')", null);
         //'Normal_Deacc','NormalAcc' remove event type as per discuss with sir 03-12-2024
         JSONArray di_n = new JSONArray();
         check.moveToFirst();
