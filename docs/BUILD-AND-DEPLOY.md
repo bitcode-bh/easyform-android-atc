@@ -195,11 +195,57 @@ git diff --stat -- EasyFormSE_finance/AndroidManifest.xml \
   EasyFormSE_finance/res/xml/config.xml \
   EasyFormSE_finance/build.gradle
 ```
-The five integration-hook files plus `build.gradle` (one dependency line,
-`android-maps-utils`) should be the only things touched outside the new
-`trip/mapui/` and `trip_map/` directories — currently ~7 files, ~30
-insertions on both worktrees. Everything else in the diff means scope
-crept into the engine and needs a hard look before proceeding.
+The five integration-hook files plus `build.gradle` should be the only
+things touched outside the new `trip/mapui/`, `trip_map/`, and
+`EasyFormSE_finance/test/` directories.
+
+**This same check now also runs automatically as a git pre-commit hook** —
+`.git/hooks/pre-commit` (shared across every worktree of this repository,
+since git worktrees share the common `.git` dir; no per-worktree install
+needed). It blocks a commit only when it touches **both** trip-map's own
+files and a blocklist file in the same commit — an unrelated, legitimate
+engine commit that never touches trip-map is left alone. Bypass with
+`git commit --no-verify` if a blocklist touch is genuinely intentional and
+reviewed. There is no CI in this repo to enforce this remotely — this hook
+is local-only, per-machine.
+
+---
+
+## Running the unit tests
+
+```bash
+cd <worktree>   # JAVA_HOME= prefix needed on main, same as assembleDebug above
+./gradlew :EasyFormSE_finance:testDebugUnitTest \
+  --tests "com.sky.atc.easyformse.trip.mapui.MapSiteLoaderTest"
+```
+Report: `EasyFormSE_finance/build/reports/tests/testDebugUnitTest/index.html`.
+
+Two non-obvious, project-specific things had to be fixed before any test
+here could even compile or run — worth knowing before adding more:
+
+- **Test source cannot live at the Android-standard `src/test/java`.**
+  This module's `build.gradle` sets `main.java.srcDirs = ['src']` — the
+  *entire* `src/` tree, not the conventional `src/main/java` — so anything
+  under `src/test/java` gets swept into `main`'s own compile too, which has
+  no JUnit on its classpath and fails to build. Test source lives at
+  `EasyFormSE_finance/test/java/...` instead (sibling to `src/`, not nested
+  in it), with an explicit `sourceSets.test.java.srcDirs = ['test/java']` in
+  `build.gradle`.
+- **`org.json.*` needs a real jar on the test classpath.** It's bundled in
+  the Android unit-test stub jar like every other framework class, but its
+  `JSONObject`/`JSONArray` constructors don't benefit from
+  `testOptions.unitTests.returnDefaultValues` (that only no-ops *method*
+  calls, e.g. `Location.distanceBetween()`) — without a real implementation
+  on the test classpath, even constructing a `JSONObject` throws.
+  `testImplementation 'org.json:json:20230227'` fixes it.
+
+Given `returnDefaultValues = true`, `Location.distanceBetween()` becomes a
+no-op, so every `MapSite.distanceM` ends up `0` after a test's `load()`
+call — real near/far distance filtering isn't verifiable without
+Robolectric or a mocked `Location`. The existing suite tests the
+boolean/structural plumbing instead (`radiusApplied`, `sortedByDistance`,
+`effectiveRadiusKm`, filter/limit counts) — which is where the actual bugs
+in this module have lived so far, not in the distance math itself.
 
 ---
 
@@ -226,3 +272,24 @@ does not depend on a task list ever being opened, so it is sometimes the
 are empty, the map still opens (on the user's position, with working range
 chips) and says specifically why nothing is plotted — see
 `VtTripTrackingMapActivity.emptyPayloadMessage()`.
+
+Implemented profile types (`TripMapConfig.IMPLEMENTED` in
+`trip_map_config.js`): `ASSIGNED_LIST`, `NEARBY_RADIUS`, `ASSIGNED_CLUSTER`,
+`ASSIGNED_CLUSTER_TODAY`, `GEOFENCE_DOWNLOAD`, `DATE_RANGE`. Registered but
+**not** implemented (a profile configured to one of these resolves to
+`null` and the map button stays hidden, rather than crashing):
+`CUSTOM_API` (no request/response contract defined yet — needs backend
+spec work before it's codeable) and a standalone `OFFLINE_TASK_MASTER`
+*profile type* (the table itself is already read as fallback tier 2 for
+every other type, just not selectable as its own explicit `type`).
+
+---
+
+## A separate, unrelated, not-yet-built PRD lives alongside this one
+
+`docs/PRD-Home-Operations-Dashboard.md` — a home-screen dashboard
+(today's-work widgets, trip/upload status, etc.) that references this
+module only as one optional widget (`map_entry`, linking out to the Map
+tab). As of this writing it is **spec only**: no `EFSE_Js/home_dashboard/`
+code exists anywhere in the repo. Do not assume it shares implementation
+state with the trip-map module beyond that one intended cross-link.
