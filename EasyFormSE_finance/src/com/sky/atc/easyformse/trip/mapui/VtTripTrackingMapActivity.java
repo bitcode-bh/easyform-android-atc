@@ -84,6 +84,9 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     private String searchTerm = "";
     // null = no distance cap ("All"). Set from the range chips.
     private Double radiusKm;
+    // True once the user has tapped a range chip themselves — after that,
+    // a late-arriving position must not silently override their choice.
+    private boolean rangeExplicitlySet;
     private MapSiteLoader.Result lastResult;
 
     private ClusterManager<MapSiteClusterItem> clusterManager;
@@ -123,8 +126,27 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         locationReceiver = new MapBroadcastReceiver(new MapBroadcastReceiver.Listener() {
             @Override
             public void onEngineLocation(LatLng position) {
+                // The engine had no location yet when onMapReady() ran its
+                // one-shot read, so the profile's own default radius
+                // (NEARBY_RADIUS/GEOFENCE_DOWNLOAD) was skipped and the
+                // range chips came up permanently disabled — this was a
+                // real bug: a cold app start racing the map open is exactly
+                // when the engine is least likely to have a fix yet. Give
+                // both a real chance the first time a position actually
+                // arrives, rather than leaving the whole session stuck on
+                // "All". map != null guards against this firing before
+                // onMapReady() itself has run (its own read already covers
+                // that case). A user-picked range is never overridden.
+                boolean firstFix = (userPosition == null && map != null);
                 userPosition = position;
                 drawUserMarker();
+                if (firstFix) {
+                    if (!rangeExplicitlySet) {
+                        radiusKm = MapSiteLoader.defaultRadiusKm(profile);
+                    }
+                    reloadForRange();
+                    frameCamera();
+                }
             }
         });
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -252,6 +274,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
                         return;
                     }
                     radiusKm = option;
+                    rangeExplicitlySet = true;
                     reloadForRange();
                 }
             });
@@ -463,6 +486,9 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     }
 
     private void drawRadiusCircle(boolean radiusApplied) {
+        if (map == null) {
+            return;
+        }
         if (radiusOverlay != null) {
             radiusOverlay.remove();
             radiusOverlay = null;
