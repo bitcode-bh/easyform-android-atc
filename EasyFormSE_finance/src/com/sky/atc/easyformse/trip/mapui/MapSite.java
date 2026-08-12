@@ -61,6 +61,15 @@ public class MapSite {
         return site;
     }
 
+    // The app's own listing convention (viewsitelist_pm.js: `task_status == 2`
+    // greys the row out): status 2 is the completed/submitted state, anything
+    // else is still outstanding. Unknown/blank status is treated as NOT
+    // completed — a site whose state we cannot read should not be shown as
+    // done.
+    public boolean isCompleted() {
+        return "2".equals(status == null ? "" : status.trim());
+    }
+
     // The field arrives as a number or a numeric string depending on the
     // listing. Anything unparseable stays 0, meaning "date unknown".
     private static long parseMillis(Object value) {

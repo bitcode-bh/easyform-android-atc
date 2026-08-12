@@ -12,6 +12,9 @@ public final class MapConstants {
     public static final String EXTRA_PROFILE = "trip_map_profile";
     public static final String EXTRA_SITES = "trip_map_sites";
     public static final String EXTRA_CLUSTER_VALUE = "trip_map_cluster_value";
+    // Needed so the map's own refresh can re-run the local reads itself
+    // (task_master is scoped by username) without going back through JS.
+    public static final String EXTRA_USERNAME = "trip_map_username";
     public static final String EXTRA_FROM_OFFLINE_TASKS = "trip_map_from_offline_tasks";
     public static final String EXTRA_FROM_GEOFENCE = "trip_map_from_geofence";
     public static final String EXTRA_DIAG_TOTAL = "trip_map_diag_total";

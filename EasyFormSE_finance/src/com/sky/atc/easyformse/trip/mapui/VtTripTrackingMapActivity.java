@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.sky.atc.easyformse.DeviceEventsUtils;
 
 import org.json.JSONArray;
@@ -71,6 +72,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     private MapProfile profile;
     private JSONArray payloadSites;
     private String clusterValue;
+    private String username;
     private boolean fromOfflineTasks;
     private boolean fromGeofenceTracking;
     // -1 = not computed (the empty-map path that needed a diagnosis never ran).
@@ -80,6 +82,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     private Circle radiusOverlay;
 
     private LinearLayout rangeBar;
+    private TextView refreshButton;
     private EditText searchInput;
     private String searchTerm = "";
     // null = no distance cap ("All"). Set from the range chips.
@@ -167,10 +170,33 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         topBar.setBackgroundColor(Color.parseColor("#CC215BA8"));
         topBar.setPadding(24, 24, 24, 20);
 
+        // Header and refresh share one row so the icon sits at the top-right
+        // without stealing vertical space from the search/chips below.
+        LinearLayout headerRow = new LinearLayout(this);
+        headerRow.setOrientation(LinearLayout.HORIZONTAL);
+        headerRow.setGravity(Gravity.CENTER_VERTICAL);
+
         headerView = new TextView(this);
         headerView.setTextColor(Color.WHITE);
         headerView.setPadding(8, 0, 8, 16);
-        topBar.addView(headerView);
+        LinearLayout.LayoutParams headerTextParams = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        headerRow.addView(headerView, headerTextParams);
+
+        refreshButton = new TextView(this);
+        refreshButton.setText("↻");
+        refreshButton.setTextColor(Color.WHITE);
+        refreshButton.setTextSize(22f);
+        refreshButton.setPadding(20, 0, 12, 16);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refreshFromLocalSources();
+            }
+        });
+        headerRow.addView(refreshButton);
+
+        topBar.addView(headerRow);
 
         searchInput = new EditText(this);
         searchInput.setHint("Search site name or ID");
@@ -295,6 +321,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             profile = MapProfile.fromJson(new JSONObject(intent.getStringExtra(MapConstants.EXTRA_PROFILE)));
             payloadSites = new JSONArray(intent.getStringExtra(MapConstants.EXTRA_SITES));
             clusterValue = intent.getStringExtra(MapConstants.EXTRA_CLUSTER_VALUE);
+            username = intent.getStringExtra(MapConstants.EXTRA_USERNAME);
             fromOfflineTasks = intent.getBooleanExtra(MapConstants.EXTRA_FROM_OFFLINE_TASKS, false);
             fromGeofenceTracking = intent.getBooleanExtra(MapConstants.EXTRA_FROM_GEOFENCE, false);
             diagTotal = intent.getIntExtra(MapConstants.EXTRA_DIAG_TOTAL, -1);
@@ -346,6 +373,50 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         drawCoveredPath();
         // Unconditional: with no sites at all the map should still open on the
         // user's own position rather than sitting at the world view.
+        frameCamera();
+    }
+
+    // Re-reads the device's own tables and redraws. This is a read-only
+    // refresh of what is already on this device — it does NOT trigger the
+    // app's download/sync (that is DownloadListService, engine-owned, and
+    // this module never writes or initiates network sync). Its real purpose
+    // is picking up data that landed after the map was opened: a download
+    // finishing in the background, or a site list opened in another tab.
+    //
+    // The JS session cache is deliberately not re-read here — it lives in
+    // the WebView this Activity is stacked on top of, and re-entering the
+    // map is what refreshes that path. Native rows are additive: they are
+    // adopted when present, never used to blank out a payload that already
+    // had sites.
+    private void refreshFromLocalSources() {
+        JSONArray refreshed = OfflineTaskReader.read(username == null ? "" : username);
+        boolean nowOffline = refreshed.length() > 0;
+        boolean nowGeofence = false;
+        if (!nowOffline) {
+            refreshed = GeofenceTrackingReader.read();
+            nowGeofence = refreshed.length() > 0;
+        }
+
+        if (refreshed.length() > 0) {
+            payloadSites = refreshed;
+            fromOfflineTasks = nowOffline;
+            fromGeofenceTracking = nowGeofence;
+            // Real data arrived, so the stale "nothing downloaded" diagnosis
+            // no longer applies.
+            diagTotal = -1;
+            diagDownloaded = -1;
+            diagWithCoords = -1;
+        } else if (payloadSites.length() == 0) {
+            // Still nothing anywhere — refresh the diagnosis so the toast
+            // reports the current state rather than the one from map open.
+            OfflineTaskReader.Diagnosis d =
+                    OfflineTaskReader.diagnose(username == null ? "" : username);
+            diagTotal = d.total;
+            diagDownloaded = d.downloaded;
+            diagWithCoords = d.withCoords;
+        }
+
+        reloadForRange();
         frameCamera();
     }
 
@@ -552,12 +623,23 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             Marker marker = map.addMarker(new MarkerOptions()
                     .position(new LatLng(site.lat, site.lon))
                     .title(site.siteName)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                    .icon(BitmapDescriptorFactory.defaultMarker(markerHue(site))));
             if (marker != null) {
                 marker.setTag(site);
                 siteMarkers.add(marker);
             }
         }
+    }
+
+    // Completed vs still-outstanding, on the app's own status convention
+    // (MapSite.isCompleted). Deliberately not green: the user's own position
+    // marker is already HUE_GREEN, and a second green would read as "you are
+    // here" at a glance. Violet reads as clearly distinct from both the
+    // azure outstanding markers and the green user pin.
+    private static float markerHue(MapSite site) {
+        return site.isCompleted()
+                ? BitmapDescriptorFactory.HUE_VIOLET
+                : BitmapDescriptorFactory.HUE_AZURE;
     }
 
     // FR-21. ClusterManager has to own the camera-idle and marker-click
@@ -569,6 +651,19 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             return;
         }
         clusterManager = new ClusterManager<MapSiteClusterItem>(this, map);
+        // Without this the library's default renderer draws every clustered
+        // item in one colour, so the completed/outstanding distinction would
+        // silently not apply to any clustering profile — which, given the
+        // limit>50 default, is most of them.
+        clusterManager.setRenderer(
+                new DefaultClusterRenderer<MapSiteClusterItem>(this, map, clusterManager) {
+                    @Override
+                    protected void onBeforeClusterItemRendered(
+                            MapSiteClusterItem item, MarkerOptions options) {
+                        options.icon(BitmapDescriptorFactory.defaultMarker(markerHue(item.site)))
+                                .title(item.site.siteName);
+                    }
+                });
         clusterManager.setOnClusterItemClickListener(
                 new ClusterManager.OnClusterItemClickListener<MapSiteClusterItem>() {
                     @Override
@@ -653,18 +748,24 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         }
     }
 
-    // Centres on the user so the map opens on "where I am, what is around me".
-    // Falls back to framing the sites only when there is no known position.
+    // Frames every drawn site (plus the user) so all of them are visible by
+    // default, rather than centring on the user at a guessed zoom and leaving
+    // farther sites off-screen — the previous behaviour, which made a map
+    // that had genuinely loaded sites look empty until the user pinched out.
+    // With no sites at all it still centres on the user so the map opens
+    // somewhere meaningful instead of the world view.
     private void frameCamera() {
-        if (userPosition != null) {
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    userPosition, zoomForNearest()));
+        if (map == null) {
             return;
         }
         if (sites.isEmpty()) {
+            if (userPosition != null) {
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        userPosition, MapConstants.SITE_ZOOM));
+            }
             return;
         }
-        if (sites.size() == 1) {
+        if (sites.size() == 1 && userPosition == null) {
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                     new LatLng(sites.get(0).lat, sites.get(0).lon), MapConstants.SITE_ZOOM));
             return;
@@ -673,34 +774,20 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         for (int i = 0; i < sites.size(); i++) {
             bounds.include(new LatLng(sites.get(i).lat, sites.get(i).lon));
         }
-        map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 120));
-    }
-
-    // Zoom that keeps the closest site in view; street level when none is known.
-    private float zoomForNearest() {
-        double nearestKm = Double.MAX_VALUE;
-        for (int i = 0; i < sites.size(); i++) {
-            double d = sites.get(i).distanceM;
-            if (d >= 0 && d / 1000d < nearestKm) {
-                nearestKm = d / 1000d;
-            }
+        if (userPosition != null) {
+            bounds.include(userPosition);
         }
-        if (nearestKm == Double.MAX_VALUE) {
-            return MapConstants.SITE_ZOOM;
+        // Guarded: newLatLngBounds throws if the map has not been laid out
+        // yet (it needs real view dimensions to fit a bounds box), which is
+        // reachable on the first-fix path from onEngineLocation().
+        try {
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 120));
+        } catch (Exception e) {
+            LatLng fallback = userPosition != null
+                    ? userPosition
+                    : new LatLng(sites.get(0).lat, sites.get(0).lon);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, MapConstants.SITE_ZOOM));
         }
-        if (nearestKm <= 2) {
-            return 14f;
-        }
-        if (nearestKm <= 10) {
-            return 12f;
-        }
-        if (nearestKm <= 50) {
-            return 10f;
-        }
-        if (nearestKm <= 150) {
-            return 8f;
-        }
-        return 6f;
     }
 
     private void showSiteDetail(MapSite site) {

@@ -74,6 +74,7 @@ public class TripTrackingMapPlugin extends CordovaPlugin {
             intent.putExtra(MapConstants.EXTRA_PROFILE, profileJson.toString());
             intent.putExtra(MapConstants.EXTRA_SITES, sites.toString());
             intent.putExtra(MapConstants.EXTRA_CLUSTER_VALUE, payload.optString("cluster_value", ""));
+            intent.putExtra(MapConstants.EXTRA_USERNAME, payload.optString("username", ""));
             intent.putExtra(MapConstants.EXTRA_FROM_OFFLINE_TASKS, fromOfflineTasks);
             intent.putExtra(MapConstants.EXTRA_FROM_GEOFENCE, fromGeofenceTracking);
             if (diagnosis != null) {
