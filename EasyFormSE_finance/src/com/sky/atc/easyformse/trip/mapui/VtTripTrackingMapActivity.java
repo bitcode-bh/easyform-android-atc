@@ -363,12 +363,18 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
 
         if (allSites.isEmpty()) {
             String message;
-            if (radiusKm != null) {
-                message = "No sites within " + trimDistance(radiusKm) + " km. Try a wider range.";
-            } else if (payloadSites.length() == 0) {
-                // Nothing to plot at all — say what would populate it rather
-                // than leaving a blank map unexplained.
+            if (payloadSites.length() == 0) {
+                // Nothing to plot at all, from any source — this must win
+                // over the radius branch below regardless of which chip
+                // happens to be selected. Checking radiusKm first was a
+                // real bug: whenever any range chip was active, "try a
+                // wider range" was shown even when nothing was ever loaded
+                // in the first place (task_master and geofence_tracking
+                // both empty) — actively wrong advice, since no range would
+                // have helped.
                 message = emptyPayloadMessage();
+            } else if (radiusKm != null) {
+                message = "No sites within " + trimDistance(radiusKm) + " km. Try a wider range.";
             } else {
                 message = "No mapped sites to show.";
             }
