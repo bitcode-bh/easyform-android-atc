@@ -427,7 +427,12 @@ public class newfused extends Service implements LocationListener {
                             " speedViolation=" + speedViolation +
                             " speed=" + currentSpeed);
             Log.d("CALL", "currentSpeed " + currentSpeed);
-            if (currentSpeed > CALL_SPEED_LIMIT) {
+
+            //convert speed to m/s to km/h
+            float fact = (float) 18 / 5;
+            float ac_speed = currentSpeed * fact;
+
+            if (ac_speed > CALL_SPEED_LIMIT) {
                 Log.d("CALL", "speedViolation ");
                 speedViolation = true;
 
