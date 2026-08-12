@@ -289,8 +289,8 @@ Existing pages never import internal files directly.
 |---|---|
 | FR-01 | Map button shown iff `trip_map_enabled !== false` AND resolved profile exists |
 | FR-02 | Works for **any** `role_id` when `role_map` or `map_profile` configured |
-| FR-03 | Default profile `ASSIGNED_LIST` when heuristic fallback applies |
-| FR-04 | Map hidden gracefully when no profile and no fallback |
+| FR-03 | Default profile `ASSIGNED_LIST` when heuristic fallback applies (also true with *no* `map_profile`/`role_map`/`task_listing_url` at all — the heuristic's own final fallback, not a separate "no config" case) |
+| FR-04 | **Superseded (2026-08-12).** As originally written this said "map hidden gracefully when no profile and no fallback" — but the heuristic (FR-03) never actually returns null, so that case cannot occur in the current implementation; the only ways the button is genuinely hidden are the explicit kill switch (`trip_map_enabled: false`) or a configured `type` that isn't in `TripMapConfig.IMPLEMENTED` (e.g. `CUSTOM_API`, `DATE_RANGE`-before-2026-08-12, a JSON parse failure). This was a deliberate later product decision, not an oversight: "allow the map to render even when nothing is nearby / no profile is configured" was explicitly requested mid-build, on the reasoning that a map explaining *why* it has nothing to show beats one that silently disappears. See `emptyPayloadMessage()` in `VtTripTrackingMapActivity.java` for the on-screen behavior this produces. |
 
 ### 8.2 Site loading (profile-driven)
 
@@ -435,7 +435,7 @@ Each phase is **additive files only** + optional one-line hooks.
 - [ ] Role with `map_profile` → correct behaviour
 - [ ] Role in `role_map` → correct behaviour
 - [ ] Role with only `*` default → `ASSIGNED_LIST` from cache
-- [ ] Role with no config + no `task_listing_url` → map button hidden
+- [x] Role with no config + no `task_listing_url` → `ASSIGNED_LIST` from cache, **not** hidden (see FR-04, superseded 2026-08-12)
 - [ ] Role with `task_listing_url` only → `NEARBY_RADIUS` fallback
 
 ### 14.3 Functional
