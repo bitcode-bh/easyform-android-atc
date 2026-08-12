@@ -192,6 +192,11 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:18.0.0'
     implementation 'com.google.firebase:firebase-messaging:17.3.4'
     implementation 'com.google.android.gms:play-services-maps:17.0.1'
+    // Marker clustering for the trip site map (PRD FR-21 / §10). Pinned to the
+    // 2.x line on purpose: 3.x requires play-services-maps 18.x, and bumping the
+    // Maps SDK would reach the existing map screens (navigation,
+    // TripBackgroundMapActivity, TripMapUi) that this feature must not disturb.
+    implementation 'com.google.maps.android:android-maps-utils:2.3.0'
 
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'

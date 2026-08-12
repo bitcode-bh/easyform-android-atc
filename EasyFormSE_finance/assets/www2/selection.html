@@ -25,6 +25,10 @@
     <script src="js/changeurl.js" type="text/javascript"></script>
     <script src="EFSE_Js/controls-ele.js"></script>
     <script src="EFSE_Js/selection.js" type="text/javascript"></script>
+    <script src="EFSE_Js/trip_map/trip_map_config.js" type="text/javascript"></script>
+    <script src="EFSE_Js/trip_map/trip_map_profile.js" type="text/javascript"></script>
+    <script src="EFSE_Js/trip_map/trip_map_cache.js" type="text/javascript"></script>
+    <script src="EFSE_Js/trip_map/trip_map_entry.js" type="text/javascript"></script>
 
     <link href="css/selection_dashboard.css" rel="stylesheet" />
     <script src="EFSE_Js/selection_dashboard.js"></script>
@@ -719,6 +723,10 @@
                                 <a href="#" class="tab-link" onclick="get_vertical_dashboard('report');" style="display:none">
                                     <span class="tab-ico"><i class="fa-regular fa-chart-bar ico-outline"></i><i class="fa-solid fa-chart-bar ico-filled"></i></span>
                                     <span class="tabbar-label mt-1">Report</span>
+                                </a>
+                                <a href="#" class="tab-link" id="btn_trip_map" style="display:none" onclick="TripSiteMap.open()">
+                                    <span class="tab-ico"><i class="fa-solid fa-map-location-dot ico-outline"></i><i class="fa-solid fa-map-location-dot ico-filled"></i></span>
+                                    <span class="tabbar-label mt-1">Map</span>
                                 </a>
                                 <a href="#" class="tab-link" id="btn_LMS" onclick="return crossToLMS('LMS_Dashboard.html')">
                                     <span class="tab-ico"><i class="fa-solid fa-shield ico-outline"></i><i class="fa-solid fa-shield ico-filled"></i></span>

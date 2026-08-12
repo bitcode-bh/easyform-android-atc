@@ -1334,6 +1334,7 @@ function onsuccess_get_list_of_pm_sites_online(e) {
     try {
         var type20_columndata = [];
         var myArray_main = JSON.parse(e.responseText);
+        if (typeof TripSiteMap !== 'undefined') { TripSiteMap.cacheListing(myArray_main); }
         var status = myArray_main[0].status;
         var flow_Array = JSON.parse(storage.getItem('flow_Array'));
 

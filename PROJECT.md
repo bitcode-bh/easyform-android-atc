@@ -42,6 +42,22 @@ session/agent picking up LMS work.
 
 ---
 
+## A second, unrelated feature also lives in this worktree: Universal Trip & Site Map
+
+Everything above this line is about **LMS/Home UI** — the hard rule that all LMS work must start
+from this worktree still applies. Separately, this worktree also carries the **Universal Trip &
+Site Map** module (`trip/mapui/` Java package, `EFSE_Js/trip_map/` JS package — a read-only site
+map reachable from the Home screen's bottom bar). It does not touch LMS code and the two features
+are independent; nothing above changes for it. **This feature has also been ported to the real
+production worktree** (`/Volumes/Bitcode/GitHub/easyform-android-atc`, `bitcode.bh/lms-ui-improvements`,
+`com.easyform.atcpv`) — build/deploy steps for **both** the production and UAT targets, including
+the machine-specific gotchas (JDK17, `local.properties`, the `atcmwfm.americantower.com` vs.
+`altiusinfra.com` URL trap), are in
+**[`docs/BUILD-AND-DEPLOY.md`](docs/BUILD-AND-DEPLOY.md)**. Product spec:
+[`docs/PRD-Trip-Site-Map-v2.md`](docs/PRD-Trip-Site-Map-v2.md).
+
+---
+
 ## What this branch is
 
 `claude/lms-ui-improvements-fd66a5` — LMS module + Home screen UI/UX on top of user's branch

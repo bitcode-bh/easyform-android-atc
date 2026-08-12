@@ -478,6 +478,7 @@ function onsuccess_get_list_of_pm_sites(e) {
         var type20_columndata = [];
         var myArray = JSON.parse(e);
         //alert1(JSON.stringify(myArray));
+        if (typeof TripSiteMap !== 'undefined') { TripSiteMap.cacheListing(myArray); }
 
         var limit_offset = parseInt(limit_range - default_range);
         if (limit_offset == 0) {

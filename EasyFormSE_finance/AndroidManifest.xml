@@ -503,6 +503,13 @@
             android:exported="false"/>
 
         <activity
+            android:name=".trip.mapui.VtTripTrackingMapActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="false"/>
+
+        <activity
             android:name=".VideoActivity"
             android:exported="false"/>
 

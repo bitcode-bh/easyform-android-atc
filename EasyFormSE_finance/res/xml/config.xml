@@ -262,6 +262,10 @@
         <param name="android-package" value="com.sky.atc.easyformse.plugins.CameraAITextPlugin"/>
     </feature>
 
+    <feature name="TripTrackingMapPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.trip.mapui.TripTrackingMapPlugin"/>
+    </feature>
+
     <feature name="GroupAttendancePlugin">
         <param name="android-package" value="com.sky.atc.easyformse.plugins.GroupAttendancePlugin" />
     </feature>
