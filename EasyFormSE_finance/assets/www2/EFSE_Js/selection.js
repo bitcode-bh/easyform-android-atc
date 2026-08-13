@@ -1598,10 +1598,17 @@ function numFormatter(num) {
 
 // online module listing 19102021
 
+// Set for the duration of one refresh, while a download start has just been
+// requested, so the counter check that immediately follows it does not
+// request a second one.
+var download_start_requested = false;
+
 function check_table_availabililty() {
 
     // get fresh count on refresh button click 01122022
     localStorage.setItem('online_counter', 'false');
+
+    download_start_requested = false;
 
     var download_completed = localStorage.getItem('download_completed');
     if (download_completed == '1') {
@@ -1614,6 +1621,7 @@ function check_table_availabililty() {
 
 function update_status_in_download_table_selection() {
     try {
+        download_start_requested = true;
         var query = "UPDATE download_counter SET status = '0', counter = case when _id = 5 then 0 else counter end";
         var q_jsonobj = [];
         q_jsonobj.push({
@@ -1664,6 +1672,22 @@ function onsuccess_get_download_counter_selection(e) {
             // alert1("download complete !");
             check_for_notification();
         } else {
+            // Counters say the download is NOT finished. Previously this
+            // branch only refreshed the module list, so a stale
+            // download_completed='1' left the app permanently unable to
+            // recover: refresh always landed here and never restarted the
+            // download. That flag survives clear_localStorage() on login
+            // (it is in the preserve list) while delete_database wipes the
+            // very tables it refers to, so "completed" can outlive its data
+            // and the counters are the only trustworthy source.
+            //
+            // Restart the download unless we just asked for one on this same
+            // refresh (update_status_... starts it and then re-reads the
+            // counters, which would otherwise trigger a second start).
+            if (!download_start_requested) {
+                update_status_in_download_table_selection();
+                return;
+            }
             // alert1("download not complete !");
             get_list_of_modules_online();
         }
