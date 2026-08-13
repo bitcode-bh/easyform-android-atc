@@ -112,9 +112,18 @@ function bind_micro_learning_events() {
             initialSlide: lastIdx,
             direction: 'vertical',
             slidesPerView: 1,
-            mousewheel: true, // Allows scrolling via desktop mousewheel
             watchSlidesProgress: true,
             resistanceRatio: 0,
+            // Swiper's default threshold (5px) treats almost any incidental
+            // finger movement while tapping the video (adjusting grip, a light
+            // touch that isn't a deliberate swipe) as the start of a real slide
+            // change — which immediately pauses the current reel via
+            // slideChangeTransitionStart below. Raising it means a genuine
+            // swipe intent still works, but a near-stationary tap doesn't get
+            // misread as one. mousewheel is dropped entirely: this is a
+            // touch-only Cordova app, and wheel-like input events on some
+            // Android devices could trigger the same false slide change.
+            threshold: 10,
             rewind: true,
             // observer/observeParents removed: slide mutations (build, filter)
             // are followed by an explicit reelsSwiper.update(), so the
@@ -162,10 +171,28 @@ function bind_micro_learning_events() {
 }
 
 
+// Every programmatic pause of a reel goes through here, never a bare
+// v.pause(). A video whose play() is still in flight (just auto-started, or
+// tapped a moment before) can throw "play() request was interrupted by
+// pause()" on some Android WebViews and leave the element visibly stuck —
+// the single biggest source of reel playback looking like it randomly died.
+// Waiting for any pending promise first costs nothing in the common case
+// (an already-settled promise resolves on the next microtask) and closes
+// the race everywhere at once instead of one call site at a time.
+function ml_safe_pause(v) {
+    if (!v) return;
+    var pending = v._lmsPlayPromise;
+    if (pending && typeof pending.then === 'function') {
+        pending.then(function () { try { v.pause(); } catch (e) { } });
+    } else {
+        try { v.pause(); } catch (e) { }
+    }
+}
+
 function pauseAllVideos() {
     // Pause all videos
     document.querySelectorAll('.reel-video').forEach(v => {
-        v.pause();
+        ml_safe_pause(v);
     });
 }
 
@@ -258,7 +285,11 @@ function ml_release_source(v) {
     if (cur) {
         v.setAttribute('data-src', cur);
         s.removeAttribute('src');
-        try { v.pause(); } catch (e) { }
+        // load() alone both stops playback and releases the decoder — no
+        // separate pause() first. A bare v.pause() here would race an
+        // in-flight play() the same way every other direct pause() in this
+        // file used to (see ml_safe_pause); load() doesn't have that problem,
+        // it's the spec-defined way to abort a pending play() request.
         try { v.load(); } catch (e) { }   // releases decoder + buffered ranges
     }
 }
@@ -333,13 +364,17 @@ function toggleReelPlayback(control, event) {
                     video.currentTime = 0;
                 }
 
-                video.play().catch(function (error) {
+                video._lmsPlayPromise = video.play().catch(function (error) {
                     console.log("Video play prevented", error);
                 });
                 showReelControl(true);    // brief feedback on tap-to-play, then auto-hide
             }
             else {
-                video.pause();
+                // ml_safe_pause waits out any in-flight play() first — see its
+                // definition. A tap landing right after auto-start is exactly
+                // the race it exists for: without it this looked like the reel
+                // randomly refusing to play.
+                ml_safe_pause(video);
                 showReelControl(false);   // user paused → keep the control visible
             }
         }, 250);
@@ -409,9 +444,11 @@ function playVideo(slideElement) {
     // A new/active video always starts with the control hidden (no auto-flash).
     hideReelControl();
 
-    // Pause all videos
+    // Pause all videos. Rapid swiping can call this again before a previous
+    // slide's own play() has settled — ml_safe_pause (not a bare v.pause())
+    // is what keeps that from throwing an interrupted-play error on it.
     document.querySelectorAll('.reel-video').forEach(v => {
-        v.pause();
+        ml_safe_pause(v);
         //v.currentTime = 0;
         v.onended = null; // Remove previous event
     });
@@ -433,7 +470,10 @@ function playVideo(slideElement) {
             try { video.currentTime = ml_positions[mlId]; } catch (e) { }
         }
         //video.currentTime = 0;
-        video.play().catch(function (error) {
+        // Tracked so a near-immediate tap (toggleReelPlayback) can wait for this
+        // to settle instead of calling pause() while it's still in flight — see
+        // the comment there for why that matters.
+        video._lmsPlayPromise = video.play().catch(function (error) {
             console.log("Auto-play prevented", error);
         });
     }
@@ -608,12 +648,28 @@ function get_micro_learning_videos() {
             ml_catalog_ml_ids = {};
             data.forEach(function (v) { ml_catalog_ml_ids[v.Ml_id] = true; });
 
+            // Re-entering tab-4 resumes the last reel almost immediately
+            // (bind_micro_learning_events' own ~100ms timer), well before this
+            // network response can land. If the library grew since the last
+            // visit, wiping #div_Reels here would destroy that actively-playing
+            // <video> out from under the user — the reel looks like it randomly
+            // died mid-watch. A currently-playing video means it's genuinely
+            // safe to defer: total_reels is only bumped on an actual rebuild, so
+            // the next time this runs (next tab-4 entry, or once the user pauses/
+            // finishes) the same "grew" condition is still true and the rebuild
+            // still happens — nothing is lost, only postponed past the point
+            // where it would be destructive.
+            var reelActivelyPlaying = false;
+            document.querySelectorAll('.reel-video').forEach(function (v) {
+                if (!v.paused && !v.ended) reelActivelyPlaying = true;
+            });
+
             if (total_reels == 0) {
                 $('#div_Reels')[0].innerHTML = '';
                 total_reels = data.length;
             }
             else {
-                if (data.length > total_reels) {
+                if (data.length > total_reels && !reelActivelyPlaying) {
                     $('#div_Reels')[0].innerHTML = '';
                     total_reels = data.length;
                 }

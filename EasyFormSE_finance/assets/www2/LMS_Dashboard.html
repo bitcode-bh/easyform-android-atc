@@ -503,8 +503,13 @@
 
                         <!-- Video -->
                         <div id="safety-video-container">
+                            <!-- No <source> child: safety_modules.js sets src directly
+                                 (attr("src", Video_Link)) whenever a lesson opens, and a
+                                 media element's own src attribute always wins over any
+                                 <source> children per spec — a static one here would be
+                                 dead markup, misleadingly implying a fallback URL is ever
+                                 actually loaded. -->
                             <video id="vdo_Question" controls controlsList="nodownload nofullscreen">
-                                <source src="https://dev.easyform.in/Altius_LMS/7/7/2026/March/v1.mp4" type="video/mp4">
                             </video>
                             <a class="link popup-close" id="safety-video-close" aria-label="Close" title="Close">
                                 <i class="fa fa-chevron-down" aria-hidden="true"></i>

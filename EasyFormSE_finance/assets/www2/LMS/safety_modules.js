@@ -1628,7 +1628,17 @@ function call_by_videolog(flag) {
         "Status": status
     });
 
-    loading();
+    // 'start' fires automatically the instant playback begins (see the "play"
+    // handler in LMS_Misc.js) — it's a background telemetry ping, not a
+    // user-initiated action, and there is nothing for the user to wait on.
+    // Showing the full-screen preloader here mutates the DOM/layout at the
+    // exact moment the video starts, which on Android WebView can visibly
+    // stall or pause playback that just started — a real cause of "video
+    // randomly pauses right after I hit play". 'log_save' and 'submit' are
+    // genuine button presses where a blocking preloader is expected, so they
+    // keep it.
+    var showPreloader = flag !== 'start';
+    if (showPreloader) loading();
 
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_InsertUpdate_User_Assessment_Rating', JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
@@ -1644,7 +1654,7 @@ function call_by_videolog(flag) {
                 get_safety_module_listing(true);
             }
         }
-        loading_hide();
+        if (showPreloader) loading_hide();
 
     }, onfail);
     getdata.callOtherDomain();

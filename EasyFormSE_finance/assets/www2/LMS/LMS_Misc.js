@@ -990,7 +990,16 @@ $(document).ready(function () {
 
     $(document).on('tab:show', '.tab', function () {
 
-        pauseAllVideos();
+        // Only pause reel playback when actually leaving Micro Learning. This used
+        // to run unconditionally before checking which tab was shown, so any
+        // tab:show that re-fired while the user was already on tab-4 — Framework7
+        // emits this on more than tabbar taps: swipe, hardware back, internal
+        // re-renders — silently paused whatever reel was mid-playback. Entering
+        // tab-4 never needs a pre-emptive pause: nothing plays until the swiper
+        // explicitly starts it (bind_micro_learning_events / slideChangeTransitionEnd).
+        if (this.id !== "tab-4") {
+            pauseAllVideos();
+        }
 
         // Keep the top/bottom bar theme + active-tab state in sync on EVERY tab
         // change — swipe and hardware-back included, not just tabbar taps. Only
