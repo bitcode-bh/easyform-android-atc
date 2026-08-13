@@ -13,12 +13,13 @@ import org.json.JSONObject;
 // SELECT only — this class must never write (PRD §2, "read-only data").
 //
 // PRD-designated source for the GEOFENCE_DOWNLOAD profile (§4.2, §11: "Map
-// may read geofence_tracking for GEOFENCE_DOWNLOAD profile only"). Also used
-// as a last-resort fallback for other profile types when neither the cached
-// listing nor task_master has anything — this table is populated by a
-// separate download step (GeofenceDownlodService, run in parallel with task
-// download, not gated on it) and on a real account was found to hold data
-// when task_master held none.
+// may read geofence_tracking for GEOFENCE_DOWNLOAD profile only") — and now
+// the map's only native data source for every profile type, replacing the
+// earlier task_master-first fallback chain (see TripTrackingMapPlugin). That
+// chain was unusable in practice: task_master fills only once tasks are
+// downloaded and was repeatedly found empty on real accounts, while this
+// table — populated by its own download step (GeofenceDownlodService), not
+// gated on a task list ever being opened — reliably held data.
 public final class GeofenceTrackingReader {
 
     private GeofenceTrackingReader() {

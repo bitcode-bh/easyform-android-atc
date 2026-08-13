@@ -68,7 +68,10 @@ public final class MapSiteLoader {
         if (profile.isCluster()) {
             // An unknown cluster value means the filter cannot be evaluated.
             // Showing everything and saying so beats silently returning nothing.
-            if (clusterValue != null && clusterValue.length() > 0) {
+            // The same applies when the *payload* carries no cluster id at all
+            // (see hasAnyClusterId) — either way the filter has nothing real to
+            // compare, so it is skipped and reported as not applied.
+            if (clusterValue != null && clusterValue.length() > 0 && hasAnyClusterId(kept)) {
                 kept = filterByCluster(kept, clusterValue);
                 clusterApplied = true;
             }
@@ -132,6 +135,26 @@ public final class MapSiteLoader {
             return profile.radiusKm;
         }
         return null;
+    }
+
+    // Whether the cluster filter can be evaluated against this payload at all.
+    //
+    // geofence_tracking has no circle_id column, so every row the native
+    // fallback (GeofenceTrackingReader) produces carries clusterId "".
+    // Comparing those to the user's real circle_id matches nothing and
+    // empties the map, even though the rows are exactly what's on this
+    // device — that was the "sites are not loading on the map" bug.
+    // Deliberately "any" and not "all": a genuine listing that does carry
+    // cluster ids must still filter, so one row missing its cluster can
+    // never open the gate for another circle's sites.
+    private static boolean hasAnyClusterId(List<MapSite> sites) {
+        for (int i = 0; i < sites.size(); i++) {
+            String id = sites.get(i).clusterId;
+            if (id != null && id.length() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static List<MapSite> filterByCluster(List<MapSite> sites, String clusterValue) {

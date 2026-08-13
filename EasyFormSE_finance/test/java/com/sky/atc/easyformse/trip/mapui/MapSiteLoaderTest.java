@@ -204,6 +204,42 @@ public class MapSiteLoaderTest {
     }
 
     @Test
+    public void cluster_payloadWithNoClusterIdAtAll_isNotFilteredToNothing() throws Exception {
+        // The native fallback (GeofenceTrackingReader) reads geofence_tracking,
+        // which has no circle_id column, so every row it produces carries
+        // clusterId "". Filtering those against the user's real circle_id
+        // matched nothing and emptied the map even though the rows were
+        // exactly what's on this device — the reported "sites are not
+        // loading" bug.
+        //
+        // Same rule as cluster_unknownValue_showsEverythingRatherThanNothing:
+        // a filter that cannot be evaluated is skipped and reported as not
+        // applied, never silently applied to nothing.
+        MapProfile p = profile("{\"type\":\"ASSIGNED_CLUSTER\"}");
+        MapSiteLoader.Result result = MapSiteLoader.load(
+                p,
+                sites(site("1", 1, 1), site("2", 2, 2)),
+                null, "A", null);
+        assertFalse(result.clusterApplied);
+        assertEquals(2, result.sites.size());
+    }
+
+    @Test
+    public void cluster_mixedPayload_stillFiltersWhenSomeRowsCarryCluster() throws Exception {
+        // The skip above must be narrow: a real listing that genuinely has
+        // cluster ids must still filter, so an unrelated circle's sites can
+        // never leak in just because one row is missing its cluster.
+        MapProfile p = profile("{\"type\":\"ASSIGNED_CLUSTER\"}");
+        MapSiteLoader.Result result = MapSiteLoader.load(
+                p,
+                sites(site("1", 1, 1, "A", 0), site("2", 2, 2, "B", 0), site("3", 3, 3)),
+                null, "A", null);
+        assertTrue(result.clusterApplied);
+        assertEquals(1, result.sites.size());
+        assertEquals("1", result.sites.get(0).siteId);
+    }
+
+    @Test
     public void cluster_withKnownPosition_isSortedByDistanceByDefault() throws Exception {
         // Unlike ASSIGNED_LIST, cluster profiles have always sorted
         // nearest-first once a position is known, even with no range picked.

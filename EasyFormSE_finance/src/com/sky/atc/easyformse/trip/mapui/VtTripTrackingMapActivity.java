@@ -72,13 +72,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     private MapProfile profile;
     private JSONArray payloadSites;
     private String clusterValue;
-    private String username;
-    private boolean fromOfflineTasks;
     private boolean fromGeofenceTracking;
-    // -1 = not computed (the empty-map path that needed a diagnosis never ran).
-    private int diagTotal = -1;
-    private int diagDownloaded = -1;
-    private int diagWithCoords = -1;
     private Circle radiusOverlay;
 
     private LinearLayout rangeBar;
@@ -321,12 +315,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             profile = MapProfile.fromJson(new JSONObject(intent.getStringExtra(MapConstants.EXTRA_PROFILE)));
             payloadSites = new JSONArray(intent.getStringExtra(MapConstants.EXTRA_SITES));
             clusterValue = intent.getStringExtra(MapConstants.EXTRA_CLUSTER_VALUE);
-            username = intent.getStringExtra(MapConstants.EXTRA_USERNAME);
-            fromOfflineTasks = intent.getBooleanExtra(MapConstants.EXTRA_FROM_OFFLINE_TASKS, false);
             fromGeofenceTracking = intent.getBooleanExtra(MapConstants.EXTRA_FROM_GEOFENCE, false);
-            diagTotal = intent.getIntExtra(MapConstants.EXTRA_DIAG_TOTAL, -1);
-            diagDownloaded = intent.getIntExtra(MapConstants.EXTRA_DIAG_DOWNLOADED, -1);
-            diagWithCoords = intent.getIntExtra(MapConstants.EXTRA_DIAG_WITH_COORDS, -1);
         } catch (Exception e) {
             return false;
         }
@@ -376,44 +365,21 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         frameCamera();
     }
 
-    // Re-reads the device's own tables and redraws. This is a read-only
-    // refresh of what is already on this device — it does NOT trigger the
-    // app's download/sync (that is DownloadListService, engine-owned, and
-    // this module never writes or initiates network sync). Its real purpose
-    // is picking up data that landed after the map was opened: a download
-    // finishing in the background, or a site list opened in another tab.
+    // Re-reads geofence_tracking and redraws. This is a read-only refresh of
+    // what is already on this device — it does NOT trigger the app's
+    // download/sync (that is GeofencDownlodService, engine-owned, and this
+    // module never writes or initiates network sync). Its real purpose is
+    // picking up data that lands after the map was opened: a geofence
+    // download finishing in the background.
     //
-    // The JS session cache is deliberately not re-read here — it lives in
-    // the WebView this Activity is stacked on top of, and re-entering the
-    // map is what refreshes that path. Native rows are additive: they are
-    // adopted when present, never used to blank out a payload that already
-    // had sites.
+    // Additive: an empty re-read never blanks out a payload that already had
+    // sites (the map opened with data, then a stale/failed re-read should not
+    // take it away).
     private void refreshFromLocalSources() {
-        JSONArray refreshed = OfflineTaskReader.read(username == null ? "" : username);
-        boolean nowOffline = refreshed.length() > 0;
-        boolean nowGeofence = false;
-        if (!nowOffline) {
-            refreshed = GeofenceTrackingReader.read();
-            nowGeofence = refreshed.length() > 0;
-        }
-
+        JSONArray refreshed = GeofenceTrackingReader.read();
         if (refreshed.length() > 0) {
             payloadSites = refreshed;
-            fromOfflineTasks = nowOffline;
-            fromGeofenceTracking = nowGeofence;
-            // Real data arrived, so the stale "nothing downloaded" diagnosis
-            // no longer applies.
-            diagTotal = -1;
-            diagDownloaded = -1;
-            diagWithCoords = -1;
-        } else if (payloadSites.length() == 0) {
-            // Still nothing anywhere — refresh the diagnosis so the toast
-            // reports the current state rather than the one from map open.
-            OfflineTaskReader.Diagnosis d =
-                    OfflineTaskReader.diagnose(username == null ? "" : username);
-            diagTotal = d.total;
-            diagDownloaded = d.downloaded;
-            diagWithCoords = d.withCoords;
+            fromGeofenceTracking = true;
         }
 
         reloadForRange();
@@ -440,10 +406,9 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
                 // happens to be selected. Checking radiusKm first was a
                 // real bug: whenever any range chip was active, "try a
                 // wider range" was shown even when nothing was ever loaded
-                // in the first place (task_master and geofence_tracking
-                // both empty) — actively wrong advice, since no range would
-                // have helped.
-                message = emptyPayloadMessage();
+                // in the first place — actively wrong advice, since no range
+                // would have helped.
+                message = "No geofence data downloaded to this device yet.";
             } else if (radiusKm != null) {
                 message = "No sites within " + trimDistance(radiusKm) + " km. Try a wider range.";
             } else {
@@ -451,37 +416,6 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             }
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
-    }
-
-    // Distinguishes "nothing downloaded to this device" from "downloaded but
-    // the server sent no coordinates" — two different problems with two
-    // different fixes, that a single generic message conflated before.
-    // diagTotal stays -1 whenever the plugin didn't need to run the
-    // diagnosis (there was JS-cached data, or the offline fallback found
-    // rows) — this branch only reaches here when both were empty.
-    private String emptyPayloadMessage() {
-        if (diagTotal < 0) {
-            return "No downloaded sites with coordinates. Open a site list first.";
-        }
-        if (diagTotal == 0) {
-            // Reached only after geofence_tracking was also checked and had
-            // nothing plottable, so this is genuinely "nothing anywhere",
-            // not just "task_master is empty".
-            return "No tasks or geofence data downloaded to this device yet. "
-                    + "Open a site list first.";
-        }
-        if (diagDownloaded == 0) {
-            return diagTotal + " task" + (diagTotal == 1 ? "" : "s") + " synced but download "
-                    + "isn't finished yet. Finish downloading, then reopen Map.";
-        }
-        if (diagWithCoords == 0) {
-            return diagDownloaded + " downloaded task" + (diagDownloaded == 1 ? "" : "s")
-                    + " but none has site coordinates from the server.";
-        }
-        // withCoords > 0 but MapSite.fromJson still rejected every row (e.g.
-        // coordinates out of range) — rare, but say something true rather
-        // than repeat a message that implies zero usable data existed.
-        return "Downloaded sites exist but none could be plotted.";
     }
 
     // Filters the current range's sites by the search box and redraws markers.
@@ -532,9 +466,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         if (result != null && profile.isCluster() && !result.clusterApplied) {
             text.append(", cluster unknown");
         }
-        if (fromOfflineTasks) {
-            text.append(" (downloaded)");
-        } else if (fromGeofenceTracking) {
+        if (fromGeofenceTracking) {
             text.append(" (geofence)");
         }
         if (searchTerm.length() > 0) {
