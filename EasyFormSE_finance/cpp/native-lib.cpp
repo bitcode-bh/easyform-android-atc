@@ -332,14 +332,20 @@ isBadPropertyState(const char *key, const char *badValue, bool isObligatoryPrope
     return result;
 }
 
+// isObligatoryProperty=false, matching isNotFoundReleaseKeys() right below —
+// which already treats an unreadable ro.build.tags as uninformative, not as
+// evidence for release-keys. These two used true, so the same unreadable
+// property was inconsistently treated as evidence FOR test/dev-keys instead.
+// Same class of bug as isFoundDangerousProps(): a property this process
+// can't read is not proof of anything, only an actual value match is.
 bool isDetectedTestKeys() {
     const char *TEST_KEYS_VALUE = "test-keys";
-    return isBadPropertyState(ANDROID_OS_BUILD_TAGS, TEST_KEYS_VALUE, true, false);
+    return isBadPropertyState(ANDROID_OS_BUILD_TAGS, TEST_KEYS_VALUE, false, false);
 }
 
 bool isDetectedDevKeys() {
     const char *DEV_KEYS_VALUE = "dev-keys";
-    return isBadPropertyState(ANDROID_OS_BUILD_TAGS, DEV_KEYS_VALUE, true, false);
+    return isBadPropertyState(ANDROID_OS_BUILD_TAGS, DEV_KEYS_VALUE, false, false);
 }
 
 bool isNotFoundReleaseKeys() {
@@ -381,9 +387,20 @@ bool isFoundDangerousProps() {
     const char *BAD_SYS_INITD_VALUE = "1";
     const char *BAD_SERVICE_ADB_ROOT_VALUE = "1";
 
-    bool result = isBadPropertyState(ANDROID_OS_DEBUGGABLE, BAD_DEBUGGABLE_VALUE, true, true) ||
+    // isObligatoryProperty=false on every property here, not just ro.secure/
+    // ro.debuggable's original false pair. isBadPropertyState() treats a
+    // property __system_property_get can't read (length 0) as "found, and
+    // bad" whenever isObligatoryProperty is true — but a modern Android app
+    // process (untrusted_app SELinux domain) can be denied read access to
+    // properties that plainly exist and are readable via `adb shell getprop`
+    // (a more privileged context). That's a permission artifact, not evidence
+    // of rooting — confirmed on a verified-clean device (release-keys,
+    // verifiedbootstate=green, locked bootloader, no su binary anywhere) that
+    // still tripped this and showed "This device is rooted" via
+    // MeatGrinder.isRooted(). Only an actual value match is real signal.
+    bool result = isBadPropertyState(ANDROID_OS_DEBUGGABLE, BAD_DEBUGGABLE_VALUE, false, true) ||
                   isBadPropertyState(SERVICE_ADB_ROOT, BAD_SERVICE_ADB_ROOT_VALUE, false, true) ||
-                  isBadPropertyState(ANDROID_OS_SECURE, BAD_SECURE_VALUE, true, true) ||
+                  isBadPropertyState(ANDROID_OS_SECURE, BAD_SECURE_VALUE, false, true) ||
                   isBadPropertyState(ANDROID_OS_SYS_INITD, BAD_SYS_INITD_VALUE, false, true);
 
     return result;
