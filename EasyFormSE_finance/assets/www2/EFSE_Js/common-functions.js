@@ -69,6 +69,7 @@ function logout_on_click() {
     }
     if (user_choice == true) {
         lms_clear_vapt_cache();
+        if (typeof HomeDashboard !== 'undefined' && HomeDashboard.destroy) HomeDashboard.destroy();
         changeurl("Login.html");
     }
 }
@@ -105,6 +106,7 @@ function onsuccess_logout_on_click_online(e) {
 
     localStorage.setItem('view_biometric', 'false');
     lms_clear_vapt_cache();
+    if (typeof HomeDashboard !== 'undefined' && HomeDashboard.destroy) HomeDashboard.destroy();
     changeurl("Login.html");
 }
 

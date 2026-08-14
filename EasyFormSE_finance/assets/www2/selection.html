@@ -30,6 +30,14 @@
     <script src="EFSE_Js/trip_map/trip_map_cache.js" type="text/javascript"></script>
     <script src="EFSE_Js/trip_map/trip_map_entry.js" type="text/javascript"></script>
 
+    <link href="css/home_dashboard.css" rel="stylesheet" />
+    <script src="EFSE_Js/home_dashboard/home_dashboard_config.js" type="text/javascript"></script>
+    <script src="EFSE_Js/home_dashboard/home_dashboard_resolver.js" type="text/javascript"></script>
+    <script src="EFSE_Js/home_dashboard/home_dashboard_data.js" type="text/javascript"></script>
+    <script src="EFSE_Js/home_dashboard/widgets/widget_task_summary.js" type="text/javascript"></script>
+    <script src="EFSE_Js/home_dashboard/widgets/widget_upload_health.js" type="text/javascript"></script>
+    <script src="EFSE_Js/home_dashboard/home_dashboard_entry.js" type="text/javascript"></script>
+
     <link href="css/selection_dashboard.css" rel="stylesheet" />
     <script src="EFSE_Js/selection_dashboard.js"></script>
     <script src="plugins/cdn_apexcharts.js"></script>
@@ -158,6 +166,12 @@
             var ptrContent = $('.pull-to-refresh-content');
             ptrContent.on('pullend', function (e) {
                 check_table_availabililty();
+                if (typeof HomeDashboard !== 'undefined' && HomeDashboard.refresh) {
+                    HomeDashboard.refresh();
+                }
+                if (typeof refreshHomeTripTab === 'function') {
+                    refreshHomeTripTab();
+                }
 
                 setTimeout(function () {
                     myApp.pullToRefreshDone();
@@ -183,6 +197,13 @@
                 check_table_availabililty();
 
                 check_for_glob_notification();
+
+                if (typeof HomeDashboard !== 'undefined' && HomeDashboard.init) {
+                    HomeDashboard.init();
+                }
+                if (typeof refreshHomeTripTab === 'function') {
+                    refreshHomeTripTab();
+                }
             }
             else {
                 setTimeout(function () { pageload_main(); }, 500);
@@ -466,14 +487,17 @@
                     <div data-page="list-view" class="page page-on-center">
                         <div class="navbar">
                             <div class="navbar-inner" style="background-color: #ecedef;">
-                                <div class="left home-profile" style="display: block; text-align: center; padding-left: 8px; margin-top: 4px;">
+                                <div class="left home-greeting">
                                     <a onclick='back_button("selection")' id="btn_page_back" style="visibility: hidden; pointer-events: none; display: none;" class="back link icon-only">
                                         <i class="icon fa fa-arrow-left"></i>
                                     </a>
-                                    <a href="#" class="open-panel link icon-only" style="display: block; margin: 0 auto; width: 30px; height: 30px; min-width: auto; padding: 0;">
-                                        <img id="menu_img_profile" src="images/profile_pic.png" onerror="set_detault_profile_pic()" style="display: block; width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(0,0,0,0.12); margin: 0 auto;" />
+                                    <a href="#" class="open-panel link icon-only" style="display: block; width: 38px; height: 38px; min-width: auto; padding: 0; flex-shrink: 0;">
+                                        <img id="menu_img_profile" src="images/profile_pic.png" onerror="set_detault_profile_pic()" style="display: block; border-radius: 50%; object-fit: cover;" />
                                     </a>
-                                    <span id="home_user_name" class="home-user-name" style="display: block; font-size: 11px !important; font-weight: 600 !important; color: #111111 !important; margin: 2px auto 0 auto; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1;"></span>
+                                    <div class="home-greet-text">
+                                        <span id="home_greet_name" class="home-greet-name"></span>
+                                        <span id="home_greet_sub" class="home-greet-sub"></span>
+                                    </div>
                                 </div>
                                 <div class="center">
                                     <label id="lbl_theme_header" style="display: none !important;"></label>
@@ -578,6 +602,7 @@
 
                             </div>
 
+                            <div id="div_home_dashboard" style="display:none;"></div>
 
                             <div id="div_old_dashboard" class="list-block" style="width: 100%;overflow:auto;">
 
@@ -597,14 +622,14 @@
                                         <div class="chip-label">Profile picture is not set. It is used to fill attendance!</div>
                                     </div>
                                 </div>
-                                <div id="noti_Attendance2" class="row" style="text-align:center; display:none; margin-top:5px">
-                                    <div class="chip" style="background-color: white; border: 1px solid #ccc">
-                                        <div class="chip-media" style="background-color: red;">
-                                            <i class="fa fa fa-info" style="margin: 0"></i>
-                                        </div>
-                                        <div class="chip-label" onclick="noti_Attendance_Click()">Your attendance is pending!</div>
-                                    </div>
-                                </div>
+                                <!-- #noti_Attendance2 ("Your attendance is pending!") removed: the
+                                     Start Trip action in the bottom tab bar is now the single entry
+                                     point for the same flow, so this chip was a duplicate prompt
+                                     sitting in the middle of the module list. Removed at the root
+                                     rather than hidden with CSS/JS — get_today_attendance_for_notification()
+                                     (selection.js) still calls $("#noti_Attendance2").css(...) on every
+                                     refresh, which is a harmless jQuery no-op against an absent
+                                     element, so no engine file needed changing. -->
 
                                 <div class="row" id="div_level" style="border-bottom: 1px solid #e1e1e1; display: none">
                                     <div class="col-100">
@@ -723,6 +748,10 @@
                                 <a href="#" class="tab-link" onclick="get_vertical_dashboard('report');" style="display:none">
                                     <span class="tab-ico"><i class="fa-regular fa-chart-bar ico-outline"></i><i class="fa-solid fa-chart-bar ico-filled"></i></span>
                                     <span class="tabbar-label mt-1">Report</span>
+                                </a>
+                                <a href="#" class="tab-link" id="btn_start_trip" onclick="return homeTabbarTripClick()">
+                                    <span class="tab-ico"><i class="fa-solid fa-route ico-outline"></i><i class="fa-solid fa-route ico-filled"></i></span>
+                                    <span class="tabbar-label mt-1" id="lbl_start_trip">Start Trip</span>
                                 </a>
                                 <a href="#" class="tab-link" id="btn_trip_map" style="display:none" onclick="TripSiteMap.open()">
                                     <span class="tab-ico"><i class="fa-solid fa-map-location-dot ico-outline"></i><i class="fa-solid fa-map-location-dot ico-filled"></i></span>
@@ -1250,17 +1279,76 @@
         <script>
             pre_init_F7();
 
-            // Show the logged-in user's name beneath the app-bar profile avatar.
+            // Greeting + date beside the app-bar profile avatar.
             (function () {
-                function setHomeName() {
+                function salutation() {
+                    var h = new Date().getHours();
+                    if (h < 12) return 'Good morning';
+                    if (h < 17) return 'Good afternoon';
+                    return 'Good evening';
+                }
+                function today() {
+                    var d = new Date();
+                    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+                }
+                function setHomeGreeting() {
                     try {
-                        var el = document.getElementById('home_user_name');
-                        if (el && typeof username !== 'undefined' && username) el.textContent = String(username);
+                        var nameEl = document.getElementById('home_greet_name');
+                        var subEl = document.getElementById('home_greet_sub');
+                        var uname = (typeof username !== 'undefined' && username) ? String(username) : '';
+                        if (nameEl) nameEl.textContent = salutation() + (uname ? ', ' + uname : '');
+                        if (subEl) subEl.textContent = today();
                     } catch (e) { }
                 }
-                document.addEventListener('deviceready', setHomeName, false);
-                window.addEventListener('load', setHomeName, false);
+                document.addEventListener('deviceready', setHomeGreeting, false);
+                window.addEventListener('load', setHomeGreeting, false);
             })();
+
+            // "Start Trip" bottom-bar action. Unconditional tabbar chrome
+            // (like Map/LMS), not gated by home_dashboard_enabled — reuses
+            // HomeDashboardData.getTripStatus() (read-only) and the same two
+            // verified delegate functions the trip_status dashboard widget
+            // calls (noti_Attendance_Click / stop_trip_manualy_from_module_listing),
+            // so there is exactly one place that actually starts/stops a trip.
+            function refreshHomeTripTab() {
+                try {
+                    if (typeof HomeDashboardData === 'undefined') return;
+                    var tab = document.getElementById('btn_start_trip');
+                    var lbl = document.getElementById('lbl_start_trip');
+                    if (!tab || !lbl) return;
+                    HomeDashboardData.getTripStatus(function (result) {
+                        if (result.active) {
+                            tab.classList.add('active');
+                            lbl.textContent = 'On Trip';
+                        } else {
+                            tab.classList.remove('active');
+                            lbl.textContent = 'Start Trip';
+                        }
+                    });
+                } catch (e) { }
+            }
+
+            function homeTabbarTripClick() {
+                try {
+                    var tab = document.getElementById('btn_start_trip');
+                    var isActive = tab && tab.classList.contains('active');
+                    if (isActive) {
+                        if (typeof stop_trip_manualy_from_module_listing === 'function') {
+                            stop_trip_manualy_from_module_listing();
+                        }
+                    } else {
+                        if (typeof noti_Attendance_Click === 'function') {
+                            noti_Attendance_Click();
+                        }
+                    }
+                    setTimeout(refreshHomeTripTab, 800);
+                } catch (e) { }
+                return false;
+            }
+
+            document.addEventListener('deviceready', refreshHomeTripTab, false);
+            window.addEventListener('load', refreshHomeTripTab, false);
         </script>
         <script src="EFSE_Js/pull_to_search.js" type="text/javascript"></script>
     </div>

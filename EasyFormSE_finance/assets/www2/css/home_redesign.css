@@ -17,24 +17,24 @@
     width: auto;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     margin-left: 12px;
 }
 #menu_img_profile {
-    width: 44px !important;
-    height: 44px !important;
+    width: 38px !important;
+    height: 38px !important;
     border: 0 !important;
     box-shadow: 0 1px 3px rgba(16, 24, 40, .12);
 }
-.home-greet-text { display: flex; flex-direction: column; line-height: 1.15; }
+/* Font sizes are pinned !important in css/home_nav.css (needed to beat that
+   file's blanket .navbar .left text-suppression rule) — kept here only as
+   the layout/weight declarations that aren't contested by anything. */
+.home-greet-text { display: flex; flex-direction: column; justify-content: center; line-height: 1.15; }
 .home-greet-name {
-    font-size: 17px;
-    font-weight: 800;
-    color: #0f1729;
+    font-weight: 700;
     margin: 0;
     text-transform: none;
 }
-.home-greet-sub { font-size: 12px; color: #6b7280; }
 
 /* Clean bar: hide the dashboard-config cluster + view toggle (charts are off) */
 #div_dashboard_config,

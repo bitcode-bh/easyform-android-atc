@@ -75,71 +75,129 @@
 }
 
 /* ==========================================================================
-   Top app bar — profile stack (larger avatar with the user's name beneath it),
-   and remove the back-arrow that was overlapping the avatar.
+   Top app bar — avatar + two-line greeting/date block.
+   Relocated here from an in-body dashboard card, so it is now permanent
+   navbar chrome rather than a gated widget.
+
+   These rules are deliberately COMPLETE and self-contained. css/home_redesign.css
+   also defines .home-greeting/.home-greet-*, but that file is NOT loaded by
+   selection.html (only this one is) — relying on it is what left the text block
+   with no layout rules at all, collapsing it to ~4px wide so only a single
+   stray character of each line was visible. Everything the greeting needs
+   lives here.
+
+   Type scale is intentionally small: F7 pins .navbar to a hard 56px
+   (Framework7-1.4.2/dist/css/Css_f7.css), so the two lines plus their leading
+   must fit inside that with room to breathe, and every line is clamped to a
+   single row with an ellipsis rather than being allowed to wrap and spill
+   past the bar into the status bar.
+        name  14px / 1.25  =  17.5px
+        date  11px / 1.25  =  13.75px
+        block                ≈ 31px, inside a 56px bar
    ========================================================================== */
-.views .navbar .left.home-profile {
-    width: auto !important;
-    display: -webkit-box !important;
-    display: -webkit-flex !important;
-    display: flex !important;
-    -webkit-box-orient: vertical !important;
-    -webkit-box-direction: normal !important;
-    -webkit-flex-direction: column !important;
-    flex-direction: column !important;
-    -webkit-box-align: center !important;
-    -webkit-align-items: center !important;
-    align-items: center !important;
-    -webkit-box-pack: center !important;
-    -webkit-justify-content: center !important;
-    justify-content: center !important;
-    gap: 2px !important;
-    margin: 0 8px !important;
-    text-align: center !important;
-    height: 100% !important;
-}
 
 /* Back arrow removed from the Home app bar (hardware back still navigates
    sub-flows via the same back_button() handler). */
-.home-profile #btn_page_back { display: none !important; }
-
-.home-profile .open-panel { margin: 0 !important; line-height: 0 !important; }
-.home-profile #menu_img_profile {
-    width: 30px !important;
-    height: 30px !important;
-    border-radius: 50% !important;
-    object-fit: cover !important;
-    border: 1.5px solid rgba(0, 0, 0, 0.12) !important;
-    display: block !important;
-}
-#home_user_name.home-user-name {
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    color: #ffffff !important;
-    line-height: 1.1 !important;
-    margin: 2px 0 0 0 !important;
-    max-width: 76px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    display: block !important;
-}
+.home-greeting #btn_page_back { display: none !important; }
 
 /* The theme label never carries the username here — hide it so the name shown
-   under the avatar isn't duplicated in the (unused) navbar center. */
+   beside the avatar isn't duplicated in the (unused) navbar center. */
 .views .navbar .center #lbl_theme_header { display: none !important; }
 
-/* STRICT CLEANUP: Hide any auto-injected elements by F7 in the left navbar 
-   that aren't the back button, menu link, or our explicit username span */
-.views .navbar .left > *:not(a):not(.home-user-name) {
+/* STRICT CLEANUP: Hide any auto-injected elements by F7 in the left navbar
+   that aren't the back button, menu link, or our explicit greeting text. */
+.views .navbar .left > *:not(a):not(.home-greet-text) {
     display: none !important;
 }
 
-/* Hide any loose text nodes in .left by making them transparent */
+/* Hide any loose text nodes in .left by making them transparent. F7 leaks
+   previous-page titles in here; the greeting spans below opt back in
+   explicitly (they must restate colour with !important to beat this). */
 .views .navbar .left {
     color: transparent !important;
 }
-/* Ensure ANY anchor tag in the left navbar has no visible text. 
+
+/* flex:1 + min-width:0 is the actual fix for the collapse: F7 ships
+   .navbar .left as flex-shrink:0 with no grow, so without this the row sizes
+   itself to the avatar alone and leaves the text ~4px. min-width:0 is
+   required for a flex child to be allowed to shrink below its content width,
+   which is what makes the ellipsis possible at all. */
+.views .navbar .left.home-greeting {
+    display: flex !important;
+    -webkit-box-align: center !important;
+    -webkit-align-items: center !important;
+    align-items: center !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    height: 100% !important;
+    gap: 10px !important;
+    margin-left: 12px !important;
+    overflow: hidden !important;
+}
+
+/* 36px avatar inside a 44px-tall hit area — 44px is the minimum comfortable
+   touch target, and this anchor is the drawer opener, so the target is sized
+   independently of the visual circle. */
+.views .navbar .left.home-greeting .open-panel {
+    margin: 0 !important;
+    line-height: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+}
+.views .navbar .left.home-greeting #menu_img_profile {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 1.5px solid rgba(0, 0, 0, .12) !important;
+    display: block !important;
+}
+
+.views .navbar .left.home-greeting .home-greet-text {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    line-height: 1.25 !important;
+}
+
+/* display:block matters: overflow / text-overflow are ignored on inline
+   elements, so as inline spans these would overflow instead of ellipsing. */
+.views .navbar .left.home-greeting .home-greet-name,
+.views .navbar .left.home-greeting .home-greet-sub {
+    display: block !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+}
+.views .navbar .left.home-greeting .home-greet-name {
+    color: #0f1729 !important;   /* 15.26:1 on the #ecedef bar */
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+/* #4b5563, not the #6b7280 this started as: that only reached 4.13:1 against
+   the light bar, under the 4.5:1 AA minimum for normal-size body text. This
+   clears it at 6.45:1 while still reading as clearly secondary to the name
+   above. (Both computed via the standard WCAG relative-luminance formula.) */
+.views .navbar .left.home-greeting .home-greet-sub {
+    color: #4b5563 !important;
+    font-size: 11px !important;
+    font-weight: 400 !important;
+}
+
+/* Ensure ANY anchor tag in the left navbar has no visible text.
    F7 often injects previous page titles into the back link or open-panel link. */
 .views .navbar .left a {
     color: transparent !important;
@@ -150,9 +208,26 @@
     display: none !important;
 }
 
-/* STRICT CLEANUP: Hide anything in center that isn't the dashboard config */
-.views .navbar .center > *:not(#home_search_container):not(#div_dashboard_config):not(#ddl_dashboard_list):not(#toggle_chart_tbl):not(.page-title) {
+/* The actual root cause of the greeting text truncating hard ("Good m…"):
+   #div_dashboard_config/#ddl_dashboard_list/#toggle_chart_tbl are legacy
+   chart-view controls, dead weight while ischart_enabled is false
+   (selection.html's own flag) — but nothing on THIS page was hiding them.
+   The line below used to allowlist them as the only things in .center
+   allowed to stay visible, which is backwards: it protected them FROM the
+   cleanup instead of hiding them. Measured live: with these visible, .center
+   was 197px wide — 46% of a 423px navbar — squeezing .left down to ~55px of
+   actual text space. #home_search_container/.page-title in that same old
+   allowlist don't exist anywhere in this file either; nothing here needs
+   .center to hold width at all. */
+#div_dashboard_config,
+#ddl_dashboard_list,
+#toggle_chart_tbl {
     display: none !important;
+}
+.views .navbar .center {
+    display: none !important;
+    width: 0 !important;
+    margin: 0 !important;
 }
 
 /* SEARCH BAR ANIMATIONS */

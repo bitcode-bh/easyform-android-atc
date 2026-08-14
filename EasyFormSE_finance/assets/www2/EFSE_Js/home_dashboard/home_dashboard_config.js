@@ -1,0 +1,68 @@
+// Home Operations Dashboard — defaults and widget registry.
+// See docs/PRD-Home-Operations-Dashboard.md §6 (widget catalog) / §12 (phases).
+
+var HomeDashboardConfig = (function () {
+    'use strict';
+
+    // Rollout switch, same manual pattern as selection.html's own
+    // `var ischart_enabled = 'false'`. Real server-driven enablement
+    // (list_json[0].home_dashboard_enabled, or a future login.js-persisted
+    // flag) always wins when present; this is only the fallback when neither
+    // exists yet — which is every account today, since no backend ships that
+    // config, so this is what actually decides whether the cards render.
+    var DEFAULT_ENABLED = true;
+
+    // Two former widgets are deliberately absent, and neither is a
+    // "not implemented yet" gap — both were promoted to permanent chrome:
+    //   greeting_header -> the navbar, beside the avatar (selection.html's
+    //                      own inline script)
+    //   trip_status     -> the bottom tab bar's "Start Trip" action
+    // Both are now unconditional, not gated behind home_dashboard_enabled /
+    // dashboard_profile. Keeping TYPES/IMPLEMENTED entries for them would
+    // wrongly suggest to a server-config author that they can still be
+    // placed as dashboard cards.
+    var TYPES = {
+        TASK_SUMMARY: 'task_summary',
+        FLOW_LIST_COMPACT: 'flow_list_compact',
+        TRIP_STATS: 'trip_stats',
+        UPLOAD_HEALTH: 'upload_health',
+        ATTENDANCE_CHIP: 'attendance_chip',
+        MAP_ENTRY: 'map_entry',
+        NOTIFICATIONS_SUMMARY: 'notifications_summary',
+        APPROVALS_PENDING: 'approvals_pending',
+        ANALYTICS_STRIP: 'analytics_strip',
+        FEATURE_LINKS: 'feature_links'
+    };
+
+    // A configured profile whose type is not listed here resolves to null so
+    // the widget is skipped (never rendered/erroring) instead of the whole
+    // dashboard failing — same reasoning as TripMapConfig.IMPLEMENTED.
+    var IMPLEMENTED = {
+        task_summary: true,
+        upload_health: true
+    };
+
+    // PRD Appendix A — the built-in default when no server config exists at
+    // all (list_json empty, no tenant flag). This is what actually renders
+    // on a fresh Home load today, since list_json is not populated until a
+    // flow has been opened once this session (see home_dashboard_resolver.js).
+    var DEFAULT_PROFILE = {
+        layout: 'stack',
+        refresh_interval_sec: 60,
+        widgets: [
+            { type: TYPES.TASK_SUMMARY, show_per_flow_breakdown: false },
+            { type: TYPES.UPLOAD_HEALTH, show_sync_button: true }
+        ]
+    };
+
+    function isImplemented(type) {
+        return IMPLEMENTED[type] === true;
+    }
+
+    return {
+        TYPES: TYPES,
+        DEFAULT_ENABLED: DEFAULT_ENABLED,
+        DEFAULT_PROFILE: DEFAULT_PROFILE,
+        isImplemented: isImplemented
+    };
+})();
