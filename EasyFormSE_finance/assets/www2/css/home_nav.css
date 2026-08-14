@@ -70,8 +70,29 @@
 #div_new_tabbar .tab-link.active-state,
 #div_new_tabbar .tab-link:active { background: transparent !important; }
 
+/* "Trip is recording" indicator — small blinking dot on the Start Trip icon,
+   shown only while trip_status === '0' (see refreshHomeTripTab() in
+   selection.html, the same read-only signal the tab's own active/label state
+   already uses). */
+#div_new_tabbar .trip-recording-dot {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--c-danger, #dc2626);
+    animation: hd-trip-dot-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes hd-trip-dot-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+}
+
 @media (prefers-reduced-motion: reduce) {
     #div_new_tabbar .tab-ico i { transition: none !important; }
+    #div_new_tabbar .trip-recording-dot { animation: none; }
 }
 
 /* ==========================================================================

@@ -132,9 +132,53 @@ Full detail in `docs/PRD-Home-Operations-Dashboard.md` §12b. Summary:
   comment already anticipated for future widget types.
 - Live-verified over CDP against the real running UAT session (role 305, `anup.ce`) — all three
   render/hide correctly; `attendance_chip`'s result confirmed a real `Get_Attendance` network round
-  trip against live UAT data. Rebuilt from source and reinstalled cleanly. **Final on-device
-  confirmation after the resulting re-login, and the commit itself, are still pending** — a reinstall
-  always forces a fresh manual login on this device.
+  trip against live UAT data. Rebuilt from source, reinstalled, and re-verified against a second
+  real logged-in session (role 364, active trip) before committing (`5314afd`).
+
+---
+
+## A fourth area touched in this worktree: Stop Trip reliability + recording indicator
+
+Unlike the three features above, this is **not** new dashboard/map surface — it's a small,
+deliberately narrow change to the actual trip engine (`AutoTripStopService.java`, on this worktree's
+own "engine sacred" blocklist) plus a Home-tab UI indicator. First commit in this worktree to touch
+a blocklisted engine file; done only after explicit user direction on scope, not a dashboard-driven
+change (the pre-commit hook doesn't fire here since this commit touches no `home_dashboard`/
+`trip_map` paths).
+
+**What changed, and — just as importantly — what didn't:**
+- **Recording indicator**: a small blinking red dot on the bottom tab bar's Start Trip icon
+  (`.trip-recording-dot` in `css/home_nav.css`), shown only while `trip_status === '0'` — the same
+  read-only signal `refreshHomeTripTab()` already used for the "On Trip" label/active state. Pure
+  UI, no engine involvement.
+- **Stop-trip confirmation popup**: `homeTabbarTripClick()` (`selection.html`) now shows an
+  `myApp.confirm(...)` dialog before stopping — on confirm it calls the existing, **completely
+  unmodified** `stop_trip_manualy_from_module_listing()` (with a safe fallback to the old
+  immediate-stop behavior if `myApp.confirm` is unavailable).
+- **`ISExitGeofence` finally wired in** (`AutoTripStopService.java`): this flag was already being
+  set by `GeofenceTrasitionServicenew.java` (device exits the 200m start-point geofence a
+  late-starting trip gets via `TripMapUi.startgeofence()`) and already being read+reset in
+  `AutoTripStopService`'s stop-decision block — but never actually consulted. It's now a real
+  **alternate** trigger alongside the existing duration check
+  (`isTripFinished_hourbase(...) || ISExitGeofence`), not a replacement for it. `stopTrip()`'s own
+  DB-write logic is untouched.
+- **Explicitly did not** try to unify the three separate stop-trip code paths that exist in this
+  codebase (`start_stop_trip()` via `TripPlugin`, `stop_trip_manualy_from_module_listing()`'s direct
+  SQL, and `AutoTripStopService.stopTrip()`'s own native writes) — confirmed via research that a
+  native background service has no bridge to WebView JS anywhere in this codebase (so routing the
+  automatic path through the JS function would trade reliability for code-sharing, exactly backwards
+  for a safety-tracking feature), and separately learned from the user that the Home button's
+  lightweight path is intentionally kept apart from the full `TripPlugin`→`TripMapUi` flow (avoids
+  navigating the user into the module listing). Keep it that way — do not attempt to merge these
+  three implementations without asking again.
+- Verified: blinking dot and confirm popup both live-verified via CDP on a real active trip (role
+  `anup.vt`) with zero disruption — the confirm test used a no-op callback specifically so there was
+  no chance of actually ending the real trip. `ISExitGeofence` compiles cleanly but could not be
+  end-to-end field-tested in-session (needs a real geofence exit or duration timeout) — worth
+  watching in real usage.
+- The reinstall needed to test the native change did interrupt the real active trip that happened to
+  be running at the time (`trip_status` reset, its pending upload cleared) — done only after the user
+  explicitly confirmed it was fine to proceed anyway.
 
 ---
 
@@ -488,6 +532,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `5314afd` | Home Operations Dashboard P2 — `trip_stats`, `map_entry`, `attendance_chip` widgets (see the P2 section above and PRD §12b) |
 | `93fdff0` | LMS reel/lesson video randomly pausing mid-playback — `tab:show` pausing reels while already on tab-4, Swiper misreading a tap as a swipe, tap-vs-play()-promise races (centralized `ml_safe_pause`), a background refresh destroying the actively-playing `<video>`, and the Safety Module preloader stalling playback on autoplay start |
 | `8107b33` | Remove unused `READ_PRIVILEGED_PHONE_STATE` permission — the only manifest permission with zero code references; everything else in the flagged cluster confirmed genuinely load-bearing (see the manifest audit above) |
 | `07d22b5` | `LmsBackend` server-progress integration seam (auto-detecting, inert until the backend ships the fields) + real user-facing message in `onfail()` instead of alerting the raw XHR object |

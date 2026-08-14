@@ -753,7 +753,10 @@
                                     <span class="tabbar-label mt-1">Report</span>
                                 </a>
                                 <a href="#" class="tab-link" id="btn_start_trip" onclick="return homeTabbarTripClick()">
-                                    <span class="tab-ico"><i class="fa-solid fa-route ico-outline"></i><i class="fa-solid fa-route ico-filled"></i></span>
+                                    <span class="tab-ico">
+                                        <i class="fa-solid fa-route ico-outline"></i><i class="fa-solid fa-route ico-filled"></i>
+                                        <span id="trip_recording_dot" class="trip-recording-dot" style="display:none"></span>
+                                    </span>
                                     <span class="tabbar-label mt-1" id="lbl_start_trip">Start Trip</span>
                                 </a>
                                 <a href="#" class="tab-link" id="btn_trip_map" style="display:none" onclick="TripSiteMap.open()">
@@ -1321,12 +1324,15 @@
                     var lbl = document.getElementById('lbl_start_trip');
                     if (!tab || !lbl) return;
                     HomeDashboardData.getTripStatus(function (result) {
+                        var dot = document.getElementById('trip_recording_dot');
                         if (result.active) {
                             tab.classList.add('active');
                             lbl.textContent = 'On Trip';
+                            if (dot) dot.style.display = 'block';
                         } else {
                             tab.classList.remove('active');
                             lbl.textContent = 'Start Trip';
+                            if (dot) dot.style.display = 'none';
                         }
                     });
                 } catch (e) { }
@@ -1337,7 +1343,18 @@
                     var tab = document.getElementById('btn_start_trip');
                     var isActive = tab && tab.classList.contains('active');
                     if (isActive) {
-                        if (typeof stop_trip_manualy_from_module_listing === 'function') {
+                        // Confirm before stopping — this is a behavior change only; the
+                        // actual stop still goes through the existing, unmodified
+                        // stop_trip_manualy_from_module_listing() (the deliberately
+                        // lightweight Home-button path, kept separate from the full
+                        // TripMapUi flow on purpose).
+                        if (typeof myApp !== 'undefined' && myApp.confirm) {
+                            myApp.confirm('Are you sure you want to stop the trip?', 'Stop Trip', function () {
+                                if (typeof stop_trip_manualy_from_module_listing === 'function') {
+                                    stop_trip_manualy_from_module_listing();
+                                }
+                            });
+                        } else if (typeof stop_trip_manualy_from_module_listing === 'function') {
                             stop_trip_manualy_from_module_listing();
                         }
                     } else {

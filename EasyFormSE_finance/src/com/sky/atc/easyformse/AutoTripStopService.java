@@ -760,13 +760,21 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                         boolean ISTripStartAfter6PM = pref1.getBoolean("ISTripStartAfter6PM",false);
                                         boolean ISExitGeofence = pref1.getBoolean("ISExitGeofence",false);
 
+                                        // A late-starting trip (ISTripStartAfter6PM) is geofenced at its
+                                        // start point (TripMapUi.java, startgeofence(), 200m) precisely so
+                                        // leaving that area is itself a valid "the visit is over" signal —
+                                        // not just the configured duration elapsing. ISExitGeofence was
+                                        // already being set by GeofenceTrasitionServicenew.java and reset
+                                        // here on stop, but never actually consulted; it's now a real
+                                        // alternate trigger alongside the duration check, not a
+                                        // replacement for it.
                                         if(SameLocation.equalsIgnoreCase("true"))
                                         {
                                             if (!ISTripStartAfter6PM && distance < LOCATION_THRESHOLD) {
                                                 stopTrip(location,punchoutstatus);
                                                 return;
                                             }
-                                            else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour)){
+                                            else if (ISTripStartAfter6PM && (isTripFinished_hourbase(TripStartTime,duration_hour) || ISExitGeofence)){
                                                 stopTrip(location,punchoutstatus);
 
                                                 pref1.putBoolean("ISTripStartAfter6PM",false);
@@ -782,7 +790,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                                 stopTrip(location,punchoutstatus);
                                                 return;
                                             }
-                                            else if (ISTripStartAfter6PM &&  isTripFinished_hourbase(TripStartTime,duration_hour) ){
+                                            else if (ISTripStartAfter6PM && (isTripFinished_hourbase(TripStartTime,duration_hour) || ISExitGeofence) ){
                                                 stopTrip(location,punchoutstatus);
 
                                                 pref1.putBoolean("ISTripStartAfter6PM",false);
