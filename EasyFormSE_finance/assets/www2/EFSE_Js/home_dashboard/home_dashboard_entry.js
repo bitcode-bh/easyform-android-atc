@@ -15,6 +15,7 @@ var HomeDashboard = (function () {
     // filter.
     var WIDGET_REGISTRY = {
         task_summary: HomeWidgetTaskSummary,
+        site_summary: HomeWidgetSiteSummary,
         upload_health: HomeWidgetUploadHealth,
         trip_stats: HomeWidgetTripStats,
         map_entry: HomeWidgetMapEntry,

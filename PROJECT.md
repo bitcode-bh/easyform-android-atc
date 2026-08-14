@@ -177,6 +177,24 @@ Considered a numberless, self-gated "Analytics" entry card (same self-gating pat
 purpose, and there's no guarantee the eventual finalized dashboard keeps this same API shape.
 Revisit once `ischart_enabled` is actually turned on.
 
+**`site_summary` — new top card, outside the original PRD catalog, by explicit request
+(2026-08-14).** Replaces `task_summary` as `HomeDashboardConfig.DEFAULT_PROFILE`'s first widget
+(`task_summary` itself is untouched and still `IMPLEMENTED`, just no longer the default — a role can
+still get it back via a real `dashboard_profile`/`dashboard_role_map`). Two stats:
+- **Total Sites** — `count(distinct place_id)` from `geofence_tracking` (the downloaded site
+  catalog). That table has no `username`/`user_id` column at all; safe to read unscoped because
+  `delete_database`'s `'nck'` action (called from `login.js` on user switch) unconditionally wipes
+  it, so it can never hold another user's rows — confirmed by reading that Java file directly, not
+  assumed.
+- **Visited Today** — reuses the exact `geofence_user_tracking_detail` / `is_send='1'`
+  confirmed-dwell query P2's `trip_stats` already established, additionally scoped by `user_id`
+  (independent of whether a trip is active, unlike `trip_stats`'s version).
+- Tap delegates to `TripSiteMap.open()` when available; a no-op otherwise (that function already
+  guards on its own profile resolution), so the card needs no `isEnabled()` gate of its own.
+- Live-verified over CDP (both tables genuinely empty on the test device/account — confirmed via a
+  direct SQL count, not assumed from the UI) and confirmed on a from-source rebuild+reinstall before
+  committing.
+
 ---
 
 ## A fourth area touched in this worktree: Stop Trip reliability + recording indicator

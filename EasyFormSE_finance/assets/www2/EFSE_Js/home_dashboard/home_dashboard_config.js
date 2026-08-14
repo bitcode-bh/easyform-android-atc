@@ -23,6 +23,7 @@ var HomeDashboardConfig = (function () {
     // placed as dashboard cards.
     var TYPES = {
         TASK_SUMMARY: 'task_summary',
+        SITE_SUMMARY: 'site_summary',
         FLOW_LIST_COMPACT: 'flow_list_compact',
         TRIP_STATS: 'trip_stats',
         UPLOAD_HEALTH: 'upload_health',
@@ -39,6 +40,7 @@ var HomeDashboardConfig = (function () {
     // dashboard failing — same reasoning as TripMapConfig.IMPLEMENTED.
     var IMPLEMENTED = {
         task_summary: true,
+        site_summary: true,
         upload_health: true,
         // P2 (PRD §12 phased delivery). Implemented client-side but, unlike
         // P1's two widgets, deliberately NOT added to DEFAULT_PROFILE below —
@@ -67,13 +69,15 @@ var HomeDashboardConfig = (function () {
     // all (list_json empty, no tenant flag). This is what actually renders
     // on a fresh Home load today, since list_json is not populated until a
     // flow has been opened once this session (see home_dashboard_resolver.js).
-    // Deliberately P1-only — see the IMPLEMENTED comment above for why the P2
-    // widgets aren't here too.
+    // site_summary replaced task_summary as the top card by explicit request
+    // (2026-08-14) — task_summary is untouched and still IMPLEMENTED, just no
+    // longer shown by default; a role that wants task counts back can still
+    // get them via a real dashboard_profile/dashboard_role_map.
     var DEFAULT_PROFILE = {
         layout: 'stack',
         refresh_interval_sec: 60,
         widgets: [
-            { type: TYPES.TASK_SUMMARY, show_per_flow_breakdown: false },
+            { type: TYPES.SITE_SUMMARY },
             { type: TYPES.UPLOAD_HEALTH, show_sync_button: true }
         ]
     };

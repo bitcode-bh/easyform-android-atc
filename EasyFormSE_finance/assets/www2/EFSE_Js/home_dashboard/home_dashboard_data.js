@@ -449,12 +449,60 @@ var HomeDashboardData = (function () {
         }
     }
 
+    // site_summary (top dashboard card). Total Sites reads geofence_tracking —
+    // the downloaded site catalog (no username/user_id column at all; safe to
+    // read unscoped because delete_database's 'nck' action, called from
+    // login.js on user switch, unconditionally wipes this table, so it can
+    // never hold another user's rows). Visited Today reuses the same
+    // geofence_user_tracking_detail / is_send='1' confirmed-dwell logic
+    // getTripStats() already uses, scoped by user_id (the column exists
+    // there) as well as by date, independent of whether a trip is active.
+    function getSiteSummary(onDone) {
+        var user_id = null;
+        try {
+            user_id = JSON.parse(storage.getItem('user_id'));
+        } catch (e) {
+            user_id = null;
+        }
+
+        var result = { totalSites: null, visitedToday: null };
+        var pending = 2;
+        function maybeDone() {
+            pending--;
+            if (pending === 0) onDone(result);
+        }
+
+        sql(
+            "select count(distinct place_id) as cnt from geofence_tracking",
+            function (e) {
+                var r = []; try { r = JSON.parse(e) || []; } catch (err) { r = []; }
+                result.totalSites = (r.length && r[0].cnt !== undefined) ? parseInt(r[0].cnt, 10) : 0;
+                maybeDone();
+            },
+            function () { maybeDone(); }
+        );
+
+        var todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        var userClause = user_id ? (" and user_id = '" + user_id + "'") : '';
+        sql(
+            "select count(distinct place_id) as cnt from geofence_user_tracking_detail where is_send = 1 and in_time >= " + todayStart.getTime() + userClause,
+            function (e) {
+                var r = []; try { r = JSON.parse(e) || []; } catch (err) { r = []; }
+                result.visitedToday = (r.length && r[0].cnt !== undefined) ? parseInt(r[0].cnt, 10) : 0;
+                maybeDone();
+            },
+            function () { maybeDone(); }
+        );
+    }
+
     return {
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,
         getUploadCounts: getUploadCounts,
         getTripStats: getTripStats,
         getAttendanceToday: getAttendanceToday,
-        getNotificationsSummary: getNotificationsSummary
+        getNotificationsSummary: getNotificationsSummary,
+        getSiteSummary: getSiteSummary
     };
 })();

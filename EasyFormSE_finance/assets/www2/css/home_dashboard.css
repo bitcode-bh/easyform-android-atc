@@ -57,6 +57,34 @@
     color: #6b7280;
 }
 
+/* site_summary (top card) — whole card is tappable (opens the map) */
+#div_home_dashboard .hd-site-summary:active {
+    background: #f9fafb;
+}
+#div_home_dashboard .hd-site-stats {
+    display: flex;
+    gap: 8px;
+}
+#div_home_dashboard .hd-site-stat {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 10px;
+    background: #f9fafb;
+}
+#div_home_dashboard .hd-site-stat .hd-count {
+    display: block;
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f1729;
+}
+#div_home_dashboard .hd-site-stat .hd-label {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
 /* trip_stats (P2) — whole card is tappable (opens the map) */
 #div_home_dashboard .hd-trip-stats:active {
     background: #f9fafb;
