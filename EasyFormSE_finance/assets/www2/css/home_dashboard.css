@@ -57,12 +57,63 @@
     color: #6b7280;
 }
 
-/* trip_status */
-#div_home_dashboard .hd-trip-prompt,
-#div_home_dashboard .hd-trip-active {
+/* trip_stats (P2) — whole card is tappable (opens the map) */
+#div_home_dashboard .hd-trip-stats:active {
+    background: #f9fafb;
+}
+#div_home_dashboard .hd-trip-duration {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--c-primary, #215ba8);
+    margin-bottom: 10px;
+}
+#div_home_dashboard .hd-trip-metrics {
+    display: flex;
+    gap: 8px;
+}
+#div_home_dashboard .hd-trip-metric {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 10px;
+    background: #f9fafb;
+}
+#div_home_dashboard .hd-trip-metric-val {
+    display: block;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f1729;
+}
+#div_home_dashboard .hd-trip-metric-label {
+    display: block;
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* map_entry (P2) */
+#div_home_dashboard .hd-map-sub {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+
+/* attendance_chip (P2) — whole card is tappable (punch in) */
+#div_home_dashboard .hd-attendance {
+    border-left: 3px solid #d1d5db;
+}
+#div_home_dashboard .hd-attendance:active {
+    background: #f9fafb;
+}
+#div_home_dashboard .hd-attendance.hd-attendance-marked {
+    border-left-color: #16a34a;
+}
+#div_home_dashboard .hd-attendance.hd-attendance-unmarked {
+    border-left-color: #d97706;
+}
+#div_home_dashboard .hd-attendance-status {
     font-size: 14px;
     color: #0f1729;
-    margin-bottom: 10px;
 }
 
 /* upload_health */

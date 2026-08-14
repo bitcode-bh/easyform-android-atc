@@ -175,9 +175,220 @@ var HomeDashboardData = (function () {
         countRows("select flag from p_master where flag = 0", 'photos');
     }
 
+    function toRad(deg) {
+        return deg * Math.PI / 180;
+    }
+
+    function haversineKm(lat1, lon1, lat2, lon2) {
+        var R = 6371;
+        var dLat = toRad(lat2 - lat1);
+        var dLon = toRad(lon2 - lon1);
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function sumHaversineKm(points) {
+        var total = 0;
+        var prev = null;
+        for (var i = 0; i < points.length; i++) {
+            var lat = parseFloat(points[i].lat);
+            var lon = parseFloat(points[i].lon);
+            if (isNaN(lat) || isNaN(lon)) continue;
+            if (prev) {
+                total += haversineKm(prev.lat, prev.lon, lat, lon);
+            }
+            prev = { lat: lat, lon: lon };
+        }
+        return total;
+    }
+
+    // trip_stats (PRD §6.5, active trip only). Scopes track_master by
+    // date >= min_milli, NOT by a tid join — track_master has no tid column
+    // (confirmed against MySQLiteHelper.java's CREATE TABLE), so this mirrors
+    // TrackPathReader.java's own native query verbatim ("select lat,lon,tripflag
+    // from track_master where tripflag IN (2,3) and date>=" + trip.minMilli).
+    // tripflag 2/3 (MapConstants.TRIPFLAG_FUSED/TRIPFLAG_VIOLATION) and the
+    // unquoted-numeric-literal-vs-TEXT-column comparison style are both copied
+    // from that same proven native query, not guessed.
+    //
+    // Per PRD §11 ("skip trip_stats path calculation if > 5,000 points on
+    // low-end devices"), the Haversine sum over raw lat/lon rows is only run
+    // once a cheap count() confirms the point set is small enough; above that,
+    // km stays null (never a fabricated/estimated distance) and the widget
+    // falls back to duration + violations + sites-visited + "Open map" only.
+    //
+    // Sites visited comes from geofence_user_tracking_detail, NOT
+    // geofence_tracking (that table is only the downloaded site catalog, no
+    // visit events). is_send='1' means GeofenceTrasitionService.java confirmed
+    // a real dwell past the configured threshold, not a bounce.
+    function getTripStats(onDone) {
+        var status = null;
+        try { status = localStorage.getItem('trip_status'); } catch (e) { status = null; }
+        if (status !== '0') {
+            onDone({ active: false });
+            return;
+        }
+
+        function inactiveNoData() {
+            onDone({ active: true, durationMs: null, km: null, violations: null, sitesVisited: null, pointCount: 0 });
+        }
+
+        sql(
+            "select tid,min_milli from lat_plug where trip_status = 0",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                if (rows.length === 0 || !rows[0].min_milli) {
+                    inactiveNoData();
+                    return;
+                }
+                var minMilli = parseInt(rows[0].min_milli, 10);
+                if (isNaN(minMilli) || minMilli <= 0) {
+                    inactiveNoData();
+                    return;
+                }
+
+                var result = {
+                    active: true,
+                    durationMs: Date.now() - minMilli,
+                    km: null,
+                    violations: null,
+                    sitesVisited: null,
+                    pointCount: 0
+                };
+                var pending = 3;
+                function maybeDone() {
+                    pending--;
+                    if (pending === 0) onDone(result);
+                }
+
+                sql(
+                    "select count(*) as cnt from track_master where tripflag = 3 and date >= " + minMilli,
+                    function (e2) {
+                        var r = []; try { r = JSON.parse(e2) || []; } catch (err) { r = []; }
+                        result.violations = (r.length && r[0].cnt !== undefined) ? parseInt(r[0].cnt, 10) : 0;
+                        maybeDone();
+                    },
+                    function () { maybeDone(); }
+                );
+
+                sql(
+                    "select count(*) as cnt from track_master where tripflag IN (2,3) and date >= " + minMilli,
+                    function (e3) {
+                        var r = []; try { r = JSON.parse(e3) || []; } catch (err) { r = []; }
+                        var cnt = (r.length && r[0].cnt !== undefined) ? parseInt(r[0].cnt, 10) : 0;
+                        result.pointCount = cnt;
+                        if (cnt === 0 || cnt > 5000) {
+                            maybeDone();
+                            return;
+                        }
+                        sql(
+                            "select lat,lon from track_master where tripflag IN (2,3) and date >= " + minMilli + " order by date",
+                            function (e4) {
+                                var pts = []; try { pts = JSON.parse(e4) || []; } catch (err) { pts = []; }
+                                result.km = sumHaversineKm(pts);
+                                maybeDone();
+                            },
+                            function () { maybeDone(); }
+                        );
+                    },
+                    function () { maybeDone(); }
+                );
+
+                var todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                sql(
+                    "select count(distinct place_id) as cnt from geofence_user_tracking_detail where is_send = 1 and in_time >= " + todayStart.getTime(),
+                    function (e5) {
+                        var r = []; try { r = JSON.parse(e5) || []; } catch (err) { r = []; }
+                        result.sitesVisited = (r.length && r[0].cnt !== undefined) ? parseInt(r[0].cnt, 10) : 0;
+                        maybeDone();
+                    },
+                    function () { maybeDone(); }
+                );
+            },
+            inactiveNoData
+        );
+    }
+
+    // attendance_chip (PRD §6.7). Mirrors the live Get_Attendance caller in
+    // selection.js's get_today_attendance_for_notification_old() / EF_User_List.js's
+    // get_user_attendance() — same endpoint, params and response shape. There is
+    // no explicit checked-in/out boolean anywhere in that response; "checked in
+    // today" is derived the same way the rest of the app derives it: a returned
+    // record whose AssignDate matches today. status===2 ("no records this
+    // period") is a real, valid "not checked in" answer, not an error.
+    function getAttendanceToday(onDone) {
+        var flowId = null;
+        var userId = null;
+        try {
+            var attJson = JSON.parse(localStorage.getItem('AttendanceJson'));
+            flowId = attJson && attJson[0] && attJson[0].flow_id;
+            userId = JSON.parse(storage.getItem('user_id'));
+        } catch (e) {
+            onDone({ available: false });
+            return;
+        }
+        if (!flowId || !userId) {
+            onDone({ available: false });
+            return;
+        }
+
+        var now = new Date();
+        var param_obj = [{
+            Flow_id: flowId,
+            User_id: userId,
+            Month: now.getMonth() + 1,
+            Year: now.getFullYear()
+        }];
+
+        try {
+            var getdata = new Webservicecall_REST(
+                global_wcf_url + 'Get_Attendance',
+                JSON.stringify(param_obj),
+                function (e) {
+                    try {
+                        var result = JSON.parse(e.responseText);
+                        var status = result[0].status;
+                        if (status == 2) {
+                            onDone({ available: true, checkedIn: false });
+                            return;
+                        }
+                        if (status != 1) {
+                            onDone({ available: false });
+                            return;
+                        }
+                        var rows = JSON.parse(result[0].data) || [];
+                        var today = new Date();
+                        var checkedIn = false;
+                        for (var i = 0; i < rows.length; i++) {
+                            var d = new Date(rows[i].AssignDate);
+                            if (d.getFullYear() === today.getFullYear()
+                                && d.getMonth() === today.getMonth()
+                                && d.getDate() === today.getDate()) {
+                                checkedIn = true;
+                                break;
+                            }
+                        }
+                        onDone({ available: true, checkedIn: checkedIn });
+                    } catch (err) {
+                        onDone({ available: false });
+                    }
+                },
+                function () { onDone({ available: false }); }
+            );
+            getdata.callOtherDomain();
+        } catch (e) {
+            onDone({ available: false });
+        }
+    }
+
     return {
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,
-        getUploadCounts: getUploadCounts
+        getUploadCounts: getUploadCounts,
+        getTripStats: getTripStats,
+        getAttendanceToday: getAttendanceToday
     };
 })();

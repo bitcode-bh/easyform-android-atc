@@ -15,7 +15,10 @@ var HomeDashboard = (function () {
     // filter.
     var WIDGET_REGISTRY = {
         task_summary: HomeWidgetTaskSummary,
-        upload_health: HomeWidgetUploadHealth
+        upload_health: HomeWidgetUploadHealth,
+        trip_stats: HomeWidgetTripStats,
+        map_entry: HomeWidgetMapEntry,
+        attendance_chip: HomeWidgetAttendance
     };
 
     var _container = null;

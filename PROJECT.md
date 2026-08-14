@@ -105,6 +105,37 @@ app-wide `loading()` spinner) or `pending_status.js`'s functions (hard-coupled t
 `pending_status.html`-only DOM ids; one failure branch is an unbounded re-poll loop) — each issues
 its own independent query/API call instead.
 
+**P2 (`trip_stats`/`map_entry`/`attendance_chip`) built and CDP-verified 2026-08-14, uncommitted.**
+Full detail in `docs/PRD-Home-Operations-Dashboard.md` §12b. Summary:
+
+- `trip_stats` scopes `track_master` by `date >= lat_plug.min_milli` (no `tid` column exists on
+  that table — confirmed against `MySQLiteHelper.java`), mirroring `TrackPathReader.java`'s own
+  native query. Km is a Haversine sum over ordered points, skipped above 5,000 points (PRD §11) —
+  `km` stays `null` rather than estimated. Sites-visited reads `geofence_user_tracking_detail`
+  (`is_send='1'`), not `geofence_tracking` (that table is only the downloaded site catalog, not a
+  visit log). Card stays hidden unless a trip is actually active.
+- `map_entry` gates on `TripSiteMap.isEnabled()` — the same check the existing hidden
+  `#btn_trip_map` tab-bar button already uses — so a role with no map profile gets no card, not an
+  empty one. Site count reads `TripMapCache.getSites()` only (no network/native call); OPEN MAP is
+  the one action that calls the real `TripSiteMap.open()`.
+- `attendance_chip`'s `Get_Attendance` response has no live checked-in/out boolean anywhere in the
+  app (checked `AttendanceJson[0].Punchin_Status`/`Punchout_Status` as a possible offline shortcut
+  first — they turned out to be static flow-config constants, not live per-day state). "Checked in
+  today" is derived the same way the rest of the app already does: a record whose `AssignDate`
+  matches today. Tap always delegates to the existing `noti_Attendance_Click()` — the same call the
+  Start Trip tab uses — so there's exactly one punch-in implementation. Did not revive the PRD's
+  `noti_Attendance1` profile-photo warning (dead/commented code, no live trigger left to port).
+- Deliberately **not** added to `HomeDashboardConfig.DEFAULT_PROFILE` (unlike P1's two widgets) —
+  per the PRD's own persona table, trip/map/attendance aren't universal (an Auditor has no trips or
+  map profile). Marked `IMPLEMENTED: true` so a real `dashboard_profile`/`dashboard_role_map` can
+  use them immediately, but invisible today without one — same lifecycle the `IMPLEMENTED`-gate
+  comment already anticipated for future widget types.
+- Live-verified over CDP against the real running UAT session (role 305, `anup.ce`) — all three
+  render/hide correctly; `attendance_chip`'s result confirmed a real `Get_Attendance` network round
+  trip against live UAT data. Rebuilt from source and reinstalled cleanly. **Final on-device
+  confirmation after the resulting re-login, and the commit itself, are still pending** — a reinstall
+  always forces a fresh manual login on this device.
+
 ---
 
 ## What this branch is

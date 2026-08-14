@@ -39,13 +39,27 @@ var HomeDashboardConfig = (function () {
     // dashboard failing — same reasoning as TripMapConfig.IMPLEMENTED.
     var IMPLEMENTED = {
         task_summary: true,
-        upload_health: true
+        upload_health: true,
+        // P2 (PRD §12 phased delivery). Implemented client-side but, unlike
+        // P1's two widgets, deliberately NOT added to DEFAULT_PROFILE below —
+        // trip_stats/map_entry/attendance_chip are only relevant to some
+        // personas (PRD §5's persona table: an Auditor or Head/feature-only
+        // user has no trips and no map profile at all), so they only render
+        // for a role a real dashboard_role_map opts in, same lifecycle this
+        // gate's own comment already anticipates for future types. map_entry
+        // and trip_stats also each self-gate further at render time (map
+        // profile resolved / trip actually active).
+        trip_stats: true,
+        map_entry: true,
+        attendance_chip: true
     };
 
     // PRD Appendix A — the built-in default when no server config exists at
     // all (list_json empty, no tenant flag). This is what actually renders
     // on a fresh Home load today, since list_json is not populated until a
     // flow has been opened once this session (see home_dashboard_resolver.js).
+    // Deliberately P1-only — see the IMPLEMENTED comment above for why the P2
+    // widgets aren't here too.
     var DEFAULT_PROFILE = {
         layout: 'stack',
         refresh_interval_sec: 60,
