@@ -56,6 +56,55 @@ the machine-specific gotchas (JDK17, `local.properties`, the `atcmwfm.americanto
 **[`docs/BUILD-AND-DEPLOY.md`](docs/BUILD-AND-DEPLOY.md)**. Product spec:
 [`docs/PRD-Trip-Site-Map-v2.md`](docs/PRD-Trip-Site-Map-v2.md).
 
+**As of `ca152a8` (2026-08-14): `geofence_tracking` is the map's only native data source, for
+every profile type.** The earlier `task_master`-first fallback chain (`OfflineTaskReader.java`,
+now **deleted**) was unusable in practice — `task_master` fills only once tasks are downloaded and
+was repeatedly found empty on real accounts (including this worktree's own CPH2717 test device),
+while `geofence_tracking` is populated by its own independent download step and reliably held data.
+This also fixed a real cluster-filter bug: rows sourced from either native fallback carry
+`clusterId ""` (neither table has a `circle_id` column), which under an `ASSIGNED_CLUSTER` profile
+matched nothing and emptied the map — `MapSiteLoader.hasAnyClusterId()` now skips the cluster
+filter (not silently applying it to nothing) whenever the payload has no real cluster data at all.
+
+---
+
+## A third feature in this worktree: Home Operations Dashboard (P1)
+
+`EFSE_Js/home_dashboard/` — a configurable widget dashboard on `selection.html`'s Home screen.
+Independent of both LMS and Trip & Site Map; nothing above changes for it either. Product spec:
+[`docs/PRD-Home-Operations-Dashboard.md`](docs/PRD-Home-Operations-Dashboard.md). Landed `c5e35e1`
+(2026-08-14) — **P1 only** (task counts + upload health; see the PRD's phased-delivery table for
+P2+).
+
+**Enabled by default** (`HomeDashboardConfig.DEFAULT_ENABLED = true`) — no backend ships
+`home_dashboard_enabled` yet, so this local switch is what actually turns the cards on today, same
+pattern as `selection.html`'s own `ischart_enabled`.
+
+**Two former "dashboard widgets" are not dashboard widgets** — both were promoted to permanent
+navbar/tabbar chrome instead, unconditional and not gated by the feature flag:
+- `greeting_header` → the top navbar, beside the avatar (`selection.html`'s own inline script)
+- `trip_status` → the bottom tab bar's "Start Trip" action (delegates to the existing
+  `noti_Attendance_Click()` / `stop_trip_manualy_from_module_listing()`, zero reimplementation)
+
+The in-dashboard TRIP card and `#noti_Attendance2` ("Your attendance is pending!") were both
+removed as a result — Start Trip is the single entry point for that flow now, so both were
+duplicate prompts.
+
+**Two real, non-obvious CSS bugs came out of the navbar relocation** (see `c5e35e1`'s commit
+message for full detail): `css/home_redesign.css` is **not loaded** by `selection.html` at all
+(confirmed: no `<link>` references it anywhere) — writing the new layout there silently did
+nothing, and the legacy `#div_dashboard_config` chart-edit controls (dead since `ischart_enabled`
+is permanently `'false'`) were rendering at 197px wide, eating 46% of the navbar. Both fixed
+directly in `css/home_nav.css`, the file that's actually loaded. **If you touch this navbar again,
+verify which stylesheet is actually loaded before trusting a rule exists** — this codebase has
+several CSS files written for a page but never wired into its `<head>`.
+
+Data adapters (`home_dashboard_data.js`) deliberately never call the app's own
+`get_counter_for_online_flow_profile()` (mutates the shared `profile_flow_Array` global, pops the
+app-wide `loading()` spinner) or `pending_status.js`'s functions (hard-coupled to
+`pending_status.html`-only DOM ids; one failure branch is an unbounded re-poll loop) — each issues
+its own independent query/API call instead.
+
 ---
 
 ## What this branch is
@@ -97,6 +146,21 @@ device and a release build is safe by construction rather than by checklist.
 > Note: `CheckAuthOfApplication.isCheckRoot()` / `isCheckDebug()` are **native** (`cpp/native-lib.cpp`)
 > and hardcoded to `true` / `false` — they are NOT wired to the Gradle `buildConfigField` of the same
 > name. That mismatch is why a crude `if (false)` was used in the first place.
+
+**Separate from the four bypasses above — a real bug, fixed `f1f1c8d` (2026-08-14):**
+`MainActivity.java:125` calls `MeatGrinder.isRooted(this)` completely unconditionally (its own
+alert-and-exit side effect, not gated by any of the four `if (false)` markers, so it ran on every
+build variant including this one). It showed a blocking "This device is rooted" dialog on the
+CPH2717 test device **after it was genuinely, verifiably unrooted** (`release-keys`,
+`verifiedbootstate=green`, locked bootloader, no `su` binary anywhere — confirmed live). Root
+cause: `isFoundDangerousProps()`/`isDetectedTestKeys()`/`isDetectedDevKeys()` in `native-lib.cpp`
+treated a system property this app's process **can't read** (SELinux `untrusted_app` sandboxing,
+common on modern Android) the same as one that's genuinely present with a bad value. Fixed at the
+three call sites that had `isObligatoryProperty=true`; an actual value match still correctly flags
+a real rooted device. **This fix is real production behavior, not a test bypass** — it was also
+ported to `main` (`bitcode.bh/lms-ui-improvements`) since a genuinely clean user could hit the same
+false positive in `com.easyform.atcpv` today. It does not reduce or replace the four bypasses
+above, which are still fully in place and still block a real release.
 
 ### Manifest permission audit (2026-08-11, `8107b33`)
 
@@ -393,6 +457,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `93fdff0` | LMS reel/lesson video randomly pausing mid-playback — `tab:show` pausing reels while already on tab-4, Swiper misreading a tap as a swipe, tap-vs-play()-promise races (centralized `ml_safe_pause`), a background refresh destroying the actively-playing `<video>`, and the Safety Module preloader stalling playback on autoplay start |
 | `8107b33` | Remove unused `READ_PRIVILEGED_PHONE_STATE` permission — the only manifest permission with zero code references; everything else in the flagged cluster confirmed genuinely load-bearing (see the manifest audit above) |
 | `07d22b5` | `LmsBackend` server-progress integration seam (auto-detecting, inert until the backend ships the fields) + real user-facing message in `onfail()` instead of alerting the raw XHR object |
 | `0ee7e3c` | `LMS_API_SPEC.md` — prioritised (P0–P3) backend requirements, written from a live audit of the UAT API |
@@ -447,9 +512,13 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 ---
 
-*Last updated: 2026-08-11 — after `8107b33`. LMS verified working against UAT test data (3 modules,
-2 assessments, 3 reels, no errors); watch-time, role and fabricated-score bugs fixed and verified
-on-device. Manifest permission audit done — one dead permission removed, the rest confirmed
-load-bearing. QA distribution moved to Firebase App Distribution (project `bitcode-mwfm`) after
-confirming raw-APK sharing gets removed as malware and sideloaded installs get blocked by Play
-Protect. Remaining work is backend-dependent (`LMS_API_SPEC.md`) plus the release blockers above.*
+*Last updated: 2026-08-14 — after `c5e35e1`. LMS: `93fdff0` fixed the reel/lesson "video randomly
+pauses" reports (see Progress table). Trip & Site Map: `ca152a8` switched the map to
+`geofence_tracking` as its only native source and fixed a cluster-filter bug that was emptying the
+map entirely; `f1f1c8d` fixed a genuine root-detection false positive in `native-lib.cpp` (ported to
+`main`/production too, see Release Blockers). Home Operations Dashboard P1 shipped `c5e35e1` — see
+its own section above, including two real CSS bugs (wrong stylesheet, `.center` eating 46% of the
+navbar) found while wiring the navbar redesign. Everything above was verified on a fresh on-device
+install, not just live-patched. Remaining LMS work is still backend-dependent (`LMS_API_SPEC.md`)
+plus the four release blockers, which are unrelated to and unaffected by any of this session's
+fixes.*
