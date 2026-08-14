@@ -834,9 +834,9 @@ GeofencTrackingMapActivity.java
 geofencenew/GeofenceTrasitionService.java
 geofencenew/GeofenceTrasitionServicenew.java
 geofencenew/GeoFenceDraw.java
+MainActivity.java
 ```
 
-**Known gap, not yet fixed:** `MainActivity.java` is not in the hook's array despite being exactly
-the kind of file this module must never touch (and the file where this session's root-detection
-false-positive fix landed, `f1f1c8d` — see `PROJECT.md`). Worth adding in a follow-up, not done here
-since it's outside this pass's scope.
+**Fixed 2026-08-14:** `MainActivity.java` — previously missing from the hook's array despite being
+exactly the kind of file this module must never touch (and the file where an earlier session's
+root-detection false-positive fix landed, `f1f1c8d` — see `PROJECT.md`) — is now included.
