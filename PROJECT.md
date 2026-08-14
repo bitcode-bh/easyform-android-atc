@@ -592,6 +592,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `f61a94a` | `site_summary` — new top card (Total Sites / Visited Today), replaces `task_summary` as the default first widget — see the P4 section above |
 | `46764b8` | Home Operations Dashboard P3 — `notifications_summary`, `feature_links` (`approvals_pending` deferred, needs a real backend endpoint — see the P3 section above) |
 | `4f6191d` | Finish wiring `ISExitGeofence` into auto trip-stop, Stop Trip confirmation popup, recording indicator dot — see the dedicated section above |
 | `5314afd` | Home Operations Dashboard P2 — `trip_stats`, `map_entry`, `attendance_chip` widgets (see the P2 section above and PRD §12b) |
