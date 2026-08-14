@@ -532,6 +532,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `4f6191d` | Finish wiring `ISExitGeofence` into auto trip-stop, Stop Trip confirmation popup, recording indicator dot — see the dedicated section above |
 | `5314afd` | Home Operations Dashboard P2 — `trip_stats`, `map_entry`, `attendance_chip` widgets (see the P2 section above and PRD §12b) |
 | `93fdff0` | LMS reel/lesson video randomly pausing mid-playback — `tab:show` pausing reels while already on tab-4, Swiper misreading a tap as a swipe, tap-vs-play()-promise races (centralized `ml_safe_pause`), a background refresh destroying the actively-playing `<video>`, and the Safety Module preloader stalling playback on autoplay start |
 | `8107b33` | Remove unused `READ_PRIVILEGED_PHONE_STATE` permission — the only manifest permission with zero code references; everything else in the flagged cluster confirmed genuinely load-bearing (see the manifest audit above) |
