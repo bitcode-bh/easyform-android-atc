@@ -11,7 +11,7 @@
 | **Related** | [PRD-Trip-Site-Map-v2.md](./PRD-Trip-Site-Map-v2.md) — map widget is a separate module linked from this dashboard |
 | **P1 status** | **Shipped** `c5e35e1` (14 Aug 2026, `claude/lms-ui-improvements-fd66a5`) — see §12a below for what actually landed and where it diverged from this spec |
 | **P2 status** | **Shipped** `5314afd` (14 Aug 2026, `claude/lms-ui-improvements-fd66a5`) — trip_stats/map_entry/attendance_chip, live-verified over CDP against real UAT data and a from-source rebuild+reinstall. See §12b below. |
-| **P3 status** | **Built, uncommitted** (14 Aug 2026) — notifications_summary/feature_links written; approvals_pending deferred, needs a real backend endpoint (see §12c). On-device verification pending device availability. |
+| **P3 status** | **Shipped** `46764b8` (14 Aug 2026) — notifications_summary/feature_links, live-verified over CDP against real UAT data and a from-source rebuild+reinstall; approvals_pending deferred, needs a real backend endpoint (see §12c). |
 
 ---
 
@@ -653,9 +653,11 @@ doesn't exist.
   principle (see `PROJECT.md`'s LMS section for the two shipped bugs that principle was written
   from). `HomeDashboardConfig.IMPLEMENTED` does not list `approvals_pending`; it needs a real
   backend endpoint before it can exist, not a client-side workaround.
-- **Verification**: syntax-checked (`node --check`) on all touched files; on-device CDP/screenshot
-  verification and a from-source rebuild+reinstall are pending device availability (this test device
-  requires a physical unlock this session couldn't perform).
+- **Verification**: live-verified over CDP against a real UAT session — real notification data
+  rendered and tap correctly opened the actual native panel; `feature_links` confirmed both its real
+  empty state (all flags false) and, with flags temporarily forced true, correct rendering of all 5
+  links — reverted cleanly afterward. Confirmed via a from-source rebuild+reinstall before
+  committing (`46764b8`).
 
 ---
 

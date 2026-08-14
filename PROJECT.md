@@ -135,7 +135,7 @@ Full detail in `docs/PRD-Home-Operations-Dashboard.md` §12b. Summary:
   trip against live UAT data. Rebuilt from source, reinstalled, and re-verified against a second
   real logged-in session (role 364, active trip) before committing (`5314afd`).
 
-**P3 (`notifications_summary`/`feature_links`) built 2026-08-14, uncommitted — `approvals_pending`
+**P3 (`notifications_summary`/`feature_links`) shipped `46764b8` (2026-08-14) — `approvals_pending`
 deferred, not built.** Full detail in `docs/PRD-Home-Operations-Dashboard.md` §12c. Summary:
 
 - `notifications_summary` issues its own independent `Get_NotificationList_For_User` call (same
@@ -156,8 +156,10 @@ deferred, not built.** Full detail in `docs/PRD-Home-Operations-Dashboard.md` §
   fabricating the number it exists to show, against this codebase's own repeatedly-stated
   "never fabricate a value" rule. Needs a real backend endpoint; not in `HomeDashboardConfig
   .IMPLEMENTED`.
-- Syntax-checked on all touched files; on-device CDP/rebuild verification is pending — the test
-  device needs a physical unlock this session couldn't perform.
+- Live-verified over CDP against a real UAT session: real notification data rendered and tap
+  correctly opened the actual native panel; `feature_links` confirmed both its real empty state (all
+  flags false) and, with flags temporarily forced true, correct rendering of all 5 links — reverted
+  cleanly afterward. Confirmed via a from-source rebuild+reinstall before committing.
 
 ---
 
@@ -556,6 +558,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `46764b8` | Home Operations Dashboard P3 — `notifications_summary`, `feature_links` (`approvals_pending` deferred, needs a real backend endpoint — see the P3 section above) |
 | `4f6191d` | Finish wiring `ISExitGeofence` into auto trip-stop, Stop Trip confirmation popup, recording indicator dot — see the dedicated section above |
 | `5314afd` | Home Operations Dashboard P2 — `trip_stats`, `map_entry`, `attendance_chip` widgets (see the P2 section above and PRD §12b) |
 | `93fdff0` | LMS reel/lesson video randomly pausing mid-playback — `tab:show` pausing reels while already on tab-4, Swiper misreading a tap as a swipe, tap-vs-play()-promise races (centralized `ml_safe_pause`), a background refresh destroying the actively-playing `<video>`, and the Safety Module preloader stalling playback on autoplay start |
