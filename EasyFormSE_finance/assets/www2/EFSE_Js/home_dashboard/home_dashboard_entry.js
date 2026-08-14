@@ -18,7 +18,9 @@ var HomeDashboard = (function () {
         upload_health: HomeWidgetUploadHealth,
         trip_stats: HomeWidgetTripStats,
         map_entry: HomeWidgetMapEntry,
-        attendance_chip: HomeWidgetAttendance
+        attendance_chip: HomeWidgetAttendance,
+        notifications_summary: HomeWidgetNotifications,
+        feature_links: HomeWidgetFeatureLinks
     };
 
     var _container = null;

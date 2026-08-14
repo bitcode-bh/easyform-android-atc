@@ -105,7 +105,7 @@ app-wide `loading()` spinner) or `pending_status.js`'s functions (hard-coupled t
 `pending_status.html`-only DOM ids; one failure branch is an unbounded re-poll loop) — each issues
 its own independent query/API call instead.
 
-**P2 (`trip_stats`/`map_entry`/`attendance_chip`) built and CDP-verified 2026-08-14, uncommitted.**
+**P2 (`trip_stats`/`map_entry`/`attendance_chip`) shipped `5314afd` (2026-08-14).**
 Full detail in `docs/PRD-Home-Operations-Dashboard.md` §12b. Summary:
 
 - `trip_stats` scopes `track_master` by `date >= lat_plug.min_milli` (no `tid` column exists on
@@ -134,6 +134,30 @@ Full detail in `docs/PRD-Home-Operations-Dashboard.md` §12b. Summary:
   render/hide correctly; `attendance_chip`'s result confirmed a real `Get_Attendance` network round
   trip against live UAT data. Rebuilt from source, reinstalled, and re-verified against a second
   real logged-in session (role 364, active trip) before committing (`5314afd`).
+
+**P3 (`notifications_summary`/`feature_links`) built 2026-08-14, uncommitted — `approvals_pending`
+deferred, not built.** Full detail in `docs/PRD-Home-Operations-Dashboard.md` §12c. Summary:
+
+- `notifications_summary` issues its own independent `Get_NotificationList_For_User` call (same
+  endpoint/params `get_user_notifications()` already uses) rather than calling that function
+  directly, since that function also force-opens the real `.popup-notifications` panel — a side
+  effect a background dashboard render must not trigger. `hasUnread` reads the existing
+  `localStorage.new_notification` flag the navbar bell badge already uses. Tap delegates to the real
+  `get_user_notifications()` — one notification-panel implementation, not two.
+- `feature_links` reuses the real gating flags (`localStorage.getItem('KYFF'|'Chart'|'Tech_Report'|
+  'Live_Alarm_Report'|'Scoreboard')`, exact `'True'` literal) and the exact `onclick` behavior copied
+  from `selection.html`'s own `#menu_MISC` list — **not** the `menu_KYFF`-style element ids the PRD's
+  original catalog table names, which are only DOM ids, not the actual flags. `menu_Attendance` in
+  that same block was excluded on purpose: its `onchange` handler is empty (dead legacy toggle), and
+  P2's `attendance_chip` already covers real attendance status.
+- `approvals_pending` was **not built**. `WCF_Bulk_approval` is a write-only submit endpoint that
+  posts whatever's checked in a specific flow's on-screen `#site_list` — there is no server API in
+  this codebase that returns a standalone pending-approval count. Building it as spec'd would mean
+  fabricating the number it exists to show, against this codebase's own repeatedly-stated
+  "never fabricate a value" rule. Needs a real backend endpoint; not in `HomeDashboardConfig
+  .IMPLEMENTED`.
+- Syntax-checked on all touched files; on-device CDP/rebuild verification is pending — the test
+  device needs a physical unlock this session couldn't perform.
 
 ---
 

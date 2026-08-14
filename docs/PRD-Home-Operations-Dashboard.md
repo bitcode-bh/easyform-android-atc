@@ -10,7 +10,8 @@
 | **Out of scope** | LMS (`LMS_Dashboard.html`, LMS APIs), tracking engine changes |
 | **Related** | [PRD-Trip-Site-Map-v2.md](./PRD-Trip-Site-Map-v2.md) — map widget is a separate module linked from this dashboard |
 | **P1 status** | **Shipped** `c5e35e1` (14 Aug 2026, `claude/lms-ui-improvements-fd66a5`) — see §12a below for what actually landed and where it diverged from this spec |
-| **P2 status** | **Built, CDP-verified, uncommitted** (14 Aug 2026, `claude/lms-ui-improvements-fd66a5`) — trip_stats/map_entry/attendance_chip written, live-verified over CDP against real UAT data and a source rebuild; final on-device confirmation pass (post-reinstall manual login) and commit still pending. See §12b below. |
+| **P2 status** | **Shipped** `5314afd` (14 Aug 2026, `claude/lms-ui-improvements-fd66a5`) — trip_stats/map_entry/attendance_chip, live-verified over CDP against real UAT data and a from-source rebuild+reinstall. See §12b below. |
+| **P3 status** | **Built, uncommitted** (14 Aug 2026) — notifications_summary/feature_links written; approvals_pending deferred, needs a real backend endpoint (see §12c). On-device verification pending device availability. |
 
 ---
 
@@ -618,10 +619,43 @@ data-source specifics resolved against real schema/code rather than the PRD's pl
 - **Verification so far**: live-injected over CDP into the real running UAT session (role 305,
   `anup.ce`) — confirmed all three render/hide correctly, and `attendance_chip`'s "Not marked yet"
   text confirmed a real successful `Get_Attendance` network round-trip against live UAT data, not a
-  mocked response. Reverted the CDP test state afterward. Rebuilt from source and reinstalled
-  cleanly; **final on-device confirmation pass after the resulting re-login, and the commit itself,
-  are still pending** — reinstalling always forces a fresh manual login on this device, and that
-  can't be done on the user's behalf.
+  mocked response. Reverted the CDP test state afterward. Rebuilt from source, reinstalled, and
+  re-verified against a second real logged-in session (role 364, active trip) before committing
+  (`5314afd`).
+
+---
+
+## 12c. What P3 actually shipped (uncommitted) — `approvals_pending` deferred, not built
+
+Two of the three P3 widgets shipped as spec'd; the third turned out to need a backend endpoint that
+doesn't exist.
+
+- **`notifications_summary`**: independent `Get_NotificationList_For_User` call (same
+  endpoint/params `get_user_notifications()` in `selection.js` already uses, minus its
+  `myApp.popup('.popup-notifications')` side effect — rendering the dashboard card must not
+  force-open the real panel). `hasUnread` reads the same `localStorage.new_notification` flag the
+  navbar bell-icon badge already uses, so the two never disagree. Tap delegates to the real
+  `get_user_notifications()` — the same function the bell icon calls — so there is exactly one
+  notification-panel implementation, not two.
+- **`feature_links`**: the gating source is **not** the `menu_KYFF`-style element ids this table's
+  own "Data" column names — those are just DOM ids. The actual flags are
+  `localStorage.getItem('KYFF' | 'Chart' | 'Tech_Report' | 'Live_Alarm_Report' | 'Scoreboard')`
+  (exact `'True'` string literal, copied verbatim from `selection.html`'s own `#menu_MISC` list).
+  `menu_Attendance` — present in that same HTML block — was deliberately excluded: its `onchange`
+  handler is empty (dead legacy "Check In/Out" toggle), and real attendance status is already
+  covered by P2's `attendance_chip`.
+- **`approvals_pending` — not built.** `WCF_Bulk_approval` (`common-functions.js`) is a **write-only
+  submit** endpoint: it posts whatever's currently checked in a specific flow's on-screen
+  `#site_list`, driven entirely by client-side checkbox state on that page. There is no server API
+  anywhere in this codebase that returns a standalone "count of items awaiting approval" independent
+  of opening a specific flow first. Building this widget as spec'd would mean fabricating the count
+  it exists to show — against this codebase's own repeatedly-stated "never fabricate a value"
+  principle (see `PROJECT.md`'s LMS section for the two shipped bugs that principle was written
+  from). `HomeDashboardConfig.IMPLEMENTED` does not list `approvals_pending`; it needs a real
+  backend endpoint before it can exist, not a client-side workaround.
+- **Verification**: syntax-checked (`node --check`) on all touched files; on-device CDP/screenshot
+  verification and a from-source rebuild+reinstall are pending device availability (this test device
+  requires a physical unlock this session couldn't perform).
 
 ---
 

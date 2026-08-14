@@ -116,6 +116,65 @@
     color: #0f1729;
 }
 
+/* notifications_summary (P3) — whole card is tappable (opens the real panel) */
+#div_home_dashboard .hd-notifications:active {
+    background: #f9fafb;
+}
+#div_home_dashboard .hd-noti-empty {
+    font-size: 13px;
+    color: #6b7280;
+}
+#div_home_dashboard .hd-noti-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-top: 1px solid #f2f4f7;
+    font-size: 13px;
+    color: #6b7280;
+}
+#div_home_dashboard .hd-noti-row:first-child {
+    border-top: 0;
+}
+#div_home_dashboard .hd-noti-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: transparent;
+    flex: 0 0 auto;
+}
+#div_home_dashboard .hd-noti-row.hd-noti-unread {
+    color: #0f1729;
+    font-weight: 600;
+}
+#div_home_dashboard .hd-noti-row.hd-noti-unread .hd-noti-dot {
+    background: var(--c-primary, #215ba8);
+}
+
+/* feature_links (P3) */
+#div_home_dashboard .hd-link-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid #f2f4f7;
+    font-size: 14px;
+    color: #0f1729;
+}
+#div_home_dashboard .hd-link-row:first-of-type {
+    border-top: 0;
+}
+#div_home_dashboard .hd-link-row:active {
+    background: #f2f4f7;
+}
+#div_home_dashboard .hd-link-row span {
+    flex: 1 1 auto;
+}
+#div_home_dashboard .hd-link-chevron {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
 /* upload_health */
 #div_home_dashboard .hd-upload-total .hd-count {
     font-size: 28px;

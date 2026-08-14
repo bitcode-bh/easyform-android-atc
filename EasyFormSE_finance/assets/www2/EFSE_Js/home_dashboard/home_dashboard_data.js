@@ -384,11 +384,77 @@ var HomeDashboardData = (function () {
         }
     }
 
+    // notifications_summary (PRD §6.9). Independent Get_NotificationList_For_User
+    // call — same endpoint/params get_user_notifications() (selection.js) uses,
+    // minus its myApp.popup('.popup-notifications') side effect, since rendering
+    // the dashboard card must not force-open the native notification panel.
+    // hasUnread reads the same localStorage.new_notification flag the bell-icon
+    // badge already uses (set by check_for_new_user_notifications()) — cheap,
+    // no extra network call, and consistent with whatever the badge shows.
+    function getNotificationsSummary(limit, onDone) {
+        var user_id = null;
+        try {
+            user_id = JSON.parse(storage.getItem('user_id'));
+        } catch (e) {
+            user_id = null;
+        }
+
+        var hasUnread = false;
+        try {
+            hasUnread = localStorage.getItem('new_notification') === 'true';
+        } catch (e) {
+            hasUnread = false;
+        }
+
+        if (!user_id) {
+            onDone({ items: [], hasUnread: hasUnread, available: false });
+            return;
+        }
+
+        var param_obj = [{ user_id: user_id, offset: 0, fetch: limit }];
+        try {
+            var getdata = new Webservicecall_REST(
+                global_wcf_url + 'Get_NotificationList_For_User',
+                JSON.stringify(param_obj),
+                function (e) {
+                    try {
+                        var result = JSON.parse(e.responseText);
+                        var status = result[0].status;
+                        if (status == 2) {
+                            onDone({ items: [], hasUnread: hasUnread, available: true });
+                            return;
+                        }
+                        if (status != 1) {
+                            onDone({ items: [], hasUnread: hasUnread, available: false });
+                            return;
+                        }
+                        var rows = JSON.parse(result[0].data) || [];
+                        var items = [];
+                        for (var i = 0; i < rows.length && i < limit; i++) {
+                            var r = rows[i];
+                            var title = r.title || r.Title || (r.task_id ? ('Task ' + r.task_id) : 'Notification');
+                            var isRead = r.is_read == 1 || r.status == 'read' || r.status == 1;
+                            items.push({ title: title, isRead: isRead });
+                        }
+                        onDone({ items: items, hasUnread: hasUnread, available: true });
+                    } catch (err) {
+                        onDone({ items: [], hasUnread: hasUnread, available: false });
+                    }
+                },
+                function () { onDone({ items: [], hasUnread: hasUnread, available: false }); }
+            );
+            getdata.callOtherDomain();
+        } catch (e) {
+            onDone({ items: [], hasUnread: hasUnread, available: false });
+        }
+    }
+
     return {
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,
         getUploadCounts: getUploadCounts,
         getTripStats: getTripStats,
-        getAttendanceToday: getAttendanceToday
+        getAttendanceToday: getAttendanceToday,
+        getNotificationsSummary: getNotificationsSummary
     };
 })();

@@ -51,7 +51,16 @@ var HomeDashboardConfig = (function () {
         // profile resolved / trip actually active).
         trip_stats: true,
         map_entry: true,
-        attendance_chip: true
+        attendance_chip: true,
+        // P3 (PRD §12). approvals_pending is deliberately NOT here —
+        // WCF_Bulk_approval (common-functions.js) is a write-only submit
+        // endpoint that operates on whatever's checked in a specific flow's
+        // on-screen #site_list; there is no server API anywhere in this
+        // codebase that returns a standalone "count of items awaiting
+        // approval". Showing a number here would mean fabricating it. Needs
+        // a real backend endpoint before this widget can exist.
+        notifications_summary: true,
+        feature_links: true
     };
 
     // PRD Appendix A — the built-in default when no server config exists at
