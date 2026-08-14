@@ -31,5 +31,6 @@ public class TripMapUtils {
 
     public static String TRIPMAPBACK = sqlitewraper.context.getResources().getString(R.string.TRIPMAPBACK);
     public static String MOCKLOCATION = sqlitewraper.context.getResources().getString(R.string.MOCKLOCATION);
-
+//    public static String SAFETYDETECTION =  sqlitewraper.context.getResources().getString(R.string.SAFETYDETECTION);
+    public static String SAFETYDETECTION = "false";
 }

@@ -39,6 +39,8 @@
 
     <uses-permission android:name="android.permission.POWER_SAVER" tools:ignore="ProtectedPermissions"/>
 
+<!--    <uses-permission android:name="android.permission.SEND_SMS"/>-->
+
 
     <!--    <uses-permission android:name="android.permission.WRITE_CALENDAR" />-->
     <!--    <uses-permission android:name="android.permission.READ_CALENDAR" />-->
@@ -54,6 +56,9 @@
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
 
 
     <!--<uses-feature
@@ -183,7 +188,7 @@
         <receiver android:name=".servicenew" />
         <receiver
             android:name=".activity_recognize"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.location.ACTIVITY_RECOGNITION" />
@@ -383,6 +388,7 @@
         <service android:name=".newfused_gps" />
         <service android:name=".newfused" />
         <service android:name=".resume_wake" />
+        <service android:name=".newfused_accel_accelerometer"/>
         <service android:name=".MyFirebaseMessagingService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -395,8 +401,9 @@
         </service>
         <service android:name=".TripService" />
         <service android:name=".AutoTripStopService" />
-        <service android:name=".GpsReceiverService" />
-        <service android:name=".geofencenew.GeofenceTrasitionService" />
+
+        <service android:name=".GpsReceiverService" android:enabled="true" />
+        <service android:name=".geofencenew.GeofenceTrasitionService"  android:enabled="true"/>
         <service android:name=".geofencenew.GeofenceTrasitionServicenew"  android:exported="false" />
         <service android:name=".geofencenew.GeofenceDownlodService" android:exported="false" />
 
@@ -565,7 +572,17 @@
 <!--                <action android:name="android.service.notification.NotificationListenerService" />-->
 <!--            </intent-filter>-->
 <!--        </service>-->
+        <service
+            android:name=".VoipNotificationService"
+            android:label="VoIP Call Detection"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
 
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+
+        </service>
 
     </application>
 

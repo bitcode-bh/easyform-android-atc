@@ -5,6 +5,7 @@ import static com.sky.atc.easyformse.sqlitewraper.mainactivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.ContentValues;
@@ -66,6 +67,7 @@ import com.sky.atc.easyformse.attendance.newattendanceutils.models.AttendanceDat
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 import com.sky.atc.easyformse.geofencenew.GeofenceTrasitionServicenew;
+
 import com.sky.atc.easyformse.trip.ServiceOutage;
 import com.sky.atc.easyformse.trip.TripMapUtils;
 
@@ -132,7 +134,8 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     private final static int GEOFENCE_REQ_CODE = 0;
     private PendingIntent geoFencePendingIntent;
     boolean ischeckfirst = false;
-
+    ArrayList<String> permissionList = new ArrayList<>();
+    boolean isnotificationDialog = false;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -315,8 +318,9 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     protected void onResume() {
         super.onResume();
 
-        checkActivityRecognitionPermission();
-
+        //checkActivityRecognitionPermission();
+        createPermissionList();
+        permissionCheck();
 //        if (mGoogleApiClient != null) {
 //            mGoogleApiClient.connect();
 //        }
@@ -617,6 +621,23 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             // for Auto Trip
             Intent intent = new Intent(sqlitewraper.context, AutoTripStopService.class);
             WakefulIntentService.sendWakefulWork(sqlitewraper.context, intent);
+
+//            if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true")) {
+//                try {
+//
+//                    // crash detection like accident detection
+//                    Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
+//
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                        sqlitewraper.context.startForegroundService(mIntent1);
+//                    } else {
+//                        sqlitewraper.context.startService(mIntent1);
+//                    }
+//
+//                } catch (Exception e) {
+//
+//                }
+//            }
           //  }
             c4.close();
 
@@ -683,6 +704,15 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             Intent i = new Intent(sqlitewraper.context, f_upload_new_structure.class);
             WakefulIntentService.sendWakefulWork(sqlitewraper.context, i);
 
+//            if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
+//            {
+//                boolean check12 = isMyServiceRunning(sqlitewraper.context,
+//                        SafetyDetectionService.class.getName());
+//                if (check12) {
+//                    Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
+//                    sqlitewraper.context.stopService(mIntent1);
+//                }
+//            }
         }
     }
 
@@ -1150,6 +1180,58 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
     }
 
+    void createPermissionList() {
+
+        if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
+        {
+            permissionList.add(Manifest.permission.ACTIVITY_RECOGNITION);
+            permissionList.add(Manifest.permission.SEND_SMS);
+        }
+        else {
+            permissionList.add(Manifest.permission.ACTIVITY_RECOGNITION);
+        }
+
+
+    }
+
+    void permissionCheck() {
+        if (permissionList.size() > 0) {
+            if (!checkSelfPermission(permissionList)) {
+                ActivityCompat.requestPermissions(TripMapUi.this,
+                        permissionList.toArray(new String[0]),
+                        PERMISSION_REQUEST_CODE);
+
+            } else {
+                checkLocationPermissions();
+            }
+        } else {
+            createPermissionList();
+            permissionCheck();
+        }
+    }
+
+    boolean checkSelfPermission(@NonNull ArrayList<String> permissionList) {
+        boolean permissionGranted = true;
+        for (int n = 0; n < permissionList.size(); n++) {
+            permissionGranted = (ContextCompat.checkSelfPermission(TripMapUi.this, permissionList.get(n)) == PackageManager.PERMISSION_GRANTED);
+            if (!permissionGranted) {
+                break;
+            }
+        }
+        return permissionGranted;
+    }
+
+    boolean grantPermissionsResults(int[] grantResults) {
+        boolean grantPermissions = true;
+        for (int grantResult : grantResults) {
+            grantPermissions = (grantResult == PackageManager.PERMISSION_GRANTED);
+            if (!grantPermissions) {
+                break;
+            }
+        }
+        return grantPermissions;
+    }
+
 //    public boolean checkPermission() {
 //        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
 //                != PackageManager.PERMISSION_GRANTED) {
@@ -1182,27 +1264,51 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantPermissionsResults(grantResults)) {
                 checkLocationPermissions();
             } else {
                 //Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
-                        != PackageManager.PERMISSION_GRANTED) {
+                if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
+                {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) +
+                                ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+                                != PackageManager.PERMISSION_GRANTED) {
 
-                    showMessageOKCancel("You need to allow access Physical activity permissions",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
-                                    mainactivity.startActivity(intent);
-                                    finish();
-                                }
-                            });
+                            showMessageOKCancel("You need to allow access Physical activity permissions",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent();
+                                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                            intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
+                                            mainactivity.startActivity(intent);
+                                            finish();
+                                        }
+                                    });
+                        }
                     }
                 }
+                else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                                != PackageManager.PERMISSION_GRANTED) {
+
+                            showMessageOKCancel("You need to allow access Physical activity permissions",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent();
+                                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                            intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
+                                            mainactivity.startActivity(intent);
+                                            finish();
+                                        }
+                                    });
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -1217,10 +1323,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     }
     private void checkActivityRecognitionPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) +
+                    ContextCompat.checkSelfPermission(this,  Manifest.permission.SEND_SMS)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
+                        new String[]{Manifest.permission.ACTIVITY_RECOGNITION, Manifest.permission.SEND_SMS},
                         PERMISSION_REQUEST_CODE);
             }
             else {
@@ -1236,13 +1343,34 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 //            ActivityCompat.requestPermissions(this, locationPermissions, REQUEST_CODE_LOCATION);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 Locationpermissioncheck();
+                return;
             }
+
             else {
                 manageHandler(30000);
                 //start the fused location update
                 manageHandlerFused(200);
             }
-        } else {
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        {
+            boolean isEnabled = isNotificationServiceEnabled(this);
+            if (isEnabled)
+            {
+                Intent mServiceIntent = new Intent(this, VoipNotificationService.class);
+                startService(mServiceIntent);
+
+                manageHandler(30000);
+                //start the fused location update
+                manageHandlerFused(200);
+            } else {
+                //service is not enabled try to enable by calling...
+
+                requestNotificationaccess();
+                return;
+            }
+        }
+        else {
             manageHandler(30000);
             //start the fused location update
             manageHandlerFused(200);
@@ -1550,5 +1678,54 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         }
 
 
+    }
+    public boolean isNotificationServiceEnabled(Context context) {
+        String enabledServices = Settings.Secure.getString(context.getContentResolver(), "enabled_notification_listeners");
+        String packageName = context.getPackageName();
+        return enabledServices != null && enabledServices.contains(packageName);
+    }
+    public void requestNotificationaccess() {
+        int NotificationListner = ContextCompat.checkSelfPermission(TripMapUi.this, Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE);
+        boolean NotificationListnerGranted =(NotificationListner == PackageManager.PERMISSION_GRANTED);
+
+        if(!NotificationListnerGranted)
+        {
+            AlertDialog dialog;
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(false);
+            builder.setTitle("Notification access");
+            builder.setMessage("This app requires 'Notification access' permission from System Settings.");
+            builder.setPositiveButton("Allow in Settings", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
+                    startActivity(intent);
+                    // finish();
+                    isnotificationDialog = false;
+                }
+            });
+            if(!isnotificationDialog)
+            {
+                dialog = builder.create();
+                dialog.show();
+                isnotificationDialog = true;
+            }
+
+        }
+
+
+    }
+
+    private boolean isMyServiceRunning(Context context, String Myservice) {
+        ActivityManager manager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager
+                .getRunningServices(Integer.MAX_VALUE)) {
+            if (Myservice.equals(service.service.getClassName())) {
+
+                return true;
+            }
+        }
+        return false;
     }
 }

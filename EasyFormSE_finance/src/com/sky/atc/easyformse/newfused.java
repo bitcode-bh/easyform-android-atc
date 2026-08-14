@@ -14,6 +14,7 @@
 
 package com.sky.atc.easyformse;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
@@ -22,9 +23,11 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -97,7 +100,7 @@ public class newfused extends Service implements LocationListener {
     String lat_check;
     //Editor editor;
     int check = 0;
-
+    private BroadcastReceiver whatsappCallReceiver;
 
     NotificationChannel mChannel = null;
     String CHANNEL_ID = "my_channel_01";
@@ -120,7 +123,7 @@ public class newfused extends Service implements LocationListener {
     private PhoneStateListener phoneStateListener;
     private TelephonyCallback telephonyCallback;
 
-    private  boolean callActive = false;
+//    private  boolean callActive = false;
 
     private  long callStartTime = 0;
     private  long callEndTime = 0;
@@ -136,7 +139,10 @@ public class newfused extends Service implements LocationListener {
     private long maxSpeedMilli = 0L;
     private boolean speedViolation ;
     private boolean callEventInserted = false;
-    private static final float CALL_SPEED_LIMIT = 15;
+    private static float CALL_SPEED_LIMIT = 15;
+    private boolean simCallActive = false;
+    private boolean whatsappCallActive = false;
+
     @SuppressLint("InvalidWakeLockTag")
     synchronized private static PowerManager.WakeLock getLock(Context context) {
         if (lockStatic == null) {
@@ -176,7 +182,7 @@ public class newfused extends Service implements LocationListener {
         checkServicemilli();
         startServUpdateTask();
         registerCallListener();
-
+        registerWhatsAppCallReceiver();
         boolean isuploadlastentry = pref.getBoolean("isuploadlastentry",false);
 //        check location and upload in server
         if(!isuploadlastentry) {
@@ -320,6 +326,19 @@ public class newfused extends Service implements LocationListener {
         insert("new_fused_stop");
         quite();
         unregisterphonestate();
+        if (whatsappCallReceiver != null) {
+
+            try {
+                unregisterReceiver(
+                        whatsappCallReceiver);
+            } catch (Exception e) {
+                Log.e("WHATSAPP_CALL",
+                        "Receiver unregister error",
+                        e);
+            }
+
+            whatsappCallReceiver = null;
+        }
     }
 
 
@@ -419,16 +438,38 @@ public class newfused extends Service implements LocationListener {
 
     private void checkCallTimeSpeed(Location location)
     {
-        if (callActive) {
+        if (whatsappCallActive || simCallActive  )  {
 
             float currentSpeed = location.getSpeed() ;
-            Log.d("CALL_DEBUG",
-                    "callActive=" + callActive +
-                            " speedViolation=" + speedViolation +
-                            " speed=" + currentSpeed);
-            Log.d("CALL", "currentSpeed " + currentSpeed);
+//            Log.d("WHATSAPP_CALL",
+//                    "simCallActive =" + simCallActive +  " whatsappCallActive =" + whatsappCallActive +
+//                             " speedViolation=" + speedViolation +
+//                            " speed=" + currentSpeed);
+//            Log.d("WHATSAPP_CALL", "currentSpeed " + currentSpeed);
+//            String vehicaletype = pref.getString("vehicle_type","Private-2W");
+//            android.database.Cursor a_t2 = database
+//                    .rawQuery(
+//                            "select call_event_speed_limit from Thresold_New WHERE vehicle_type =" + "'" + vehicaletype + "'" , null);
+//
+//
+//            if(a_t2.getCount() > 0)
+//            {
+//                a_t2.moveToFirst();
+//
+//
+//                call_event_speed_limit = a_t2.getString(0);
+//
+//                a_t2.close();
+//            }
+//
+//            if(call_event_speed_limit == null || call_event_speed_limit.equalsIgnoreCase("") || call_event_speed_limit.equalsIgnoreCase("null") || call_event_speed_limit.equalsIgnoreCase("0"))
+//            {
+//                CALL_SPEED_LIMIT = 15 ;  // call speed default is 15 km/h
+//            }
+//            else {
+//                CALL_SPEED_LIMIT = Float.parseFloat(call_event_speed_limit) ;
+//            }
 
-            //convert speed to m/s to km/h
             float fact = (float) 18 / 5;
             float ac_speed = currentSpeed * fact;
 
@@ -708,20 +749,16 @@ public class newfused extends Service implements LocationListener {
         }
 
 
-        telephonyManager =
-                (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
         if (telephonyManager == null)
             return;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 
-            telephonyCallback =
-                    new MyTelephonyCallback();
+            telephonyCallback = new MyTelephonyCallback();
 
-            telephonyManager.registerTelephonyCallback(
-                    getMainExecutor(),
-                    telephonyCallback);
+            telephonyManager.registerTelephonyCallback(getMainExecutor(), telephonyCallback);
 
         } else {
 
@@ -787,9 +824,9 @@ public class newfused extends Service implements LocationListener {
 
             case TelephonyManager.CALL_STATE_OFFHOOK:
 
-                if (!callActive) {
+                if (!simCallActive) {
 
-                    callActive = true;
+                    simCallActive = true;
 
                     callStartTime = System.currentTimeMillis();
                     callEventInserted = false;
@@ -812,9 +849,9 @@ public class newfused extends Service implements LocationListener {
 
             case TelephonyManager.CALL_STATE_IDLE:
 
-                if (callActive) {
+                if (simCallActive) {
 
-                    callActive = false;
+                    simCallActive = false;
 
                     callEndTime = System.currentTimeMillis();
 
@@ -871,7 +908,7 @@ public class newfused extends Service implements LocationListener {
 
  private void resetcalldata()
  {
-     callActive = false;
+     simCallActive = false;
      speedViolation = false;
 
      callStartLocation = null;
@@ -897,7 +934,7 @@ public class newfused extends Service implements LocationListener {
             c.put("lat", callEndLocation.getLatitude());
             c.put("lon", callEndLocation.getLongitude());
             //New added Code
-            c.put("th_s", "Still");
+            c.put("th_s", "Call");
             c.put("battery", DeviceEventsUtils.getBatteryInfo());
             c.put("timezone", DeviceEventsUtils.getTimeZone());
             c.put("utcstart", DeviceEventsUtils.utcCalculationOffset(callstarttime));
@@ -989,5 +1026,209 @@ public class newfused extends Service implements LocationListener {
             handleCallState(state);
 
         }
+    }
+
+    @SuppressLint("WrongConstant")
+    private void registerWhatsAppCallReceiver() {
+
+        if (whatsappCallReceiver != null) {
+            return;
+        }
+
+        whatsappCallReceiver =
+                new BroadcastReceiver() {
+
+                    @Override
+                    public void onReceive(
+                            Context context,
+                            Intent intent) {
+
+                        if (intent == null) {
+                            return;
+                        }
+
+                        String action = intent.getAction();
+                        Log.d("WHATSAPP_CALL",
+                                "action = "
+                                        + action);
+                        if (VoipNotificationService.ACTION_WHATSAPP_CALL.equals(action)) {
+                            String state = intent.getStringExtra(VoipNotificationService.EXTRA_CALL_STATE);
+
+                            Log.d("WHATSAPP_CALL",
+                                    "newfused received = "
+                                            + state);
+
+                            if (VoipNotificationService.CALL_STARTED.equals(state)) {
+
+                                handleWhatsAppCallStart();
+
+                            } else if (VoipNotificationService.CALL_ENDED.equals(state)) {
+
+                                handleWhatsAppCallEnd();
+                            }
+                        }
+
+                        if (VoipNotificationService.ACTION_Teams_CALL.equals(action)) {
+                            String state = intent.getStringExtra(VoipNotificationService.EXTRA_CALL_STATE);
+
+                            Log.d("WHATSAPP_CALL",
+                                    "newfused received = "
+                                            + state);
+
+                            if (VoipNotificationService
+                                    .CALL_STARTED
+                                    .equals(state)) {
+
+                                handleWhatsAppCallStart();
+
+                            } else if (VoipNotificationService
+                                    .CALL_ENDED
+                                    .equals(state)) {
+
+                                handleWhatsAppCallEnd();
+                            }
+                        }
+
+
+
+
+                    }
+                };
+
+        IntentFilter filter = new IntentFilter(VoipNotificationService.ACTION_WHATSAPP_CALL);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            registerReceiver(whatsappCallReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+
+        } else {
+
+            registerReceiver(whatsappCallReceiver, filter);
+        }
+
+//        Log.d("WHATSAPP_CALL",
+//                "Receiver registered");
+    }
+
+    private void handleWhatsAppCallStart() {
+
+        if (!isTripRunning()) {
+
+            Log.d("WHATSAPP_CALL", "Trip not running - ignore START");
+
+            return;
+        }
+
+        if (whatsappCallActive) {
+
+            Log.d("WHATSAPP_CALL", "Call already active - ignore START");
+
+            return;
+        }
+
+        whatsappCallActive = true;
+
+        callStartTime = System.currentTimeMillis();
+
+        callEndTime = 0;
+
+        speedViolation = false;
+
+        maxSpeedDuringCall = 0f;
+
+        maxSpeedMilli = 0L;
+
+        callStartLocation = null;
+
+        callEndLocation = null;
+
+        if (latestLocation != null) {
+
+            callStartLocation =
+                    new Location(latestLocation);
+        }
+
+        Log.d("WHATSAPP_CALL", "START");
+
+        Log.d("WHATSAPP_CALL", "Start Time = " + callStartTime);
+
+        if (callStartLocation != null) {
+
+            Log.d("WHATSAPP_CALL", "Start Lat = " + callStartLocation.getLatitude());
+
+            Log.d("WHATSAPP_CALL", "Start Lng = " + callStartLocation.getLongitude());
+
+            Log.d("WHATSAPP_CALL", "Start Speed = " + callStartLocation.getSpeed());
+        }
+    }
+
+    private void handleWhatsAppCallEnd() {
+
+        if (!whatsappCallActive) {
+
+            Log.d("WHATSAPP_CALL", "No active call - ignore END");
+
+            return;
+        }
+
+        callEndTime = System.currentTimeMillis();
+
+        if (latestLocation != null) {
+
+            callEndLocation = new Location(latestLocation);
+        }
+
+        Log.d("WHATSAPP_CALL", "END");
+
+        Log.d("WHATSAPP_CALL", "End Time = " + callEndTime);
+
+        Log.d("WHATSAPP_CALL", "speedViolation = " + speedViolation);
+
+        /*
+         * Insert ONLY if speed exceeded
+         * the configured call speed limit.
+         */
+        if (speedViolation
+                && callStartLocation != null
+                && callEndLocation != null) {
+
+            long duration = callEndTime - callStartTime;
+
+            float meters = callStartLocation.distanceTo(callEndLocation);
+
+            double distanceKm = meters / 1000.0;
+
+            Log.d("WHATSAPP_CALL", "Duration = " + duration);
+
+            //Log.d("WHATSAPP_CALL", "Distance = " + distanceKm + " KM");
+
+            boolean inserted = calleventinsert(callStartTime, String.valueOf(callEndTime), String.valueOf(duration), callEndLocation);
+
+            Log.d("WHATSAPP_CALL", "Event inserted = " + inserted);
+        } else {
+
+            Log.d("WHATSAPP_CALL", "No speed violation - no event");
+        }
+
+        resetWhatsAppCallData();
+    }
+
+    private void resetWhatsAppCallData() {
+
+        whatsappCallActive = false;
+
+        speedViolation = false;
+
+        callStartTime = 0L;
+
+        callEndTime = 0L;
+
+        callStartLocation = null;
+
+        callEndLocation = null;
+
+        maxSpeedDuringCall = 0f;
+
+        maxSpeedMilli = 0L;
     }
 }
