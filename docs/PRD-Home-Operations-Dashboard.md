@@ -12,6 +12,7 @@
 | **P1 status** | **Shipped** `c5e35e1` (14 Aug 2026, `claude/lms-ui-improvements-fd66a5`) — see §12a below for what actually landed and where it diverged from this spec |
 | **P2 status** | **Shipped** `5314afd` (14 Aug 2026, `claude/lms-ui-improvements-fd66a5`) — trip_stats/map_entry/attendance_chip, live-verified over CDP against real UAT data and a from-source rebuild+reinstall. See §12b below. |
 | **P3 status** | **Shipped** `46764b8` (14 Aug 2026) — notifications_summary/feature_links, live-verified over CDP against real UAT data and a from-source rebuild+reinstall; approvals_pending deferred, needs a real backend endpoint (see §12c). |
+| **P4 status** | **Deferred, not started** (14 Aug 2026) — `analytics_strip`'s entire data pipeline sits behind `ischart_enabled = 'false'` (`selection.html`, hardcoded literal, "will enable it once finalized"), not a config/role gate. See §12d. |
 
 ---
 
@@ -658,6 +659,46 @@ doesn't exist.
   empty state (all flags false) and, with flags temporarily forced true, correct rendering of all 5
   links — reverted cleanly afterward. Confirmed via a from-source rebuild+reinstall before
   committing (`46764b8`).
+
+---
+
+## 12d. P4 (`analytics_strip`) — deferred, not started
+
+Investigated before writing any code. `analytics_strip`'s spec'd data source (§6.11) is
+`Dashboard_count_new`, but that endpoint isn't independently callable the way `Get_Attendance` or
+`Get_NotificationList_For_User` are — it requires a `dashboard_menu_array[0]` config object (chart
+type, pivot config, calendar filters, aggregate function, a `counter` value tied to a specific
+`#menucardid_<n>` DOM element) that only exists after `selection_dashboard.js`'s own
+`Select_DashboardMaster` call populates it. There is no independent "give me N summary numbers" read
+path; the response can't be correctly interpreted without the same per-card branching logic
+`selection_dashboard.js` itself uses (chart vs. pivot vs. table rendering, `aggregate_data.length`
+thresholds, etc.) — reimplementing that in the dashboard module would risk silently wrong numbers on
+a supervisor-facing card, and duplicates real logic this module's own design principles (§3) rule
+out.
+
+More fundamentally: the only code path that ever populates `dashboard_menu_array` in the first place
+is `get_dashboard()`, which `selection.html`'s `pageload_main()` calls **only if**
+`ischart_enabled == 'true'` (`selection.html`, near the top of the inline script) — and that variable
+is a hardcoded literal:
+
+```javascript
+var ischart_enabled = 'false';    // will enable it once finalized
+```
+
+Not a server flag, not a per-role config — a hardcoded `'false'` with a comment stating the feature
+isn't finished. The entire legacy analytics dashboard `analytics_strip` would link into is switched
+off for every account today, by explicit prior developer decision. This is a stronger blocker than
+`approvals_pending`'s missing endpoint — it isn't that the API doesn't exist, it's that the whole
+subsystem it belongs to is deliberately incomplete.
+
+**Decision: deferred, not built.** Considered building a numberless, self-gated "Analytics" entry
+card (renders nothing unless `ischart_enabled === 'true'`, so it would activate automatically and
+correctly the moment that subsystem is finalized — same self-gating pattern P2's `map_entry`/
+`trip_stats` already use) but chose not to, since it wouldn't deliver the widget's actual stated
+purpose (live KPI numbers) and there's no way to know today whether the eventual finalized dashboard
+will even use the same `dashboard_menu_array`/`Dashboard_count_new` shape this investigation is based
+on. Revisit once `ischart_enabled` is actually turned on and the legacy dashboard is finalized —
+at that point this section's findings on the API shape should still be a useful starting point.
 
 ---
 

@@ -161,6 +161,22 @@ deferred, not built.** Full detail in `docs/PRD-Home-Operations-Dashboard.md` §
   flags false) and, with flags temporarily forced true, correct rendering of all 5 links — reverted
   cleanly afterward. Confirmed via a from-source rebuild+reinstall before committing.
 
+**P4 (`analytics_strip`) deferred, not started.** Full detail in
+`docs/PRD-Home-Operations-Dashboard.md` §12d. A stronger blocker than `approvals_pending`'s missing
+endpoint: `analytics_strip`'s data source (`Dashboard_count_new`) can't be independently called at
+all — it needs a `dashboard_menu_array[0]` config object (chart type, pivot config, a `counter` tied
+to a specific `#menucardid_<n>` DOM element) that only exists after `selection_dashboard.js`'s own
+`Select_DashboardMaster` call populates it, and the response can't be correctly interpreted without
+that same file's per-card branching logic. More fundamentally, the only path that ever populates
+that config — `get_dashboard()` — only runs when `selection.html`'s `ischart_enabled` is `'true'`,
+and that's a **hardcoded literal `'false'`** (`var ischart_enabled = 'false'; // will enable it once
+finalized`), not a server/role flag. The entire legacy analytics subsystem is switched off for every
+account today, by explicit prior developer decision — not something to route around client-side.
+Considered a numberless, self-gated "Analytics" entry card (same self-gating pattern P2's
+`map_entry`/`trip_stats` use) but decided against it: it wouldn't deliver the widget's actual
+purpose, and there's no guarantee the eventual finalized dashboard keeps this same API shape.
+Revisit once `ischart_enabled` is actually turned on.
+
 ---
 
 ## A fourth area touched in this worktree: Stop Trip reliability + recording indicator
