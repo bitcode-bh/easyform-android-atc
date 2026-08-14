@@ -100,7 +100,7 @@ public class SpeedCalculation {
 
             if (distance < 5f) {
                 locationA = new Location(locationB);
-                return 1000;
+                return 10000;
             }
 
             float speed = distance / seconds;
