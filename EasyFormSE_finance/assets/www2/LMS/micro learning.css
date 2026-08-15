@@ -1,7 +1,7 @@
 /* ==========================================================================
    Micro Learning (Reels) — Premium experience
    Motion tokens + video player + social actions + question sheet.
-   Brand-preserving (uses --c-primary #215ba8). See design-system/atc-lms.
+   Brand-preserving (uses --c-primary #2a3086). See design-system/atc-lms.
    ========================================================================== */
 
 :root {
@@ -12,7 +12,7 @@
     --ml-dur-fast: 150ms;
     --ml-dur-base: 240ms;
     --ml-dur-slow: 320ms;
-    --ml-brand: #215ba8;
+    --ml-brand: #2a3086;
     --ml-like: #ff3b5c;   /* heart accent (recognizable, not proprietary) */
 }
 
@@ -309,11 +309,11 @@
     border-radius: 20px !important;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     overflow: hidden;
-    --f7-radio-active-color: #215ba8;          /* theme (brand) radio color */
+    --f7-radio-active-color: #2a3086;          /* theme (brand) radio color */
     --f7-radio-inactive-color: #7a7a85;
     --f7-radio-size: 18px;
 }
-#pnl_ML_Question input[type="radio"] { accent-color: #215ba8; }
+#pnl_ML_Question input[type="radio"] { accent-color: #2a3086; }
 #pnl_ML_Question .block { margin: 0; padding: 14px 16px; }
 #pnl_ML_Question #ML_Question {
     margin: 0 0 10px;
@@ -341,7 +341,7 @@
     margin-top: 12px;
     height: 40px;
     border-radius: 10px;
-    background: #215ba8;
+    background: #2a3086;
     color: #ffffff;
     font-size: 13.5px;
     font-weight: 600;

@@ -105,7 +105,7 @@
 #div_home_dashboard .hd-trip-duration {
     font-size: 14px;
     font-weight: 700;
-    color: var(--c-primary, #215ba8);
+    color: var(--c-primary, #2a3086);
     margin-bottom: 10px;
 }
 #div_home_dashboard .hd-trip-metrics {
@@ -189,7 +189,7 @@
     font-weight: 600;
 }
 #div_home_dashboard .hd-noti-row.hd-noti-unread .hd-noti-dot {
-    background: var(--c-primary, #215ba8);
+    background: var(--c-primary, #2a3086);
 }
 
 /* feature_links (P3) */
@@ -243,7 +243,7 @@
     padding: 10px 0;
     border: 0;
     border-radius: 11px;
-    background: var(--c-primary, #215ba8);
+    background: var(--c-primary, #2a3086);
     color: #fff;
     font-size: 13px;
     font-weight: 700;

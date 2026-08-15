@@ -57,7 +57,7 @@
 
 /* Active tab → company brand color */
 #div_new_tabbar .tab-link-active,
-#div_new_tabbar .active { color: #215ba8; }
+#div_new_tabbar .active { color: #2a3086; }
 
 /* Kill F7's default selected-tab highlight / ripple */
 #div_new_tabbar .tabbar-highlight,

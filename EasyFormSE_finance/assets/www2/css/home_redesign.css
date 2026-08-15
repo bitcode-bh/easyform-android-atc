@@ -259,5 +259,5 @@
 .home-tab i { font-size: 20px; }
 .home-tab span { font-size: 12px; font-weight: 600; }
 .home-tab.active { color: #0f1729; background: #f2f4f7; }
-.home-tab.lms { color: var(--c-primary, #215ba8); }
+.home-tab.lms { color: var(--c-primary, #2a3086); }
 .home-tab:active { background: #eef1f5; }

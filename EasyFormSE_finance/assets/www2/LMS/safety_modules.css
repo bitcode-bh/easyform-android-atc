@@ -286,7 +286,7 @@
         text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
     }
 
-        .sample-score-tag.on-light-bg .sample-score-current { color: #215ba8; }
+        .sample-score-tag.on-light-bg .sample-score-current { color: #2a3086; }
 
 .correct-answer input[type='checkbox'] {
     margin-left: 10px;

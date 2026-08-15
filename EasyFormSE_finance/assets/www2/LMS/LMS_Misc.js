@@ -941,12 +941,12 @@ $(document).ready(function () {
     // bar, title bar and primary buttons.
     //
     // The LMS *content* accent is deliberately NOT this. It is --c-primary
-    // (#215ba8), the same blue as the bottom tab bar's active highlight, and it
+    // (#2a3086), the same blue as the bottom tab bar's active highlight, and it
     // covers the selected filter chip, the card progress bars, the card percent
     // label and the filter-summary count so they all read as one accent.
     // Those four used to be in the lists below, where this !important rule
     // forced them to the site colour (a grey on the current site) and overrode
-    // the #215ba8 already written for them in LMS_Misc.css — .sample-module-percent
+    // the #2a3086 already written for them in LMS_Misc.css — .sample-module-percent
     // in particular was authored blue and silently painted grey. They were
     // removed from here rather than fought with a louder rule in the CSS; do not
     // add them back without moving the accent definition too.

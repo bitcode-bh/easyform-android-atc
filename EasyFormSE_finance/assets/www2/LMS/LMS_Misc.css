@@ -254,7 +254,7 @@
     }
 
     .lesson-preview-score-value {
-        color: var(--c-primary, #215ba8);
+        color: var(--c-primary, #2a3086);
         font-weight: 800;
         font-variant-numeric: tabular-nums;
     }
@@ -297,7 +297,7 @@
 
     /* Watched time is the accent; total stays secondary. */
     .lesson-preview-elapsed {
-        color: var(--c-primary, #215ba8);
+        color: var(--c-primary, #2a3086);
         font-weight: 800;
     }
 
@@ -466,7 +466,7 @@
     padding: 8px 22px;
     border: 0;
     border-radius: 20px;
-    background: #215ba8;
+    background: #2a3086;
     color: #fff;
     font-size: 13px;
     font-weight: 700;
@@ -520,7 +520,7 @@
 .safety-quiz-progress-text {
     font-size: 12px;
     font-weight: 800;
-    color: #215ba8;
+    color: #2a3086;
     background: #eaf1fb;
     padding: 3px 11px;
     border-radius: 12px;
@@ -562,7 +562,7 @@
     color: var(--c-fg, #1c2430) !important;
     white-space: normal;
 }
-.safety-quiz-list input[type="radio"] { accent-color: var(--c-primary, #215ba8); }
+.safety-quiz-list input[type="radio"] { accent-color: var(--c-primary, #2a3086); }
 
 .safety-quiz-list li { transition: color 0.2s ease; }
 
@@ -599,7 +599,7 @@
 }
 
 .sample-safety-titlebar {
-    background: #215ba8;
+    background: #2a3086;
     color: #fff;
     padding: 18px 14px 16px;
     font-size: 20px;
@@ -716,7 +716,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #215ba8;
+    color: #2a3086;
     font-size: 18px;
 }
 
@@ -760,7 +760,7 @@
 
     .sample-safety-sort-option.active {
         background: #edf3fb;
-        color: #215ba8;
+        color: #2a3086;
         font-weight: 600;
     }
 
@@ -811,7 +811,7 @@
        if either is ever themed separately, which is exactly what produced a blue
        outline around a grey chip earlier. */
     .sample-safety-chip.active {
-        background: var(--c-primary, #215ba8);
+        background: var(--c-primary, #2a3086);
         border-color: transparent;
         color: #fff;
     }
@@ -843,7 +843,7 @@
     }
 
     .lms-filter-summary-count {
-        color: var(--c-primary, #215ba8);
+        color: var(--c-primary, #2a3086);
         font-weight: 800;
         font-variant-numeric: tabular-nums;
     }
@@ -935,7 +935,7 @@
     }
 
         .sample-module-tag.on-light-bg::before {
-            background: #215ba8;
+            background: #2a3086;
         }
 
 .sample-module-card-body {
@@ -985,7 +985,7 @@
 }
 
 .sample-module-percent {
-    color: var(--c-primary, #215ba8);
+    color: var(--c-primary, #2a3086);
     font-size: 12px;
     font-weight: 800;
 }
@@ -1017,7 +1017,7 @@
         text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
     }
 
-        .sample-module-watchtime.on-light-bg .sample-watchtime-total { color: #215ba8; }
+        .sample-module-watchtime.on-light-bg .sample-watchtime-total { color: #2a3086; }
 
     .sample-watchtime-elapsed { opacity: 0.75; }
     .sample-watchtime-sep { opacity: 0.55; }
@@ -1034,20 +1034,20 @@
 }
 
     /* Theme colour, matching the selected filter chip. Was #2165b8 — a
-       transposed-digit near-miss of the brand #215ba8, so the bar never quite
+       transposed-digit near-miss of the brand #2a3086, so the bar never quite
        matched anything else on the page. */
     .sample-module-progress span {
         display: block;
         width: 50%;
         height: 100%;
         border-radius: inherit;
-        background: var(--c-primary, #215ba8);
+        background: var(--c-primary, #2a3086);
     }
 
 .sample-module-btn {
     height: 36px;
     border-radius: 7px;
-    background: #215ba8;
+    background: #2a3086;
     color: #fff;
     display: flex;
     align-items: center;
@@ -1289,7 +1289,7 @@ swiper-container.tabs > .tab {
         height: 40px;
         line-height: 40px;
         border-radius: 10px;
-        background: var(--c-primary, #215ba8);
+        background: var(--c-primary, #2a3086);
         color: #fff;
         font-size: 13.5px;
         font-weight: 600;
@@ -1314,7 +1314,7 @@ swiper-container.tabs > .tab {
         height: 40px;
         line-height: 40px;
         border-radius: 10px;
-        background: var(--c-primary, #215ba8);
+        background: var(--c-primary, #2a3086);
         color: #fff;
         font-size: 13.5px;
         font-weight: 600;
