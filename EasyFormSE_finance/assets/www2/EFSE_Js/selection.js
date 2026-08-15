@@ -322,7 +322,22 @@ function SuccessCallBack_onload_get_data_from_ufm(e) {
                 else {
                     var user_list_feature = localStorage.getItem("user_list_feature_id");
                     if (user_list_feature == "" || user_list_feature == null || user_list_feature == undefined || user_list_feature == "0") {
-                        changeurl("selection.html");
+                        // This branch used to call changeurl("selection.html") -- i.e. reload the
+                        // page we are already on. For a user with zero assigned flows that is an
+                        // INFINITE RELOAD LOOP: every reload re-runs this same callback, hits the
+                        // same empty result, and reloads again. Visually it never settles, because
+                        // changeurl() applies premium-fade-out (opacity:0 !important) and the
+                        // 400ms premium-fade-in of the next load is cut short by the next reload --
+                        // the screen flickers and no content is ever readable, including the menu
+                        // needed to log out. Confirmed live on-device: trapping this one call made
+                        // opacity go 0 -> 1 and the page render normally.
+                        //
+                        // A zero-flow user is a legitimate state (e.g. nothing assigned yet, or
+                        // signed in against a tenant that has no work for them), so just stop and
+                        // leave the page usable -- Home's own dashboard/navbar/tabbar still render,
+                        // and the side menu (logout) stays reachable.
+                        enable_back_button();
+                        return;
                     }
                     else {
                         //$("#card_module_list").empty();
