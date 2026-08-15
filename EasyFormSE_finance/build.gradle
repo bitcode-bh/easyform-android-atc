@@ -15,7 +15,7 @@ android {
     //defualt config set from server
     defaultConfig {
         // Application Configuration
-        applicationId "com.easyform.atctesting"
+        applicationId "com.easyform.atcpv"
         minSdkVersion project.ext.minSdk  //not set from server
         targetSdkVersion project.ext.targetSdk //not set from server
         versionCode 107    //not set from server
@@ -23,23 +23,23 @@ android {
         multiDexEnabled true //not set from server
 
 
-        resValue "string", "App_URL", "https://mwfm-uat.altiusinfra.com/"
-        resValue "string", "Video_URL", "https://mwfm-uat.altiusinfra.com/Api/"
-        resValue "string", "WCFURL", "https://mwfm-uat.altiusinfra.com/coreapi/api/"
-        resValue "string", "Resumable_URL", "https://mwfm-uat.altiusinfra.com/coreapi/api/"
-        resValue "string", "Common_Wcf_Url", "https://mwfm-uat.altiusinfra.com/coreapi/api/"
+        resValue "string", "App_URL", "https://mwfm.altiusinfra.com/"
+        resValue "string", "Video_URL", "https://mwfm.altiusinfra.com/Api/"
+        resValue "string", "WCFURL", "https://mwfm.altiusinfra.com/coreapi/api/"
+        resValue "string", "Resumable_URL", "https://mwfm.altiusinfra.com/coreapi/api/"
+        resValue "string", "Common_Wcf_Url", "https://mwfm.altiusinfra.com/coreapi/api/"
 
-        resValue "string", "LOGINWCFURL", "https://mwfm-uat.altiusinfra.com/core_login/api/"
-        resValue "string", "DOWNLOADWCFURL", "https://mwfm-uat.altiusinfra.com/core_download/api/"
-        resValue "string", "UPLOADWCFURL", "https://mwfm-uat.altiusinfra.com/core_upload/api/"
-        resValue "string", "GEOWCFURL", "https://mwfm-uat.altiusinfra.com/core_geo/api/"
-        resValue "string", "TASKDOWNLOADURL", "https://mwfm-uat.altiusinfra.com/core_app_download/api/"
+        resValue "string", "LOGINWCFURL", "https://mwfm.altiusinfra.com/core_login/api/"
+        resValue "string", "DOWNLOADWCFURL", "https://mwfm.altiusinfra.com/core_download/api/"
+        resValue "string", "UPLOADWCFURL", "https://mwfm.altiusinfra.com/core_upload/api/"
+        resValue "string", "GEOWCFURL", "https://mwfm.altiusinfra.com/core_geo/api/"
+        resValue "string", "TASKDOWNLOADURL", "https://mwfm.altiusinfra.com/core_app_download/api/"
         resValue "string", "OCR", "https://atcmwfm.americantower.com/Azure-OCR/api/"
 
 
-        resValue "string", "UploadTask", "https://mwfm-uat.altiusinfra.com/core_uploadtask/api/"
-        resValue "string", "UploadQuestionLog", "https://mwfm-uat.altiusinfra.com/core_uploadquestionlog/api/"
-        resValue "string", "UploadTechnician", "https://mwfm-uat.altiusinfra.com/core_uploadtechnician/api/"
+        resValue "string", "UploadTask", "https://mwfm.altiusinfra.com/core_uploadtask/api/"
+        resValue "string", "UploadQuestionLog", "https://mwfm.altiusinfra.com/core_uploadquestionlog/api/"
+        resValue "string", "UploadTechnician", "https://mwfm.altiusinfra.com/core_uploadtechnician/api/"
 
 
         //SSL", "false"
