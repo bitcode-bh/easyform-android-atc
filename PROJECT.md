@@ -569,24 +569,29 @@ post-refresh callback, and an unknown score records nothing. 8/8 logic tests.
 
 ## Working-tree state as of 2026-08-15
 
-The zero-flow infinite-reload fix in `selection.js` is **committed** (`a64b562`).
-
-Still uncommitted, both **correct and intentional — do not revert**:
-
-Working tree is clean — everything below is committed on this branch, not yet pushed as of this
-writing.
+Clean — everything from this session is committed on this branch, not yet pushed as of this writing.
+Every commit below was built, installed on the CPH2717, and verified live (either by inspecting the
+APK's unpacked assets with `unzip`/`grep`/`diff` before install, or by direct on-device interaction —
+real IME for the keyboard fix, `aapt dump --values resources` for the URL/build config) rather than
+assumed from source.
 
 | Commit | What |
 |---|---|
+| `bdb3808` | App-wide top bar color match (background **and** text — F7 pairs them) + keyboard-safe bottom bar (hidden while typing, via a `keyboard-open` class on `<html>`, not a manifest change) |
+| `5464823` | Safety Passport wired into Home's side menu (`panel-sp` + menu entry) — was never there, all other pages have it |
+| `66f08cc` | App-wide accent color swap `#215ba8` → `#2a3086`, sampled from the Altius logo's own pixels — 10 files, pure hex swap, verified line-by-line |
+| `d39dbf6` | Login field slimming/centering (root cause was `.item-inner`/`.item-media`, not the input), button radius synced to the fields, Need Help button shrunk + screen-pinned against keyboard drift |
+| `7414a01` | Altius brand theme for `Login.html` — faceted background, bordered fields, circular checkbox, solid-blue button |
 | `e42fae9` | `build.gradle` prod config (`com.easyform.atcpv`, `mwfm.altiusinfra.com`, OCR on americantower) + `MainActivity.java` real root/anti-tamper checks restored (all four `if (false)` bypasses gone) |
 | `4ee4f0d` | `site_summary` loading indicator (red + blinking while the count queries run) and a real pull-to-refresh fix for module card counts |
 | `3c7a1a8` | Docs correction — settled the URL rule as a table, deleted the stale "device is rooted" claim |
 | `a64b562` | Zero-flow infinite-reload fix in `selection.js` |
 
-Built and installed from this state on 2026-08-15; APK resources verified with
-`aapt dump --values resources` to actually contain the altiusinfra hosts, and each JS/CSS change was
-confirmed present inside the built APK (`unzip` + `grep`) before installing — not just assumed from
-source.
+**Note on scope:** a full Home dashboard theme (navy palette, faceted background, card restyling) was
+explored mid-session and **explicitly reverted at the owner's request** — Home's structure/styling is
+otherwise untouched from before this session, aside from the Safety Passport menu fix and the
+app-wide accent/navbar/keyboard changes above (which apply everywhere, Home included, but are
+color/behavior only, not layout).
 
 **Build gotcha hit and fixed this session:** `JAVA_HOME` pointing at `~/.jdks/jdk-17.0.19+10`
 instead of `.../Contents/Home` makes `gradlew` print "JAVA_HOME is set to an invalid directory" **and
@@ -654,6 +659,11 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `bdb3808` | App-wide top bar color match to Home's `#ecedef`/`#0f1729` (background+text together, via `styles_low.css`) + keyboard-safe bottom bar (hides `.toolbar.tabbar`/`#div_new_tabbar` while a keyboard-open class is set, instead of changing `windowSoftInputMode` app-wide) |
+| `5464823` | Safety Passport menu entry + `panel-sp` container added to Home's side menu — pre-existing gap, not a regression |
+| `66f08cc` | Accent color swap `#215ba8` → `#2a3086` (sampled from the Altius logo) across Home, LMS, and notifications — 10 files, verified pure hex-only diff |
+| `d39dbf6` | Login field height/centering fixed at the real cause (`.item-inner`/`.item-media`, not the input), button radius synced to 15px fields, Need Help button shrunk to 44px and screen-pinned so it can't drift with the keyboard |
+| `7414a01` | Altius brand theme for `Login.html` — faceted background (blended logo via `mix-blend-mode`), bordered fields, circular checkbox, solid-blue button |
 | `e42fae9` | Prod build config (`com.easyform.atcpv`, `mwfm.altiusinfra.com`, OCR on americantower) + real root/anti-tamper checks restored in `MainActivity.java` — verified running on the non-rooted CPH2717 |
 | `4ee4f0d` | `site_summary` loading indicator (red/blinking while counts resolve) + pull-to-refresh now recomputes module card counts (previously silently stale after the counters reported "complete") |
 | `3c7a1a8` | Docs: settled URL rule as a single table, removed the stale "test device is rooted" claim from `PROJECT.md`/`BUILD-AND-DEPLOY.md` |
