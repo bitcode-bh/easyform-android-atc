@@ -324,6 +324,36 @@
                             <!--<i class="icon fa fa-info" style="font-size: 25px; color: white"></i>-->
                             Need Help?
                         </a>
+                        <script>
+                            // F7's .floating-button is position:absolute with bottom:16px,
+                            // anchored to .page (which spans the WebView's own viewport).
+                            // On this Activity the keyboard triggers adjustResize, which
+                            // shrinks that viewport from the bottom -- so "bottom:16px" keeps
+                            // recomputing against an ever-rising bottom edge, and the button
+                            // visibly climbs up the screen as you type. Switching to
+                            // position:fixed with an explicit top (captured once, from the
+                            // screen height before any keyboard interaction) pins it to an
+                            // absolute point on the physical screen instead: the resize can
+                            // shrink the viewport around it, but can't move a top offset
+                            // that's no longer being recomputed. Runs once after load and
+                            // deliberately never re-runs on resize/keyboard events.
+                            (function () {
+                                function pinNeedHelpButton() {
+                                    var btn = document.getElementById('btn_company_info');
+                                    if (!btn) return;
+                                    var bottomMargin = 16;
+                                    var h = btn.offsetHeight || 44;
+                                    btn.style.position = 'fixed';
+                                    btn.style.top = (window.innerHeight - bottomMargin - h) + 'px';
+                                    btn.style.bottom = 'auto';
+                                }
+                                if (document.readyState === 'complete') {
+                                    setTimeout(pinNeedHelpButton, 0);
+                                } else {
+                                    window.addEventListener('load', function () { setTimeout(pinNeedHelpButton, 0); });
+                                }
+                            })();
+                        </script>
 
                         <div class="page-content">
                             <!--<div class="page-content" style="background: url('images/DEMO/Demo_Login.jpg'); background-size: 222% 100%; background-position-x: 11%">-->

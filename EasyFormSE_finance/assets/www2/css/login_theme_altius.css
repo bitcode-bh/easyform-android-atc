@@ -6,9 +6,12 @@
    so nothing shared (styles_low.css, Framework7 core) is touched globally.
    ========================================================================== */
 
+/* Accent sampled directly from the Altius wordmark pixels in the app's own
+   logo asset (dominant colour #2a3086), not eyeballed -- so the UI accent and
+   the logo are literally the same blue. */
 :root {
-    --altius-navy: #1d3a8f;
-    --altius-navy-deep: #142a68;
+    --altius-navy: #2a3086;
+    --altius-navy-deep: #1e2464;
     --altius-blue: #3fb6e0;
     --altius-bg-tint: #f4f7fc;
 }
@@ -74,11 +77,30 @@
 .login_user_data li {
     border: none !important;
 }
+/* Measured live: .item-inner was still display:block at 48px tall with a 4px
+   bottom margin, and .item-media carried height:36px + margin-bottom:8px.
+   That stack -- not the input -- was both inflating the field to ~62px and
+   pushing the input text 12px above the box centre while the icon sat dead
+   centre. F7 core sets these at matching specificity, so they need
+   !important to actually collapse. */
 .login_user_data .item-inner {
     border: none !important;
     padding-top: 0 !important;
-    display: flex;
-    align-items: center;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+.login_user_data .item-media {
+    color: var(--altius-navy);
+    margin-right: 10px;
+    height: auto !important;
+    min-height: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    align-self: center !important;
 }
 .login_user_data .item-inner::after,
 .login_user_data .item-input-field::after {
@@ -91,18 +113,15 @@
 .login_user_data .item-title.floating-label {
     display: none !important;
 }
-.login_user_data .item-media {
-    color: var(--altius-navy);
-    margin-right: 10px;
-}
 .login_user_data .item-media .icon {
     font-size: 18px;
 }
 .login_user_data .item-input-field {
-    height: 28px !important;
+    height: 26px !important;
     min-height: 0 !important;
-    display: flex;
-    align-items: center;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
 }
 .login_user_data input.floated {
     font-size: 15px;
@@ -152,7 +171,7 @@ label.label-checkbox i.icon-form-checkbox:after {
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23344054' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") !important;
 }
 #lbl_forgot_password {
-    color: #1b56b9 !important;
+    color: var(--altius-navy) !important;
     font-weight: 400;
 }
 
@@ -165,7 +184,7 @@ label.label-checkbox i.icon-form-checkbox:after {
     margin: 0 16px;
     box-sizing: border-box;
     border-radius: 15px !important;
-    background: #1b56b9 !important;
+    background: var(--altius-navy) !important;
     box-shadow: none;
     color: #fff;
     font-weight: 700;
@@ -182,8 +201,25 @@ label.label-checkbox i.icon-form-checkbox:after {
     font-size: 16px;
 }
 
-/* ---- "Need Help?" floating pill — recolor to match brand instead of the
-   generic F7 default fill ---- */
+/* ---- "i" app-info trigger: hidden per request. Not deleted -- it's the
+   5-tap debug/support entry point (check_5_times_click()), still reachable
+   in code, just not shown on this screen. ---- */
+#btn_app_info {
+    display: none !important;
+}
+
+/* ---- "Need Help?" floating button — recolored to brand, and shrunk from
+   F7's default 56px circle. Position (fixed + explicit top, not bottom) is
+   handled by the small script next to the button in Login.html -- see the
+   comment there for why bottom-anchoring is what let it drift when the
+   keyboard opened. ---- */
 #btn_company_info {
     background: var(--altius-navy) !important;
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 10px;
+    line-height: 1.15;
+    font-weight: 600;
+    padding: 0 2px;
+    text-align: center;
 }
