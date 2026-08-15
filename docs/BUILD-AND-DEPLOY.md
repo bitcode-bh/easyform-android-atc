@@ -15,23 +15,66 @@ same folder for what the feature does; this file is only about building it.
 | Worktree | `/Volumes/Bitcode/GitHub/easyform-android-atc` (main) | `.claude/worktrees/lms-ui-improvements-fd66a5` |
 | Branch | `bitcode.bh/lms-ui-improvements` | `claude/lms-ui-improvements-fd66a5` |
 | `applicationId` | `com.easyform.atcpv` | `com.easyform.atctesting` |
-| Backend | `https://atcmwfm.americantower.com/...` (**every** URL, not just OCR — see gotcha below) | `https://mwfm-uat.altiusinfra.com/...` (OCR always `atcmwfm.americantower.com`) |
+| Backend | `https://mwfm.altiusinfra.com/...` | `https://mwfm-uat.altiusinfra.com/...` |
 | `res/values/strings.xml` app label | (real app name) | "UAT Elevar (MWFM)" |
-| Root/anti-tamper checks (`MainActivity.java`) | **Real, all four enabled** | **Bypassed** (`if (false)` — the test device is rooted) |
+| Root/anti-tamper checks (`MainActivity.java`) | **Real, all four enabled** | **Real, all four enabled** — the CPH2717 is *not* rooted; do not bypass |
 | Signing | Real release keystore (not on this Mac — see below) | Falls back to `keystore/easyform-debug.jks` |
 | Real device install | `com.easyform.atcpv`, already on the CPH2717 test device (V1.10 as of 2026-08-12) | `com.easyform.atctesting`, same device |
 
-**Gotcha — do not "fix" the production URLs to `mwfm.altiusinfra.com`.**
-`altiusinfra.com` is the generic/other-tenant domain. This specific app
-(`com.easyform.atcpv`, "ATC" = American Tower Corporation) is a
-white-labeled build whose *entire* backend — not just OCR — is
-`atcmwfm.americantower.com`. This is the real, committed, working
-production config (`main`'s `build.gradle`, unmodified by any of this
-session's changes). If a future session sees the generic
-"`mwfm-uat.altiusinfra.com` → `mwfm.altiusinfra.com`" URL-swap pattern used
-for a *test* package (e.g. `atcpvnoc`, see below) and is tempted to apply
-the same swap to `main`/`atcpv`, **don't** — that would point the real
-production app at the wrong backend entirely.
+**⛔ THE URL RULE (repo owner, settled 2026-08-15). This is the only rule — do
+not re-derive it, do not "verify it against `main`", do not reopen it.**
+
+| Owner says | Set every URL `resValue` host to |
+|---|---|
+| **"build uat"** | `mwfm-uat.altiusinfra.com` |
+| **"build prod"** | `mwfm.altiusinfra.com` |
+
+**`OCR` is the one exception in both cases** and always stays
+`https://atcmwfm.americantower.com/Azure-OCR/api/`. Paths never change, only
+the host.
+
+**Never point the other URLs at `atcmwfm.americantower.com`.** `main`'s
+*committed* `build.gradle` still has americantower everywhere, so a plain
+checkout does **not** satisfy this — swap the hosts after checkout. `main`
+being that way is not evidence against this rule; `main` is simply stale.
+
+> Earlier revisions of this file flip-flopped on exactly this point and cost
+> the owner days. If a future note appears to contradict the table above,
+> the table wins.
+
+**Other build gotchas, observed on-device 2026-08-15 (`com.easyform.atcpv`,
+CPH2717):**
+
+- The backend rejects the app with **"Please upgrade your Application!!!"** at
+  login unless `versionName` is at least `ATC_19.6.37_F7_V1.11.2` (`main`
+  ships `ATC_19.6.29_F7_V1.10`). Keep it at or above that.
+- **`JAVA_HOME` must point at `~/.jdks/jdk-17.0.19+10/Contents/Home`**, not at
+  the bundle root. Pointing it at the root makes `gradlew` print
+  "JAVA_HOME is set to an invalid directory" **and still exit 0** — so the
+  build silently does not run and you are left inspecting a stale APK from an
+  earlier build. Always confirm the APK's mtime and its baked-in resources
+  after building:
+  ```
+  aapt dump --values resources <apk> | grep -oE 'https://[a-zA-Z0-9./_-]+'
+  ```
+- Account/tenant coverage differs per host — an account with content on one
+  host may have **zero assigned flows** on another. Ask the owner which
+  account to test with rather than assuming; see "Zero-flow infinite reload".
+
+**Zero-flow infinite reload (real bug, fixed 2026-08-15, uncommitted).**
+`selection.js`'s `SuccessCallBack_onload_get_data_from_ufm` had, in its "no udf
+to display" branch, `changeurl("selection.html")` — reloading the page it is
+already on. For any user with zero assigned flows that is an infinite loop:
+each reload re-runs the same callback, gets the same empty result, reloads
+again. It is *visually* a flicker/blank rather than an obvious crash, because
+`changeurl()` first applies `premium-fade-out` (`opacity: 0 !important`,
+`js/changeurl.js`) and the next load's 400ms `premium-fade-in` is cut short by
+the following reload — so the page never becomes readable, including the side
+menu needed to log out. Confirmed by trapping that single call live over CDP:
+opacity went `0 → 1` and the page rendered normally. Now replaced with
+`enable_back_button(); return;` so a zero-flow user gets a usable (if empty)
+Home instead of a loop. This is backend-independent — it would fire on any
+tenant where a user has no flows.
 
 **The real release keystore is not on this Mac.** `build.gradle`'s
 `signingConfigs.config.storeFile` tries, in order: `E:/Android_Studio/key`
@@ -85,8 +128,8 @@ JAVA_HOME=/Users/anupsharma/.jdks/jdk-17.0.19+10/Contents/Home \
 
 Output: `EasyFormSE_finance/build/outputs/apk/debug/EasyFormSE_finance-debug.apk`
 (`applicationId com.easyform.atcpv`, real backend, real root checks — this
-build **will refuse to launch on the rooted CPH2717 test device**, by
-design, since the anti-tamper checks are live and unmodified here).
+build **runs fine on the CPH2717**, which is not rooted; verified on-device
+2026-08-15).
 
 **Before installing anywhere, check what's already there.** This
 worktree's `applicationId` is the real one — `adb install -r` on a device
@@ -119,8 +162,8 @@ JDK17 path patched in locally.)
 
 Output: same relative path,
 `EasyFormSE_finance/build/outputs/apk/debug/EasyFormSE_finance-debug.apk`,
-this time `applicationId com.easyform.atctesting`, UAT backend, root checks
-bypassed so it launches on the rooted test device.
+this time `applicationId com.easyform.atctesting`, UAT backend, and the real
+root checks enabled (the CPH2717 is not rooted — no bypass needed or wanted).
 
 ```bash
 ADB=/Volumes/Bitcode/DevCache/android-sdk/platform-tools/adb
@@ -149,12 +192,11 @@ Doesn't survive a reboot or the phone leaving the WiFi network — redo
 `com.easyform.atcpvnoc` is a **registered-but-otherwise-unused** Firebase
 client id (`google-services.json` already has an entry for it, so no
 config file edits are needed to build under this name). It exists purely
-so that **production URLs can be exercised on the rooted test device
-without touching the real `com.easyform.atcpv` package or its root
-bypasses**. To build it: take the `lms-ui-improvements-fd66a5` worktree
-(which already has the root-check bypass needed to launch on a rooted
-device) and, *temporarily and locally, never committed*, edit
-`build.gradle`:
+so that **production URLs can be exercised on the test device without
+touching the real `com.easyform.atcpv` install**. (It is *not* about root
+bypasses — the device is not rooted and the real checks pass.) To build it:
+take the `lms-ui-improvements-fd66a5` worktree and, *temporarily and
+locally, never committed*, edit `build.gradle`:
 
 ```bash
 # in lms-ui-improvements-fd66a5/EasyFormSE_finance/build.gradle

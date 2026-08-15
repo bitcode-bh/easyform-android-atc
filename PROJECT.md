@@ -31,6 +31,17 @@ session/agent picking up LMS work.
 
 6. **Build & deploy** from this worktree (see [Build & device](#build--device)).
 
+6a. **⛔ Backend URL rule (owner, settled 2026-08-15) — do not re-derive it:**
+   **"build uat" → `mwfm-uat.altiusinfra.com`. "build prod" → `mwfm.altiusinfra.com`.**
+   `OCR` is the one exception in both cases and always stays
+   `atcmwfm.americantower.com/Azure-OCR/api/`. Paths never change, only the host.
+   Never point the other URLs at `atcmwfm.americantower.com` — `main`'s *committed* `build.gradle`
+   still has americantower everywhere, so a plain checkout does **not** satisfy this; swap the hosts
+   after checkout. `main` being stale is not evidence against the rule.
+   Also: `versionName` must be >= `ATC_19.6.37_F7_V1.11.2` or the backend rejects the app
+   ("Please upgrade your Application!!!"), and account/flow coverage differs per host — ask the
+   owner which account to test with. Full detail in `docs/BUILD-AND-DEPLOY.md`.
+
 7. **Never send a raw APK file or share a debug build without a distribution channel** — Chat/Gmail
    auto-remove it as malware, and tap-installing it gets blocked by Play Protect. Use
    [Distributing QA builds](#distributing-qa-builds-2026-08-11) (Firebase App Distribution). This is
@@ -253,30 +264,28 @@ Package on device (test build): `com.easyform.atctesting` (UAT `mwfm-uat.altiusi
 
 ## Release blockers (must fix before any production build)
 
-These are **committed on this branch** (swept in by `1334d16`, a checkpoint commit). A release
-built from this branch today ships with device security disabled, under the test package id,
-pointed at UAT, signed with a debug key.
+**✅ The four root/anti-tamper bypasses are GONE (2026-08-15).** `MainActivity.java`'s four
+`if (false)` markers have been replaced with the real calls. **The CPH2717 is not rooted**
+(`release-keys`, `verifiedbootstate=green`, locked bootloader, no `su`), the real checks pass on it,
+and a prod-configured build was verified running there. **Do not reintroduce a bypass, and do not
+claim device testing requires one** — that stale claim survived in this file for days and repeatedly
+led agents to propose reverting correct production config.
 
-| Item | Current (test) | Production |
+Remaining items before a real signed release:
+
+| Item | Current | Production |
 |---|---|---|
-| `MainActivity.java` L114 | `if (false)` — Xposed detection disabled | `MeatGrinder.isFoundXposed()` |
-| `MainActivity.java` L119 | `if (false)` — Frida / process scan disabled | `CheckAuthOfApplication.isFridaServer() \|\| checkRunningProcesses(this)` |
-| `MainActivity.java` L126 | `if (false)` — root check disabled | `RootUtils.checkRooted()` |
-| `MainActivity.java` L297 | `if (false)` — root check disabled | `DeviceUtils.isDeviceRooted() \|\| RootBeer(...).isRooted() \|\| ...isRootedWithoutBusyBoxCheck()` |
-| `build.gradle` applicationId | `com.easyform.atctesting` | `com.easyform.atcpv` |
-| `build.gradle` URLs | `mwfm-uat.altiusinfra.com` | `atcmwfm.americantower.com` (OCR already prod) |
 | `build.gradle` signing | falls back to `easyform-debug.jks` | real release keystore (**secret — ask the owner**) |
 | `AndroidManifest.xml` | `usesCleartextTraffic="true"` | `false` (all URLs are https) |
 | `res/xml/network_security_config.xml` | trusts user CAs, **unreferenced/dead** | delete |
 
-**The bypasses exist because the test handset (CPH2717) is rooted** — restoring them stops the app
-launching there, which ends on-device testing. Do not silently flip them.
+`build.gradle`'s `applicationId` and URLs are **not** blockers — they are the per-env switch, set per
+the URL rule in `docs/BUILD-AND-DEPLOY.md` ("build uat" → `mwfm-uat.altiusinfra.com`, "build prod" →
+`mwfm.altiusinfra.com`, OCR always americantower).
 
-**Recommended fix** — the project already has the right mechanism and the bypasses ignored it:
-`buildTypes` already define `isCheckRoot` / `isCheckDebug` build config fields per build type. Gate
-the restored checks on build type (debug = skip, release = enforce) instead of hardcoding `false`,
-and move the URL `resValue`s into a `release` override. Then debug keeps working on the rooted
-device and a release build is safe by construction rather than by checklist.
+**Still worth doing** — `buildTypes` already define `isCheckRoot` / `isCheckDebug` build config
+fields per build type, and nothing uses them for this. Gating the checks on build type would make a
+release safe by construction rather than by checklist.
 
 > Note: `CheckAuthOfApplication.isCheckRoot()` / `isCheckDebug()` are **native** (`cpp/native-lib.cpp`)
 > and hardcoded to `true` / `false` — they are NOT wired to the Gradle `buildConfigField` of the same
@@ -330,7 +339,7 @@ adb install -r EasyFormSE_finance/build/outputs/apk/debug/EasyFormSE_finance-deb
 adb shell am start -n com.easyform.atctesting/com.sky.atc.easyformse.MainActivity
 ```
 
-- **Test device:** Oppo CPH2717 (rooted — MainActivity has a TEST-ONLY root bypass, uncommitted).
+- **Test device:** Oppo CPH2717 — **not rooted**; the real root/anti-tamper checks pass on it.
 - **Wireless ADB:** `adb tcpip 5555` then `adb connect <device-ip>:5555` (used at `192.168.1.5:5555`).
 - **Login is manual** — never auto-enter credentials. Reinstall sends user back to login.
 - **CDP:** `adb forward tcp:9222 localabstract:chrome_devtools_remote` → inspect
@@ -555,6 +564,34 @@ module 19 card and lesson row both read `00:27`, `..._modules_by_item {"19":27.7
 Submit logged completion on a 1600ms timer and fell back to a hardcoded `100` when the assessment was
 not yet in refreshed data, writing a fake 100% into the dashboard log. Now driven by a real
 post-refresh callback, and an unknown score records nothing. 8/8 logic tests.
+
+---
+
+## Working-tree state as of 2026-08-15
+
+The zero-flow infinite-reload fix in `selection.js` is **committed** (`a64b562`).
+
+Still uncommitted, both **correct and intentional — do not revert**:
+
+| File | State |
+|---|---|
+| `EasyFormSE_finance/build.gradle` | **Prod config.** `applicationId com.easyform.atcpv`, `versionName ATC_19.6.37_F7_V1.11.2`, all URLs `mwfm.altiusinfra.com` with `OCR` on americantower — i.e. exactly the §6a rule for a prod build. |
+| `EasyFormSE_finance/src/com/sky/atc/easyformse/MainActivity.java` | **Real root/anti-tamper checks restored** (the four `if (false)` bypasses are gone). Verified running on the CPH2717, which is not rooted. |
+
+Built and installed from this state on 2026-08-15; APK resources verified with
+`aapt dump --values resources` to actually contain the altiusinfra hosts.
+
+Everything else (Home Dashboard P1–P3, `site_summary`, Stop Trip work) is committed and pushed to
+`origin/claude/lms-ui-improvements-fd66a5`.
+
+### ⚠️ Open issue: blank Home screen
+
+After the zero-flow fix, the reported symptom is that Home renders **only the top navbar and bottom
+tabbar, both flickering** — no dashboard, no module list. The fix removed the `changeurl` reload from
+the zero-flow branch, so a *persisting* flicker means a second reload path exists that has not been
+found yet. Unresolved; needs a live CDP look at Home while logged in with an account that is expected
+to have flows. Do not assume the zero-flow branch is the cause without confirming which branch
+actually runs.
 
 ---
 
