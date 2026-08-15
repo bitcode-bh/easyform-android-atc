@@ -1,0 +1,189 @@
+/* ==========================================================================
+   Login.html — Altius brand theme. Same palette/technique as
+   css/home_theme_altius.css (sampled from the app's own logo: deep navy +
+   light-blue accent), applied to the login form: faceted background, pill
+   input fields, gradient pill button. Scoped to this page's own containers
+   so nothing shared (styles_low.css, Framework7 core) is touched globally.
+   ========================================================================== */
+
+:root {
+    --altius-navy: #1d3a8f;
+    --altius-navy-deep: #142a68;
+    --altius-blue: #3fb6e0;
+    --altius-bg-tint: #f4f7fc;
+}
+
+/* ---- Faceted background across the whole login page.
+   Declared on BOTH .page and .page-content, not just .page: .page-content
+   has position:relative + z-index:1 (Framework7 core), which forms its own
+   stacking context. #img_bottom's mix-blend-mode (below) can only blend
+   against a backdrop painted inside that same stacking context -- a
+   background painted only on the ancestor .page is invisible to it, so the
+   logo's white square would stay unblended without this duplicate. */
+.page[data-page="list-view"],
+.page[data-page="list-view"] .page-content {
+    background-color: var(--altius-bg-tint);
+    background-image:
+        linear-gradient(160deg, rgba(29,58,143,0.05) 0%, rgba(63,182,224,0.05) 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%231d3a8f' stroke-opacity='0.07' stroke-width='1'%3E%3Cpath d='M0 70 L70 0 L165 25 L130 105 Z'/%3E%3Cpath d='M165 25 L260 0 L260 95 L130 105 Z'/%3E%3Cpath d='M0 70 L130 105 L45 190 L0 175 Z'/%3E%3Cpath d='M130 105 L260 95 L260 190 L185 260 L95 260 L45 190 Z'/%3E%3Cpath d='M95 260 L0 260 L0 175 L45 190 Z'/%3E%3C/g%3E%3C/svg%3E") !important;
+    background-repeat: repeat, repeat;
+    background-size: auto, 260px 260px;
+}
+/* .page is a full-bleed layer; .page-content sits inside it, pushed down by
+   F7's fixed navbar (~56px). Each element's background-position is relative
+   to its own box, so without this the two copies of the pattern (needed for
+   the blend-mode fix above) would be visibly offset from each other by that
+   56px, showing a seam at the navbar line. */
+.page[data-page="list-view"] .page-content {
+    background-position: 0 -56px, 0 -56px;
+}
+
+/* ---- Logo: the base64 PNG login.js injects into #img_bottom has an opaque
+   white square baked into the image itself (confirmed live -- the div's own
+   background-color is transparent, the white comes from the asset), so it
+   can't be fixed by styling the div's background. mix-blend-mode: multiply
+   blends the element with whatever is behind it in the stacking context
+   (the faceted page background here): white pixels multiply to the
+   background color and disappear, dark logo pixels stay dark. */
+#img_bottom {
+    mix-blend-mode: multiply;
+}
+
+/* ---- Input fields: same 16px gutter as the button below (login_user_data
+   spans edge-to-edge with only internal padding, while the button had an
+   explicit 16px external margin -- that mismatch is what read as
+   "off-center"). Compact height matching the app's original field size
+   rather than the oversized first pass, radius scaled down to match. ---- */
+.login_user_data.list-block {
+    background: transparent;
+    margin-left: 16px;
+    margin-right: 16px;
+}
+.login_user_data .item-content {
+    background: #fff;
+    border: 1px solid #c9d0dd;
+    /* Same radius as the Home dashboard's card (.hd-widget in
+       home_dashboard.css) so the two screens read as one design language. */
+    border-radius: 15px;
+    padding: 4px 16px;
+    margin-bottom: 12px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.login_user_data li {
+    border: none !important;
+}
+.login_user_data .item-inner {
+    border: none !important;
+    padding-top: 0 !important;
+    display: flex;
+    align-items: center;
+}
+.login_user_data .item-inner::after,
+.login_user_data .item-input-field::after {
+    display: none !important; /* kill F7's default underline divider (both
+                                  the row divider and the per-field one) */
+}
+
+/* Caption above the field ("User Name" / "Password") removed per request --
+   the leading icon (person / lock) already identifies the field. */
+.login_user_data .item-title.floating-label {
+    display: none !important;
+}
+.login_user_data .item-media {
+    color: var(--altius-navy);
+    margin-right: 10px;
+}
+.login_user_data .item-media .icon {
+    font-size: 18px;
+}
+.login_user_data .item-input-field {
+    height: 28px !important;
+    min-height: 0 !important;
+    display: flex;
+    align-items: center;
+}
+.login_user_data input.floated {
+    font-size: 15px;
+    line-height: 26px;
+    height: 26px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    vertical-align: middle;
+    color: #1c2333;
+}
+
+/* The password row is a <table>; its toggle cell carries an inline
+   vertical-align:super, which pinned the eye icon to the top of the taller
+   field instead of centering it. Inline styles can only be beaten with
+   !important. */
+.login_user_data td {
+    vertical-align: middle !important;
+}
+#btn_show_pass {
+    color: #667085;
+    font-size: 18px !important;
+}
+
+/* ---- Remember Me: F7 ships a square checkbox; the target design uses a
+   circular one with a dark tick. Restyled rather than replaced so the
+   existing #chk_remember_me input and its handlers keep working. ---- */
+label.label-checkbox i.icon-form-checkbox {
+    border-radius: 50% !important;
+    border: 1.5px solid #98a2b3 !important;
+    width: 22px !important;
+    height: 22px !important;
+}
+label.label-checkbox input[type=checkbox]:checked ~ .item-media i.icon-form-checkbox,
+label.label-checkbox input[type=checkbox]:checked + .item-media i.icon-form-checkbox,
+label.label-checkbox input[type=checkbox]:checked ~ .item-inner i.icon-form-checkbox {
+    background-color: transparent !important;
+    border-color: #667085 !important;
+}
+/* F7's checked tick is a white SVG intended to sit on a filled box; on the
+   transparent circle above it would be invisible, so swap in a dark one. */
+label.label-checkbox i.icon-form-checkbox:after {
+    width: 22px !important;
+    height: 22px !important;
+    left: -1.5px !important;
+    top: -1.5px !important;
+    background-size: 78% auto !important;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23344054' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") !important;
+}
+#lbl_forgot_password {
+    color: #1b56b9 !important;
+    font-weight: 400;
+}
+
+/* ---- Login button: solid brand blue, same corner radius as the fields
+   above (15px, matching the Home dashboard card radius) rather than a full
+   pill -- keeps every rounded element on this screen in sync. ---- */
+#btn_login_theme {
+    display: block;
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    box-sizing: border-box;
+    border-radius: 15px !important;
+    background: #1b56b9 !important;
+    box-shadow: none;
+    color: #fff;
+    font-weight: 700;
+    /* letter-spacing on a short, all-caps word visibly biases the text left
+       of true center -- browsers don't add tracking space after the last
+       glyph, so the text's own layout box is narrower than what centering
+       assumed. Dropping it (rather than compensating with padding) is what
+       actually fixes the "not centered" look. */
+    letter-spacing: normal;
+    text-align: center;
+    height: auto;
+    line-height: 1.4;
+    padding: 13px 0;
+    font-size: 16px;
+}
+
+/* ---- "Need Help?" floating pill — recolor to match brand instead of the
+   generic F7 default fill ---- */
+#btn_company_info {
+    background: var(--altius-navy) !important;
+}
