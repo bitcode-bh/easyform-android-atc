@@ -37,14 +37,28 @@ var HomeWidgetSiteSummary = (function () {
         refresh(container);
     }
 
+    // The two counts come from SQLite queries that can take a visible moment on
+    // a large geofence_tracking table, and until now the card just sat on its
+    // previous (or placeholder) value with no sign anything was happening --
+    // indistinguishable from a finished load that genuinely returned that
+    // number. .hd-loading paints them red and blinks (css/home_dashboard.css)
+    // so "still loading" is never mistaken for "this is the answer".
     function refresh(container) {
         var root = container.find('[data-widget="site_summary"]');
         if (root.length === 0) {
             return;
         }
+
+        var counts = root.find('.hd-site-total, .hd-site-visited');
+        counts.addClass('hd-loading');
+
         HomeDashboardData.getSiteSummary(function (result) {
-            root.find('.hd-site-total').text(result.totalSites !== null ? result.totalSites : '—');
-            root.find('.hd-site-visited').text(result.visitedToday !== null ? result.visitedToday : '—');
+            root.find('.hd-site-total')
+                .removeClass('hd-loading')
+                .text(result.totalSites !== null ? result.totalSites : '—');
+            root.find('.hd-site-visited')
+                .removeClass('hd-loading')
+                .text(result.visitedToday !== null ? result.visitedToday : '—');
         });
     }
 

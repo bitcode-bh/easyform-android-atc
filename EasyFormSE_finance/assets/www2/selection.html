@@ -172,6 +172,21 @@
             var ptrContent = $('.pull-to-refresh-content');
             ptrContent.on('pullend', function (e) {
                 check_table_availabililty();
+
+                // check_table_availabililty() only re-reads the download
+                // counters; when they already say "complete" it stops at
+                // check_for_notification() and never recomputes the module
+                // card counts, so a pull-to-refresh left the counts showing
+                // whatever they were at page load. get_data_from_ufm() is the
+                // same entry point pageload_main() uses to rebuild them
+                // (-> onload_get_counter_of_module_flow_new ->
+                // set_count_value_to_module -> get_list_of_modules), so the
+                // counts are recomputed from current task_master rather than
+                // left stale.
+                if (typeof get_data_from_ufm === 'function') {
+                    get_data_from_ufm();
+                }
+
                 if (typeof HomeDashboard !== 'undefined' && HomeDashboard.refresh) {
                     HomeDashboard.refresh();
                 }

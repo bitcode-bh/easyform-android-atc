@@ -85,6 +85,19 @@
     margin-top: 2px;
 }
 
+/* Loading state for the site counts — red + blinking while the underlying
+   query is still running, so a stale/placeholder number is never mistaken
+   for a finished result. Applied/removed by widget_site_summary.js. */
+#div_home_dashboard .hd-site-stat .hd-count.hd-loading {
+    color: #dc2626;
+    animation: hd-count-blink 0.9s ease-in-out infinite;
+}
+
+@keyframes hd-count-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+}
+
 /* trip_stats (P2) — whole card is tappable (opens the map) */
 #div_home_dashboard .hd-trip-stats:active {
     background: #f9fafb;
