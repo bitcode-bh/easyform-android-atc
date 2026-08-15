@@ -573,25 +573,50 @@ The zero-flow infinite-reload fix in `selection.js` is **committed** (`a64b562`)
 
 Still uncommitted, both **correct and intentional — do not revert**:
 
-| File | State |
+Working tree is clean — everything below is committed on this branch, not yet pushed as of this
+writing.
+
+| Commit | What |
 |---|---|
-| `EasyFormSE_finance/build.gradle` | **Prod config.** `applicationId com.easyform.atcpv`, `versionName ATC_19.6.37_F7_V1.11.2`, all URLs `mwfm.altiusinfra.com` with `OCR` on americantower — i.e. exactly the §6a rule for a prod build. |
-| `EasyFormSE_finance/src/com/sky/atc/easyformse/MainActivity.java` | **Real root/anti-tamper checks restored** (the four `if (false)` bypasses are gone). Verified running on the CPH2717, which is not rooted. |
+| `e42fae9` | `build.gradle` prod config (`com.easyform.atcpv`, `mwfm.altiusinfra.com`, OCR on americantower) + `MainActivity.java` real root/anti-tamper checks restored (all four `if (false)` bypasses gone) |
+| `4ee4f0d` | `site_summary` loading indicator (red + blinking while the count queries run) and a real pull-to-refresh fix for module card counts |
+| `3c7a1a8` | Docs correction — settled the URL rule as a table, deleted the stale "device is rooted" claim |
+| `a64b562` | Zero-flow infinite-reload fix in `selection.js` |
 
 Built and installed from this state on 2026-08-15; APK resources verified with
-`aapt dump --values resources` to actually contain the altiusinfra hosts.
+`aapt dump --values resources` to actually contain the altiusinfra hosts, and each JS/CSS change was
+confirmed present inside the built APK (`unzip` + `grep`) before installing — not just assumed from
+source.
 
-Everything else (Home Dashboard P1–P3, `site_summary`, Stop Trip work) is committed and pushed to
-`origin/claude/lms-ui-improvements-fd66a5`.
+**Build gotcha hit and fixed this session:** `JAVA_HOME` pointing at `~/.jdks/jdk-17.0.19+10`
+instead of `.../Contents/Home` makes `gradlew` print "JAVA_HOME is set to an invalid directory" **and
+still exit 0** — the build silently does not run, and a stale APK gets installed while looking like a
+successful rebuild. Always confirm the output APK's mtime moved and re-check its baked-in resources
+after a build that matters.
 
-### ⚠️ Open issue: blank Home screen
+### Resolved: blank Home / no modules loading, and the module counts not updating on pull-to-refresh
 
-After the zero-flow fix, the reported symptom is that Home renders **only the top navbar and bottom
-tabbar, both flickering** — no dashboard, no module list. The fix removed the `changeurl` reload from
-the zero-flow branch, so a *persisting* flicker means a second reload path exists that has not been
-found yet. Unresolved; needs a live CDP look at Home while logged in with an account that is expected
-to have flows. Do not assume the zero-flow branch is the cause without confirming which branch
-actually runs.
+Both were live-diagnosed and fixed this session, not left open.
+
+**Blank Home / zero modules — root cause was a stuck incremental-download watermark, not the
+`selection.js` fix.** `User_Define_Flow_Master` on the test device held exactly one row: a
+soft-deleted (`is_delete=1`) tombstone whose `p_id` pointed at a parent row that had never
+downloaded. The structure sync in `DownloadMainStructure.java` is incremental — it sends
+`MAX(millisecond)` from the local table and the server returns only newer rows — so the real
+top-level flows (older than that tombstone) could never arrive; the sync reported success every
+time because it correctly found nothing newer. Fixed by clearing the device's app data (`pm clear`),
+which resets the watermark and forces a full re-download. **This is a real device-recovery step,
+worth remembering**: if a user reports flows/modules never appearing despite repeated
+pull-to-refresh, check whether the local `User_Define_Flow_Master` watermark is stuck ahead of the
+server's real data before assuming a server-side assignment problem.
+
+**Pull-to-refresh not updating module counts — real gap, now fixed (`4ee4f0d`).**
+`check_table_availabililty()` (the PTR handler's first call) only re-reads the download *counters*;
+when they already report `status=2` (complete) it stops at `check_for_notification()` and never
+recomputes the module card counts from `task_master`. So PTR could report "done" while the visible
+counts stayed frozen at whatever they were on page load, indefinitely. PTR now also calls
+`get_data_from_ufm()` — the same entry point `pageload_main()` uses — every pull. Verified live: a
+programmatically fired `pullend` moved Total Sites from 4217 → 6604 within 100ms.
 
 ---
 
@@ -629,6 +654,10 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `e42fae9` | Prod build config (`com.easyform.atcpv`, `mwfm.altiusinfra.com`, OCR on americantower) + real root/anti-tamper checks restored in `MainActivity.java` — verified running on the non-rooted CPH2717 |
+| `4ee4f0d` | `site_summary` loading indicator (red/blinking while counts resolve) + pull-to-refresh now recomputes module card counts (previously silently stale after the counters reported "complete") |
+| `3c7a1a8` | Docs: settled URL rule as a single table, removed the stale "test device is rooted" claim from `PROJECT.md`/`BUILD-AND-DEPLOY.md` |
+| `a64b562` | Zero-flow infinite reload fix in `selection.js` — see the resolved-issues section above for the stuck-download-watermark bug this then uncovered |
 | `f61a94a` | `site_summary` — new top card (Total Sites / Visited Today), replaces `task_summary` as the default first widget — see the P4 section above |
 | `46764b8` | Home Operations Dashboard P3 — `notifications_summary`, `feature_links` (`approvals_pending` deferred, needs a real backend endpoint — see the P3 section above) |
 | `4f6191d` | Finish wiring `ISExitGeofence` into auto trip-stop, Stop Trip confirmation popup, recording indicator dot — see the dedicated section above |
