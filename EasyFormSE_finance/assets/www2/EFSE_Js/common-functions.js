@@ -4460,3 +4460,52 @@ function create_table_by_device_info() {
     }
 
 }
+/* ==========================================================================
+   Keyboard-aware bottom bar (app-wide).
+
+   The WebView host activity (ph_s in AndroidManifest.xml) declares no
+   windowSoftInputMode, so Android defaults to resizing the window when the
+   soft keyboard opens. A bottom tab bar therefore gets re-laid-out against
+   the shrunken viewport and visibly rides up to sit on top of the keyboard.
+
+   Rather than change the Activity's resize behaviour (adjustNothing/adjustPan
+   would stop the bar moving, but would also stop a focused input low on a
+   long form from being scrolled into view -- a bad trade in a forms-heavy
+   app), we keep the resize and simply hide the bar while the keyboard is up.
+   The bar never appears to move; it is absent while typing and back
+   immediately after.
+
+   Detection is by viewport height rather than any keyboard plugin, so it
+   needs no new dependency: the largest height seen for this page is treated
+   as the no-keyboard baseline, and a drop of >150px means the keyboard is
+   open. The threshold is absolute (not a ratio) so it behaves the same on
+   tall and short devices, and comfortably clears browser-chrome jitter.
+   ========================================================================== */
+(function () {
+    var kbBaselineHeight = 0;
+
+    function updateKeyboardState() {
+        var h = window.innerHeight;
+        if (h > kbBaselineHeight) {
+            kbBaselineHeight = h;
+        }
+        var isOpen = kbBaselineHeight > 0 && (kbBaselineHeight - h) > 150;
+        var root = document.documentElement;
+        if (!root) return;
+        if (isOpen) {
+            if (root.className.indexOf('keyboard-open') === -1) {
+                root.className += ' keyboard-open';
+            }
+        } else {
+            root.className = root.className.replace(/\s*keyboard-open\b/g, '');
+        }
+    }
+
+    if (typeof window !== 'undefined' && window.addEventListener) {
+        window.addEventListener('resize', updateKeyboardState);
+        window.addEventListener('load', updateKeyboardState);
+        if (document.readyState === 'complete') {
+            updateKeyboardState();
+        }
+    }
+})();

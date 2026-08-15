@@ -3132,3 +3132,42 @@ li.w-75-25 {
     font-size: 14px;
     color: #444746;
 }
+
+/* ==========================================================================
+   App-wide top bar (and toolbar) colour — matches the Home screen.
+   Framework7 core ships `.navbar, .subnavbar, .toolbar { background: #6A6C74 }`
+   (dark grey) together with `color: #fff` on the bar and on `a.link` inside
+   it. Home (selection.html) already overrode only the *background* to #ecedef
+   inline; every other page kept F7's dark grey.
+
+   Both halves must change together: swapping just the background to a light
+   colour would leave F7's white text/icons on a light bar and make every
+   other page's navbar title and buttons effectively invisible. #0f1729 is the
+   same ink Home's navbar already uses (15.26:1 on #ecedef).
+   ========================================================================== */
+.navbar,
+.subnavbar,
+.toolbar {
+    background: #ecedef !important;
+}
+
+.navbar,
+.toolbar,
+.navbar .center,
+.navbar .left,
+.navbar .right,
+.navbar a.link,
+.subnavbar a.link,
+.toolbar a.link {
+    color: #0f1729 !important;
+}
+
+/* Bottom tab bars are hidden while the soft keyboard is open, so they never
+   ride up and float above it. The .keyboard-open class is put on <html> by
+   the viewport-height watcher at the end of EFSE_Js/common-functions.js --
+   see the comment there for why this is done in CSS instead of changing the
+   Activity's windowSoftInputMode. */
+html.keyboard-open .toolbar.tabbar,
+html.keyboard-open #div_new_tabbar {
+    display: none !important;
+}
