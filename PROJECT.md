@@ -659,6 +659,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `dfdf294` | Real Support Info popup: `format_support_info()` parses the tenant's raw `support_refrences1` server text into structured rows (was an unstyled dump), Altius-navy header with hours inline before the tagline, plain icon rows for IMEI/APK Link, full-width flush-to-bottom popover |
 | `bdb3808` | App-wide top bar color match to Home's `#ecedef`/`#0f1729` (background+text together, via `styles_low.css`) + keyboard-safe bottom bar (hides `.toolbar.tabbar`/`#div_new_tabbar` while a keyboard-open class is set, instead of changing `windowSoftInputMode` app-wide) |
 | `5464823` | Safety Passport menu entry + `panel-sp` container added to Home's side menu — pre-existing gap, not a regression |
 | `66f08cc` | Accent color swap `#215ba8` → `#2a3086` (sampled from the Altius logo) across Home, LMS, and notifications — 10 files, verified pure hex-only diff |
