@@ -223,3 +223,203 @@ label.label-checkbox i.icon-form-checkbox:after {
     padding: 0 2px;
     text-align: center;
 }
+
+/* ==========================================================================
+   Support Info popup (.sp-popover) — same design language as the login form
+   above: compact rows, plain icons with no circular/pill backgrounds, no
+   bold text, header in the app's own accent (--altius-navy, sampled from
+   the logo) rather than a separate color. Reviewed as a standalone mockup
+   before landing here; see that artifact for the full rationale on each
+   choice (icon treatment, spacing, weight).
+
+   #test_support holds arbitrary server-provided HTML (support_refrences1 /
+   loging_html_code, tenant-configurable) -- these rules style its likely
+   content (links, line breaks) generically rather than assuming fixed
+   fields, since the exact markup varies per tenant.
+   ========================================================================== */
+/* Full-width, flush to the bottom edge. Overrides both F7's own
+   .popover defaults (width:320px, position:absolute with a top/left it
+   computes from the trigger element at open time) and the inline
+   width:95%/left:1% still on the element in Login.html -- inline styles
+   beat any non-!important external rule, so !important is required here
+   regardless of selector specificity. */
+.sp-popover {
+    width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+.sp-popover .popover-inner {
+    /* Requested flat grey for the non-card info area (the plain rows --
+       Support Number/Emergency/Email/IMEI/APK -- as opposed to a
+       distinct card surface). */
+    background: #e0e0e0;
+    padding: 0;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+/* Slim, solid, square -- no dotted texture, no rounded corners. Column
+   layout: the icon/title/close row on top, the support-hours strip
+   (rendered by format_support_info() into #sp_header_hours) beneath it,
+   both on the same navy fill. */
+.sp-header {
+    background: var(--altius-navy);
+    padding: 9px 16px;
+    display: flex;
+    flex-direction: column;
+}
+.sp-header-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.sp-header-icon {
+    flex: 0 0 auto;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+}
+.sp-header-icon svg { width: 20px; height: 20px; }
+.sp-header-text { flex: 1; min-width: 0; }
+.sp-header-text h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+}
+.sp-header-text p {
+    margin: 1px 0 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.sp-header-tagline {
+    color: rgba(255,255,255,0.68);
+    font-size: 10px;
+    font-weight: 400;
+}
+.sp-header-close {
+    flex: 0 0 auto;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.5);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+}
+.sp-header-close svg { width: 10px; height: 10px; }
+
+/* Support hours, inline in the header's subtitle line, in front of "We're
+   here to help" (not a separate row below it). Exactly the same
+   font-size/weight/color register as .sp-header-tagline so it reads as one
+   continuous piece of header text, not a bolted-on block. */
+.sp-header-hours {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255,255,255,0.68);
+    font-size: 10px;
+    font-weight: 400;
+}
+.sp-hours-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+.sp-hours-item svg { width: 11px; height: 11px; flex: 0 0 auto; color: rgba(255,255,255,0.65); }
+.sp-hours-divider {
+    width: 1px;
+    height: 10px;
+    background: rgba(255,255,255,0.3);
+}
+
+.sp-body { padding: 12px 18px 6px; max-height: 60vh; overflow-y: auto; }
+
+/* Generic styling for #test_support's arbitrary server HTML -- links and
+   line-broken text, not fixed rows (the markup itself is tenant-defined). */
+.sp-body #test_support {
+    font-size: 12.5px;
+    color: var(--app-ink, #1c2333);
+    line-height: 1.6;
+}
+.sp-body #test_support a {
+    color: var(--altius-navy);
+    text-decoration: none;
+}
+
+.sp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+}
+.sp-row-last { padding-bottom: 4px; }
+.sp-row-icon {
+    flex: 0 0 22px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--altius-navy);
+}
+.sp-row-icon svg { width: 18px; height: 18px; }
+.sp-row-main { flex: 1; min-width: 0; }
+.sp-row-label { font-size: 12.5px; font-weight: 500; color: #1c2333; }
+.sp-row-value {
+    margin-top: 1px;
+    font-size: 10px;
+    color: #667085;
+    font-family: ui-monospace, "SF Mono", "Roboto Mono", Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+}
+.sp-row-action {
+    flex: 0 0 20px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--altius-navy);
+}
+.sp-row-action svg { width: 16px; height: 16px; }
+
+/* ---- Support popup: structured contact block (built by
+   format_support_info() in Login.html from the server's plain-text
+   support_refrences1). Same row language as the IMEI/APK rows above:
+   plain icons, no pills, no bold.
+   (Support hours used to render here as their own card; moved into the
+   header -- see .sp-header-hours above -- so this section now starts
+   directly at the contact rows.) ---- */
+.sp-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+}
+.sp-info-icon {
+    flex: 0 0 22px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--altius-navy);
+}
+.sp-info-icon svg { width: 18px; height: 18px; }
+.sp-emergency .sp-info-icon { color: #e53935; }
+.sp-info-label {
+    flex: 0 0 auto;
+    font-size: 12.5px;
+    color: #1c2333;
+    white-space: nowrap;
+}
+.sp-info-value {
+    flex: 1;
+    min-width: 0;
+    text-align: right;
+    font-size: 11.5px;
+    color: #667085;
+    word-break: break-word;
+}
+.sp-info-value a {
+    color: var(--altius-navy);
+    text-decoration: none;
+}
+.sp-split { display: flex; align-items: center; justify-content: flex-end; gap: 7px; white-space: nowrap; }
+.sp-vdiv { width: 1px; height: 12px; background: #e3e7ed; flex: 0 0 auto; }

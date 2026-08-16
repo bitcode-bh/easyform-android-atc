@@ -468,32 +468,215 @@
         </div>
 
         <!-- support info start -->
-        <div class="popover popover-menu popover-on-bottom" style="width: 95%; left: 1%; z-index: 23001;">
+        <div class="popover popover-menu popover-on-bottom sp-popover" style="z-index: 23001;">
             <div class="popover-inner">
-                <div class="navbar" style="height: 40px">
-                    <div class="navbar-inner">
-                        <div class="center" style="font-size: 15px">Support Info</div>
+                <div class="sp-header">
+                    <div class="sp-header-main">
+                        <div class="sp-header-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 14v-3a8 8 0 0 1 16 0v3"/>
+                                <path d="M4 14a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h1v-5H4z"/>
+                                <path d="M20 14a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1v-5h1z"/>
+                                <path d="M18 19a2 2 0 0 1-2 2h-2"/>
+                            </svg>
+                        </div>
+                        <div class="sp-header-text">
+                            <h2>Support Info</h2>
+                            <p>
+                                <!-- Support hours are rendered in here by
+                                     format_support_info(), inline before the
+                                     tagline rather than in the body. -->
+                                <span class="sp-header-hours" id="sp_header_hours"></span>
+                                <span class="sp-header-tagline">We're here to help</span>
+                            </p>
+                        </div>
+                        <a href="#" class="sp-header-close" onclick='myApp.closeModal(".popover-menu")'>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+                        </a>
                     </div>
                 </div>
-                <div class="content-block" id="test_support" style="padding: 1%; margin: 0; max-height: 100%; overflow: auto">
-                    <!--Sky Producitivity Pvt Ltd.<br />
-                    Phone: <a onclick="open_dialpad(12345678990)">12345678990</a><br />
-                    Email: <a onclick="open_mail('support@skyproductivity.com')">support@skyproductivity.com</a><br />
-                    Mob 1: 123456<br />
-                    Mob 2: 123456-->
-                </div>
-                <div>
-                    <hr />
-                    <span style="margin-left:5px"><label>IMEI No.: </label><label id="lbl_IMEI" style="font-size: 12px;"></label></span>
-                    <a class="button button-fill" onclick="send_mail_for_imei();" style="float: right; display: inline-block; border-radius: 5px; margin-right: 5px; min-width: 34px; height: 24px; line-height: 26px; top: -2px; "><i class="fa fa-share" style="margin: 0;"></i></a>
-                </div>
-                <div>
-                    <hr />
-                    <span style="margin-left:5px"><label>APK Link: </label><label id="lbl_IMEI" style="font-size: 12px;"></label></span>
-                    <a class="button button-fill" onclick="send_mail_for_app_link();" style="float: right; display: inline-block; border-radius: 5px; margin-right: 5px; min-width: 34px; height: 24px; line-height: 26px; top: -2px; margin-bottom: 4px;"><i class="fa fa-share" style="margin: 0;"></i></a>
+                <div class="sp-body">
+                    <div class="content-block" id="test_support" style="padding: 0; margin: 0; max-height: 40vh; overflow: auto"></div>
+                    <div id="sp_formatted"></div>
+
+                    <div class="sp-row">
+                        <div class="sp-row-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></svg>
+                        </div>
+                        <div class="sp-row-main">
+                            <div class="sp-row-label">IMEI No.</div>
+                            <div class="sp-row-value" id="lbl_IMEI"></div>
+                        </div>
+                        <a href="#" class="sp-row-action" onclick="send_mail_for_imei();" title="Share IMEI">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>
+                        </a>
+                    </div>
+
+                    <div class="sp-row sp-row-last">
+                        <div class="sp-row-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+                        </div>
+                        <div class="sp-row-main">
+                            <div class="sp-row-label">APK Link</div>
+                        </div>
+                        <a href="#" class="sp-row-action" onclick="send_mail_for_app_link();" title="Share APK link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
+        <script>
+            /* Renders the Support Info popup's contact block as designed rows.
+
+               #test_support is filled by display_support_details() with
+               support_refrences1 / loging_html_code -- server-provided,
+               tenant-configurable content. On this tenant it arrives as plain
+               newline-separated text (verified live over CDP), which is why it
+               previously rendered as an unstyled wall of text inside an
+               otherwise styled popup.
+
+               This parses those lines into the icon rows / hours pill from the
+               approved design. It is deliberately conservative:
+                 - anything it cannot classify is still rendered, as a plain
+                   row, so no server content is ever silently dropped;
+                 - if the block contains real HTML tags (another tenant may
+                   send markup, not text) it leaves it completely alone;
+                 - any exception falls back to the original raw block.
+               In every fallback the original #test_support stays visible. */
+            (function () {
+                var ICONS = {
+                    phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+                    sos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L14.71 3.86a2 2 0 0 0-3.42 0z"/></svg>',
+                    mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
+                    cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+                    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
+                    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>'
+                };
+
+                function esc(s) {
+                    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                }
+                function jsStr(s) { return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+
+                function row(iconKey, label, valueHtml, extraClass) {
+                    return '<div class="sp-info-row ' + (extraClass || '') + '">'
+                        + '<div class="sp-info-icon">' + ICONS[iconKey] + '</div>'
+                        + '<div class="sp-info-label">' + esc(label) + '</div>'
+                        + '<div class="sp-info-value">' + valueHtml + '</div>'
+                        + '</div>';
+                }
+                function telLink(num) {
+                    var clean = String(num).replace(/[^\d+]/g, '');
+                    return '<a href="#" onclick="open_dialpad(\'' + jsStr(clean) + '\'); return false;">' + esc(num) + '</a>';
+                }
+                function mailLink(addr) {
+                    return '<a href="#" onclick="open_mail(\'' + jsStr(addr) + '\'); return false;">' + esc(addr) + '</a>';
+                }
+
+                window.format_support_info = function () {
+                    var src = document.getElementById('test_support');
+                    var out = document.getElementById('sp_formatted');
+                    if (!src || !out) return;
+
+                    // Any fallback below must also clear the header hours, or a
+                    // previous run's hours would stay in the header while the
+                    // body reverts to the raw server text.
+                    function resetAll() {
+                        out.innerHTML = '';
+                        src.style.display = '';
+                        var h = document.getElementById('sp_header_hours');
+                        if (h) { h.innerHTML = ''; h.style.display = 'none'; }
+                    }
+
+                    try {
+                        var raw = src.innerHTML || '';
+                        // Another tenant may legitimately send real markup; if so,
+                        // leave it exactly as the server intended.
+                        if (/<(?!br\s*\/?>)[a-z][\s\S]*>/i.test(raw)) { resetAll(); return; }
+
+                        var lines = raw.replace(/<br\s*\/?>/gi, '\n').split('\n');
+                        var days = '', timings = '', landlines = [], emergency = '', email = '', others = [];
+
+                        for (var i = 0; i < lines.length; i++) {
+                            var line = lines[i].replace(/&nbsp;/gi, ' ').trim();
+                            if (!line) continue;
+
+                            var m;
+                            if (/^timings?\s*:/i.test(line)) {
+                                timings = line.replace(/^timings?\s*:\s*/i, '').trim();
+                            } else if ((m = line.match(/^landline\s*\d*\s*:\s*(.+)$/i))) {
+                                landlines.push(m[1].trim());
+                            } else if (/emergency/i.test(line) && (m = line.match(/:\s*(.+)$/))) {
+                                emergency = m[1].trim();
+                            } else if ((m = line.match(/^e-?mail\s*:\s*(.+)$/i))) {
+                                email = m[1].trim();
+                            } else if (/(mon|tue|wed|thu|fri|sat|sun)/i.test(line) && line.indexOf(':') === -1) {
+                                days = line;
+                            } else if (/^(it\s+)?support\s+number$/i.test(line)) {
+                                // bare heading for the landlines below -- no row of its own
+                                continue;
+                            } else {
+                                others.push(line);
+                            }
+                        }
+
+                        var html = '';
+                        var hoursHtml = '';
+
+                        // Support hours live in the navy header, not the body.
+                        var hoursEl = document.getElementById('sp_header_hours');
+                        if (hoursEl) {
+                            if (days) {
+                                hoursHtml += '<span class="sp-hours-item">' + ICONS.cal + '<span>' + esc(days) + '</span></span>';
+                            }
+                            if (days && timings) hoursHtml += '<span class="sp-hours-divider"></span>';
+                            if (timings) {
+                                hoursHtml += '<span class="sp-hours-item">' + ICONS.clock + '<span>' + esc(timings) + '</span></span>';
+                            }
+                            hoursEl.innerHTML = hoursHtml;
+                            // CSS default is display:none (collapsed until
+                            // there's content); 'flex' is what .sp-header-hours
+                            // is styled as, not '' (which would just fall back
+                            // to that none and never show it).
+                            hoursEl.style.display = hoursHtml ? 'flex' : 'none';
+                        }
+
+                        if (landlines.length) {
+                            var v = '';
+                            for (var j = 0; j < landlines.length; j++) {
+                                if (j) v += '<span class="sp-vdiv"></span>';
+                                v += telLink(landlines[j]);
+                            }
+                            html += row('phone', 'Support Number', '<span class="sp-split">' + v + '</span>');
+                        }
+                        if (emergency) html += row('sos', 'Emergency Contact', telLink(emergency), 'sp-emergency');
+                        if (email) html += row('mail', 'Email', mailLink(email));
+
+                        for (var k = 0; k < others.length; k++) {
+                            var o = others[k], oi = o.indexOf(':');
+                            if (oi > 0) {
+                                html += row('info', o.slice(0, oi).trim(), esc(o.slice(oi + 1).trim()));
+                            } else {
+                                html += row('info', o, '');
+                            }
+                        }
+
+                        // Only a full revert to the raw block if NEITHER the
+                        // header hours NOR any body row were produced --
+                        // hours alone (no other rows) is a valid, complete
+                        // result and must not wipe what was just set above.
+                        if (!html && !hoursHtml) { resetAll(); return; }
+
+                        out.innerHTML = html;
+                        src.style.display = 'none';   // replaced, not discarded
+                    } catch (e) {
+                        resetAll();
+                    }
+                };
+            })();
+        </script>
         <!-- support info end -->
         <!-- company info start -->
         <div class="popover popover-app-info popover-on-bottom" style="width: 95%; height: 95%; left: 1%; z-index: 23001;">

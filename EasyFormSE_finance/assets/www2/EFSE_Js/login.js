@@ -1979,6 +1979,14 @@ function show_pass() {
 
 function show_company_info() {
     var clickedLink = $("#btn_company_info");
+    // Restructure the server-provided support text into the designed rows
+    // before showing. Defined in Login.html (page-specific presentation);
+    // guarded so any other page calling this still works unchanged.
+    try {
+        if (typeof format_support_info === 'function') {
+            format_support_info();
+        }
+    } catch (e) { }
     myApp.popover('.popover-menu', clickedLink);
 }
 
