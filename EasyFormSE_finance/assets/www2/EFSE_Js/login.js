@@ -780,6 +780,8 @@ function updateuniquecode_android(invocation, res_type) {
 
         if (result[0].status == 1) {
 
+            Language = result[0].Language;
+
             clear_localStorage();
 
             myApp.setProgressbar('#login_progressbar', 10);
@@ -2645,7 +2647,13 @@ function clear_localStorage() {
     localStorage.setItem('redirect_on_module', redirect_on_module);
     localStorage.setItem('user_list_feature_id', user_list_feature_id);
     localStorage.setItem('user_consent', user_consent);
-    localStorage.setItem('user_language', user_language);
+
+    if (Language == "") {
+        localStorage.setItem('user_language', user_language);
+    }
+    else {
+        localStorage.setItem('user_language', Language);
+    }
     localStorage.setItem('deviceinfo', deviceinfo);
     localStorage.setItem('livelink_watched_Array', JSON.stringify(livelink_watched_Array));
 }

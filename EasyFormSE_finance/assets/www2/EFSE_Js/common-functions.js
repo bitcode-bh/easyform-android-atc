@@ -4352,9 +4352,29 @@ change_user_language = (lang) => {
 }
 
 change_user_language_menu = (lang) => {
-    localStorage.setItem("user_language", lang);
-    myApp.closeModal('.popover-language.modal-in');
-    $("#pro_language").html(languages[lang]);
+    
+    var Param_obj = [];
+    Param_obj.push({
+        'Language': lang
+    });
+
+    loading();
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'Update_User_Language', JSON.stringify(Param_obj), function (e) {
+        var Search_data = e.responseText;
+        Search_data = eval('(' + Search_data + ')');
+        var message = Search_data[0].message;
+        var status = Search_data[0].status;
+        if (status == 1) {
+            localStorage.setItem("user_language", lang);
+            myApp.closeModal('.popover-language.modal-in');
+            $("#pro_language").html(languages[lang]);
+        }
+        else {
+            alert(message);
+        }
+        loading_hide();
+    }, onfail);
+    getdata1.callOtherDomain();
 }
 
 // create table by device info json
