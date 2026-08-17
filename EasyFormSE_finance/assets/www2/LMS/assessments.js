@@ -1,4 +1,4 @@
-﻿
+
 var glob_Assessment_Schedule_Id = 0;
 var assessment_data = [];
 var selected_assessment_tag = "All";
@@ -12,6 +12,8 @@ function render_assessment_search() {
     $(".assessment-search").html(search);
 }
 
+// Label-only chips — see the matching note in safety_modules.js
+// render_safety_module_tags(); counts now live in .lms-filter-summary.
 function render_assessment_tags() {
     var tags = [];
     var seen_tags = {};
@@ -44,6 +46,11 @@ function render_assessment_sort_menu() {
 
 function render_assessment_cards() {
     var visible_assessments = get_lms_visible_items(assessment_data, selected_assessment_tag, assessment_search_text, selected_assessment_sort, "Name", "Description");
+
+    if (typeof lms_render_filter_summary === 'function') {
+        lms_render_filter_summary('lms_assessment_filter_summary', selected_assessment_tag, visible_assessments.length);
+    }
+
     var str = '';
     if (visible_assessments.length === 0) {
         str = '<div class="sample-safety-empty-state">No assessments found</div>';
@@ -62,9 +69,13 @@ function render_assessment_cards() {
         var SubmitedQuestion = assessment.SubmitedQuestion == null || assessment.SubmitedQuestion === "" ? 0 : assessment.SubmitedQuestion;
         var onclick_str = "get_questionlog_by_assessment_id('" + Assessment_Id + "', '" + Assessment_Schedule_Id + "', '" + Progress + "')";
 
-        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image"><img src="' + Thumbnail_link + '">';
+        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\'); if(typeof lms_apply_corner_contrast===\'function\') lms_apply_corner_contrast(this.src, this.parentNode);">';
         if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag">' + Tag + '</span>';
-        if (SubmitedQuestion > 0) str += '<span class="sample-score-tag">Score: ' + Score + '/' + TotalQuestion + '</span>';
+        if (SubmitedQuestion > 0) {
+            str += '<span class="sample-score-tag"><span class="sample-score-label">Score:</span> ';
+            str += '<span class="sample-score-current">' + Score + '</span><span class="sample-score-sep">/</span>';
+            str += '<span class="sample-score-total">' + TotalQuestion + '</span></span>';
+        }
         str += '</div><div class="sample-module-card-body"><div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
         str += '<div class="sample-module-meta"><div class="sample-module-lessons"><span class="sample-module-help"><i class="fa fa-book-open"></i></span><span class="sample-lession-count">' + TotalQuestion + ' Questions</span></div><div class="sample-module-percent">' + Progress + '%</div></div>';
         str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div></div></div>';
@@ -95,23 +106,106 @@ function bind_assessment_controls() {
     });
 }
 
-function get_assessments_listing(force_refresh) {
+function apply_assessments(responseText, isRefresh) {
+    var myArray;
+    try { myArray = JSON.parse(responseText); } catch (e) { return; }
+    var status = myArray[0].status;
+    if (status == 1) {
+        var data = JSON.parse(myArray[0]["data"]);
+        assessment_data = data.map(function (assessment, index) {
+            assessment._lms_item_order = index;
+            return assessment;
+        });
+        if (typeof update_lms_kpi === 'function') update_lms_kpi();
+        update_assessment_kpi();
+        // Keep the user's active filter/sort/search on the silent refresh.
+        if (!isRefresh) {
+            selected_assessment_tag = "All";
+            selected_assessment_sort = "recommended";
+            assessment_search_text = "";
+            render_assessment_search();
+            render_assessment_tags();
+            render_assessment_sort_menu();
+            bind_assessment_controls();
+        }
+        render_assessment_cards();
+    }
+    else if (!isRefresh) {
+        assessment_listing_requested = false;
+        assessment_data = [];
+        update_assessment_kpi();
+        render_assessment_cards();
+    }
+}
+
+// Summary cards at the top of the Assessments tab.
+function update_assessment_kpi() {
+    var completedEl = document.getElementById('kpi_assessment_completed_pct');
+    var scoreEl = document.getElementById('kpi_assessment_avg_score');
+    if (!completedEl && !scoreEl) return;
+    var k = lms_compute_completion_kpi(assessment_data);
+    if (completedEl) lms_set_info_value(completedEl, k.completedPct + '%');
+    if (scoreEl) lms_set_info_value(scoreEl, k.avgScorePct + '%');
+}
+
+// onNetworkApplied (optional): invoked after fresh SERVER data has been applied
+// to assessment_data — never after a cache-only paint. Callers that must read a
+// server-updated field (e.g. a score right after submitting) use this instead of
+// guessing at a delay.
+function get_assessments_listing(force_refresh, onNetworkApplied) {
+    if (typeof lms_reset_listings_if_role_changed === 'function' && lms_reset_listings_if_role_changed()) {
+        force_refresh = true;
+    }
+    if (force_refresh) {
+        assessment_listing_requested = false;
+    }
     if (assessment_listing_requested && !force_refresh) {
         return;
     }
     assessment_listing_requested = true;
-    $("#dv_Assessments_List").empty();
 
-    let role_id_array = localStorage.getItem('role_id_array');
+    let role_id = (typeof lms_get_listing_role_ids === 'function')
+        ? lms_get_listing_role_ids()
+        : localStorage.getItem('role_id_array');
 
     var Param_obj = [];
     Param_obj.push({
-        'Role_Id': role_id_array
+        'Role_Id': role_id
     });
 
+    var lms_assess_url = global_wcf_url_lms + 'LMS_Select_Assessments_Master_RoleWise';
+    var lms_assess_cache_key = (typeof lms_listing_cache_key === 'function')
+        ? lms_listing_cache_key('assessments', role_id)
+        : ('assessments_' + role_id);
+
+    // Cache-first (see get_safety_module_listing); original path preserved as fallback.
+    if (typeof LmsData !== 'undefined') {
+        var had_cache = LmsData.getCache(lms_assess_cache_key) != null;
+        if (!had_cache) {
+            LmsData.showSkeletons("#dv_Assessments_List", 4);
+        }
+        LmsData.fetch(lms_assess_cache_key, lms_assess_url, JSON.stringify(Param_obj),
+            function (txt, source) {
+                apply_assessments(txt, source === 'network' && had_cache);
+                if (source === 'network' && typeof onNetworkApplied === 'function') {
+                    onNetworkApplied();
+                }
+            },
+            function (err) {
+                if (!had_cache) {
+                    assessment_listing_requested = false;
+                    LmsData.showError("#dv_Assessments_List", "get_assessments_listing(true)");
+                }
+            },
+            { timeout: 15000, retries: 1, force: !!force_refresh }
+        );
+        return;
+    }
+
+    $("#dv_Assessments_List").empty();
     loading();
 
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Assessments_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
+    var getdata = new Webservicecall_REST(lms_assess_url, JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
@@ -123,6 +217,8 @@ function get_assessments_listing(force_refresh) {
                 assessment._lms_item_order = index;
                 return assessment;
             });
+            if (typeof update_lms_kpi === 'function') update_lms_kpi();
+        update_assessment_kpi();
             selected_assessment_tag = "All";
             selected_assessment_sort = "recommended";
             assessment_search_text = "";
@@ -131,6 +227,9 @@ function get_assessments_listing(force_refresh) {
             render_assessment_sort_menu();
             bind_assessment_controls();
             render_assessment_cards();
+            // Same contract as the LmsData path above: this branch is always a
+            // live network response, so the caller's post-refresh hook runs here.
+            if (typeof onNetworkApplied === 'function') onNetworkApplied();
 
             /*for (let m = 0; m < data.length; m++) {
                 let Assessment_Id = data[m].Assessment_Id;
@@ -204,8 +303,8 @@ function get_assessments_listing(force_refresh) {
         }
         else {
             assessment_listing_requested = false;
-            var message = myArray[0].message;
-            alert(message);
+            assessment_data = [];
+            render_assessment_cards();
         }
 
         loading_hide();
@@ -214,14 +313,54 @@ function get_assessments_listing(force_refresh) {
     getdata.callOtherDomain();
 }
 
+// Replaces the old alert("All answers are required!") pattern: the button
+// itself is disabled/enabled as the user answers, so an incomplete submit is
+// simply not tappable rather than being caught after the fact with a popup.
+function assessment_update_submit_enabled(answered, total) {
+    var btn = document.getElementById('btn_assessment_submit');
+    if (!btn) return;
+    btn.classList.toggle('disabled', answered < total);
+}
+
 function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id, Progress) {
 
     glob_Assessment_Schedule_Id = Assessment_Schedule_Id;
+
+    if (typeof lms_start_assessment_watch === 'function') lms_start_assessment_watch(Assessment_Id);
 
     myApp.popup.open('.popup-assessment-que');
     $("#dv_Assessment_Question_List").empty();
 
     $("#dv_Assessment_Question_List").attr("Assessment_Id", Assessment_Id);
+
+    // Submit footer is now a persistent element (see LMS_Dashboard.html) rather
+    // than one freshly injected per assessment, so its state has to be reset
+    // explicitly here — otherwise a previous assessment's "Submitting…"/disabled
+    // state, or its visibility, would carry over into this one. Starts disabled
+    // — nothing is answered yet — and assessment_update_submit_enabled() turns
+    // it on once every question has a selection.
+    $("#assessment_submit_footer").hide();
+    var resetBtn = document.getElementById('btn_assessment_submit');
+    if (resetBtn) {
+        resetBtn.classList.add('disabled');
+        resetBtn.textContent = 'Submit';
+    }
+
+    // Description at the top of the screen (replaces the old stepper/timer
+    // header). Prefer the loaded record; fall back to the card's own text for
+    // the module-wise list, which opens this popup without populating
+    // assessment_data. Cleared first so a previous assessment's copy can't
+    // linger if neither source has one.
+    var assessment_desc = '';
+    if (typeof assessment_data !== 'undefined' && assessment_data.length) {
+        var match = assessment_data.filter(function (a) { return a.Assessment_Id == Assessment_Id; })[0];
+        if (match) assessment_desc = match.Description || '';
+    }
+    if (!assessment_desc) {
+        assessment_desc = $("#dv_Assessments_List").find("div[Module_Id='" + Assessment_Id + "']").find("div.sample-module-desc").html() || '';
+    }
+    $("#assessment_Description").html(assessment_desc);
+    $("#assessment_Description").toggle(!!assessment_desc);
 
     var user_id = JSON.parse(storage.getItem('user_id'));
     var Param_obj = [];
@@ -309,10 +448,10 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                     }
 
                     if (ans_label == op_text) {
-                        str += '<input type="checkbox" alt="' + weightage + '" id="' + Assessment_Que_Id + '_' + j + '" checked="checked" style="font-weight: bold">';
+                        str += '<input type="radio" name="q_' + Assessment_Que_Id + '" alt="' + weightage + '" id="' + Assessment_Que_Id + '_' + j + '" checked="checked">';
                     }
                     else {
-                        str += '<input type="checkbox" alt="' + weightage + '" id="' + Assessment_Que_Id + '_' + j + '">';
+                        str += '<input type="radio" name="q_' + Assessment_Que_Id + '" alt="' + weightage + '" id="' + Assessment_Que_Id + '_' + j + '">';
                     }
 
                     str += '<label for="' + Assessment_Que_Id + '_' + j + '">' + op_text + '</label>';
@@ -323,30 +462,66 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
 
             }
 
+            // Stepper values are still maintained (other code reads them) but the
+            // header itself stays hidden — the assessment description now occupies
+            // the top of this screen instead, matching the lesson video screen.
+            var totalQ = document.querySelectorAll('#dv_Assessment_Question_List .question-card').length;
+            var qTotalEl = document.getElementById('q_total');
+            var qCurEl = document.getElementById('q_cur');
+            var qHeader = document.getElementById('assessment_quiz_header');
+            if (qTotalEl) qTotalEl.textContent = totalQ;
+            if (qCurEl) qCurEl.textContent = (Progress == "100") ? totalQ : 0;
+            if (qHeader) qHeader.style.display = 'none';
+
+            // Highlight any pre-checked option (prior answer / review mode) —
+            // covers WebViews without :has() and the disabled review state.
+            document.querySelectorAll('#dv_Assessment_Question_List input[type="radio"]:checked').forEach(function (inp) {
+                var opt = inp.closest('.option');
+                if (opt) opt.classList.add('selected');
+            });
+
             if (Progress == "100") {
-                $("#dv_Assessment_Question_List").find("input[type='checkbox']").attr("disabled", "disabled");
+                $("#dv_Assessment_Question_List").find("input[type='radio']").attr("disabled", "disabled");
                 $("#dv_Assessment_Question_List").show();
             }
             else {
-                let btn_str = '<div id="vdo_btn_div" class="buttons-row">'
-                btn_str += '<a href="#" class="button button-fill color-gray" onclick="submit_question_by_assessment_id()">Submit</a>'
-                btn_str += '</div>'
-                $("#dv_Assessment_Question_List").append(btn_str);
-            }
+                // Button itself is static markup (#assessment_submit_footer, pinned
+                // to the bottom of the popup) — just reveal it, rather than
+                // injecting a fresh copy into the scrolling list each time.
+                $("#assessment_submit_footer").show();
 
-            document.querySelectorAll('.question-card').forEach(card => {
-                const checkboxes = card.querySelectorAll('input[type="checkbox"]');
-                // select only one option in checkbox
-                checkboxes.forEach(cb => {
-                    cb.addEventListener('change', function () {
-                        if (this.checked) {
-                            checkboxes.forEach(other => {
-                                if (other !== this) other.checked = false;
-                            });
-                        }
+                function recomputeAnswered() {
+                    var answered = 0;
+                    document.querySelectorAll('#dv_Assessment_Question_List .question-card').forEach(function (c) {
+                        if (c.querySelector('input[type="radio"]:checked')) answered++;
                     });
+                    if (qCurEl) qCurEl.textContent = answered;
+                    assessment_update_submit_enabled(answered, totalQ);
+                }
+
+                // Radios are single-select natively — just keep the "answered"
+                // counter in the header current as the user picks options.
+                // Also toggle a .selected class as a highlight fallback for
+                // WebViews without :has() support (older Android devices).
+                $("#dv_Assessment_Question_List").off('change.assessQ').on('change.assessQ', 'input[type="radio"]', function () {
+                    var card = this.closest('.question-card');
+                    if (card) {
+                        card.querySelectorAll('.option').forEach(function (o) { o.classList.remove('selected'); });
+                        var opt = this.closest('.option');
+                        if (opt) opt.classList.add('selected');
+                    }
+                    recomputeAnswered();
                 });
-            });
+
+                // Setting `checked` in the rendered HTML (resuming an assessment with
+                // prior answers) does NOT fire a 'change' event, so without this the
+                // button stayed stuck disabled on load even when every question already
+                // had an answer — confirmed live: it only started working after the
+                // first tap touched *any* radio, since that tap's change handler was
+                // the first time the count ever got recomputed. Runs once, immediately,
+                // off whatever the server actually returned.
+                recomputeAnswered();
+            }
 
         }
         else {
@@ -378,26 +553,33 @@ function merge_question_data_assessments(template_data, log_data) {
 }
 
 function submit_question_by_assessment_id() {
+    // The button is disabled until every question is answered (see
+    // assessment_update_submit_enabled(), driven off the change handler in
+    // get_questionlog_by_assessment_id) and disabled buttons don't fire
+    // onclick, so this is a defensive fallback, not the normal path — no
+    // alert, just decline to submit silently.
+    var btnGuard = document.getElementById('btn_assessment_submit');
+    if (btnGuard && btnGuard.classList.contains('disabled')) return false;
+
     let Param_obj = [];
     let questionCards = $('#dv_Assessment_Question_List .question-card');
 
     for (let i = 0; i < questionCards.length; i++) {
         let questionCard = questionCards[i];
         let questionName = questionCard.querySelector('.question-title').textContent.trim();
-        let checkboxes = questionCard.querySelectorAll('input[type="checkbox"]');
+        let options = questionCard.querySelectorAll('input[type="radio"]');
 
         let selectedAns = [];
 
-        for (let j = 0; j < checkboxes.length; j++) {
-            if (checkboxes[j].checked) {
-                selectedAns.push(checkboxes[j].nextElementSibling.textContent.trim());
+        for (let j = 0; j < options.length; j++) {
+            if (options[j].checked) {
+                selectedAns.push(options[j].nextElementSibling.textContent.trim());
             }
         }
 
         let is_valid = 1;
         if (selectedAns.length == 0) {
             is_valid = 0;
-            alert("All answers are required!");
             return false;
         }
 
@@ -421,16 +603,49 @@ function submit_question_by_assessment_id() {
         }
     }
     loading();
+    var submitBtn = document.getElementById('btn_assessment_submit');
+    if (submitBtn) {
+        submitBtn.dataset.label = submitBtn.textContent;
+        submitBtn.classList.add('disabled');
+        submitBtn.textContent = 'Submitting…';
+    }
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_InsertUpdateDelete_Assessment_Question_Log_Master', JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
         if (status == 1) {
-            get_assessments_listing(true);
+            if (submitBtn) submitBtn.textContent = '✓ Submitted';
+            if (typeof lms_flush_assessment_watch === 'function') lms_flush_assessment_watch();
+            var submittedId = $("#dv_Assessment_Question_List").attr("Assessment_Id");
+
+            // Record the completion only once the refreshed listing has actually
+            // landed, and only with the score the SERVER reports. This used to
+            // run on a 1600ms timer and fall back to a hardcoded 100 when the
+            // assessment wasn't found in assessment_data yet — so a slow refresh
+            // logged a fabricated perfect score into the dashboard. The score is
+            // not computable on the client (answers are submitted without their
+            // Valid_Answer), so if it can't be read, nothing is logged rather
+            // than something invented.
+            get_assessments_listing(true, function () {
+                if (!submittedId || typeof lms_log_assessment_completion !== 'function') return;
+                var match = (typeof assessment_data !== 'undefined' && assessment_data)
+                    ? assessment_data.filter(function (a) { return String(a.Assessment_Id) === String(submittedId); })[0]
+                    : null;
+                var pct = (match && typeof lms_assessment_score_pct === 'function')
+                    ? lms_assessment_score_pct(match)
+                    : null;
+                if (pct == null || !isFinite(pct)) return; // no real score -> no record
+                lms_log_assessment_completion(submittedId, pct);
+                if (typeof update_lms_kpi === 'function') update_lms_kpi();
+            });
             myApp.popup.close('.popup-assessment-que')
         }
         else {
             var message = myArray[0].message;
+            if (submitBtn) {
+                submitBtn.textContent = submitBtn.dataset.label || 'Submit';
+                submitBtn.classList.remove('disabled');
+            }
             alert(message);
         }
 

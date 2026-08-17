@@ -113,8 +113,9 @@
 .module-preview-desc {
     margin: 0 0 18px;
     color: #747981;
-    font-size: 13px;
-    line-height: 1.35;
+    /* Match the smaller description font used on the Modules home screen. */
+    font-size: 12px;
+    line-height: 1.32;
 }
 
 .lesson-preview-list {
@@ -125,7 +126,7 @@
 
 .lesson-preview-card {
     display: grid;
-    grid-template-columns: 58px minmax(0, 1fr) 24px;
+    grid-template-columns: 58px minmax(0, 1fr); /* chevron column removed */
     gap: 10px;
     align-items: center;
     min-height: 80px;
@@ -224,15 +225,371 @@
         color: #23a961;
     }
 
+    /* Part-watched. `.progress` is kept as an alias of this because it was the
+       class the old two-state markup used for what it called "Pending". */
+    .lesson-preview-status.inprogress,
     .lesson-preview-status.progress {
         background: #fff0cc;
         color: #d78b00;
+    }
+
+    /* Untouched — neutral, so it reads as quieter than in-progress. */
+    .lesson-preview-status.pending {
+        background: #eceef1;
+        color: #6b7178;
+    }
+
+/* Score on completed lessons, alongside the status chip. Deliberately not a
+   filled chip — one badge per row is enough weight. */
+.lesson-preview-score {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+    .lesson-preview-score-label {
+        color: #838991;
+    }
+
+    .lesson-preview-score-value {
+        color: var(--c-primary, #2a3086);
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
     }
 
 .lesson-preview-next {
     color: #9aa1a9;
     font-size: 16px;
     text-align: right;
+}
+
+/* Start button removed from module cards — the card itself opens the module. */
+.sample-module-btn { display: none; }
+
+/* Thumbnail opens the lesson. */
+.lesson-preview-thumb { cursor: pointer; }
+
+/* Left column: thumbnail with the watched/total time stacked underneath it.
+   The time used to be an absolutely-positioned translucent pill sitting on top
+   of the artwork; it now sits below, so nothing covers the thumbnail. */
+.lesson-preview-media {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.lesson-preview-duration {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+    max-width: 58px;
+    font-size: 9.5px;
+    line-height: 1.2;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.1px;
+    white-space: nowrap;
+    -webkit-font-smoothing: antialiased;
+}
+
+    /* Watched time is the accent; total stays secondary. */
+    .lesson-preview-elapsed {
+        color: var(--c-primary, #2a3086);
+        font-weight: 800;
+    }
+
+    .lesson-preview-time-sep {
+        color: #9aa1a9;
+    }
+
+    .lesson-preview-total {
+        color: #6b7178;
+    }
+
+/* Tapping the body expands/collapses the full lesson description. */
+.lesson-preview-body {
+    min-width: 0;
+    cursor: pointer;
+}
+
+.lesson-preview-card.desc-expanded .lesson-preview-subtitle {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+/* ---- Subtle selection / press feedback (GPU-only, lightweight) -------------
+   transform + colour transitions only, so it stays on the compositor and does
+   not affect scroll/tap responsiveness. */
+.tab-link,
+.sample-safety-chip,
+.sample-safety-sort-option,
+.lms-kpi-card,
+.lesson-preview-thumb,
+.lesson-preview-body {
+    transition: transform 0.16s cubic-bezier(0.2, 0, 0, 1),
+                background-color 0.2s ease,
+                color 0.2s ease,
+                box-shadow 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Press-down feedback on tap. */
+.sample-safety-chip:active,
+.sample-safety-sort-option:active,
+.lms-kpi-card:active,
+.lesson-preview-thumb:active,
+.tab-link:active {
+    transform: scale(0.94);
+}
+
+.lesson-preview-body:active {
+    transform: scale(0.98);
+}
+
+/* Bottom-nav icon "pop" when a tab becomes active. */
+.tab-link.tab-link-active .tab-ico {
+    animation: lms-tab-pop 0.26s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes lms-tab-pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.14); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tab-link,
+    .sample-safety-chip,
+    .sample-safety-sort-option,
+    .lms-kpi-card,
+    .lesson-preview-thumb,
+    .lesson-preview-body {
+        transition: none !important;
+    }
+
+    .tab-link.tab-link-active .tab-ico { animation: none !important; }
+}
+
+/* ---- Skeleton screens (first-load placeholders, LmsData.showSkeletons) ----- */
+.lms-skel-card {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    margin: 12px;
+    padding: 12px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(22, 34, 51, 0.08);
+}
+
+.lms-skel-thumb { height: 72px; border-radius: 10px; }
+.lms-skel-body { display: flex; flex-direction: column; gap: 8px; }
+.lms-skel-line { height: 11px; border-radius: 6px; }
+.lms-skel-line.w80 { width: 80%; }
+.lms-skel-line.w60 { width: 60%; }
+.lms-skel-line.w40 { width: 40%; }
+
+.lms-skel-thumb,
+.lms-skel-line {
+    position: relative;
+    overflow: hidden;
+    background: #e9edf1;
+}
+
+    .lms-skel-thumb::after,
+    .lms-skel-line::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+        animation: lms-skel-shimmer 1.3s ease-in-out infinite;
+    }
+
+@keyframes lms-skel-shimmer { 100% { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .lms-skel-thumb::after,
+    .lms-skel-line::after { animation: none !important; }
+}
+
+/* ---- Offline sync indicator (Phase 2) ------------------------------------- */
+.lms-sync-indicator {
+    position: fixed;
+    left: 50%;
+    bottom: 70px;
+    transform: translateX(-50%);
+    z-index: 9000;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(20, 30, 45, 0.92);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+}
+
+    .lms-sync-indicator i { animation: lms-sync-spin 1s linear infinite; }
+
+@keyframes lms-sync-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .lms-sync-indicator i { animation: none; }
+}
+
+/* ---- Empty / error state with retry (Phase 4) ----------------------------- */
+.lms-state-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    margin: 32px 16px;
+    padding: 28px 20px;
+    color: #6b7178;
+}
+
+.lms-state-icon { font-size: 34px; color: #b3bcc6; margin-bottom: 2px; }
+.lms-state-title { font-size: 15px; font-weight: 800; color: #2a2f37; }
+.lms-state-sub { font-size: 12px; line-height: 1.4; max-width: 240px; }
+
+.lms-state-retry {
+    margin-top: 10px;
+    padding: 8px 22px;
+    border: 0;
+    border-radius: 20px;
+    background: #2a3086;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(33, 91, 168, 0.3);
+    transition: transform 0.16s cubic-bezier(0.2, 0, 0, 1);
+}
+
+    .lms-state-retry:active { transform: scale(0.95); }
+
+/* ---- Learning-video quiz modal (ML-style, centered over the video) --------
+   (#safety-video-container's own positioning lives with the player rules
+   further down — it used to be declared here too and was simply overridden.) */
+
+.safety-quiz-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(8, 14, 24, 0.6);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.safety-quiz-dialog {
+    width: 100%;
+    max-width: 460px;
+    max-height: 88vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #fff;
+    border-radius: 18px;
+    padding: 14px 16px 18px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    transform: scale(0.94);
+    opacity: 0;
+    transition: transform 0.24s cubic-bezier(0.2, 0, 0, 1), opacity 0.24s ease;
+}
+
+.safety-quiz-modal.open .safety-quiz-dialog { transform: scale(1); opacity: 1; }
+
+.safety-quiz-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.safety-quiz-progress-text {
+    font-size: 12px;
+    font-weight: 800;
+    color: #2a3086;
+    background: #eaf1fb;
+    padding: 3px 11px;
+    border-radius: 12px;
+}
+
+/* Question text matches #dv_Question_List/#dv_Assessment_Question_List's
+   .question-title exactly (13px/800/#171a20/1.35) — same quiz design language
+   across all three quiz surfaces (lesson video full-screen, lesson video
+   inline review, Assessments), not a bigger/bolder variant for this one. */
+.safety-quiz-question {
+    font-size: 13px;
+    font-weight: 800;
+    color: #171a20;
+    line-height: 1.35;
+    margin: 8px 2px 10px;
+}
+
+/* Option rows: F7's default .item-content/.item-inner padding + .item-title
+   font-size are both considerably larger than the compact 7px/12px rhythm
+   used everywhere else options appear — scoped down to match. */
+.safety-quiz-list { margin: 0; }
+.safety-quiz-list .item-content,
+.safety-quiz-list .item-inner {
+    min-height: 0;
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+/* !important + all three properties: lms_ux_fixes.css has a global, unscoped
+   `.item-title { font-size:16px !important; font-weight:700 !important;
+   color:#111827 !important; }` accessibility rule (loads after this file) that
+   otherwise wins outright — confirmed live via CDP rule enumeration, the same
+   category of bug hit earlier on this branch with the sticky-header shadow and
+   the focus-ring outline. micro-learning.css's own `#pnl_ML_Question .item-title`
+   already beats it the same way, via higher specificity + matching !important. */
+.safety-quiz-list .item-title {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 1.4;
+    color: var(--c-fg, #1c2430) !important;
+    white-space: normal;
+}
+.safety-quiz-list input[type="radio"] { accent-color: var(--c-primary, #2a3086); }
+
+.safety-quiz-list li { transition: color 0.2s ease; }
+
+/* Correct/incorrect = text color only, no filled block or border — the same
+   treatment as .question-card .option.correct-answer (green text on plain
+   background). Previously a solid green/red fill, which was the one visual
+   language this modal didn't share with the other two quiz surfaces. */
+.safety-quiz-list li.safety-correct { background: transparent; }
+.safety-quiz-list li.safety-correct .item-title { color: #1e8e3e !important; font-weight: 700 !important; }
+.safety-quiz-list li.safety-incorrect { background: transparent; }
+.safety-quiz-list li.safety-incorrect .item-title { color: #c0392b !important; font-weight: 700 !important; }
+
+.safety-quiz-submit-btn {
+    margin-top: 12px;
+    border-radius: 22px;
+    height: 42px;
+    line-height: 42px;
+}
+
+/* Landscape / full-screen: keep the dialog compact + scrollable. */
+@media (orientation: landscape), (max-height: 460px) {
+    .safety-quiz-dialog { max-width: 520px; max-height: 92vh; padding: 12px 16px 16px; }
+    .safety-quiz-question { margin: 6px 2px 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .safety-quiz-dialog { transition: none !important; }
 }
 
 .sample-safety-ui {
@@ -242,7 +599,7 @@
 }
 
 .sample-safety-titlebar {
-    background: #215ba8;
+    background: #2a3086;
     color: #fff;
     padding: 18px 14px 16px;
     font-size: 20px;
@@ -252,6 +609,61 @@
 
 .sample-safety-content {
     padding: 13px 14px 0;
+}
+
+/* tab-1/tab-2 only (Modules/Assessments): top padding moves onto
+   .lms-sticky-header itself (below) instead of staying on this shared
+   ancestor — it needs to apply whether the header is in normal flow or
+   stuck at the scroll container's edge, and an ancestor's padding doesn't
+   follow it there. Scoped to these two tabs so tab-3 (Dashboard), which
+   also uses .sample-safety-content but has no sticky header, keeps its
+   original top gap untouched. */
+#tab-1 .sample-safety-content,
+#tab-2 .sample-safety-content {
+    padding-top: 0;
+}
+
+/* Freezes the info-bar + filter chips at the top of the tab's own scroll box
+   (#tab-1/#tab-2 themselves — verified live via CDP: they're the actual
+   overflow:auto container, not .sample-safety-content) while the card/
+   assessment list scrolls underneath.
+
+   This is a SCROLL-BEHAVIOUR wrapper only — it must never read as a panel of
+   its own. It previously carried `border-radius: 0 0 16px 16px` and a
+   `box-shadow`, which is what made the top of the page look like a separate
+   floating sheet; both are deliberately gone. The only paint here is a fill
+   identical to the page background, needed purely so scrolled list cards
+   don't show through the gap pixels around the info-bar and chips while it's
+   pinned. Do not re-add radius, shadow, border, or any inset — the KPI card
+   and the filter chips are the visible components, this element is not.
+
+   FULL-BLEED is load-bearing: .sample-safety-content pads 14px on each side,
+   which left this element 396px wide inside a 424px scroll box (measured live
+   via CDP). Those two 14px gutters let scrolled module cards travel past it on
+   both edges while docked — reading as a seam, i.e. the header separating from
+   the page again. The negative margins cancel the parent's padding so it spans
+   the scroll box edge to edge, and the matching padding puts the KPI card and
+   chips back on the exact 14px grid the module cards use (verified: both stay
+   at 14→410). Keep the margin and padding values equal and in sync with
+   .sample-safety-content's horizontal padding. */
+.lms-sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    /* 13px -> 6px: lifts the KPI card toward the top of the screen. Trimmed
+       here rather than on .lms-info-bar's own margin, because that margin is
+       shared with tab-3 (Dashboard), which has no sticky header and should
+       keep its original spacing. */
+    padding-top: 6px;
+    margin-left: -14px;
+    margin-right: -14px;
+    padding-left: 14px;
+    padding-right: 14px;
+    /* Must stay byte-identical to the page bg set by lms_ux_fixes.css's
+       "lock light theme" rule (~line 348, .page/.tabs/.view/body) and to
+       swiper-container.tabs > .tab below — not var(--c-bg)/#f7f9fb, which is
+       a different, unrelated token despite the semantic-sounding name. */
+    background: #f3f4f6;
 }
 
 .sample-safety-search-row {
@@ -304,7 +716,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #215ba8;
+    color: #2a3086;
     font-size: 18px;
 }
 
@@ -348,7 +760,7 @@
 
     .sample-safety-sort-option.active {
         background: #edf3fb;
-        color: #215ba8;
+        color: #2a3086;
         font-weight: 600;
     }
 
@@ -360,11 +772,13 @@
         visibility: visible;
     }
 
+/* Tightened from `14px 0 16px`: the row now sits close to the card list, with
+   the .lms-filter-summary line below occupying what used to be dead space. */
 .sample-safety-tabs {
     display: flex;
     gap: 10px;
     overflow-x: auto;
-    padding: 14px 0 16px;
+    padding: 8px 0 6px;
 }
 
     .sample-safety-tabs::-webkit-scrollbar {
@@ -372,12 +786,14 @@
     }
 
 .sample-safety-chip {
+    position: relative;
     flex: 0 0 auto;
     height: 31px;
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    border-radius: 18px;
+    /* Match the 12px card radius used across the page (was a rounded 18px pill). */
+    border-radius: 12px;
     background: #edf0f3;
     color: #303640;
     padding: 0 13px;
@@ -386,22 +802,55 @@
     border: 1px solid #ddd;
 }
 
+    /* Selection highlight = --c-primary, the same blue as the bottom tab bar's
+       active link, matching the card progress bars and percent label. This rule
+       now actually takes effect: the runtime site-colour rule in LMS_Misc.js no
+       longer lists this selector (see the comment there).
+       border-color stays transparent so the fill is the only thing defining the
+       chip — an explicit border colour here can drift out of sync with the fill
+       if either is ever themed separately, which is exactly what produced a blue
+       outline around a grey chip earlier. */
     .sample-safety-chip.active {
-        background: #215ba8;
+        background: var(--c-primary, #2a3086);
+        border-color: transparent;
         color: #fff;
     }
 
+/* Selected filter + live result count, right-aligned under the chip row.
+   Replaces the per-chip count badges (they cluttered the pills and repeated a
+   number for every tag when only the active one is of interest). Content is
+   written by lms_render_filter_summary(); nothing here is hardcoded. */
+.lms-filter-summary {
+    display: flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    gap: 5px;
+    padding: 0 2px 8px;
+    font-size: 11.5px;
+    line-height: 1;
+    /* Empty until the first render — don't reserve a visible gap before then. */
+    min-height: 0;
+}
+
+    .lms-filter-summary-name {
+        color: var(--c-fg-muted, #5b6470);
+        font-weight: 600;
+    }
+
+    .lms-filter-summary-sep {
+        color: var(--c-fg-muted, #5b6470);
+        opacity: 0.5;
+    }
+
+    .lms-filter-summary-count {
+        color: var(--c-primary, #2a3086);
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+    }
+
 .sample-safety-check {
-    width: 23px;
-    height: 23px;
-    margin-left: -9px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    /*background: #254d85;*/
-    color: #fff;
-    font-size: 11px;
+    /* Tick removed from filter pills — only the selected-state styling remains. */
+    display: none;
 }
 
 .sample-safety-chip:not(.active) .sample-safety-check {
@@ -438,6 +887,11 @@
         display: block;
     }
 
+    /* Original subtle top-only depth vignette (pre-dates the corner-label
+       work) — NOT a legibility mechanism. Real contrast now comes from
+       lms_apply_corner_contrast() (LMS_Misc.js) sampling each corner's actual
+       pixel brightness and toggling .on-light-bg per badge, so a forced
+       scrim would fight against a genuinely light corner. */
     .sample-module-image:after {
         content: "";
         position: absolute;
@@ -446,20 +900,46 @@
         pointer-events: none;
     }
 
+/* Lightweight corner label — no pill, just text + a small accent bar.
+   Default (below) = light text for a dark/unknown corner; .on-light-bg
+   overrides to dark text once lms_apply_corner_contrast() confirms the
+   corner is actually light — mirrors the reference design's plain
+   black-on-white treatment on a flat background, adapted per real photo. */
 .sample-module-tag {
     position: absolute;
-    top: 13px;
-    left: 13px;
+    top: 12px;
+    left: 14px;
     z-index: 1;
-    border-radius: 15px;
-    background: rgba(16, 24, 34, 0.86);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     color: #fff;
-    padding: 5px 12px;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
 
+    .sample-module-tag::before {
+        content: "";
+        display: inline-block;
+        width: 3px;
+        height: 12px;
+        border-radius: 2px;
+        background: #7db6ff;
+        flex-shrink: 0;
+    }
+
+    .sample-module-tag.on-light-bg {
+        color: #1c2027;
+        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
+    }
+
+        .sample-module-tag.on-light-bg::before {
+            background: #2a3086;
+        }
+
 .sample-module-card-body {
-    padding: 16px 16px 20px;
+    padding: 16px 16px 6px;
 }
 
 .sample-module-title {
@@ -473,8 +953,9 @@
 .sample-module-desc {
     /*display: none;*/
     color: #6b737d;
-    font-size: 14px;
-    line-height: 1.32;
+    /* Reduced for clearer visual hierarchy under the title. */
+    font-size: 12px;
+    line-height: 1.3;
     margin-bottom: 13px;
 }
 
@@ -483,7 +964,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
 }
 
 .sample-module-lessons {
@@ -504,31 +985,69 @@
 }
 
 .sample-module-percent {
-    color: #215ba8;
+    color: var(--c-primary, #2a3086);
     font-size: 12px;
     font-weight: 800;
 }
 
-.sample-module-progress {
-    height: 5px;
-    overflow: hidden;
-    border-radius: 6px;
-    background: #dfe6ed;
-    margin-bottom: 17px;
+/* Lightweight corner label (bottom-left) — small/compact font, no pill (the
+   pill belongs on the filter-chip count instead, not here), plain text with
+   adaptive contrast like the tag/score corners above. */
+.sample-module-watchtime {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
 
+    .sample-watchtime-elapsed { opacity: 0.85; }
+    .sample-watchtime-sep { opacity: 0.6; }
+    .sample-watchtime-total { font-weight: 700; color: #7db6ff; }
+
+    .sample-module-watchtime.on-light-bg {
+        color: #1c2027;
+        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
+    }
+
+        .sample-module-watchtime.on-light-bg .sample-watchtime-total { color: #2a3086; }
+
+    .sample-watchtime-elapsed { opacity: 0.75; }
+    .sample-watchtime-sep { opacity: 0.55; }
+    .sample-watchtime-total { opacity: 1; }
+
+/* Sits outside the padded card body as the card's own last child — flush,
+   full-width footer strip, its corners clipped by the card's own
+   border-radius via overflow:hidden rather than its own radius. */
+.sample-module-progress {
+    height: 4px;
+    overflow: hidden;
+    background: #dfe6ed;
+    margin: 0;
+}
+
+    /* Theme colour, matching the selected filter chip. Was #2165b8 — a
+       transposed-digit near-miss of the brand #2a3086, so the bar never quite
+       matched anything else on the page. */
     .sample-module-progress span {
         display: block;
         width: 50%;
         height: 100%;
         border-radius: inherit;
-        background: #2165b8;
+        background: var(--c-primary, #2a3086);
     }
 
 .sample-module-btn {
     height: 36px;
     border-radius: 7px;
-    background: #215ba8;
+    background: #2a3086;
     color: #fff;
     display: flex;
     align-items: center;
@@ -545,7 +1064,7 @@
     }
 
 swiper-container.tabs > .tab {
-    background: #f3f5f7;
+    background: #f3f4f6;
 }
 
 .navbar-inner .title, .navbar-inner .popup-close {
@@ -560,3 +1079,258 @@ swiper-container.tabs > .tab {
 .md .tabbar:not(.tabbar-icons) .tab-link-highlight {
     height: 3px;
 }
+
+/* Full-bleed, square-cornered video area — same footprint as YouTube's player:
+   edge-to-edge width, height driven by a 16:9 box instead of a fixed pixel height.
+
+   Pinned with sticky so the player stays put while the description and quiz
+   scroll underneath it. Chosen over converting .page-content into a flex column
+   with its own scrolling pane because this leaves the popup with a single scroll
+   container and never re-lays-out the <video> itself — the element keeps its box,
+   so playback position and the native controls stay stable while scrolling.
+   Still `positioned`, so the absolutely-placed close/expand buttons continue to
+   anchor here, and the landscape/fullscreen rules below are id+class (higher
+   specificity), so they keep overriding this with position: fixed. */
+#safety-video-container {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    width: 100%;
+    background: #000;
+}
+
+#vdo_Question {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+}
+
+#safety-video-close,
+#safety-video-expand {
+    position: absolute;
+    top: 10px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: #fff;
+    font-size: 20px;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    touch-action: manipulation;
+}
+
+#safety-video-close {
+    left: 10px;
+}
+
+#safety-video-expand {
+    right: 10px;
+}
+
+#safety-video-container.safety-video-landscape,
+#safety-video-container:fullscreen,
+#safety-video-container:-webkit-full-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    inset: 0;
+    z-index: 13000;
+    width: 100vw;
+    height: 100vh;
+    margin: 0 !important;
+    background: #000;
+}
+
+#safety-video-container.safety-video-landscape #vdo_Question,
+#safety-video-container:fullscreen #vdo_Question,
+#safety-video-container:-webkit-full-screen #vdo_Question {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    aspect-ratio: auto;
+    object-fit: contain;
+}
+
+/* Hide the close chevron while full-screen/landscape — only the compress control applies there */
+#safety-video-container.safety-video-landscape #safety-video-close,
+#safety-video-container:fullscreen #safety-video-close,
+#safety-video-container:-webkit-full-screen #safety-video-close {
+    display: none;
+}
+
+/* ---- Inline lesson quiz, under the pinned player ---------------------------
+   Restyled to the Micro Learning quiz language: no heavy grey slab, compact
+   rows, quiet dividers, and type at the same sizes as the lesson listing
+   (13px title / 11px secondary, per .lesson-preview-name / -subtitle).
+   Markup is untouched — this is styling only, so answer selection, the
+   single-select checkbox behaviour, disabling on completed lessons and the
+   submit flow all still work exactly as before. */
+
+/* Description: quiet surface rather than the old heavy pill. Covers the lesson
+   video screen and the assessment screen, which now shows the same element.
+   Same fill as the page background (#f3f4f6, lms_ux_fixes.css) rather than a
+   contrasting card, by design — it should read as part of the page, not a
+   separate panel (see the top-bar work earlier on this branch). */
+#vdo_Description.pill-card {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f3f4f6;
+    color: #5b6470;
+    font-size: 11.5px;
+    line-height: 1.45;
+}
+
+/* ---- Quiz popups: fixed description bar / scrolling questions / fixed submit
+   The page becomes a flex column so the description bar and the submit footer
+   are real layout rows that reserve their own space, and only .page-content
+   scrolls between them.
+   This replaced a position:sticky description + position:absolute footer: the
+   sticky version pinned correctly but OVERLAPPED the question list (sticky
+   elements don't reserve space, so cards passed underneath it), and the
+   absolute footer needed a hardcoded padding-bottom on the scroller to
+   compensate. Flex removes both problems and needs no magic numbers. */
+.popup-assessment-que .page,
+.popup-level-4 .page {
+    display: flex;
+    flex-direction: column;
+}
+
+    .popup-assessment-que .page > .page-content,
+    .popup-level-4 .page > .page-content {
+        flex: 1 1 auto;
+        /* height:auto overrides Framework7's own `.page-content { height:100% }`
+           — left at 100% the scroller would claim the whole page as a flex item
+           and shove the footer off-screen. */
+        height: auto;
+        /* Without min-height:0 a flex child refuses to shrink below its content
+           height, so the scroll box would grow past the page and the footer
+           would be pushed off-screen instead of the list scrolling. */
+        min-height: 0;
+    }
+
+/* Description as a genuine top bar: full-bleed, square, page-coloured, so it
+   reads as part of the chrome rather than a floating card. */
+.quiz-desc-header {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    background: #f3f4f6;
+    color: #5b6470;
+    font-size: 11.5px;
+    line-height: 1.45;
+    /* A long description must not eat the screen — it scrolls within its band
+       rather than shrinking the question list away. */
+    max-height: 28vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Question card + title, shared by BOTH quizzes (lesson video and Assessments)
+   rather than scoped to one of them — they render identical markup, and the
+   base `.question-card` / `.question-title` in safety_modules.css is the old
+   heavy grey slab (#e9e9e9, 20px radius, 16px bold title) this replaces. */
+#dv_Question_List .question-card,
+#dv_Assessment_Question_List .question-card {
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(22, 34, 51, 0.10);
+}
+
+#dv_Question_List .question-title,
+#dv_Assessment_Question_List .question-title {
+    margin-bottom: 8px;
+    color: #171a20;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+/* Option rows, selection state, focus ring and the correct-answer treatment are
+   all defined once in assessments.css under `.question-card .option` — both
+   quizzes render identical markup and now share that single definition, so the
+   overrides that used to live here (undoing a boxed style) are gone rather than
+   duplicated. Only the compact sizing stays below, applied to both. */
+#dv_Question_List .option,
+#dv_Assessment_Question_List .option {
+    gap: 9px;
+}
+
+    #dv_Question_List .option input,
+    #dv_Assessment_Question_List .option input {
+        width: 16px;
+        height: 16px;
+    }
+
+    #dv_Question_List .option label,
+    #dv_Assessment_Question_List .option label {
+        font-size: 12px;
+        line-height: 1.4;
+        font-weight: 400;
+    }
+
+/* Submit: same shape/weight as ML's #btn_ML_Que_Submit, full width instead of
+   floated so it doesn't sit as a stray element at the end of the list. */
+#vdo_btn_div {
+    display: block;
+    float: none;
+    margin-top: 12px;
+}
+
+    #vdo_btn_div .button {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        border-radius: 10px;
+        background: var(--c-primary, #2a3086);
+        color: #fff;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-transform: none;
+        box-shadow: none;
+    }
+
+/* Submit footer, shared by the Assessments quiz and the module/lesson quiz.
+   A flex row of .page (see the flex-column rule above), NOT the last child of
+   the scrolling list: as a child it would simply scroll away with the content,
+   and as a sticky child it would only "stick" once already scrolled to the very
+   end, since nothing follows it to scroll out from under it. */
+.quiz-submit-footer {
+    flex: 0 0 auto;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: #f3f4f6;
+    box-shadow: 0 -4px 10px rgba(16, 24, 40, 0.06);
+}
+
+    .quiz-submit-footer .button {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        border-radius: 10px;
+        background: var(--c-primary, #2a3086);
+        color: #fff;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-transform: none;
+        box-shadow: none;
+    }
+
+    /* Same disabled treatment as #vdo_btn_div .button.disabled (assessments.css)
+       — dimmed + untappable. Used both while an assessment is incomplete (see
+       assessment_update_submit_enabled() in assessments.js) and while a submit
+       is in flight; the two states share styling, only the label differs. */
+    .quiz-submit-footer .button.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+/* (The hardcoded `padding-bottom: 74px` that used to reserve room under the
+   absolutely-positioned footer is gone — with the flex layout the footer is a
+   real row, so the scroll box is sized around it automatically.) */

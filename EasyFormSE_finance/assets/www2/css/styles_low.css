@@ -1911,12 +1911,13 @@ div[id^=div_step_Col_] .list-block ul:before, div[id^=div_step_Col_] .list-block
 */
 
 #menu_img_profile {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     background: white;
     border-radius: 50px;
     padding: 2px;
     margin-top: -10px;
+    margin-right: 5px;
 }
 
 .cloud-absolute {

@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html data-theme="light">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
     <title>LMS</title>
 
@@ -17,6 +17,7 @@
     <link href="LMS/framework7_9.0.3.css" rel="stylesheet" />
 
     <script src="Plugin_Js/jquery-3.5.1.min.js" type="text/javascript"></script>
+    <script src="plugins/cdn_apexcharts.js"></script>
     <script src="cordova.js"></script>
     <script src="js/globlvariable.js"></script>
     <script src="js/jstorage.min.js"></script>
@@ -29,10 +30,16 @@
     <link href="LMS/assessments.css" rel="stylesheet" />
     <link href="LMS/dashboard.css" rel="stylesheet" />
     <link href="LMS/micro learning.css" rel="stylesheet" />
+    <link href="LMS/lms_ux_fixes.css" rel="stylesheet" />
 
+    <script src="LMS/lms_state.js"></script>
+    <script src="LMS/lms_data.js"></script>
+    <!-- Server-progress integration seam; must load before any consumer. -->
+    <script src="LMS/lms_backend.js"></script>
     <script src="LMS/safety_modules.js"></script>
     <script src="LMS/assessments.js"></script>
     <script src="LMS/dashboard.js"></script>
+    <script src="LMS/ml_video_cache.js"></script>
     <script src="LMS/micro_learning.js"></script>
     <script src="LMS/LMS_Misc.js"></script>
 
@@ -69,19 +76,66 @@
         //var F7_view = JSON.parse(storage.getItem('F7_view'));
         //var F7_device = JSON.parse(storage.getItem('F7_device'));
 
-        document.addEventListener('deviceready', function showValues() {
-
-            document.addEventListener("backbutton", function (e) {
-                if (page_load_over == 1) {
-                    back_button_LMS();
+        function handleLMSNativeBackButton(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.stopImmediatePropagation) {
+                    e.stopImmediatePropagation();
                 }
-            }, true);
+            }
+
+            // Never let Android's default back action close the activity while
+            // the LMS is loading or while in-app navigation is available.
+            if (page_load_over != 1) return false;
+
+            var canExitLMS = back_button_LMS();
+            if (canExitLMS === true && navigator.app && navigator.app.exitApp) {
+                // navigator.app.exitApp();
+            }
+            return false;
+        }
+
+        document.addEventListener('deviceready', function showValues() {
+            document.removeEventListener("backbutton", handleLMSNativeBackButton, true);
+            document.addEventListener("backbutton", handleLMSNativeBackButton, true);
+
+            // Free video decoders / stop network the instant the app is
+            // backgrounded, and restore the active reel on return.
+            if (typeof ml_on_app_pause === 'function') {
+                document.removeEventListener('pause', ml_on_app_pause, false);
+                document.addEventListener('pause', ml_on_app_pause, false);
+            }
+            if (typeof ml_on_app_resume === 'function') {
+                document.removeEventListener('resume', ml_on_app_resume, false);
+                document.addEventListener('resume', ml_on_app_resume, false);
+            }
         }, true);
 
 
     </script>
 </head>
 <body>
+
+    <!-- Cross-page fade veil (shared with selection.html) -->
+    <div id="page-veil" class="show" aria-hidden="true"><img alt="" src="images/lms_shield_logo.png" /></div>
+    <script>
+        /* Hold the SHIELD veil over the incoming LMS page until its bottom tabbar
+           has laid out, so it never flashes as a vertical icon stack (FOUC). */
+        (function () {
+            function hideVeil() { var v = document.getElementById('page-veil'); if (v) v.classList.remove('show'); }
+            function arm() { requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(hideVeil, 350); }); }); }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', arm);
+            } else {
+                arm();
+            }
+            setTimeout(hideVeil, 2000); // safety
+        })();
+    </script>
+
+    <!-- Phase 2: offline sync indicator (shown only while actions are queued) -->
+    <div id="lms-sync-indicator" class="lms-sync-indicator" style="display:none" aria-live="polite"><i class="fa-solid fa-rotate"></i><span id="lms-sync-count"></span></div>
 
     <div id="app">
 
@@ -99,30 +153,36 @@
                                 <i class="icon icon-back"></i>
                             </a>
                         </div>-->
-                        <div class="title sample-safety-titlebar">Safety Modules</div>
+                        <div class="title sample-safety-titlebar">Dashboard</div>
+                        <div class="right">
+                            <div class="lms-search" id="lms_search">
+                                <input type="search" class="lms-search-input" placeholder="Search" aria-label="Search" oninput="lms_search_input(this.value)">
+                                <button type="button" class="lms-search-btn" aria-label="Search" onclick="return lms_toggle_search()"><i class="fa-solid fa-magnifying-glass"></i></button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="toolbar toolbar-bottom tabbar">
                     <div class="toolbar-inner">
                         <div class="toolbar-pane">
-                            <a href="#tab-1" class="tab-link">
-                                <i class="fa fa-hands-holding-circle"></i>
-                                <span class="tabbar-label mt-1">Safety Modules</span>
+                            <a href="#tab-1" class="tab-link" onclick="lms_set_title('Modules')">
+                                <span class="tab-ico"><i class="fa-regular fa-clipboard ico-outline"></i><i class="fa-solid fa-clipboard ico-filled"></i></span>
+                                <span class="tabbar-label mt-1">Modules</span>
                             </a>
-                            <a href="#tab-2" class="tab-link">
-                                <i class="fa fa-book-open-reader"></i>
+                            <a href="#tab-2" class="tab-link" onclick="lms_set_title('Assessments')">
+                                <span class="tab-ico"><i class="fa-regular fa-file-lines ico-outline"></i><i class="fa-solid fa-file-lines ico-filled"></i></span>
                                 <span class="tabbar-label mt-1">Assessments</span>
                             </a>
-                            <a href="#tab-3" class="tab-link">
-                                <i class="fa fa-area-chart"></i>
+                            <a href="#tab-3" class="tab-link tab-link-active" onclick="lms_set_title('Dashboard')">
+                                <span class="tab-ico"><i class="fa-regular fa-chart-bar ico-outline"></i><i class="fa-solid fa-chart-bar ico-filled"></i></span>
                                 <span class="tabbar-label mt-1">Dashboard</span>
                             </a>
-                            <a href="#tab-4" class="tab-link">
-                                <i class="fa fa-lightbulb"></i>
+                            <a href="#tab-4" class="tab-link" onclick="lms_set_title('Micro Learning')">
+                                <span class="tab-ico"><i class="fa-regular fa-lightbulb ico-outline"></i><i class="fa-solid fa-lightbulb ico-filled"></i></span>
                                 <span class="tabbar-label mt-1">Micro Learning</span>
                             </a>
-                            <a href="#tab-5" class="tab-link" onclick="changeurl('selection.html')">
-                                <i class="fa fa-home"></i>
+                            <a href="#tab-5" class="tab-link" onclick="return crossToLMS('selection.html')">
+                                <span class="tab-ico"><i class="fa-regular fa-house ico-outline"></i><i class="fa-solid fa-house ico-filled"></i></span>
                                 <span class="tabbar-label mt-1">Home</span>
                             </a>
 
@@ -130,19 +190,52 @@
                     </div>
                 </div>
                 <swiper-container class="tabs">
-                    <swiper-slide id="tab-1" class="page-content tab tab-active">
+                    <swiper-slide id="tab-1" class="page-content tab">
                         <!--<div id="dv_Module_List" class="block block-strong inset !p-0 !m-0 !bg-white"></div>-->
                         <div class="sample-safety-ui">
                             <!--<div class="sample-safety-titlebar">Safety Modules</div>-->
                             <div class="sample-safety-content">
-                                <div class="sample-safety-search-row">
-                                    <div class="sample-safety-search">
-                                        <i class="fa fa-search"></i>
-                                        <span>Search modules</span>
+                                <!-- Frozen while the module list below scrolls (position:sticky against
+                                     #tab-1's own scroll box — verified live via CDP before shipping). -->
+                                <div class="lms-sticky-header">
+                                <!-- Summary bar -->
+                                <div class="lms-info-bar">
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_module_completed_pct">0%</div>
+                                        </div>
+                                        <div class="lms-info-label">Completed</div>
                                     </div>
-                                    <a href="#" class="sample-safety-filter">
-                                        <i class="fa fa-sort"></i>
-                                    </a>
+                                    <div class="lms-info-divider"></div>
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_module_avg_score">0%</div>
+                                        </div>
+                                        <div class="lms-info-label">Avg score</div>
+                                    </div>
+                                    <div class="lms-info-divider"></div>
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_module_watch_time">0s</div>
+                                        </div>
+                                        <div class="lms-info-label">Watch time</div>
+                                    </div>
+                                    <div class="lms-info-divider"></div>
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-film" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_module_total_time">0s</div>
+                                        </div>
+                                        <div class="lms-info-label">Total video time</div>
+                                    </div>
+                                </div>
+
+                                <!-- search moved to the shared top app bar; sort removed -->
+                                <div class="sample-safety-search-row" style="display:none">
+                                    <div class="sample-safety-search"></div>
                                 </div>
 
                                 <div class="sample-safety-tabs swiper-no-swiping">
@@ -153,6 +246,9 @@
                                     <div class="sample-safety-chip">Safety</div>
                                     <div class="sample-safety-chip">Field Ops</div>
                                     <div class="sample-safety-chip">Compliance</div>
+                                </div>
+                                <!-- Selected filter + live count; filled by lms_render_filter_summary(). -->
+                                <div class="lms-filter-summary" id="lms_module_filter_summary"></div>
                                 </div>
 
                                 <div id="dv_Module_List"></div>
@@ -185,35 +281,159 @@
                     </swiper-slide>
                     <swiper-slide id="tab-2" class="page-content tab bg-white">
                         <div class="sample-safety-ui">
-                            <div class="sample-safety-content">
-                                <div class="sample-safety-search-row assessment-search-row">
-                                    <div class="sample-safety-search assessment-search"></div>
-                                    <a href="#" class="sample-safety-filter assessment-filter" aria-label="Sort assessments">
-                                        <i class="fa fa-sort"></i>
-                                    </a>
+                            <div class="sample-safety-content assessment-content">
+                                <!-- Frozen while the assessments list below scrolls — same sticky treatment
+                                     as Modules (#tab-1). -->
+                                <div class="lms-sticky-header">
+                                <!-- Summary bar -->
+                                <div class="lms-info-bar">
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_assessment_completed_pct">0%</div>
+                                        </div>
+                                        <div class="lms-info-label">Completed</div>
+                                    </div>
+                                    <div class="lms-info-divider"></div>
+                                    <div class="lms-info-item">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_assessment_avg_score">0%</div>
+                                        </div>
+                                        <div class="lms-info-label">Avg score</div>
+                                    </div>
                                 </div>
 
+                                <!-- search moved to the shared top app bar; sort removed -->
+                                <div class="assessment-search-row" style="display:none">
+                                    <div class="sample-safety-search assessment-search"></div>
+                                </div>
                                 <div class="sample-safety-tabs assessment-tabs swiper-no-swiping"></div>
+                                <!-- Selected filter + live count; filled by lms_render_filter_summary(). -->
+                                <div class="lms-filter-summary" id="lms_assessment_filter_summary"></div>
+                                </div>
+
                                 <div id="dv_Assessments_List"></div>
                             </div>
                         </div>
                     </swiper-slide>
-                    <swiper-slide id="tab-3" class="page-content tab bg-white">
+                    <swiper-slide id="tab-3" class="page-content tab bg-white tab-active ptr-content" data-ptr-distance="55">
+                        <div class="ptr-preloader">
+                            <div class="preloader"></div>
+                            <div class="ptr-arrow"></div>
+                        </div>
                         <div class="sample-safety-ui">
                             <div class="sample-safety-content">
-                                <!--<div class="sample-safety-search-row assessment-search-row">
-                                    <div class="sample-safety-search assessment-search"></div>
-                                    <a href="#" class="sample-safety-filter assessment-filter" aria-label="Sort assessments">
-                                        <i class="fa fa-sort"></i>
-                                    </a>
-                                </div>-->
-                                <div id="dv_Dashboard_List"></div>
+
+                                <!-- Trend chart: date-range filter + single-line area chart (full width, no card
+                                     wrapper). Modules/Micro Learning have real per-day data; Assessments shows a
+                                     bar chart instead (no date field) and hides the filter. -->
+                                <div class="lms-trend-filter-row" id="lms_trend_filter_row">
+                                    <div class="lms-trend-filter" id="lms_trend_filter">
+                                        <button type="button" class="lms-trend-chip is-active" data-range="week" onclick="return set_lms_trend_range('week', this)">Week</button>
+                                        <button type="button" class="lms-trend-chip" data-range="month" onclick="return set_lms_trend_range('month', this)">Month</button>
+                                        <button type="button" class="lms-trend-chip" data-range="custom" onclick="return set_lms_trend_range('custom', this)">Custom</button>
+                                    </div>
+                                    <div class="lms-trend-range-label" id="lms_trend_range_label"></div>
+                                </div>
+                                <div id="lms-trend-chart" class="lms-trend-chart swiper-no-swiping"></div>
+                                <div id="lms-ml-coverage-chart" class="lms-trend-chart swiper-no-swiping" style="display:none;"></div>
+
+                                <!-- Context card: values AND which one drives the chart above depend on the
+                                     category selected below. Cards 1-3 are tappable (pick the chart's single
+                                     line/view); card 4 (Total video time) is a static total, not a trend. -->
+                                <div class="lms-info-bar" id="lms_dashboard_context_kpi">
+                                    <button type="button" class="lms-info-item lms-kpi-card is-selectable is-metric-selectable is-active" onclick="return select_lms_dashboard_metric(1, this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_dashboard_metric1">0%</div>
+                                        </div>
+                                        <div class="lms-info-label" id="kpi_dashboard_metric1_label">Completed</div>
+                                    </button>
+                                    <div class="lms-info-divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card is-selectable is-metric-selectable" onclick="return select_lms_dashboard_metric(2, this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_dashboard_metric2">0%</div>
+                                        </div>
+                                        <div class="lms-info-label" id="kpi_dashboard_metric2_label">Avg score</div>
+                                    </button>
+                                    <div class="lms-info-divider" id="kpi_dashboard_metric3_divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card is-selectable is-metric-selectable" id="kpi_dashboard_metric3_card" onclick="return select_lms_dashboard_metric(3, this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_dashboard_metric3">0s</div>
+                                        </div>
+                                        <div class="lms-info-label" id="kpi_dashboard_metric3_label">Watch time</div>
+                                    </button>
+                                    <div class="lms-info-divider" id="kpi_dashboard_metric4_divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card is-selectable is-metric-selectable" id="kpi_dashboard_metric4_card" onclick="return select_lms_dashboard_metric(4, this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-solid fa-film" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_dashboard_metric4">0s</div>
+                                        </div>
+                                        <div class="lms-info-label" id="kpi_dashboard_metric4_label">Total video time</div>
+                                    </button>
+                                </div>
+
+                                <!-- Category selector — choose which module feeds the context card + chart above -->
+                                <div class="lms-info-bar">
+                                    <button type="button" class="lms-info-item lms-kpi-card lms-category-card is-selectable is-active" aria-pressed="true" onclick="return select_lms_dashboard_category('Modules', this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-clipboard" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_mod_count">0</div>
+                                        </div>
+                                        <div class="lms-info-label">Modules</div>
+                                    </button>
+                                    <div class="lms-info-divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card lms-category-card is-selectable" aria-pressed="false" onclick="return select_lms_dashboard_category('Assessments', this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-file-lines" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_ass_count">0</div>
+                                        </div>
+                                        <div class="lms-info-label">Assessments</div>
+                                    </button>
+                                    <div class="lms-info-divider"></div>
+                                    <button type="button" class="lms-info-item lms-kpi-card lms-category-card is-selectable" aria-pressed="false" onclick="return select_lms_dashboard_category('Micro Learning', this)">
+                                        <div class="lms-info-top">
+                                            <span class="lms-info-icon"><i class="fa-regular fa-lightbulb" aria-hidden="true"></i></span>
+                                            <div class="lms-info-value" id="kpi_reel_count">0</div>
+                                        </div>
+                                        <div class="lms-info-label">Micro Learning</div>
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
                     </swiper-slide>
                     <swiper-slide id="tab-4" class="page-content tab bg-white reels-page">
                         <div class="swiper reels-swiper">
                             <div class="swiper-wrapper" id="div_Reels">
+                            </div>
+                            <!-- Compact summary overlay — videos watched (real, from Watch_Count) and
+                                 watch time (real, locally-tracked wall-clock playing time — no backend field exists) -->
+                            <div class="ml-stat-badges">
+                                <div class="ml-stat-badge" id="ml_stat_badge">
+                                    <i class="fa-solid fa-play" aria-hidden="true"></i>
+                                    <span id="ml_stat_watched_count">0</span>
+                                    <span class="ml-stat-label">Watched</span>
+                                </div>
+                                <div class="ml-stat-badge">
+                                    <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                                    <span id="ml_stat_watch_time">0s</span>
+                                </div>
+                                <div class="ml-stat-badge">
+                                    <i class="fa-solid fa-film" aria-hidden="true"></i>
+                                    <span id="ml_stat_total_time">0s</span>
+                                </div>
+                            </div>
+                            <!-- Global Video Progress Bar -->
+                            <div class="video-progress global-video-progress" onpointerdown="ml_seekStart(event, this)" style="z-index: 10;">
+                                <div class="video-progress-track">
+                                    <div class="video-progress-buffered"></div>
+                                    <div class="video-progress-fill"></div>
+                                    <div class="video-progress-handle"></div>
+                                </div>
                             </div>
                         </div>
                     </swiper-slide>
@@ -228,8 +448,8 @@
                 <div class="page module-preview-page">
                     <div class="page-content">
                         <div class="module-preview-header">
-                            <a href="#" class="module-preview-back popup-close">
-                                <i class="fa fa-arrow-left"></i>
+                            <a href="#" class="module-preview-back popup-close" aria-label="Back">
+                                <i class="fa fa-arrow-left" aria-hidden="true"></i>
                             </a>
                             <div class="module-preview-title-wrap">
                                 <div class="module-preview-tag">Safety</div>
@@ -275,30 +495,44 @@
         </div>
 
 
-        <!-- Level 3 videowise question listing -->
+        <!-- Level 3 videowise question listing — no app bar; edge-to-edge, square-cornered video like YouTube's player -->
         <div class="popup popup-level-4">
             <div class="view">
                 <div class="page">
-                    <div class="navbar">
-                        <div class="navbar-bg"></div>
-                        <div class="navbar-inner">
-                            <div class="title">Question List</div>
-                            <div class="right">
-                                <!-- Link to close popup -->
-                                <a class="link popup-close">Close</a>
+                    <div class="page-content">
+
+                        <!-- Video -->
+                        <div id="safety-video-container">
+                            <!-- No <source> child: safety_modules.js sets src directly
+                                 (attr("src", Video_Link)) whenever a lesson opens, and a
+                                 media element's own src attribute always wins over any
+                                 <source> children per spec — a static one here would be
+                                 dead markup, misleadingly implying a fallback URL is ever
+                                 actually loaded. -->
+                            <video id="vdo_Question" controls controlsList="nodownload nofullscreen">
+                            </video>
+                            <a class="link popup-close" id="safety-video-close" aria-label="Close" title="Close">
+                                <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                            </a>
+                            <button id="safety-video-expand" type="button" aria-label="Full screen (landscape)" title="Full screen (landscape)" onclick="return expandSafetyVideo(this, event)">
+                                <i class="fa fa-expand" aria-hidden="true"></i>
+                            </button>
+                            <!-- ML-style quiz modal — mandatory full-screen overlay, no dismiss control -->
+                            <div id="safety-quiz-modal" class="safety-quiz-modal" style="display:none" aria-hidden="true">
+                                <div class="safety-quiz-dialog">
+                                    <div class="safety-quiz-top">
+                                        <span class="safety-quiz-progress-text"><span id="safety-quiz-counter">1 of 1</span></span>
+                                    </div>
+                                    <h3 id="safety-quiz-question" class="safety-quiz-question"></h3>
+                                    <div class="list no-hairlines-md safety-quiz-list">
+                                        <ul id="safety-quiz-options"></ul>
+                                    </div>
+                                    <a href="#" id="safety-quiz-submit" class="button button-fill safety-quiz-submit-btn" onclick="return safety_quiz_action()">Submit</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="page-content p-3">
 
-                        <div class="que-container">
-
-                            <!-- Video -->
-                            <div class="video-card mt-3 videoClass">
-                                <video id="vdo_Question" controls controlsList="nodownload" width="400">
-                                    <source src="https://dev.easyform.in/Altius_LMS/7/7/2026/March/v1.mp4" type="video/mp4">
-                                </video>
-                            </div>
+                        <div class="que-container p-3">
 
                             <!-- Description -->
                             <div class="pill-card" id="vdo_Description"></div>
@@ -337,6 +571,13 @@
 
 
                     </div>
+
+                    <!-- Submit footer, same pinned-bottom treatment as the Assessments
+                         quiz. Sibling of .page-content so it is a flex row of .page
+                         rather than the last item inside the scrolling list. -->
+                    <div class="quiz-submit-footer" id="lesson_submit_footer" style="display:none">
+                        <a href="#" class="button button-fill" id="btn_lesson_submit" onclick="submit_question_by_skill_id('submit')">Submit</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -346,7 +587,7 @@
         <div class="sheet-modal" id="pnl_ML_Question">
             <div class="sheet-modal-inner">
                 <div class="block">
-                    <h3 class="font-bold" id="ML_Question"></h3>
+                    <h3 id="ML_Question"></h3>
 
                     <div class="list no-hairlines-md">
                         <ul>
@@ -413,11 +654,25 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Description top bar — a sibling of .page-content, NOT inside it.
+                         It was previously a position:sticky element within the scroll
+                         area, which pinned it correctly but let question content pass
+                         underneath it (sticky elements overlap; they don't reserve
+                         space). As a flex row of .page it occupies its own band, so
+                         the list scrolls below it instead of behind it. -->
+                    <div class="quiz-desc-header" id="assessment_Description"></div>
+
                     <div class="page-content p-3">
 
                         <div class="que-container">
 
-                            <!--<a id="submit_vdo_btn" class="button button-fill color-gray" onclick="get_video_skill_by_module_id()">Submit Video</a>-->
+                            <!-- Retained (hidden) so the stepper/timer wiring in assessments.js
+                                 keeps working without null checks; the counter is no longer shown. -->
+                            <div class="quiz-header" id="assessment_quiz_header" style="display:none">
+                                <div class="quiz-pos">Question <span id="q_cur">1</span> / <span id="q_total">0</span></div>
+                                <div class="quiz-timer" id="q_timer" aria-live="polite"></div>
+                            </div>
+
                             <!-- Question -->
                             <div class="question-list" id="dv_Assessment_Question_List">
                                 <!--<div class="question-card">
@@ -451,6 +706,17 @@
 
 
                     </div>
+
+                    <!-- Submit footer -- a sibling of .page-content (the actual scroll
+                         container, confirmed live via CDP), not a child of it, so it's
+                         pinned at the bottom of the popup while only the question list
+                         scrolls above it. Static/persistent rather than injected per
+                         question set, so assessments.js resets its state (enabled,
+                         "Submit" label) on each open instead of relying on a fresh
+                         element replacing a stale one. -->
+                    <div class="quiz-submit-footer" id="assessment_submit_footer" style="display:none">
+                        <a href="#" class="button button-fill" id="btn_assessment_submit" onclick="submit_question_by_assessment_id()">Submit</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -472,8 +738,119 @@
 
         var mainView = myApp.views.create('.view-main');
 
+        // Fade to a shared grey veil before the full-page reload so the
+        // Home<->LMS hop reads as a push, not a white flash.
+        function crossToLMS(url) {
+            try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { }
+            var v = document.getElementById('page-veil');
+            var img = v && v.querySelector('img');
+            if (img && !img.src) img.src = 'images/lms_shield_logo.png';
+            if (v) v.classList.add('show');
+            setTimeout(function () { changeurl(url); }, 200);
+            return false;
+        }
+
         function openTowerClimbingSafetyPopup() {
             myApp.popup.open('.lms-module-preview-popup');
+        }
+
+        // Initialize the top-bar state for the default (Dashboard) tab on load,
+        // so the search icon is visible without needing a tab tap first.
+        document.addEventListener('deviceready', function () { try { lms_set_title('Dashboard'); } catch (e) { } }, false);
+        window.addEventListener('load', function () { try { lms_set_title('Dashboard'); } catch (e) { } }, false);
+
+        // Phase 2: initialize the offline write queue and drive the sync indicator.
+        document.addEventListener('deviceready', function () {
+            try {
+                if (typeof LMS_State === 'undefined') return;
+                LMS_State.init();
+                LMS_State.onChange(function (n) {
+                    var el = document.getElementById('lms-sync-indicator');
+                    if (!el) return;
+                    var c = document.getElementById('lms-sync-count');
+                    if (c) c.textContent = n > 0 ? (' ' + n) : '';
+                    el.style.display = n > 0 ? 'inline-flex' : 'none';
+                });
+            } catch (e) { }
+        }, false);
+
+        // ---- Shared top-app-bar search (used by Assessments + Micro Learning) ----
+        var lms_active_tab = 'Dashboard';
+
+        // Same single icon toggles open/closed (no separate X).
+        function lms_toggle_search() {
+            try {
+                var wrap = document.getElementById('lms_search');
+                if (!wrap) return false;
+                var open = !wrap.classList.contains('expanded');
+                wrap.classList.toggle('expanded', open);
+                var navbar = document.querySelector('.navbar');
+                if (navbar) navbar.classList.toggle('nav-searching', open);   // hide title while expanded
+                var inp = wrap.querySelector('.lms-search-input');
+                if (open) {
+                    if (inp) setTimeout(function () { inp.focus(); }, 300);
+                } else if (inp) {
+                    inp.value = '';
+                    lms_search_input('');
+                    inp.blur();
+                }
+            } catch (e) { }
+            return false;
+        }
+
+        // Route the query to whichever module is active.
+        // Update the active tab's search text immediately, but debounce the
+        // re-render (~150ms) so typing stays smooth on large lists.
+        var _lms_search_timer = null;
+        function lms_search_input(q) {
+            q = (q || '').toString();
+            if (lms_active_tab === 'Modules') {
+                window.safety_module_search_text = q;
+                safety_module_search_text = q;
+            } else if (lms_active_tab === 'Assessments') {
+                window.assessment_search_text = q;
+                assessment_search_text = q;
+            }
+            if (_lms_search_timer) clearTimeout(_lms_search_timer);
+            _lms_search_timer = setTimeout(function () {
+                try {
+                    if (lms_active_tab === 'Modules') {
+                        if (typeof render_safety_module_cards === 'function') render_safety_module_cards();
+                    } else if (lms_active_tab === 'Assessments') {
+                        if (typeof render_assessment_cards === 'function') render_assessment_cards();
+                    } else if (lms_active_tab === 'Micro Learning') {
+                        if (typeof ml_filter_reels === 'function') ml_filter_reels(q);
+                    }
+                } catch (e) { }
+            }, 150);
+        }
+
+        // Update the header title, switch the nav to dark on Micro Learning, and
+        // reset/scope the shared search when the active tab changes.
+        function lms_set_title(t) {
+            try {
+                lms_active_tab = t;
+                document.querySelector('.sample-safety-titlebar').textContent = t;
+                var tabbar = document.querySelector('.toolbar.tabbar');
+                if (tabbar) tabbar.classList.toggle('tabbar-dark', t === 'Micro Learning');
+                // top bar matches the page background: dark on the (black) reels screen
+                var navbar = document.querySelector('.navbar');
+                if (navbar) navbar.classList.toggle('navbar-dark', t === 'Micro Learning');
+
+                var wrap = document.getElementById('lms_search');
+                if (wrap) {
+                    // collapse + clear when switching tabs
+                    if (wrap.classList.contains('expanded')) {
+                        wrap.classList.remove('expanded');
+                        if (navbar) navbar.classList.remove('nav-searching');
+                        var inp = wrap.querySelector('.lms-search-input');
+                        if (inp) inp.value = '';
+                    }
+                    // search icon appears on the searchable modules
+                    // (must be 'flex', not '' — '' reverts to the CSS display:none)
+                    wrap.style.display = (t === 'Modules' || t === 'Assessments' || t === 'Micro Learning') ? 'flex' : 'none';
+                }
+            } catch (e) { }
         }
 
     </script>

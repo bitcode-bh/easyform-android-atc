@@ -1,4 +1,132 @@
-﻿
-.correct-answer input[type='checkbox'] {
-    margin-left: 10px;
+
+/* ===== Shared quiz option rows (Assessments + lesson video) ===============
+   One definition for both quizzes — they render identical
+   `.question-card > .option` markup, so this used to be a boxed "Assessments
+   identity" that leaked into the lesson quiz and had to be un-styled there.
+   Now both are plain, borderless rows: selection is shown by the ticked
+   radio/checkbox alone, with no border, fill, rounding or scale. */
+.question-card .option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 0;
+    border-radius: 0;
+    padding: 7px 0;
+    margin-bottom: 0;
+    transition: none;
+}
+
+    .question-card .option input[type='radio'],
+    .question-card .option input[type='checkbox'] {
+        width: 20px;
+        height: 20px;
+        margin-right: 0;
+        margin-left: 0;
+        accent-color: var(--c-primary);
+        flex: 0 0 auto;
+    }
+
+    .question-card .option label {
+        flex: 1;
+        cursor: pointer;
+        font-size: 13px;
+        color: var(--c-fg);
+    }
+
+    /* .selected is the JS fallback for WebViews without :has() support. Both
+       are explicitly neutral — a picked answer must look no different from an
+       unpicked one apart from its tick. */
+    .question-card .option.selected,
+    .question-card .option:has(input:checked) {
+        border: 0;
+        background: transparent;
+        transform: none;
+    }
+
+    /* The blue box around a chosen answer was this outline, not a border:
+       lms_ux_fixes.css sets `.option:focus-within` as a keyboard focus ring,
+       but :focus-within also fires on touch, so it stuck to the tapped row.
+       Suppressed for pointer input, re-asserted for :focus-visible so keyboard
+       users keep an indicator. */
+    .question-card .option:focus-within {
+        outline: none;
+    }
+
+    .question-card .option:has(input:focus-visible) {
+        outline: var(--focus-ring);
+        outline-offset: 2px;
+    }
+
+/* Correct answer in review mode — Micro Learning's treatment: green text only,
+   no filled block. `micro learning.css` defines a generic `.correct-answer`
+   with a green background and `border: ... !important`; it loads after this
+   file, so the border needs !important to undo, while the higher-specificity
+   selector handles the rest. */
+.question-card .option.correct-answer {
+    background: transparent;
+    border: 0 !important;
+    margin-bottom: 0;
+    animation: none;
+}
+
+    .question-card .option.correct-answer label {
+        color: #1e8e3e;
+        font-weight: 700;
+    }
+
+/* Sticky quiz header: question stepper + timer */
+.quiz-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    margin: -12px -12px 12px;          /* bleed to the padded page edges */
+    background: var(--c-surface);
+    border-bottom: 1px solid var(--c-border);
+}
+
+.quiz-pos {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--c-fg);
+}
+
+.quiz-timer:empty { display: none; }
+
+.quiz-timer {
+    font-size: 13px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: var(--r-chip);
+    background: var(--c-primary-050);
+    color: var(--c-primary-600);
+    font-variant-numeric: tabular-nums;
+}
+
+    .quiz-timer.warn { background: #fff3e0; color: var(--c-warning); }
+    .quiz-timer.danger { background: #fdeaea; color: var(--c-danger); animation: quiz-pulse 0.8s ease infinite; }
+
+@keyframes quiz-pulse { 50% { opacity: 0.55; } }
+
+/* Submit button: full-width brand, clear disabled state during submit */
+#vdo_btn_div { display: block; float: none; margin-top: 8px; }
+
+    #vdo_btn_div .button {
+        width: 100%;
+        height: 44px;
+        line-height: 44px;
+        border-radius: 10px;
+        background: var(--c-primary);
+        color: var(--c-on-primary);
+        font-weight: 700;
+    }
+
+    #vdo_btn_div .button.disabled { opacity: 0.7; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .quiz-timer.danger { animation: none; }
 }

@@ -3224,7 +3224,8 @@ function get_profile_pic_path_android_ios(page) {
     let profile_user_name = JSON.parse(storage.getItem('username'));
 
     if (page == 'selection') {
-        $("#menu_img_profile").parent("a").append("<span class='tabbar-label'>" + profile_user_name + "</span>")
+        // $("#menu_img_profile").parent("a").append("<span class='tabbar-label'>" + profile_user_name + "</span>");
+        $(".navbar-fixed .navbar-inner .right").append("<span style='display: block; width: max-content; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
     }
     else {
         //$(".navbar-fixed .navbar-inner .right").append("<span style='display: block; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
