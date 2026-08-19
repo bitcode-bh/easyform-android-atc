@@ -4452,3 +4452,12 @@ function create_table_by_device_info() {
     }
 
 }
+
+function isEmpty(obj) {
+    return (
+        obj &&
+        typeof obj === "object" &&
+        !Array.isArray(obj) &&
+        Object.keys(obj).length === 0
+    );
+}
