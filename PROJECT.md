@@ -659,6 +659,12 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `bc90eee` | Tower-photo backdrop on the permission-request screen (`permission_lay.xml`, `MainActivity`'s launcher entry point) — was plain white + logo, now matches Login's branding |
+| `7653ef0` | Login.html: coverage-tower photo backdrop (keyed onto white, not thresholded — see the commit message for why), `--login-bg-size` JS-computed sizing so `background-size:cover` can't rescale/pan when the keyboard's adjustResize shrinks the viewport; fields/buttons sized down to regular weight; eye-icon spacing + keyboard-preserving toggle fix |
+| `b1265ef` | Home dashboard: PM Pending / Energy Reading Pending cards replace Total Sites/Visited Today, reading the existing module-badge counter's cache (zero new server calls); fixed `getTaskCounts()`'s WCF_OnlineTaskList_Native_Count call to match the caller that actually works (`system_var`, `cont_[]` summing, `data`/`message` fallback) — blocked server-side, see commit message |
+| `3a86775` | Attendance task-create popup now reflects the real trip outcome instead of a native toast that fired before the JS layer knew what would happen next |
+| `885ff8f` | Support Info / App Info popovers on Login now close on back button instead of falling through to the exit confirmation |
+|---|---|
 | `dfdf294` | Real Support Info popup: `format_support_info()` parses the tenant's raw `support_refrences1` server text into structured rows (was an unstyled dump), Altius-navy header with hours inline before the tagline, plain icon rows for IMEI/APK Link, full-width flush-to-bottom popover |
 | `bdb3808` | App-wide top bar color match to Home's `#ecedef`/`#0f1729` (background+text together, via `styles_low.css`) + keyboard-safe bottom bar (hides `.toolbar.tabbar`/`#div_new_tabbar` while a keyboard-open class is set, instead of changing `windowSoftInputMode` app-wide) |
 | `5464823` | Safety Passport menu entry + `panel-sp` container added to Home's side menu — pre-existing gap, not a regression |
@@ -728,13 +734,23 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 ---
 
-*Last updated: 2026-08-14 — after `c5e35e1`. LMS: `93fdff0` fixed the reel/lesson "video randomly
-pauses" reports (see Progress table). Trip & Site Map: `ca152a8` switched the map to
+*Last updated: 2026-08-19 — after `bc90eee`. This session (branch `claude/support-info-popup-92b681`,
+worktree `docs-review-67681f` — separate from the LMS worktree rule above, this session's work is
+Login/Home dashboard/attendance-trip, not LMS): Support Info back-button fix, attendance task-create
+popup, Home dashboard PM/Energy Reading Pending cards, and a full Login screen redesign (tower-photo
+backdrop on both Login and the permission-request screen, keyboard-safe background sizing, field/
+button sizing) — see Progress table. Note found and corrected mid-session: the Support Info
+back-button guard and a TripMapUi.java GPS-permission fix had both been *described* as done in an
+earlier compacted summary but were never actually committed to this worktree — re-verify described-
+but-uncommitted work against `git log`/`git status` rather than trusting a summary. All five commits
+above verified on-device (fresh install); the TripMapUi.java GPS-permission fix from that
+investigation was never actually implemented and remains open if trip-start issues resurface.
+Previous entry: Last updated 2026-08-14 — after `c5e35e1`. LMS: `93fdff0` fixed the reel/lesson
+"video randomly pauses" reports (see Progress table). Trip & Site Map: `ca152a8` switched the map to
 `geofence_tracking` as its only native source and fixed a cluster-filter bug that was emptying the
 map entirely; `f1f1c8d` fixed a genuine root-detection false positive in `native-lib.cpp` (ported to
 `main`/production too, see Release Blockers). Home Operations Dashboard P1 shipped `c5e35e1` — see
 its own section above, including two real CSS bugs (wrong stylesheet, `.center` eating 46% of the
-navbar) found while wiring the navbar redesign. Everything above was verified on a fresh on-device
-install, not just live-patched. Remaining LMS work is still backend-dependent (`LMS_API_SPEC.md`)
-plus the four release blockers, which are unrelated to and unaffected by any of this session's
-fixes.*
+navbar) found while wiring the navbar redesign. Remaining LMS work is still backend-dependent
+(`LMS_API_SPEC.md`) plus the four release blockers, which are unrelated to and unaffected by any of
+this session's fixes.*
