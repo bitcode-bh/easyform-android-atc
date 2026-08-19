@@ -390,8 +390,20 @@ function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id,
     });
     loading();
 
+    // TEMP DEBUG (2026-08-19 round 2): reported again after a logout->login
+    // cycle specifically (not a reinstall this time -- b0a7ff4 already
+    // confirmed fixed for that path). storage.getItem('user_id') is the
+    // identity both this lookup and the original submit
+    // (submit_question_by_assessment_id) key off; if clear_localStorage()
+    // (login.js, runs on every login) re-seeds it to something that doesn't
+    // match what the submit was recorded under, this call would legitimately
+    // find nothing -- that's a different failure mode than the fresh-install
+    // case and needs its own evidence. Remove once root-caused.
+    console.log('[ASSESS_DEBUG2] user_id_raw=' + storage.getItem('user_id') + ' user_id_parsed=' + user_id + ' role_id_array=' + localStorage.getItem('role_id_array') + ' Assessment_Id=' + Assessment_Id + ' Progress(listing)=' + Progress);
+
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Assessment_Question_Log_Master_ByAssessmentId', JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
+        console.log('[ASSESS_DEBUG2] log response raw=' + responseText);
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
         if (status == 1) {
@@ -403,6 +415,7 @@ function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id,
             var message = myArray[0].message;
             log_data = [];
         }
+        console.log('[ASSESS_DEBUG2] log_data.length=' + log_data.length);
 
         loading_hide();
         get_question_by_assessment_id(Assessment_Id, Progress)
