@@ -136,13 +136,19 @@
    (7d6f714), that same height was just empty flat fill under the Tag/Score
    badges -- shortened to just what those badges (top:12px, ~13px text) need
    plus breathing room, scoped to this listing only so Modules' real
-   thumbnails are untouched. Fill is the theme blue (was --c-surface-2, its
-   shared default) per request -- Tag/Score switched to their default
-   (photo-style, white-text) variant in assessments.js to match; Modules
-   keeps the neutral grey placeholder for its own real thumbnails. */
+   thumbnails are untouched.
+
+   Fill went --c-surface-2 grey -> solid theme navy (f5a82ae) -> this lighter
+   blue (#eaf1fb, per request; effectively the same tone as the existing
+   --c-primary-050 token but the user's own literal value, one hex digit off
+   it, kept as-is rather than silently swapped for the token). Light enough
+   again that Tag/Score are back on .on-light-bg in assessments.js (dark
+   text) -- the white-text default from the navy fill would be low-contrast
+   against this. Modules keeps its neutral grey placeholder for its own real
+   thumbnails throughout. */
 #dv_Assessments_List .sample-module-image {
     height: 46px;
-    background: var(--c-primary);
+    background: #eaf1fb;
 }
 
 /* ===== Assessments top summary card (Completed / Avg score) =================

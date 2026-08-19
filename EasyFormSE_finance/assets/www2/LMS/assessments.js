@@ -76,20 +76,17 @@ function render_assessment_cards() {
         // animate forever with nothing to wait for. No watch-time badge --
         // that's a video-specific stat Assessments (quizzes) don't have.
         //
-        // .sample-module-image's fill is the theme blue here (assessments.css,
+        // .sample-module-image's fill is a light blue here (assessments.css,
         // #dv_Assessments_List-scoped -- Modules keeps its neutral
-        // --c-surface-2 placeholder), so Tag/Score use their DEFAULT styling
-        // (white text, navy accent on the current score) rather than
-        // .on-light-bg -- that variant is for a light background, and would
-        // be low-contrast white-ish text on blue. Same reasoning as
-        // .on-light-bg's own comment previously here: lms_apply_corner_contrast()
-        // never runs with no <img> to sample, so which variant is correct is a
-        // static call, not sampled -- it just flips because the fill itself
-        // changed from light grey to blue.
+        // --c-surface-2 placeholder), so Tag/Score are back on .on-light-bg
+        // (dark text) -- the default (photo-backdrop, white-text) variant
+        // would be low-contrast against a fill this light.
+        // lms_apply_corner_contrast() never runs with no <img> to sample, so
+        // which variant is correct is a static call here, not sampled.
         str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image img-ready">';
-        if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag">' + Tag + '</span>';
+        if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag on-light-bg">' + Tag + '</span>';
         if (SubmitedQuestion > 0) {
-            str += '<span class="sample-score-tag"><span class="sample-score-label">Score:</span> ';
+            str += '<span class="sample-score-tag on-light-bg"><span class="sample-score-label">Score:</span> ';
             str += '<span class="sample-score-current">' + Score + '</span><span class="sample-score-sep">/</span>';
             str += '<span class="sample-score-total">' + TotalQuestion + '</span></span>';
         }
