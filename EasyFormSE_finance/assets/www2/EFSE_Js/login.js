@@ -1911,6 +1911,23 @@ function updateLoginFail(e) {
 
 //Exit and close application
 function ShowExitDialog() {
+    // Cordova's backbutton event (this function) fires for ANY visible
+    // popover too, not just the OTP popup below -- without these guards,
+    // pressing back while Support Info or App Info is open skipped straight
+    // to "want to exit?" instead of just closing the popover, like every
+    // other back-dismissable overlay in the app. Checked in open order so a
+    // stacked case (unlikely, but cheap to guard) closes the top one first.
+    if ($('.popover-menu:visible').length > 0) {
+        myApp.closeModal('.popover-menu');
+        $('.popup-overlay').hide();
+        return;
+    }
+    if ($('.popover-app-info:visible').length > 0) {
+        myApp.closeModal('.popover-app-info');
+        $('.popup-overlay').hide();
+        return;
+    }
+
     var popups = $('.popup-otp-verify:visible');
     if (popups.length > 0) {
         vibrate_device();
