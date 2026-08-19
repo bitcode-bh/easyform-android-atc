@@ -130,3 +130,43 @@
 @media (prefers-reduced-motion: reduce) {
     .quiz-timer.danger { animation: none; }
 }
+
+/* ===== Assessments card badges =============================================
+   Assessment cards no longer show a thumbnail, so Tag/Score can't stay
+   photo-corner overlays like the shared .sample-module-tag/.sample-score-tag
+   (position:absolute, contrast-adapted via lms_apply_corner_contrast()) --
+   those classes are also used by Safety Modules cards, so they're left
+   untouched. Plain flat row instead, scoped to assessments only. */
+.assess-badge-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.assess-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: var(--r-chip);
+    background: var(--c-primary-050);
+    color: var(--c-primary-600);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.assess-score {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    padding: 3px 10px;
+    border-radius: var(--r-chip);
+    background: #f7f9fb;
+    font-size: 12px;
+}
+
+    .assess-score-label { font-weight: 500; color: #6e7883; }
+    .assess-score-current { font-weight: 800; color: var(--c-primary); }
+    .assess-score-sep { color: #6e7883; opacity: 0.7; }
+    .assess-score-total { font-weight: 600; color: #6e7883; }

@@ -61,7 +61,6 @@ function render_assessment_cards() {
         var Name = assessment.Name;
         var Description = assessment.Description;
         var Assessment_Schedule_Id = assessment.Assessment_Schedule_Id;
-        var Thumbnail_link = assessment.Thumbnail_link || "images/bg2.jpg";
         var Progress = Math.round(get_lms_item_progress(assessment));
         var Score = assessment.Score === "" || assessment.Score == null ? "0" : assessment.Score;
         var Tag = assessment.Tag != null ? assessment.Tag : assessment.tag;
@@ -69,14 +68,24 @@ function render_assessment_cards() {
         var SubmitedQuestion = assessment.SubmitedQuestion == null || assessment.SubmitedQuestion === "" ? 0 : assessment.SubmitedQuestion;
         var onclick_str = "get_questionlog_by_assessment_id('" + Assessment_Id + "', '" + Assessment_Schedule_Id + "', '" + Progress + "')";
 
-        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\'); if(typeof lms_apply_corner_contrast===\'function\') lms_apply_corner_contrast(this.src, this.parentNode);">';
-        if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag">' + Tag + '</span>';
-        if (SubmitedQuestion > 0) {
-            str += '<span class="sample-score-tag"><span class="sample-score-label">Score:</span> ';
-            str += '<span class="sample-score-current">' + Score + '</span><span class="sample-score-sep">/</span>';
-            str += '<span class="sample-score-total">' + TotalQuestion + '</span></span>';
+        // No thumbnail (per request) -- Tag/Score used to be corner overlays
+        // on the image (sample-module-tag/sample-score-tag are position:absolute,
+        // contrast-adapted to a photo via lms_apply_corner_contrast(), and are
+        // also shared with the Safety Modules cards, so they can't just be
+        // reused unstyled here). assess-badge-row is a plain flat row instead,
+        // scoped to assessments.css only.
+        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-card-body">';
+        if ((Tag !== "" && Tag != null) || SubmitedQuestion > 0) {
+            str += '<div class="assess-badge-row">';
+            if (Tag !== "" && Tag != null) str += '<span class="assess-tag">' + Tag + '</span>';
+            if (SubmitedQuestion > 0) {
+                str += '<span class="assess-score"><span class="assess-score-label">Score:</span> ';
+                str += '<span class="assess-score-current">' + Score + '</span><span class="assess-score-sep">/</span>';
+                str += '<span class="assess-score-total">' + TotalQuestion + '</span></span>';
+            }
+            str += '</div>';
         }
-        str += '</div><div class="sample-module-card-body"><div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
+        str += '<div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
         str += '<div class="sample-module-meta"><div class="sample-module-lessons"><span class="sample-module-help"><i class="fa fa-book-open"></i></span><span class="sample-lession-count">' + TotalQuestion + ' Questions</span></div><div class="sample-module-percent">' + Progress + '%</div></div>';
         str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div></div></div>';
     });
