@@ -353,6 +353,39 @@
                                     window.addEventListener('load', function () { setTimeout(pinNeedHelpButton, 0); });
                                 }
                             })();
+
+                            // Same problem, same fix, for the tower-photo background
+                            // (login_theme_altius.css): background-size:cover recomputes
+                            // against the live viewport, and adjustResize shrinks that
+                            // viewport as the keyboard opens -- so the photo was visibly
+                            // rescaling/panning on every keyboard open/close. Captured once
+                            // here, in real px, before any keyboard interaction, and handed
+                            // to the CSS as --login-bg-size so it never gets recomputed.
+                            //
+                            // The size itself has to reproduce what `cover` would have
+                            // computed -- viewport width/height directly (a first pass at
+                            // this) ignores login_bg_tower.png's own 1024x1536 aspect ratio
+                            // and stretches it to fill exactly w x h. Scaling by
+                            // max(w/imgW, h/imgH), the same rule `cover` itself uses, keeps
+                            // the image's proportions correct while still fully filling the
+                            // viewport on every side.
+                            (function () {
+                                var IMG_W = 1024, IMG_H = 1536;
+                                function pinLoginBg() {
+                                    var w = window.innerWidth;
+                                    var h = window.innerHeight;
+                                    if (!w || !h) return;
+                                    var scale = Math.max(w / IMG_W, h / IMG_H);
+                                    var bgW = Math.ceil(IMG_W * scale);
+                                    var bgH = Math.ceil(IMG_H * scale);
+                                    document.documentElement.style.setProperty('--login-bg-size', bgW + 'px ' + bgH + 'px');
+                                }
+                                if (document.readyState === 'complete') {
+                                    setTimeout(pinLoginBg, 0);
+                                } else {
+                                    window.addEventListener('load', function () { setTimeout(pinLoginBg, 0); });
+                                }
+                            })();
                         </script>
 
                         <div class="page-content">
@@ -390,7 +423,7 @@
                                                             <td style="width: 80%">
                                                                 <input type="password" id="txtpassword" class="floated" autocomplete="off" placeholder="Password">
                                                             </td>
-                                                            <td onclick="show_pass()" style="width: 20%; vertical-align: super; text-align: right; padding-right: 5px">
+                                                            <td onmousedown="event.preventDefault()" onclick="show_pass()" style="width: 20%; vertical-align: super; text-align: right; padding-right: 0">
                                                                 <i id="btn_show_pass" name="0" class="icon fa fa-eye-slash" style="font-size: 16px;"></i>
                                                             </td>
                                                         </tr>

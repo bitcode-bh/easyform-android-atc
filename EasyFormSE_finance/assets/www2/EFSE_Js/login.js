@@ -1984,6 +1984,18 @@ function show_pass() {
         $("#btn_show_pass").addClass('fa-eye-slash');
     }
 
+    // Tapping the eye icon must not close the keyboard. The td's own
+    // onmousedown already blocks the focus-shift that causes that, but
+    // switching #txtpassword's type attribute can itself drop focus on
+    // some Android WebView versions -- so restore it here, with the
+    // cursor back at the end rather than jumping to the start.
+    var field = document.getElementById('txtpassword');
+    if (field && document.activeElement !== field) {
+        field.focus();
+        var end = field.value.length;
+        try { field.setSelectionRange(end, end); } catch (e) { }
+    }
+
 
     //setTimeout(function () {
     //    if (source[0].checked) {

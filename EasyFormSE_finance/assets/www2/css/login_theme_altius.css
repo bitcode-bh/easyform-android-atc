@@ -16,29 +16,59 @@
     --altius-bg-tint: #f4f7fc;
 }
 
-/* ---- Faceted background across the whole login page.
+/* ---- Coverage-tower photo backdrop across the whole login page.
    Declared on BOTH .page and .page-content, not just .page: .page-content
    has position:relative + z-index:1 (Framework7 core), which forms its own
    stacking context. #img_bottom's mix-blend-mode (below) can only blend
    against a backdrop painted inside that same stacking context -- a
    background painted only on the ancestor .page is invisible to it, so the
-   logo's white square would stay unblended without this duplicate. */
+   logo's white square would stay unblended without this duplicate.
+
+   login_bg_tower.png is keyed to a white ground (the source PNG's backdrop
+   was solid black -- keyed out to white before export, since black swallowed
+   the navy wordmark and every dark label on this page). The key is a proper
+   un-premultiply against locally-sampled content, not a flat colour
+   threshold -- a threshold left a dark antialiasing fringe/speckle around
+   every shape (visible up close on the coverage rings and around the tower)
+   because those edge pixels are genuine black/content blends, not solid
+   black. PNG rather than JPEG for the same reason in reverse: JPEG's block
+   compression rings around this image's hard flat-colour edges.
+
+   Against the white ground the page reverts to the same light register as
+   the original faceted background, so the scrim here is a heavier white
+   wash than a typical photo backdrop needs -- the ask was specifically for
+   the photo to read as faded, secondary texture behind the form, not a
+   photograph the form sits on top of.
+
+   background-size here is `var(--login-bg-size, cover)`, not the keyword
+   `cover` directly: with adjustResize (this Activity's soft-keyboard mode),
+   opening the keyboard shrinks the real WebView viewport, and `cover` -- a
+   percentage-based keyword -- recomputes against that new, shorter height on
+   every resize. The visible symptom was the whole photo rescaling/panning
+   each time the keyboard opened or closed. --login-bg-size is instead set
+   once, in real px, by the script at the bottom of Login.html, from the
+   viewport size before any keyboard interaction -- same technique already
+   used for #btn_company_info's position below. A fixed px size can't be
+   recomputed by a resize, so nothing moves; the keyboard just covers the
+   bottom of an image that was always that size. background-position's `top`
+   half keeps the anchor at the untouched top of the image (logo/rings),
+   so only the bottom -- already about to sit under the keyboard -- is what
+   gets clipped. background-attachment stays the default `scroll` (not
+   `fixed`): `fixed` sizes against the viewport too, which is exactly what
+   --login-bg-size is meant to opt out of. */
 .page[data-page="list-view"],
 .page[data-page="list-view"] .page-content {
-    background-color: var(--altius-bg-tint);
+    background-color: #ffffff;
+    /* Fade is no longer a straight top-to-bottom ramp: the top (coverage
+       rings/logo) is pushed to a heavier wash than the rest of the page,
+       while the bottom (tower) is brought back down to how faded it read
+       before that heavier wash was applied across the whole image. */
     background-image:
-        linear-gradient(160deg, rgba(29,58,143,0.05) 0%, rgba(63,182,224,0.05) 100%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%231d3a8f' stroke-opacity='0.07' stroke-width='1'%3E%3Cpath d='M0 70 L70 0 L165 25 L130 105 Z'/%3E%3Cpath d='M165 25 L260 0 L260 95 L130 105 Z'/%3E%3Cpath d='M0 70 L130 105 L45 190 L0 175 Z'/%3E%3Cpath d='M130 105 L260 95 L260 190 L185 260 L95 260 L45 190 Z'/%3E%3Cpath d='M95 260 L0 260 L0 175 L45 190 Z'/%3E%3C/g%3E%3C/svg%3E") !important;
-    background-repeat: repeat, repeat;
-    background-size: auto, 260px 260px;
-}
-/* .page is a full-bleed layer; .page-content sits inside it, pushed down by
-   F7's fixed navbar (~56px). Each element's background-position is relative
-   to its own box, so without this the two copies of the pattern (needed for
-   the blend-mode fix above) would be visibly offset from each other by that
-   56px, showing a seam at the navbar line. */
-.page[data-page="list-view"] .page-content {
-    background-position: 0 -56px, 0 -56px;
+        linear-gradient(180deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.83) 46%, rgba(255,255,255,0.86) 100%),
+        url("../images/login_bg_tower.png") !important;
+    background-repeat: no-repeat, no-repeat;
+    background-size: var(--login-bg-size, cover), var(--login-bg-size, cover);
+    background-position: center top, center top;
 }
 
 /* ---- Logo: the base64 PNG login.js injects into #img_bottom has an opaque
@@ -67,9 +97,9 @@
     border: 1px solid #c9d0dd;
     /* Same radius as the Home dashboard's card (.hd-widget in
        home_dashboard.css) so the two screens read as one design language. */
-    border-radius: 15px;
-    padding: 4px 16px;
-    margin-bottom: 12px;
+    border-radius: 12px;
+    padding: 1px 14px;
+    margin-bottom: 9px;
     position: relative;
     display: flex;
     align-items: center;
@@ -117,16 +147,19 @@
     font-size: 18px;
 }
 .login_user_data .item-input-field {
-    height: 26px !important;
+    height: 20px !important;
     min-height: 0 !important;
     margin-bottom: 0 !important;
     display: flex !important;
     align-items: center !important;
 }
+/* "Slimmer" is the box height, not the text -- font-size stays at the
+   original 15px (readable input text) while the box around it (item-content
+   padding above, .item-input-field height here) is what's been tightened. */
 .login_user_data input.floated {
     font-size: 15px;
-    line-height: 26px;
-    height: 26px !important;
+    line-height: 20px;
+    height: 20px !important;
     padding: 0 !important;
     margin: 0 !important;
     vertical-align: middle;
@@ -136,13 +169,17 @@
 /* The password row is a <table>; its toggle cell carries an inline
    vertical-align:super, which pinned the eye icon to the top of the taller
    field instead of centering it. Inline styles can only be beaten with
-   !important. */
+   !important. Its inline padding-right (which used to add 5px on top of
+   .item-content's own 14px edge padding, so the eye icon sat further from
+   the border than the person/lock icon on the left) is now 0 in the markup,
+   so the icon lines up flush with that same 14px -- same spacing on both
+   sides of the field. */
 .login_user_data td {
     vertical-align: middle !important;
 }
 #btn_show_pass {
     color: #667085;
-    font-size: 18px !important;
+    font-size: 16px !important;
 }
 
 /* ---- Remember Me: F7 ships a square checkbox; the target design uses a
@@ -187,7 +224,7 @@ label.label-checkbox i.icon-form-checkbox:after {
     background: var(--altius-navy) !important;
     box-shadow: none;
     color: #fff;
-    font-weight: 700;
+    font-weight: 400;
     /* letter-spacing on a short, all-caps word visibly biases the text left
        of true center -- browsers don't add tracking space after the last
        glyph, so the text's own layout box is narrower than what centering
@@ -197,8 +234,8 @@ label.label-checkbox i.icon-form-checkbox:after {
     text-align: center;
     height: auto;
     line-height: 1.4;
-    padding: 13px 0;
-    font-size: 16px;
+    padding: 10px 0;
+    font-size: 14px;
 }
 
 /* ---- "i" app-info trigger: hidden per request. Not deleted -- it's the
@@ -215,11 +252,11 @@ label.label-checkbox i.icon-form-checkbox:after {
    keyboard opened. ---- */
 #btn_company_info {
     background: var(--altius-navy) !important;
-    width: 44px !important;
-    height: 44px !important;
-    font-size: 10px;
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 9px;
     line-height: 1.15;
-    font-weight: 600;
+    font-weight: 400;
     padding: 0 2px;
     text-align: center;
 }
