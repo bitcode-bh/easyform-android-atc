@@ -12,6 +12,10 @@ session/agent picking up LMS work.
    - Branch: `claude/lms-ui-improvements-fd66a5`
    - Do **not** use the main repo root (`easyform-android-atc` on `master`) or sibling worktree
      `new-session-a876a2` (`lms-ui-improvements`) — that line diverged and is missing fixes here.
+   - **Exception, `5dc33ed` (2026-08-19):** small Assessments-listing/quiz-text LMS change made
+     directly in `docs-review-67681f` (`claude/support-info-popup-92b681`) instead, at explicit
+     owner instruction after being asked to confirm. Not a precedent — still route LMS work here
+     by default; only deviate on an explicit, in-the-moment owner call like this one.
 
 2. **UI scope:** `EasyFormSE_finance/assets/www2/` — Cordova WebView app (Framework7 9 + jQuery).
 
@@ -659,6 +663,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `5dc33ed` | LMS: Assessments listing cards no longer show thumbnails (Tag/Score moved from photo-corner overlays to a plain flat row, scoped to assessments only — Safety Modules cards untouched); Assessment Quiz description top bar sized up (11.5px → 17px) to match the listing card's own title size |
 | `bc90eee` | Tower-photo backdrop on the permission-request screen (`permission_lay.xml`, `MainActivity`'s launcher entry point) — was plain white + logo, now matches Login's branding |
 | `7653ef0` | Login.html: coverage-tower photo backdrop (keyed onto white, not thresholded — see the commit message for why), `--login-bg-size` JS-computed sizing so `background-size:cover` can't rescale/pan when the keyboard's adjustResize shrinks the viewport; fields/buttons sized down to regular weight; eye-icon spacing + keyboard-preserving toggle fix |
 | `b1265ef` | Home dashboard: PM Pending / Energy Reading Pending cards replace Total Sites/Visited Today, reading the existing module-badge counter's cache (zero new server calls); fixed `getTaskCounts()`'s WCF_OnlineTaskList_Native_Count call to match the caller that actually works (`system_var`, `cont_[]` summing, `data`/`message` fallback) — blocked server-side, see commit message |
@@ -734,7 +739,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 ---
 
-*Last updated: 2026-08-19 — after `bc90eee`. This session (branch `claude/support-info-popup-92b681`,
+*Last updated: 2026-08-19 — after `5dc33ed`. This session (branch `claude/support-info-popup-92b681`,
 worktree `docs-review-67681f` — separate from the LMS worktree rule above, this session's work is
 Login/Home dashboard/attendance-trip, not LMS): Support Info back-button fix, attendance task-create
 popup, Home dashboard PM/Energy Reading Pending cards, and a full Login screen redesign (tower-photo
