@@ -12,11 +12,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -470,10 +467,7 @@ public class AttendanceTaskUtil {
             fMasterValues.put("flag", "1");
             fMasterValues.put("step", "1");
             fMasterValues.put("millisecond", System.currentTimeMillis());
-            long temp = database.insert("f_master", null, fMasterValues);
-            if (temp > 0) {
-                new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(sqlitewraper.context, "Task created successfully", Toast.LENGTH_SHORT).show());
-            }
+            database.insert("f_master", null, fMasterValues);
         } catch (Exception e) {
             LogUtils.writeAttendanceLogToFile("Exception : " + e.toString(), "insertFMaster");
         }
