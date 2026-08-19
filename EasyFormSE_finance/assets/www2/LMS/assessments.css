@@ -136,7 +136,39 @@
    (7d6f714), that same height was just empty flat fill under the Tag/Score
    badges -- shortened to just what those badges (top:12px, ~13px text) need
    plus breathing room, scoped to this listing only so Modules' real
-   thumbnails are untouched. */
+   thumbnails are untouched. Fill is the theme blue (was --c-surface-2, its
+   shared default) per request -- Tag/Score switched to their default
+   (photo-style, white-text) variant in assessments.js to match; Modules
+   keeps the neutral grey placeholder for its own real thumbnails. */
 #dv_Assessments_List .sample-module-image {
     height: 46px;
+    background: var(--c-primary);
 }
+
+/* ===== Assessments top summary card (Completed / Avg score) =================
+   .lms-info-bar/.lms-info-item/etc. are shared with Modules and the LMS
+   Dashboard's own KPI/category bars (dashboard.css), so this is scoped to
+   .assessment-content's own instance only -- those other bars keep their
+   default white surface. Solid theme blue fill instead of the neutral
+   surface; every descendant that assumed a light background (icon in the
+   brand color, muted-grey label, dark value text, light divider) is
+   recolored for contrast against it rather than left to blend in. */
+.assessment-content .lms-info-bar {
+    background: var(--c-primary);
+}
+
+    .assessment-content .lms-info-icon i {
+        color: #ffffff;
+    }
+
+    .assessment-content .lms-info-value {
+        color: #ffffff;
+    }
+
+    .assessment-content .lms-info-label {
+        color: rgba(255, 255, 255, 0.78);
+    }
+
+    .assessment-content .lms-info-divider {
+        background: rgba(255, 255, 255, 0.28);
+    }

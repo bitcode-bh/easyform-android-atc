@@ -73,20 +73,23 @@ function render_assessment_cards() {
         // design language. img-ready is added directly (there's no <img
         // onload> to add it for us) so .sample-module-image's shimmer
         // skeleton -- meant to hide while a thumbnail decodes -- doesn't
-        // animate forever with nothing to wait for; that leaves the plain
-        // --c-surface-2 fill safety_modules.css already defines for this
-        // class as the placeholder, same neutral block a slow-loading module
-        // thumbnail would sit on top of. No watch-time badge -- that's a
-        // video-specific stat Assessments (quizzes) don't have.
-        // .on-light-bg is added directly for the same reason img-ready is:
-        // lms_apply_corner_contrast() (which normally decides it, by sampling
-        // a real photo's actual pixels) never runs with no <img> to sample.
-        // --c-surface-2 (#f3f5f7) is always light, so the light-bg text/accent
-        // colors are always the correct static choice here.
+        // animate forever with nothing to wait for. No watch-time badge --
+        // that's a video-specific stat Assessments (quizzes) don't have.
+        //
+        // .sample-module-image's fill is the theme blue here (assessments.css,
+        // #dv_Assessments_List-scoped -- Modules keeps its neutral
+        // --c-surface-2 placeholder), so Tag/Score use their DEFAULT styling
+        // (white text, navy accent on the current score) rather than
+        // .on-light-bg -- that variant is for a light background, and would
+        // be low-contrast white-ish text on blue. Same reasoning as
+        // .on-light-bg's own comment previously here: lms_apply_corner_contrast()
+        // never runs with no <img> to sample, so which variant is correct is a
+        // static call, not sampled -- it just flips because the fill itself
+        // changed from light grey to blue.
         str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image img-ready">';
-        if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag on-light-bg">' + Tag + '</span>';
+        if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag">' + Tag + '</span>';
         if (SubmitedQuestion > 0) {
-            str += '<span class="sample-score-tag on-light-bg"><span class="sample-score-label">Score:</span> ';
+            str += '<span class="sample-score-tag"><span class="sample-score-label">Score:</span> ';
             str += '<span class="sample-score-current">' + Score + '</span><span class="sample-score-sep">/</span>';
             str += '<span class="sample-score-total">' + TotalQuestion + '</span></span>';
         }
