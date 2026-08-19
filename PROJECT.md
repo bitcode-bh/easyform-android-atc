@@ -663,7 +663,8 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
-| `5dc33ed` | LMS: Assessments listing cards no longer show thumbnails (Tag/Score moved from photo-corner overlays to a plain flat row, scoped to assessments only — Safety Modules cards untouched); Assessment Quiz description top bar sized up (11.5px → 17px) to match the listing card's own title size |
+| `7d6f714` | Micro Learning: removed the "1 Watched / 0s / 14s" reel-tab overlay badge. Reworked `5dc33ed`'s assessment cards per follow-up request: exact same `sample-module-image`/`-tag`/`-score-tag` markup as Safety Modules (not the bespoke flat row `5dc33ed` used), just without `<img>` — `img-ready`/`on-light-bg` added directly since nothing triggers the `<img onload>` that would normally set them |
+| `5dc33ed` | LMS: Assessments listing cards no longer show thumbnails (superseded by `7d6f714` — see above); Assessment Quiz description top bar sized up (11.5px → 17px) to match the listing card's own title size (still current) |
 | `bc90eee` | Tower-photo backdrop on the permission-request screen (`permission_lay.xml`, `MainActivity`'s launcher entry point) — was plain white + logo, now matches Login's branding |
 | `7653ef0` | Login.html: coverage-tower photo backdrop (keyed onto white, not thresholded — see the commit message for why), `--login-bg-size` JS-computed sizing so `background-size:cover` can't rescale/pan when the keyboard's adjustResize shrinks the viewport; fields/buttons sized down to regular weight; eye-icon spacing + keyboard-preserving toggle fix |
 | `b1265ef` | Home dashboard: PM Pending / Energy Reading Pending cards replace Total Sites/Visited Today, reading the existing module-badge counter's cache (zero new server calls); fixed `getTaskCounts()`'s WCF_OnlineTaskList_Native_Count call to match the caller that actually works (`system_var`, `cont_[]` summing, `data`/`message` fallback) — blocked server-side, see commit message |
@@ -739,7 +740,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 ---
 
-*Last updated: 2026-08-19 — after `5dc33ed`. This session (branch `claude/support-info-popup-92b681`,
+*Last updated: 2026-08-19 — after `7d6f714`. This session (branch `claude/support-info-popup-92b681`,
 worktree `docs-review-67681f` — separate from the LMS worktree rule above, this session's work is
 Login/Home dashboard/attendance-trip, not LMS): Support Info back-button fix, attendance task-create
 popup, Home dashboard PM/Energy Reading Pending cards, and a full Login screen redesign (tower-photo
