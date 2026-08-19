@@ -68,24 +68,29 @@ function render_assessment_cards() {
         var SubmitedQuestion = assessment.SubmitedQuestion == null || assessment.SubmitedQuestion === "" ? 0 : assessment.SubmitedQuestion;
         var onclick_str = "get_questionlog_by_assessment_id('" + Assessment_Id + "', '" + Assessment_Schedule_Id + "', '" + Progress + "')";
 
-        // No thumbnail (per request) -- Tag/Score used to be corner overlays
-        // on the image (sample-module-tag/sample-score-tag are position:absolute,
-        // contrast-adapted to a photo via lms_apply_corner_contrast(), and are
-        // also shared with the Safety Modules cards, so they can't just be
-        // reused unstyled here). assess-badge-row is a plain flat row instead,
-        // scoped to assessments.css only.
-        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-card-body">';
-        if ((Tag !== "" && Tag != null) || SubmitedQuestion > 0) {
-            str += '<div class="assess-badge-row">';
-            if (Tag !== "" && Tag != null) str += '<span class="assess-tag">' + Tag + '</span>';
-            if (SubmitedQuestion > 0) {
-                str += '<span class="assess-score"><span class="assess-score-label">Score:</span> ';
-                str += '<span class="assess-score-current">' + Score + '</span><span class="assess-score-sep">/</span>';
-                str += '<span class="assess-score-total">' + TotalQuestion + '</span></span>';
-            }
-            str += '</div>';
+        // Exact same card as Safety Modules (sample-module-image/-tag/-score-tag,
+        // same classes) minus the <img> -- so the two listings read as one
+        // design language. img-ready is added directly (there's no <img
+        // onload> to add it for us) so .sample-module-image's shimmer
+        // skeleton -- meant to hide while a thumbnail decodes -- doesn't
+        // animate forever with nothing to wait for; that leaves the plain
+        // --c-surface-2 fill safety_modules.css already defines for this
+        // class as the placeholder, same neutral block a slow-loading module
+        // thumbnail would sit on top of. No watch-time badge -- that's a
+        // video-specific stat Assessments (quizzes) don't have.
+        // .on-light-bg is added directly for the same reason img-ready is:
+        // lms_apply_corner_contrast() (which normally decides it, by sampling
+        // a real photo's actual pixels) never runs with no <img> to sample.
+        // --c-surface-2 (#f3f5f7) is always light, so the light-bg text/accent
+        // colors are always the correct static choice here.
+        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image img-ready">';
+        if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag on-light-bg">' + Tag + '</span>';
+        if (SubmitedQuestion > 0) {
+            str += '<span class="sample-score-tag on-light-bg"><span class="sample-score-label">Score:</span> ';
+            str += '<span class="sample-score-current">' + Score + '</span><span class="sample-score-sep">/</span>';
+            str += '<span class="sample-score-total">' + TotalQuestion + '</span></span>';
         }
-        str += '<div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
+        str += '</div><div class="sample-module-card-body"><div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
         str += '<div class="sample-module-meta"><div class="sample-module-lessons"><span class="sample-module-help"><i class="fa fa-book-open"></i></span><span class="sample-lession-count">' + TotalQuestion + ' Questions</span></div><div class="sample-module-percent">' + Progress + '%</div></div>';
         str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div></div></div>';
     });
