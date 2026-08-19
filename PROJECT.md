@@ -663,6 +663,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 | Commit | Summary |
 |---|---|
+| `f5a82ae` | Assessments theme blue, two spots (both `#dv_Assessments_List`/`.assessment-content`-scoped — Modules/Dashboard keep their originals): the top KPI bar (Completed/Avg score, shared `.lms-info-bar`) and each listing card's top block (`.sample-module-image`, no-thumbnail placeholder from `29cc0c9`). Card's Tag/Score switched off `.on-light-bg` to their default (photo-backdrop) white-text styling to match the new dark fill |
 | `b0a7ff4` | Assessment quiz review/read-only gate now trusts `log_data.length > 0` (real prior-answers rows, from `LMS_Select_Assessment_Question_Log_Master_ByAssessmentId`) as well as `Progress=="100"` (the separate listing call) — a submitted assessment stayed fully editable, and could be resubmitted, whenever the two disagreed. Reported after a fresh install/re-login; **not fully root-caused** without a live network capture of that exact scenario (needs the owner's login) — if it resurfaces, add on-screen debug output for it rather than guessing further |
 | `29cc0c9` | Assessment cards: `.sample-module-progress` was nested inside `.sample-module-card-body` (inheriting its padding) instead of being the card's own flush last child, like Safety Modules' — fixed to match. `.sample-module-image`'s 168px height (sized for Modules' real photos) shortened to 46px for assessments (`#dv_Assessments_List`-scoped), since it was just empty fill under the Tag/Score badges with no image at all |
 | `7d6f714` | Micro Learning: removed the "1 Watched / 0s / 14s" reel-tab overlay badge. Reworked `5dc33ed`'s assessment cards per follow-up request: exact same `sample-module-image`/`-tag`/`-score-tag` markup as Safety Modules (not the bespoke flat row `5dc33ed` used), just without `<img>` — `img-ready`/`on-light-bg` added directly since nothing triggers the `<img onload>` that would normally set them |
@@ -742,7 +743,7 @@ fields in `LMS_API_SPEC.md` (P1/P2). **Do not work around this locally.**
 
 ---
 
-*Last updated: 2026-08-19 — after `b0a7ff4`. This session (branch `claude/support-info-popup-92b681`,
+*Last updated: 2026-08-19 — after `f5a82ae`. This session (branch `claude/support-info-popup-92b681`,
 worktree `docs-review-67681f` — separate from the LMS worktree rule above, this session's work is
 Login/Home dashboard/attendance-trip, not LMS): Support Info back-button fix, attendance task-create
 popup, Home dashboard PM/Energy Reading Pending cards, and a full Login screen redesign (tower-photo
