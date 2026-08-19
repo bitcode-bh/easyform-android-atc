@@ -430,6 +430,21 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
             let t_log_data = log_data;
             var merge_array = merge_question_data_assessments(data, t_log_data);
 
+            // Review/read-only mode used to be gated on Progress=="100" alone
+            // (the separate listing call's field) even though log_data --
+            // fetched right before this, from LMS_Select_Assessment_Question_
+            // Log_Master_ByAssessmentId, the actual prior-answers record --
+            // was sitting right here unused for that decision. Whenever the
+            // two disagreed, a real submission (log_data has rows) still
+            // opened fully editable, letting it be answered and submitted
+            // again. log_data is server-confirmed prior answers, not a
+            // fabricated value, so trusting it here is the real fix, not a
+            // client-side guess -- and it's the same identity (User_ID +
+            // Assessment_Id) the submit itself was written under, so unlike
+            // Progress it can't be thrown off by a listing-side role/cache
+            // mismatch.
+            var is_submitted = (Progress == "100") || (Array.isArray(t_log_data) && t_log_data.length > 0);
+
             for (let i = 0; i < merge_array.length; i++) {
                 let Assessment_Que_Id = merge_array[i].Assessment_Que_Id;
                 let Question_Name = merge_array[i].Question_Name;
@@ -448,7 +463,7 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                 for (let j = 0; j < optionsArray.length; j++) {
                     let op_text = optionsArray[j].trim();
 
-                    if (Progress == "100") {
+                    if (is_submitted) {
                         // log found
 
                         if (op_text === Valid_Answer) {
@@ -489,7 +504,7 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
             var qCurEl = document.getElementById('q_cur');
             var qHeader = document.getElementById('assessment_quiz_header');
             if (qTotalEl) qTotalEl.textContent = totalQ;
-            if (qCurEl) qCurEl.textContent = (Progress == "100") ? totalQ : 0;
+            if (qCurEl) qCurEl.textContent = is_submitted ? totalQ : 0;
             if (qHeader) qHeader.style.display = 'none';
 
             // Highlight any pre-checked option (prior answer / review mode) —
@@ -499,7 +514,7 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                 if (opt) opt.classList.add('selected');
             });
 
-            if (Progress == "100") {
+            if (is_submitted) {
                 $("#dv_Assessment_Question_List").find("input[type='radio']").attr("disabled", "disabled");
                 $("#dv_Assessment_Question_List").show();
             }
