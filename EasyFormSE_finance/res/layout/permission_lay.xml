@@ -1,27 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Same tower-photo backdrop as Login.html (login_theme_altius.css), so the
+     permission-request screen, the very first thing shown before Login ever
+     loads, doesn't read as a separate, unbranded blank-white screen in
+     between. android:scaleType="centerCrop" on the ImageView is the
+     native-layout equivalent of the web side's background-size:cover; both
+     fill the screen without distorting the image's own aspect ratio. The
+     white scrim view over it approximates the same light wash the web CSS
+     applies, so logo/text contrast stays the same as on Login.html. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white"
-    android:orientation="vertical">
-    <!--<TextView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:paddingTop="100dp"-->
-        <!--android:gravity="center|top"-->
-        <!--android:text=""-->
-        <!--android:textColor="@color/white"-->
-        <!--android:textSize="60sp"-->
-        <!--android:typeface="monospace"-->
-        <!--/>-->
+    android:layout_height="match_parent">
+
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:src="@drawable/atc_logo"
-        android:layout_marginTop="100dp"
-        android:gravity="center|top"
-        android:text=""
-        android:textColor="@color/white"
-        android:textSize="60sp"
-        android:typeface="monospace"/>
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/login_bg_tower"
+        android:contentDescription="@null" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#D8FFFFFF" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:src="@drawable/atc_logo"
+            android:layout_marginTop="100dp"
+            android:gravity="center|top"
+            android:text=""
+            android:textColor="@color/white"
+            android:textSize="60sp"
+            android:typeface="monospace"/>
+    </LinearLayout>
+</FrameLayout>
