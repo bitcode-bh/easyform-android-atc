@@ -92,7 +92,12 @@ function render_assessment_cards() {
         }
         str += '</div><div class="sample-module-card-body"><div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
         str += '<div class="sample-module-meta"><div class="sample-module-lessons"><span class="sample-module-help"><i class="fa fa-book-open"></i></span><span class="sample-lession-count">' + TotalQuestion + ' Questions</span></div><div class="sample-module-percent">' + Progress + '%</div></div>';
-        str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div></div></div>';
+        // .sample-module-card-body closes HERE, same as Safety Modules --
+        // .sample-module-progress must be a sibling after it (the card's own
+        // last child), not nested inside it, or it inherits the body's 16px/
+        // 6px padding instead of sitting flush per its own CSS comment
+        // ("Sits outside the padded card body as the card's own last child").
+        str += '</div><div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div></div>';
     });
     $("#dv_Assessments_List").html(str);
 }

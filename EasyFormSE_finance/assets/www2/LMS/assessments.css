@@ -130,3 +130,13 @@
 @media (prefers-reduced-motion: reduce) {
     .quiz-timer.danger { animation: none; }
 }
+
+/* .sample-module-image is shared with Safety Modules, where 168px (its
+   LMS_Misc.css default) is a real photo's height. With no image at all here
+   (7d6f714), that same height was just empty flat fill under the Tag/Score
+   badges -- shortened to just what those badges (top:12px, ~13px text) need
+   plus breathing room, scoped to this listing only so Modules' real
+   thumbnails are untouched. */
+#dv_Assessments_List .sample-module-image {
+    height: 46px;
+}
