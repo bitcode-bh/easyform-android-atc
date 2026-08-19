@@ -4,10 +4,25 @@
 // via a server-driven dashboard_profile/dashboard_role_map for any role that
 // wants it back.
 //
-// Total Sites: geofence_tracking (the downloaded site catalog). Visited
-// Today: geofence_user_tracking_detail confirmed-dwell rows for today. See
-// HomeDashboardData.getSiteSummary() for the exact queries and why they're
-// safe to read without extra scoping.
+// PM Pending / Energy Reading Pending: the task count the app's own home
+// screen counter already fetches, read from its existing localStorage cache
+// — no extra server call and no separate count query of our own (see
+// HomeDashboardData.getSiteSummary / readCachedUdfCount). "—" means that
+// counter has not finished yet this session, which is not a real zero.
+//
+// KNOWN SERVER-SIDE DEPENDENCY (verified on device 2026-08-17, prod
+// mwfm.altiusinfra.com, user premdas.vt): WCF_OnlineTaskList_Native_Count
+// answers for these flows with TASK_COUNT 0, CONT_ [0] and an empty QUERY
+// field — i.e. no count query is configured server-side for them — so these
+// two cards read 0 even when the flow's own listing has rows (6 at the time
+// of checking). Nothing on the client can derive the real number from that
+// endpoint; the listing endpoint (OnlineTaskListing) returns only a
+// pagination-capped page of rows with no total, so counting it would either
+// undercount or require fetching every row on every home load. The fix is to
+// configure the count query for these flows server-side, after which these
+// cards populate with no further app change.
+//
+// Visited Today: geofence_user_tracking_detail confirmed-dwell rows for today.
 //
 // Tap delegates to the real TripSiteMap.open() when the map module is
 // loaded and enabled for this role -- a no-op otherwise (TripSiteMap.open()
@@ -21,7 +36,8 @@ var HomeWidgetSiteSummary = (function () {
         var html = '<div class="hd-widget hd-site-summary" data-widget="site_summary">'
             + '<div class="hd-card-title">Sites</div>'
             + '<div class="hd-site-stats">'
-            + '<div class="hd-site-stat"><span class="hd-count hd-site-total">&hellip;</span><span class="hd-label">Total Sites</span></div>'
+            + '<div class="hd-site-stat"><span class="hd-count hd-pm-pending">&hellip;</span><span class="hd-label">PM Pending</span></div>'
+            + '<div class="hd-site-stat"><span class="hd-count hd-er-pending">&hellip;</span><span class="hd-label">Energy Reading Pending</span></div>'
             + '<div class="hd-site-stat"><span class="hd-count hd-site-visited">&hellip;</span><span class="hd-label">Visited Today</span></div>'
             + '</div>'
             + '</div>';
@@ -37,25 +53,28 @@ var HomeWidgetSiteSummary = (function () {
         refresh(container);
     }
 
-    // The two counts come from SQLite queries that can take a visible moment on
-    // a large geofence_tracking table, and until now the card just sat on its
-    // previous (or placeholder) value with no sign anything was happening --
-    // indistinguishable from a finished load that genuinely returned that
-    // number. .hd-loading paints them red and blinks (css/home_dashboard.css)
-    // so "still loading" is never mistaken for "this is the answer".
+    // The counts come from SQLite queries that can take a visible moment, and
+    // until now the card just sat on its previous (or placeholder) value with
+    // no sign anything was happening -- indistinguishable from a finished
+    // load that genuinely returned that number. .hd-loading paints them red
+    // and blinks (css/home_dashboard.css) so "still loading" is never
+    // mistaken for "this is the answer".
     function refresh(container) {
         var root = container.find('[data-widget="site_summary"]');
         if (root.length === 0) {
             return;
         }
 
-        var counts = root.find('.hd-site-total, .hd-site-visited');
+        var counts = root.find('.hd-pm-pending, .hd-er-pending, .hd-site-visited');
         counts.addClass('hd-loading');
 
         HomeDashboardData.getSiteSummary(function (result) {
-            root.find('.hd-site-total')
+            root.find('.hd-pm-pending')
                 .removeClass('hd-loading')
-                .text(result.totalSites !== null ? result.totalSites : '—');
+                .text(result.pmPending !== null ? result.pmPending : '—');
+            root.find('.hd-er-pending')
+                .removeClass('hd-loading')
+                .text(result.erPending !== null ? result.erPending : '—');
             root.find('.hd-site-visited')
                 .removeClass('hd-loading')
                 .text(result.visitedToday !== null ? result.visitedToday : '—');

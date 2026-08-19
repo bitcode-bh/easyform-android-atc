@@ -129,6 +129,13 @@ function onsuccess_get_counter_for_online_flow(e) {
                 var time = new Date();
                 var counter_session_ms = time.getTime();
                 localStorage.setItem('counter_session_ms', counter_session_ms);
+
+                // The home dashboard's Sites card reads the cache just written
+                // above, and this counter finishes after that card has already
+                // rendered — so re-read it here. localStorage only; no refetch.
+                if (typeof HomeDashboard !== 'undefined' && HomeDashboard.refresh) {
+                    try { HomeDashboard.refresh(); } catch (err) { }
+                }
             }
             else {
                 //offline
@@ -937,7 +944,7 @@ function SuccessCallBack_get_modules(e) {
             }
 
             compare_time_for_user_notification();
-            //compare_time_for_online_count();
+            compare_time_for_online_count();
             get_today_attendance_for_notification();
         }
 
@@ -2106,7 +2113,7 @@ function get_list_of_modules_online() {
                 });
 
                 compare_time_for_user_notification();
-                //compare_time_for_online_count();
+                compare_time_for_online_count();
                 get_today_attendance_for_notification();
 
                 localStorage.setItem('last_modulelist_count', module_count);

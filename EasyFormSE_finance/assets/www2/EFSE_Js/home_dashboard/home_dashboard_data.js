@@ -16,10 +16,43 @@ var HomeDashboardData = (function () {
         cordova.exec(onSuccess, onFail || function () { }, 'SqlitePlugin', 'showValues', q_jsonobj);
     }
 
-    // Online: same WCF_OnlineTaskList_Native_Count call and params as
-    // get_counter_for_online_flow_profile() (common-functions.js), but the
-    // response is only summed here — never merged into profile_flow_Array,
-    // never triggers draw_my_task_chart(), no loading() spinner.
+    // One WCF_OnlineTaskList_Native_Count row -> its count. cont_[] is the
+    // per-tab breakdown and is what selection.js trusts; task_count is only
+    // consulted when the server sent no cont_ at all. -1 is the server's
+    // "count query failed" sentinel (selection.js renders it as "E") and must
+    // not be added into a total as a negative number.
+    function countForRow(row) {
+        var cont_ = row.cont_;
+        if (cont_ && cont_.length !== undefined) {
+            var sum = 0;
+            for (var j = 0; j < cont_.length; j++) {
+                var tab = parseInt(cont_[j], 10);
+                if (!isNaN(tab) && tab > 0) {
+                    sum += tab;
+                }
+            }
+            return sum;
+        }
+        var fallback = parseInt(row.task_count, 10);
+        return (!isNaN(fallback) && fallback > 0) ? fallback : 0;
+    }
+
+    // WCF_OnlineTaskList_Native_Count is a generic executor: per flow, the
+    // server runs a count query configured for that flow and substitutes the
+    // system_var placeholders into it. A caller that omits system_var gets
+    // whatever an unresolved <'#user_id#'> evaluates to — which is why this
+    // now mirrors get_counter_for_online_flow() (selection.js), the caller
+    // that populates the module badges and is known to work, rather than
+    // get_counter_for_online_flow_profile() (common-functions.js), which
+    // sends role_id alone and no placeholders.
+    //
+    // Same reasoning for the count field: selection.js deliberately ignores
+    // the row's own task_count and sums cont_[] (the per-tab counts). We do
+    // the same, falling back to task_count only when cont_ is absent.
+    //
+    // Unlike either of those, the response is only summed here — never merged
+    // into the shared global profile_flow_Array, never triggers
+    // draw_my_task_chart(), no app-wide loading() spinner.
     // Offline fallback: common-functions.js's own aggregate query.
     function getTaskCounts(onDone) {
         var company_id, user_id, role_id;
@@ -67,12 +100,40 @@ var HomeDashboardData = (function () {
             return;
         }
 
+        // Placeholder keys and spelling are the server's contract — copied
+        // verbatim from get_counter_for_online_flow() (selection.js). A missing
+        // key here silently breaks any flow whose count query references it.
+        // Kept to storage reads only: no MkLocation GPS fix, so user_lat/long
+        // stay 0 (only distance-scoped count queries would need them, and no
+        // dashboard card uses one).
+        var sys_var_Array = [];
+        function pushSysVar(key, storageKey) {
+            var value = '';
+            try {
+                var raw = storage.getItem(storageKey);
+                if (raw !== null && raw !== undefined && raw !== '') {
+                    value = JSON.parse(raw);
+                }
+            } catch (e) {
+                value = '';
+            }
+            sys_var_Array.push({ "key": key, "value": value });
+        }
+        pushSysVar("<'#company_id#'>", 'company_id');
+        pushSysVar("<'#user_id#'>", 'user_id');
+        pushSysVar("<'#user_name#'>", 'user_name');
+        pushSysVar("<'#role_id#'>", 'role_id');
+        pushSysVar("<'#role_name#'>", 'role_name');
+        pushSysVar("<'#circle_id#'>", 'circle_id');
+        pushSysVar("<'#circle_name#'>", 'circle_name');
+
         var param_obj = [{
             company_id: company_id,
             user_id: user_id,
             user_lat: 0,
             user_long: 0,
-            role_id: role_id
+            role_id: role_id,
+            'system_var': sys_var_Array
         }];
 
         try {
@@ -86,14 +147,23 @@ var HomeDashboardData = (function () {
                             offline();
                             return;
                         }
-                        var data = myArray[0].data;
-                        var message = (data === '' || data === null || data === undefined)
-                            ? []
-                            : JSON.parse(data);
+                        // The payload arrives in `data`, except when it
+                        // arrives in `message` instead — selection.js handles
+                        // both and so must we, or a message-carried response
+                        // reads as zero flows and drops us to the offline
+                        // count for no reason.
+                        var payload = myArray[0].data;
+                        if (payload === '' || payload === null || payload === undefined) {
+                            payload = myArray[0].message;
+                        }
+                        var message = [];
+                        if (payload !== '' && payload !== null && payload !== undefined) {
+                            message = JSON.parse(payload) || [];
+                        }
                         var total = 0;
                         var byFlow = [];
                         for (var i = 0; i < message.length; i++) {
-                            var task_count = message[i].task_count || 0;
+                            var task_count = countForRow(message[i]);
                             total += task_count;
                             byFlow.push({ flow_id: message[i].flow_id, udf_id: message[i].udf_id, task_count: task_count });
                         }
@@ -449,14 +519,63 @@ var HomeDashboardData = (function () {
         }
     }
 
-    // site_summary (top dashboard card). Total Sites reads geofence_tracking —
-    // the downloaded site catalog (no username/user_id column at all; safe to
-    // read unscoped because delete_database's 'nck' action, called from
-    // login.js on user switch, unconditionally wipes this table, so it can
-    // never hold another user's rows). Visited Today reuses the same
-    // geofence_user_tracking_detail / is_send='1' confirmed-dwell logic
-    // getTripStats() already uses, scoped by user_id (the column exists
-    // there) as well as by date, independent of whether a trip is active.
+    // The SqlitePlugin bridge returns each result row's keys however the
+    // underlying column ended up cased (User_Define_Flow_Master's own
+    // columns come back upper-cased -- ID/P_ID/FLOW_ID/FLOW_NAME/TYPE/DATA --
+    // while an explicit `as alias` on other tables has come back as
+    // typed elsewhere in this file). Rather than trust either case, index
+    // this object case-insensitively.
+    function getField(row, name) {
+        if (!row) {
+            return undefined;
+        }
+        if (row[name] !== undefined) {
+            return row[name];
+        }
+        var upper = name.toUpperCase();
+        if (row[upper] !== undefined) {
+            return row[upper];
+        }
+        var lower = name.toLowerCase();
+        return row[lower];
+    }
+
+    // The task count the home screen has ALREADY fetched for each module and
+    // cached (selection.js get_counter_for_online_flow -> localStorage
+    // 'udf_count_array', indexed by User_Define_Flow_Master.id). Reading that
+    // cache is deliberate: the dashboard shows the very same number as the
+    // module's own badge, with no second server call and no separate count
+    // query of its own. null (rendered "—") means that counter has not
+    // completed yet this session, which is not the same as a real zero.
+    function readCachedUdfCount(udfId) {
+        try {
+            var raw = localStorage.getItem('udf_count_array');
+            if (!raw) {
+                return null;
+            }
+            var counts = JSON.parse(raw);
+            if (!counts) {
+                return null;
+            }
+            var value = counts[udfId];
+            if (value === undefined || value === null || value === '') {
+                return null;
+            }
+            return value;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // site_summary (top dashboard card). PM / Energy Reading show the task
+    // count the home screen's own module badges already show, read straight
+    // from that counter's localStorage cache (readCachedUdfCount above) — no
+    // extra server call and no separate count query. The only lookup here is
+    // one local row-id read, because which User_Define_Flow_Master id is "PM"
+    // is per-company config rather than a fixed constant. Visited Today
+    // reuses the same geofence_user_tracking_detail / is_send='1'
+    // confirmed-dwell logic getTripStats() already uses, scoped by user_id
+    // (the column exists there) as well as by date.
     function getSiteSummary(onDone) {
         var user_id = null;
         try {
@@ -465,18 +584,31 @@ var HomeDashboardData = (function () {
             user_id = null;
         }
 
-        var result = { totalSites: null, visitedToday: null };
+        var result = { pmPending: null, erPending: null, visitedToday: null };
         var pending = 2;
         function maybeDone() {
             pending--;
             if (pending === 0) onDone(result);
         }
 
+        // Top-level module rows only (p_id = 0) — the same granularity the
+        // cached counter is keyed by. Matched case-insensitively because
+        // flow_name casing is per-company data entry.
         sql(
-            "select count(distinct place_id) as cnt from geofence_tracking",
+            "select id, flow_name from User_Define_Flow_Master where p_id = 0 "
+            + "and (upper(flow_name) = 'PM' or upper(flow_name) = 'ENERGY READING') "
+            + "and (is_delete != 1 or is_delete IS NULL)",
             function (e) {
-                var r = []; try { r = JSON.parse(e) || []; } catch (err) { r = []; }
-                result.totalSites = (r.length && r[0].cnt !== undefined) ? parseInt(r[0].cnt, 10) : 0;
+                var rows = []; try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                for (var i = 0; i < rows.length; i++) {
+                    var name = String(getField(rows[i], 'flow_name') || '').toUpperCase();
+                    var id = getField(rows[i], 'id');
+                    if (name === 'PM') {
+                        result.pmPending = readCachedUdfCount(id);
+                    } else if (name === 'ENERGY READING') {
+                        result.erPending = readCachedUdfCount(id);
+                    }
+                }
                 maybeDone();
             },
             function () { maybeDone(); }
