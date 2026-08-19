@@ -89,6 +89,22 @@
     background: var(--c-border);
 }
 
+/* Slimmer, divider-free KPI bar for Modules (#tab-1) and Assessments (#tab-2)
+   only, per request -- the Dashboard tab's own KPI/category bars (#tab-3,
+   the is-selectable .lms-kpi-card buttons above) keep the original 82px/
+   divider treatment, since those are tappable controls that need the extra
+   room and the divider as a visual button-boundary cue; these two are
+   read-only summaries, where that boundary is unnecessary weight. */
+#tab-1 .lms-info-bar,
+#tab-2 .lms-info-bar {
+    height: 60px;
+}
+
+#tab-1 .lms-info-divider,
+#tab-2 .lms-info-divider {
+    display: none;
+}
+
 /* ===== Trend chart — date-range filter + 3-line area chart ============== */
 /* No card wrapper — filter row sits directly in the page layout; the chart
    bleeds past .sample-safety-content's 14px side padding for full screen width. */
