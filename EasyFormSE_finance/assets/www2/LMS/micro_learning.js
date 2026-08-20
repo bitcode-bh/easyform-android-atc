@@ -775,6 +775,16 @@ function get_micro_learning_videos() {
                 }
                 $('#div_Reels')[0].innerHTML = reels_html;   // single commit
 
+                document.querySelectorAll('#div_Reels .reel-video').forEach(function (v) {
+                    if (v.getAttribute('poster')) return;
+                    var remote = v.getAttribute('data-remote');
+                    var slide = v.closest('.swiper-slide');
+                    var mlid = slide ? slide.getAttribute('Ml_id') : '';
+                    if (remote && mlid && typeof lms_bind_video_thumb === 'function') {
+                        lms_bind_video_thumb(v, 'ml_' + mlid, remote);
+                    }
+                });
+
                 if (typeof lms_track_watch_time === 'function') {
                     document.querySelectorAll('.reel-video').forEach(function (v) {
                         lms_track_watch_time(v, 'lms_watch_seconds_ml');

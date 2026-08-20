@@ -3171,3 +3171,76 @@ html.keyboard-open .toolbar.tabbar,
 html.keyboard-open #div_new_tabbar {
     display: none !important;
 }
+
+/* Confirm / alert dialogs — same language as End Work Trip (centered copy,
+   outline Cancel + filled primary, no divider). F7 appends .modal to <body>. */
+.modal:not(.modal-preloader):not(.picker-modal) {
+    width: 300px;
+    margin-left: -150px;
+    border-radius: 16px;
+    overflow: hidden;
+    color: #1c2333;
+    box-shadow: 0 16px 40px rgba(16, 24, 40, .18);
+}
+.modal:not(.modal-preloader):not(.picker-modal) .modal-inner {
+    padding: 20px 20px 8px;
+    text-align: center;
+}
+.modal:not(.modal-preloader):not(.picker-modal) .modal-inner:after,
+.modal:not(.modal-preloader):not(.picker-modal) .modal-inner:before {
+    display: none !important;
+}
+.modal:not(.modal-preloader):not(.picker-modal) .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1c2333;
+    text-align: center;
+}
+.modal:not(.modal-preloader):not(.picker-modal) .modal-title + .modal-text {
+    margin-top: 8px;
+}
+.modal:not(.modal-preloader):not(.picker-modal) .modal-text {
+    font-size: 13px;
+    line-height: 1.45;
+    color: #8b93a7;
+    text-align: center;
+}
+.modal:not(.modal-preloader):not(.picker-modal) .modal-buttons {
+    height: auto;
+    padding: 8px 16px 16px;
+    justify-content: stretch;
+    -webkit-justify-content: stretch;
+    gap: 10px;
+    border-top: none;
+}
+.modal:not(.modal-preloader):not(.picker-modal) .modal-buttons:before,
+.modal:not(.modal-preloader):not(.picker-modal) .modal-button:after,
+.modal:not(.modal-preloader):not(.picker-modal) .modal-button + .modal-button:before {
+    display: none !important;
+}
+.modal:not(.modal-preloader):not(.picker-modal) .modal-button {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    height: 40px !important;
+    line-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 8px !important;
+    border-radius: 12px !important;
+    text-transform: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    min-width: 0;
+    overflow: hidden;
+    background: #fff !important;
+    border: 1px solid #d0d5dd !important;
+    color: #1c2333 !important;
+}
+.modal:not(.modal-preloader):not(.picker-modal) .modal-button:last-child {
+    background: #2a3086 !important;
+    border: 1px solid #2a3086 !important;
+    color: #fff !important;
+}
+.modal:not(.modal-preloader):not(.picker-modal).modal-no-buttons .modal-inner {
+    padding-bottom: 20px;
+}

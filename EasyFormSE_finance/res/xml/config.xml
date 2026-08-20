@@ -107,6 +107,9 @@
     <feature name="video_plugin">
         <param name="android-package" value="com.sky.atc.easyformse.video_plugin" />
     </feature>
+    <feature name="LmsVideoThumb">
+        <param name="android-package" value="com.sky.atc.easyformse.LmsVideoThumbPlugin" />
+    </feature>
 
     <feature name="pdf_download">
         <param name="android-package" value="com.sky.atc.easyformse.pdf_download" />

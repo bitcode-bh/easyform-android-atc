@@ -519,3 +519,51 @@ body { animation: page-in 0.28s ease both; }
   color: #9ca3af !important;
   font-size: 16px !important;
 }
+
+/* F7 9 dialogs — same confirm language as Home / native JS confirm. */
+.dialog {
+  border-radius: 16px !important;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(16, 24, 40, .18) !important;
+}
+.dialog .dialog-inner {
+  padding: 20px 20px 8px !important;
+  text-align: center;
+}
+.dialog .dialog-title {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: #1c2333 !important;
+  text-align: center;
+}
+.dialog .dialog-text {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  color: #8b93a7 !important;
+  text-align: center;
+  margin-top: 8px !important;
+}
+.dialog .dialog-buttons {
+  padding: 8px 16px 16px !important;
+  justify-content: stretch;
+  gap: 10px;
+  border-top: none !important;
+}
+.dialog .dialog-button {
+  flex: 1;
+  height: 40px !important;
+  line-height: 40px !important;
+  margin: 0 !important;
+  border-radius: 12px !important;
+  text-transform: none !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #fff !important;
+  border: 1px solid #d0d5dd !important;
+  color: #1c2333 !important;
+}
+.dialog .dialog-button:last-child {
+  background: #2a3086 !important;
+  border-color: #2a3086 !important;
+  color: #fff !important;
+}

@@ -174,6 +174,10 @@ function success_get_support_detail(e) {
 
             if (login_btn_clicked == 0) {
                 display_support_details();
+                if (window._support_info_refresh && typeof format_support_info === 'function') {
+                    window._support_info_refresh = false;
+                    format_support_info();
+                }
             }
             else {
                 // login button clicked and call for support
@@ -606,19 +610,15 @@ function check_remember_me(internet) {
     var d = new Date();
     var curr_date = d.toDateString();
     var last_supportCall_date = localStorage.getItem("supportCall_date");
-    if (last_supportCall_date == "" || last_supportCall_date == null || last_supportCall_date == undefined) {
+    var stored_support = '';
+    try { stored_support = JSON.parse(storage.getItem('support_refrences1')); } catch (e1) { stored_support = ''; }
+    var support_empty = (stored_support == null || stored_support === '' || stored_support === 'null' || stored_support === 'N/A');
+    if (support_empty || last_supportCall_date == "" || last_supportCall_date == null || last_supportCall_date == undefined || curr_date != last_supportCall_date) {
         localStorage.setItem("supportCall_date", curr_date);
         get_support_detail();
     }
     else {
-        if (curr_date != last_supportCall_date) {
-            localStorage.setItem("supportCall_date", curr_date);
-            get_support_detail();
-        }
-        else {
-            //display support details(help+bottomLogo) without support service call [03092020]
-            display_support_details();
-        }
+        display_support_details();
     }
 
     loading_hide();
@@ -1970,6 +1970,21 @@ function onfail(e) {
 //}
 
 function show_pass() {
+    var field = document.getElementById('txtpassword');
+    var caretStart = 0;
+    var caretEnd = 0;
+    if (field) {
+        try {
+            caretStart = field.selectionStart;
+            caretEnd = field.selectionEnd;
+        } catch (e) {
+            caretStart = field.value.length;
+            caretEnd = caretStart;
+        }
+        if (caretStart == null) caretStart = field.value.length;
+        if (caretEnd == null) caretEnd = caretStart;
+    }
+
     var view_status = $("#btn_show_pass").attr("name");
     if (view_status == 0) {
         $("#btn_show_pass").attr("name", "1");
@@ -1984,17 +1999,18 @@ function show_pass() {
         $("#btn_show_pass").addClass('fa-eye-slash');
     }
 
-    // Tapping the eye icon must not close the keyboard. The td's own
-    // onmousedown already blocks the focus-shift that causes that, but
-    // switching #txtpassword's type attribute can itself drop focus on
-    // some Android WebView versions -- so restore it here, with the
-    // cursor back at the end rather than jumping to the start.
-    var field = document.getElementById('txtpassword');
-    if (field && document.activeElement !== field) {
-        field.focus();
-        var end = field.value.length;
-        try { field.setSelectionRange(end, end); } catch (e) { }
+    // Tapping the eye must not close the keyboard, and changing type
+    // (password <-> text) resets the caret to 0 on Android WebView.
+    // Put focus and the caret back where they were, not at start/end.
+    function restoreCaret() {
+        if (!field) return;
+        if (document.activeElement !== field) {
+            field.focus();
+        }
+        try { field.setSelectionRange(caretStart, caretEnd); } catch (e) { }
     }
+    restoreCaret();
+    setTimeout(restoreCaret, 0);
 
 
     //setTimeout(function () {
@@ -2012,11 +2028,31 @@ function show_company_info() {
     // before showing. Defined in Login.html (page-specific presentation);
     // guarded so any other page calling this still works unchanged.
     try {
+        if (typeof display_support_details === 'function') {
+            display_support_details();
+        }
         if (typeof format_support_info === 'function') {
             format_support_info();
         }
+        var stored = '';
+        try { stored = JSON.parse(storage.getItem('support_refrences1')); } catch (e2) { stored = ''; }
+        if (stored == null || stored === '' || stored === 'null' || stored === 'N/A') {
+            window._support_info_refresh = true;
+            get_support_detail();
+        }
     } catch (e) { }
     myApp.popover('.popover-menu', clickedLink);
+    // F7 sizes the popover against the Need Help FAB (bottom of screen)
+    // and writes an inline height that clips the body. Pin it to the
+    // bottom and let CSS max-height + inner scroll show every row.
+    setTimeout(function () {
+        var p = document.querySelector('.sp-popover');
+        if (!p) return;
+        p.style.height = 'auto';
+        p.style.top = 'auto';
+        p.style.bottom = '0px';
+        p.style.maxHeight = '90vh';
+    }, 0);
 }
 
 function send_mail_for_imei() {

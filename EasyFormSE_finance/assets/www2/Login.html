@@ -339,13 +339,22 @@
                             // deliberately never re-runs on resize/keyboard events.
                             (function () {
                                 function pinNeedHelpButton() {
-                                    var btn = document.getElementById('btn_company_info');
-                                    if (!btn) return;
                                     var bottomMargin = 16;
-                                    var h = btn.offsetHeight || 44;
-                                    btn.style.position = 'fixed';
-                                    btn.style.top = (window.innerHeight - bottomMargin - h) + 'px';
-                                    btn.style.bottom = 'auto';
+                                    var help = document.getElementById('btn_company_info');
+                                    if (help) {
+                                        var h = help.offsetHeight || 44;
+                                        help.style.position = 'fixed';
+                                        help.style.top = (window.innerHeight - bottomMargin - h) + 'px';
+                                        help.style.bottom = 'auto';
+                                    }
+                                    var info = document.getElementById('btn_app_info');
+                                    if (info) {
+                                        var ih = info.offsetHeight || 48;
+                                        info.style.position = 'fixed';
+                                        info.style.top = (window.innerHeight - bottomMargin - ih) + 'px';
+                                        info.style.bottom = 'auto';
+                                        info.style.left = '16px';
+                                    }
                                 }
                                 if (document.readyState === 'complete') {
                                     setTimeout(pinNeedHelpButton, 0);
@@ -399,7 +408,7 @@
                                 </ul>
                             </div>
 
-                            <div class="list-block inputs-list login_user_data" style="margin-top: 15px">
+                            <div class="list-block inputs-list login_user_data" style="margin-top: 35px">
                                 <ul>
                                     <li>
                                         <div class="item-content">
@@ -423,8 +432,8 @@
                                                             <td style="width: 80%">
                                                                 <input type="password" id="txtpassword" class="floated" autocomplete="off" placeholder="Password">
                                                             </td>
-                                                            <td onmousedown="event.preventDefault()" onclick="show_pass()" style="width: 20%; vertical-align: super; text-align: right; padding-right: 0">
-                                                                <i id="btn_show_pass" name="0" class="icon fa fa-eye-slash" style="font-size: 16px;"></i>
+                                                            <td onmousedown="event.preventDefault()" onclick="show_pass()" style="width: 20px; vertical-align: middle; text-align: right; padding: 0">
+                                                                <i id="btn_show_pass" name="0" class="icon fa fa-eye-slash"></i>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -441,7 +450,7 @@
                             <div class="list-block" style="margin-top: 8%">
                                 <ul>
                                     <li>
-                                        <label class="label-checkbox item-content">
+                                        <label class="label-checkbox item-content login-remember">
                                             <input type="checkbox" id="chk_remember_me" checked>
                                             <div class="item-media" style="min-width:25px;"><i class="icon icon-form-checkbox"></i></div>
                                             <div class="item-inner" style="font-size:15px;">
@@ -529,7 +538,7 @@
                     </div>
                 </div>
                 <div class="sp-body">
-                    <div class="content-block" id="test_support" style="padding: 0; margin: 0; max-height: 40vh; overflow: auto"></div>
+                    <div class="content-block" id="test_support" style="padding: 0; margin: 0;"></div>
                     <div id="sp_formatted"></div>
 
                     <div class="sp-row">
@@ -608,14 +617,21 @@
                     return '<a href="#" onclick="open_mail(\'' + jsStr(addr) + '\'); return false;">' + esc(addr) + '</a>';
                 }
 
+                function explodeSupportText(html) {
+                    var s = String(html || '').replace(/\u00a0/g, ' ').replace(/&nbsp;/gi, ' ');
+                    s = s.replace(/<br\s*\/?>/gi, '\n');
+                    s = s.replace(/<\/(div|p|tr|li|h[1-6]|table|section)>/gi, '\n');
+                    s = s.replace(/<[^>]+>/g, ' ');
+                    s = s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+                    s = s.replace(/(Timings?\s*:|Landline\s*\d*\s*:|(?:IT\s+)?Support\s+Number\s*:|Emergency[^:\n]{0,40}:|E-?mails?\s*:|WhatsApp\s*:|Mobile\s*(?:No\.?|Number)?\s*:|Toll[\s-]?free\s*:|Address\s*:|Website\s*:|Support\s*Hours?\s*:)/gi, '\n$1');
+                    return s;
+                }
+
                 window.format_support_info = function () {
                     var src = document.getElementById('test_support');
                     var out = document.getElementById('sp_formatted');
                     if (!src || !out) return;
 
-                    // Any fallback below must also clear the header hours, or a
-                    // previous run's hours would stay in the header while the
-                    // body reverts to the raw server text.
                     function resetAll() {
                         out.innerHTML = '';
                         src.style.display = '';
@@ -624,31 +640,33 @@
                     }
 
                     try {
-                        var raw = src.innerHTML || '';
-                        // Another tenant may legitimately send real markup; if so,
-                        // leave it exactly as the server intended.
-                        if (/<(?!br\s*\/?>)[a-z][\s\S]*>/i.test(raw)) { resetAll(); return; }
+                        var raw = explodeSupportText(src.innerHTML || '');
+                        var textFallback = (src.innerText || src.textContent || '').replace(/\u00a0/g, ' ');
+                        if (textFallback && textFallback.trim().length > raw.trim().length) {
+                            raw = explodeSupportText(textFallback);
+                        }
 
-                        var lines = raw.replace(/<br\s*\/?>/gi, '\n').split('\n');
+                        var lines = raw.split(/\r?\n/);
                         var days = '', timings = '', landlines = [], emergency = '', email = '', others = [];
 
                         for (var i = 0; i < lines.length; i++) {
-                            var line = lines[i].replace(/&nbsp;/gi, ' ').trim();
-                            if (!line) continue;
+                            var line = lines[i].replace(/\s+/g, ' ').trim();
+                            if (!line || /^n\/a$/i.test(line)) continue;
 
                             var m;
-                            if (/^timings?\s*:/i.test(line)) {
-                                timings = line.replace(/^timings?\s*:\s*/i, '').trim();
+                            if (/^timings?\s*:/i.test(line) || /^support\s*hours?\s*:/i.test(line)) {
+                                timings = line.replace(/^(timings?|support\s*hours?)\s*:\s*/i, '').trim();
+                            } else if ((m = line.match(/^(?:(?:it\s+)?support\s+number|landline\s*\d*)\s*:\s*(.+)$/i))) {
+                                landlines.push(m[1].trim());
                             } else if ((m = line.match(/^landline\s*\d*\s*:\s*(.+)$/i))) {
                                 landlines.push(m[1].trim());
                             } else if (/emergency/i.test(line) && (m = line.match(/:\s*(.+)$/))) {
                                 emergency = m[1].trim();
-                            } else if ((m = line.match(/^e-?mail\s*:\s*(.+)$/i))) {
+                            } else if ((m = line.match(/^e-?mails?\s*:\s*(.+)$/i))) {
                                 email = m[1].trim();
-                            } else if (/(mon|tue|wed|thu|fri|sat|sun)/i.test(line) && line.indexOf(':') === -1) {
-                                days = line;
+                            } else if (/(mon|tue|wed|thu|fri|sat|sun)/i.test(line) && !/:\s*\d/.test(line)) {
+                                days = line.replace(/^days?\s*:\s*/i, '');
                             } else if (/^(it\s+)?support\s+number$/i.test(line)) {
-                                // bare heading for the landlines below -- no row of its own
                                 continue;
                             } else {
                                 others.push(line);
@@ -657,8 +675,8 @@
 
                         var html = '';
                         var hoursHtml = '';
+                        var hoursLabel = ((days ? days : '') + (days && timings ? ' · ' : '') + (timings ? timings : '')).trim();
 
-                        // Support hours live in the navy header, not the body.
                         var hoursEl = document.getElementById('sp_header_hours');
                         if (hoursEl) {
                             if (days) {
@@ -669,13 +687,10 @@
                                 hoursHtml += '<span class="sp-hours-item">' + ICONS.clock + '<span>' + esc(timings) + '</span></span>';
                             }
                             hoursEl.innerHTML = hoursHtml;
-                            // CSS default is display:none (collapsed until
-                            // there's content); 'flex' is what .sp-header-hours
-                            // is styled as, not '' (which would just fall back
-                            // to that none and never show it).
                             hoursEl.style.display = hoursHtml ? 'flex' : 'none';
                         }
 
+                        if (hoursLabel) html += row('clock', 'Support Hours', esc(hoursLabel));
                         if (landlines.length) {
                             var v = '';
                             for (var j = 0; j < landlines.length; j++) {
@@ -690,20 +705,24 @@
                         for (var k = 0; k < others.length; k++) {
                             var o = others[k], oi = o.indexOf(':');
                             if (oi > 0) {
-                                html += row('info', o.slice(0, oi).trim(), esc(o.slice(oi + 1).trim()));
+                                var lab = o.slice(0, oi).trim();
+                                var val = o.slice(oi + 1).trim();
+                                if (/phone|mobile|whatsapp|toll|fax|landline|number/i.test(lab) && /[\d+]/.test(val)) {
+                                    html += row('phone', lab, telLink(val));
+                                } else if (/mail/i.test(lab)) {
+                                    html += row('mail', lab, mailLink(val));
+                                } else {
+                                    html += row('info', lab, esc(val));
+                                }
                             } else {
                                 html += row('info', o, '');
                             }
                         }
 
-                        // Only a full revert to the raw block if NEITHER the
-                        // header hours NOR any body row were produced --
-                        // hours alone (no other rows) is a valid, complete
-                        // result and must not wipe what was just set above.
                         if (!html && !hoursHtml) { resetAll(); return; }
 
                         out.innerHTML = html;
-                        src.style.display = 'none';   // replaced, not discarded
+                        src.style.display = 'none';
                     } catch (e) {
                         resetAll();
                     }

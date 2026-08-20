@@ -1372,17 +1372,25 @@
                     var tab = document.getElementById('btn_start_trip');
                     var isActive = tab && tab.classList.contains('active');
                     if (isActive) {
-                        // Confirm before stopping — this is a behavior change only; the
-                        // actual stop still goes through the existing, unmodified
-                        // stop_trip_manualy_from_module_listing() (the deliberately
-                        // lightweight Home-button path, kept separate from the full
-                        // TripMapUi flow on purpose).
-                        if (typeof myApp !== 'undefined' && myApp.confirm) {
-                            myApp.confirm('Are you sure you want to stop the trip?', 'Stop Trip', function () {
-                                if (typeof stop_trip_manualy_from_module_listing === 'function') {
-                                    stop_trip_manualy_from_module_listing();
-                                }
+                        if (typeof myApp !== 'undefined' && myApp.modal) {
+                            var endTripModal = myApp.modal({
+                                title: 'End Work Trip?',
+                                text: 'Your progress and completed tasks will be saved.',
+                                buttons: [
+                                    { text: 'Cancel' },
+                                    {
+                                        text: 'Finish Trip',
+                                        bold: true,
+                                        onClick: function () {
+                                            if (typeof stop_trip_manualy_from_module_listing === 'function') {
+                                                stop_trip_manualy_from_module_listing();
+                                            }
+                                        }
+                                    }
+                                ]
                             });
+                            var $m = endTripModal ? $(endTripModal) : $('.modal.modal-in').last();
+                            $m.addClass('end-trip-modal');
                         } else if (typeof stop_trip_manualy_from_module_listing === 'function') {
                             stop_trip_manualy_from_module_listing();
                         }

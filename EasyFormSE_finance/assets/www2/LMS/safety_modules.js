@@ -185,6 +185,18 @@ function render_safety_module_cards() {
     document.querySelectorAll('#dv_Module_List .sample-module-card').forEach(function (c, i) {
         c.style.animationDelay = (i * 40) + 'ms';
     });
+
+    if (typeof lms_bind_video_thumb === 'function' && lms_module_first_video) {
+        document.querySelectorAll('#dv_Module_List .sample-module-card').forEach(function (card) {
+            var mid = card.getAttribute('Module_Id');
+            var img = card.querySelector('.sample-module-image img');
+            var videoUrl = lms_module_first_video[mid] || lms_module_first_video[String(mid)];
+            if (!img || !videoUrl) return;
+            var cms = img.getAttribute('src');
+            if (typeof lms_is_missing_cms_thumb === 'function' && !lms_is_missing_cms_thumb(cms)) return;
+            lms_bind_video_thumb(img, 'mod_' + mid, videoUrl);
+        });
+    }
 }
 
 function bind_safety_module_controls() {
@@ -360,6 +372,9 @@ function lms_fetch_all_module_skills(modules, onDone) {
 // same lms_video_durations_modules cache (keyed by Skill_Id) the library-wide
 // KPI total already uses — powers the per-card "watched / total" row.
 var lms_module_video_totals = {};
+// First lesson Video_Link per module — used to generate a listing-card thumb
+// locally when CMS did not upload Thumbnail_link.
+var lms_module_first_video = {};
 
 function lms_compute_module_total_video_time() {
     if (lms_module_total_time_started) return;
@@ -372,6 +387,7 @@ function lms_compute_module_total_video_time() {
             try { cached = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { cached = {}; }
             var totals = {};
             lms_module_skill_index = {};
+            lms_module_first_video = {};
             allSkills.forEach(function (s) {
                 var modId = String(s._lms_module_id);
                 var sid = String(s.Skill_Id);
@@ -380,6 +396,9 @@ function lms_compute_module_total_video_time() {
                     if (!lms_module_skill_index[modId]) lms_module_skill_index[modId] = [];
                     if (lms_module_skill_index[modId].indexOf(sid) === -1) {
                         lms_module_skill_index[modId].push(sid);
+                    }
+                    if (s.Video_Link && !lms_module_first_video[modId]) {
+                        lms_module_first_video[modId] = s.Video_Link;
                     }
                     if (typeof dur === 'number') {
                         totals[modId] = (totals[modId] || 0) + dur;
@@ -840,6 +859,15 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 str += '</div> ';
 
                 $(".lesson-preview-list").append(str);
+
+                if (typeof lms_bind_video_thumb === 'function' && Video_Link
+                        && (typeof lms_is_missing_cms_thumb !== 'function' || lms_is_missing_cms_thumb(Thumbnail_link))) {
+                    var lessonImg = $(".lesson-preview-list .lesson-preview-card").last().find('.lesson-preview-thumb img')[0];
+                    if (lessonImg) lms_bind_video_thumb(lessonImg, 'skill_' + Skill_Id, Video_Link);
+                }
+                if (Video_Link && !lms_module_first_video[String(Module_Id)]) {
+                    lms_module_first_video[String(Module_Id)] = Video_Link;
+                }
 
             }
 

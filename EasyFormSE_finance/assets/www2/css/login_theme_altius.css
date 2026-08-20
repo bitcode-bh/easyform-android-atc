@@ -34,11 +34,9 @@
    black. PNG rather than JPEG for the same reason in reverse: JPEG's block
    compression rings around this image's hard flat-colour edges.
 
-   Against the white ground the page reverts to the same light register as
-   the original faceted background, so the scrim here is a heavier white
-   wash than a typical photo backdrop needs -- the ask was specifically for
-   the photo to read as faded, secondary texture behind the form, not a
-   photograph the form sits on top of.
+   The PNG itself now carries the look (soft #eaf1fb rings, a slightly
+   stronger India fill, tower faded into white). Keep only a light scrim
+   so form text stays readable -- a heavy wash would hide that artwork.
 
    background-size here is `var(--login-bg-size, cover)`, not the keyword
    `cover` directly: with adjustResize (this Activity's soft-keyboard mode),
@@ -59,16 +57,7 @@
 .page[data-page="list-view"],
 .page[data-page="list-view"] .page-content {
     background-color: #ffffff;
-    /* Fade is no longer a straight top-to-bottom ramp: the top (coverage
-       rings/logo) is pushed to a heavier wash than the rest of the page,
-       while the bottom (tower) is brought back down to how faded it read
-       before that heavier wash was applied across the whole image. */
-    background-image:
-        linear-gradient(180deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.83) 46%, rgba(255,255,255,0.86) 100%),
-        url("../images/login_bg_tower.png") !important;
-    background-repeat: no-repeat, no-repeat;
-    background-size: var(--login-bg-size, cover), var(--login-bg-size, cover);
-    background-position: center top, center top;
+    background-image: none !important;
 }
 
 /* ---- Logo: the base64 PNG login.js injects into #img_bottom has an opaque
@@ -91,6 +80,9 @@
     background: transparent;
     margin-left: 16px;
     margin-right: 16px;
+    /* 15px original + 20px shift of the whole form stack toward the bottom.
+       !important beats the inline margin-top:15px on Login.html. */
+    margin-top: 35px !important;
 }
 .login_user_data .item-content {
     background: #fff;
@@ -98,8 +90,13 @@
     /* Same radius as the Home dashboard's card (.hd-widget in
        home_dashboard.css) so the two screens read as one design language. */
     border-radius: 12px;
-    padding: 1px 14px;
-    margin-bottom: 9px;
+    box-sizing: border-box;
+    height: 40px !important;
+    min-height: 40px !important;
+    /* 20px from the left border to the person/lock icon; 12px on the
+       right so the password eye matches that same inset. */
+    padding: 0 12px 0 20px;
+    margin-bottom: 12px;
     position: relative;
     display: flex;
     align-items: center;
@@ -117,6 +114,8 @@
     border: none !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     margin-bottom: 0 !important;
     min-height: 0 !important;
     display: flex !important;
@@ -124,12 +123,13 @@
 }
 .login_user_data .item-media {
     color: var(--altius-navy);
-    margin-right: 10px;
+    margin-right: 12px;
     height: auto !important;
     min-height: 0 !important;
+    min-width: 24px !important;
+    width: 24px !important;
     margin-bottom: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding: 0 !important;
     align-self: center !important;
 }
 .login_user_data .item-inner::after,
@@ -153,9 +153,6 @@
     display: flex !important;
     align-items: center !important;
 }
-/* "Slimmer" is the box height, not the text -- font-size stays at the
-   original 15px (readable input text) while the box around it (item-content
-   padding above, .item-input-field height here) is what's been tightened. */
 .login_user_data input.floated {
     font-size: 15px;
     line-height: 20px;
@@ -177,9 +174,26 @@
 .login_user_data td {
     vertical-align: middle !important;
 }
+.login_user_data table td:last-child {
+    width: 20px !important;
+    padding: 0 !important;
+    text-align: right !important;
+}
 #btn_show_pass {
     color: #667085;
     font-size: 16px !important;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    line-height: 1;
+    width: auto !important;
+    height: auto !important;
+    margin: 0;
+    padding: 0;
+}
+#txtpassword {
+    padding-right: 28px !important;
 }
 
 /* ---- Remember Me: F7 ships a square checkbox; the target design uses a
@@ -207,6 +221,19 @@ label.label-checkbox i.icon-form-checkbox:after {
     background-size: 78% auto !important;
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23344054' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") !important;
 }
+
+/* Remember Me: no full-row grey/ripple flash — only the tick appears/hides. */
+label.login-remember,
+label.login-remember.active-state,
+html:not(.watch-active-state) label.login-remember:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    -webkit-transition: none !important;
+    transition: none !important;
+}
+label.login-remember .ripple-wave {
+    display: none !important;
+}
 #lbl_forgot_password {
     color: var(--altius-navy) !important;
     font-weight: 400;
@@ -232,17 +259,32 @@ label.label-checkbox i.icon-form-checkbox:after {
        actually fixes the "not centered" look. */
     letter-spacing: normal;
     text-align: center;
-    height: auto;
-    line-height: 1.4;
-    padding: 10px 0;
-    font-size: 14px;
+    height: 40px !important;
+    min-height: 40px !important;
+    line-height: 40px !important;
+    padding: 0 !important;
+    font-size: 15px;
 }
 
-/* ---- "i" app-info trigger: hidden per request. Not deleted -- it's the
-   5-tap debug/support entry point (check_5_times_click()), still reachable
-   in code, just not shown on this screen. ---- */
+/* ---- 5-tap admin/app-info: invisible hit target, bottom-left.
+   display:none was hiding it entirely so taps never registered. opacity:0
+   keeps a real tappable box without showing the "i" icon. ---- */
 #btn_app_info {
-    display: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    width: 48px !important;
+    height: 48px !important;
+    left: 16px !important;
+    right: auto !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    z-index: 1500;
+    pointer-events: auto;
+}
+#btn_app_info i {
+    color: transparent !important;
 }
 
 /* ---- "Need Help?" floating button — recolored to brand, and shrunk from
@@ -286,17 +328,22 @@ label.label-checkbox i.icon-form-checkbox:after {
     right: 0 !important;
     bottom: 0 !important;
     top: auto !important;
+    height: auto !important;
+    max-height: 90vh !important;
     margin: 0 !important;
     border-radius: 0 !important;
 }
 .sp-popover .popover-inner {
     /* Requested flat grey for the non-card info area (the plain rows --
        Support Number/Emergency/Email/IMEI/APK -- as opposed to a
-       distinct card surface). */
+       distinct card surface). overflow:auto so long tenant support
+       text is reachable instead of being clipped. */
     background: #e0e0e0;
     padding: 0;
     border-radius: 0;
-    overflow: hidden;
+    overflow: auto;
+    max-height: 90vh;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Slim, solid, square -- no dotted texture, no rounded corners. Column
@@ -358,16 +405,18 @@ label.label-checkbox i.icon-form-checkbox:after {
 .sp-header-hours {
     display: none;
     align-items: center;
+    flex-wrap: wrap;
     gap: 6px;
     color: rgba(255,255,255,0.68);
     font-size: 10px;
     font-weight: 400;
+    max-width: 100%;
 }
 .sp-hours-item {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    white-space: nowrap;
+    white-space: normal;
 }
 .sp-hours-item svg { width: 11px; height: 11px; flex: 0 0 auto; color: rgba(255,255,255,0.65); }
 .sp-hours-divider {
@@ -376,7 +425,7 @@ label.label-checkbox i.icon-form-checkbox:after {
     background: rgba(255,255,255,0.3);
 }
 
-.sp-body { padding: 12px 18px 6px; max-height: 60vh; overflow-y: auto; }
+.sp-body { padding: 12px 18px 6px; max-height: none; overflow: visible; }
 
 /* Generic styling for #test_support's arbitrary server HTML -- links and
    line-broken text, not fixed rows (the markup itself is tenant-defined). */
@@ -384,6 +433,9 @@ label.label-checkbox i.icon-form-checkbox:after {
     font-size: 12.5px;
     color: var(--app-ink, #1c2333);
     line-height: 1.6;
+    max-height: none !important;
+    overflow: visible !important;
+    white-space: pre-wrap;
 }
 .sp-body #test_support a {
     color: var(--altius-navy);

@@ -256,3 +256,11 @@
 #div_home_dashboard .hd-btn-end {
     background: var(--c-danger, #dc2626);
 }
+
+/* End Work Trip — shared confirm chrome lives in styles_low.css; only the
+   destructive primary differs. */
+.modal.end-trip-modal .modal-button:last-child {
+    background: #e25555 !important;
+    border: 1px solid #e25555 !important;
+    color: #fff !important;
+}
