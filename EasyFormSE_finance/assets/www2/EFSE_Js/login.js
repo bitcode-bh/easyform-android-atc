@@ -2572,6 +2572,9 @@ function clear_localStorage() {
         trip_status = "";
     }
     let trip_tid = localStorage.getItem('trip_tid');
+    if (trip_tid == "" || trip_tid == null || trip_tid == undefined) {
+        trip_tid = "";
+    }
     let trip_ser_task_id = localStorage.getItem('trip_ser_task_id');
     let trip_Array = localStorage.getItem("trip_Array");
     if (trip_Array == "" || trip_Array == null || trip_Array == undefined) {

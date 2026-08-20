@@ -111,6 +111,7 @@ function start_stop_trip_on_attendace(trip_status, t_tid) {
     try {
         storage.setItem('crash_status', JSON.stringify('7'));               //when app is killed before start/stop trip
         localStorage.setItem('trip_status', trip_status);
+        localStorage.setItem('trip_tid', t_tid);
 
         if (btnJsonObj.length > 0) {
             // buttons are available in task form (task created from notification)
