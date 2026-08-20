@@ -61,7 +61,6 @@ function render_assessment_cards() {
         var Name = assessment.Name;
         var Description = assessment.Description;
         var Assessment_Schedule_Id = assessment.Assessment_Schedule_Id;
-        var Thumbnail_link = assessment.Thumbnail_link || "images/bg2.jpg";
         var Progress = Math.round(get_lms_item_progress(assessment));
         var Score = assessment.Score === "" || assessment.Score == null ? "0" : assessment.Score;
         var Tag = assessment.Tag != null ? assessment.Tag : assessment.tag;
@@ -69,16 +68,36 @@ function render_assessment_cards() {
         var SubmitedQuestion = assessment.SubmitedQuestion == null || assessment.SubmitedQuestion === "" ? 0 : assessment.SubmitedQuestion;
         var onclick_str = "get_questionlog_by_assessment_id('" + Assessment_Id + "', '" + Assessment_Schedule_Id + "', '" + Progress + "')";
 
-        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\'); if(typeof lms_apply_corner_contrast===\'function\') lms_apply_corner_contrast(this.src, this.parentNode);">';
-        if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag">' + Tag + '</span>';
+        // Exact same card as Safety Modules (sample-module-image/-tag/-score-tag,
+        // same classes) minus the <img> -- so the two listings read as one
+        // design language. img-ready is added directly (there's no <img
+        // onload> to add it for us) so .sample-module-image's shimmer
+        // skeleton -- meant to hide while a thumbnail decodes -- doesn't
+        // animate forever with nothing to wait for. No watch-time badge --
+        // that's a video-specific stat Assessments (quizzes) don't have.
+        //
+        // .sample-module-image's fill is a light blue here (assessments.css,
+        // #dv_Assessments_List-scoped -- Modules keeps its neutral
+        // --c-surface-2 placeholder), so Tag/Score are back on .on-light-bg
+        // (dark text) -- the default (photo-backdrop, white-text) variant
+        // would be low-contrast against a fill this light.
+        // lms_apply_corner_contrast() never runs with no <img> to sample, so
+        // which variant is correct is a static call here, not sampled.
+        str += '<div class="sample-module-card" Module_Id="' + Assessment_Id + '" onclick="' + onclick_str + '"><div class="sample-module-image img-ready">';
+        if (Tag !== "" && Tag != null) str += '<span class="sample-module-tag on-light-bg">' + Tag + '</span>';
         if (SubmitedQuestion > 0) {
-            str += '<span class="sample-score-tag"><span class="sample-score-label">Score:</span> ';
+            str += '<span class="sample-score-tag on-light-bg"><span class="sample-score-label">Score:</span> ';
             str += '<span class="sample-score-current">' + Score + '</span><span class="sample-score-sep">/</span>';
             str += '<span class="sample-score-total">' + TotalQuestion + '</span></span>';
         }
         str += '</div><div class="sample-module-card-body"><div class="sample-module-title">' + Name + '</div><div class="sample-module-desc">' + Description + '</div>';
         str += '<div class="sample-module-meta"><div class="sample-module-lessons"><span class="sample-module-help"><i class="fa fa-book-open"></i></span><span class="sample-lession-count">' + TotalQuestion + ' Questions</span></div><div class="sample-module-percent">' + Progress + '%</div></div>';
-        str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div></div></div>';
+        // .sample-module-card-body closes HERE, same as Safety Modules --
+        // .sample-module-progress must be a sibling after it (the card's own
+        // last child), not nested inside it, or it inherits the body's 16px/
+        // 6px padding instead of sitting flush per its own CSS comment
+        // ("Sits outside the padded card body as the card's own last child").
+        str += '</div><div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div></div>';
     });
     $("#dv_Assessments_List").html(str);
 }
@@ -371,8 +390,20 @@ function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id,
     });
     loading();
 
+    // TEMP DEBUG (2026-08-19 round 2): reported again after a logout->login
+    // cycle specifically (not a reinstall this time -- b0a7ff4 already
+    // confirmed fixed for that path). storage.getItem('user_id') is the
+    // identity both this lookup and the original submit
+    // (submit_question_by_assessment_id) key off; if clear_localStorage()
+    // (login.js, runs on every login) re-seeds it to something that doesn't
+    // match what the submit was recorded under, this call would legitimately
+    // find nothing -- that's a different failure mode than the fresh-install
+    // case and needs its own evidence. Remove once root-caused.
+    console.log('[ASSESS_DEBUG2] user_id_raw=' + storage.getItem('user_id') + ' user_id_parsed=' + user_id + ' role_id_array=' + localStorage.getItem('role_id_array') + ' Assessment_Id=' + Assessment_Id + ' Progress(listing)=' + Progress);
+
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Assessment_Question_Log_Master_ByAssessmentId', JSON.stringify(Param_obj), function (e) {
         var responseText = e.responseText;
+        console.log('[ASSESS_DEBUG2] log response raw=' + responseText);
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
         if (status == 1) {
@@ -384,6 +415,7 @@ function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id,
             var message = myArray[0].message;
             log_data = [];
         }
+        console.log('[ASSESS_DEBUG2] log_data.length=' + log_data.length);
 
         loading_hide();
         get_question_by_assessment_id(Assessment_Id, Progress)
@@ -411,6 +443,21 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
             let t_log_data = log_data;
             var merge_array = merge_question_data_assessments(data, t_log_data);
 
+            // Review/read-only mode used to be gated on Progress=="100" alone
+            // (the separate listing call's field) even though log_data --
+            // fetched right before this, from LMS_Select_Assessment_Question_
+            // Log_Master_ByAssessmentId, the actual prior-answers record --
+            // was sitting right here unused for that decision. Whenever the
+            // two disagreed, a real submission (log_data has rows) still
+            // opened fully editable, letting it be answered and submitted
+            // again. log_data is server-confirmed prior answers, not a
+            // fabricated value, so trusting it here is the real fix, not a
+            // client-side guess -- and it's the same identity (User_ID +
+            // Assessment_Id) the submit itself was written under, so unlike
+            // Progress it can't be thrown off by a listing-side role/cache
+            // mismatch.
+            var is_submitted = (Progress == "100") || (Array.isArray(t_log_data) && t_log_data.length > 0);
+
             for (let i = 0; i < merge_array.length; i++) {
                 let Assessment_Que_Id = merge_array[i].Assessment_Que_Id;
                 let Question_Name = merge_array[i].Question_Name;
@@ -429,7 +476,7 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                 for (let j = 0; j < optionsArray.length; j++) {
                     let op_text = optionsArray[j].trim();
 
-                    if (Progress == "100") {
+                    if (is_submitted) {
                         // log found
 
                         if (op_text === Valid_Answer) {
@@ -470,7 +517,7 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
             var qCurEl = document.getElementById('q_cur');
             var qHeader = document.getElementById('assessment_quiz_header');
             if (qTotalEl) qTotalEl.textContent = totalQ;
-            if (qCurEl) qCurEl.textContent = (Progress == "100") ? totalQ : 0;
+            if (qCurEl) qCurEl.textContent = is_submitted ? totalQ : 0;
             if (qHeader) qHeader.style.display = 'none';
 
             // Highlight any pre-checked option (prior answer / review mode) —
@@ -480,7 +527,7 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                 if (opt) opt.classList.add('selected');
             });
 
-            if (Progress == "100") {
+            if (is_submitted) {
                 $("#dv_Assessment_Question_List").find("input[type='radio']").attr("disabled", "disabled");
                 $("#dv_Assessment_Question_List").show();
             }
