@@ -1065,7 +1065,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
     private void startEndLocationInsert(Location location) {
 
-
+        if ("0".equalsIgnoreCase(tripstatus)) {
+            if (!isValidLocation(location)) {
+                return;
+            }
+        }
         location.setSpeed(0.0f);
 
         pointOneLat = location.getLatitude();
@@ -1845,5 +1849,38 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         }
 
         return null;
+    }
+
+    private boolean isValidLocation(Location location) {
+        if (location == null) {
+            return false;
+        }
+
+        double lat = location.getLatitude();
+        double lon = location.getLongitude();
+        float accuracy = location.getAccuracy();
+
+
+        if (lat == 0.0 && lon == 0.0) {
+            return false;
+        }
+        if (lat < -90.0 || lat > 90.0 || lon < -180.0 || lon > 180.0) {
+            return false;
+        }
+
+        if (accuracy <= 0 || accuracy > 50.0f) {
+           // Log.d("LOCATION_FILTER", "Rejected location due to poor accuracy: " + accuracy + "m");
+            return false;
+        }
+
+
+        long ageMillis = System.currentTimeMillis() - location.getTime();
+        if (ageMillis > 120000) {
+            //Log.d("LOCATION_FILTER", "Rejected stale/cached location fix. Age: " + ageMillis + "ms");
+            return false;
+        }
+
+
+        return true;
     }
 }
