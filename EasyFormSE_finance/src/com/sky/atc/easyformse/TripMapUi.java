@@ -13,6 +13,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -37,6 +41,7 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -546,9 +551,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         if (trip_status.equalsIgnoreCase("0")) {
 
 
-
-
-
             Cursor c4 = database
                     .rawQuery(
                             "select s_lat,s_lon,llat,llon from lat_plug where trip_shflag=0 and tid='" + tid + "'", null);
@@ -642,7 +644,18 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             c4.close();
 
         } else {
+            Location finalEndLocation = getFinalEndLocation();
+            if (finalEndLocation == null) {
 
+                Log.e("TRIP_END",
+                        "Unable to get valid END location.");
+
+                return;
+            }
+            s_lat = String.valueOf(finalEndLocation.getLatitude());
+            s_lon = String.valueOf(finalEndLocation.getLongitude());
+
+            accuracy1 = finalEndLocation.getAccuracy();
             //For Ending the trip
             editor.putString("llat", s_lat);
             editor.putString("llon", s_lon);
@@ -1727,5 +1740,110 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             }
         }
         return false;
+    }
+
+    private Location getFinalEndLocation() {
+
+        // First priority: latest accepted location from newfused.java
+        Location newFusedLocation =
+                newfused.getLatestValidLocation();
+
+        if (isValidEndLocation(newFusedLocation)) {
+
+//            Log.d("TRIP_END",
+//                    "Using NEWFUSED latest valid location: " +
+//                            newFusedLocation.getLatitude() + "," +
+//                            newFusedLocation.getLongitude() +
+//                            " accuracy=" +
+//                            newFusedLocation.getAccuracy());
+
+            return newFusedLocation;
+        }
+
+        Location trackMasterLocation =
+                getLastTrackMasterLocation();
+
+        if (trackMasterLocation != null) {
+
+            return trackMasterLocation;
+        }
+
+        return null;
+    }
+    private boolean isValidEndLocation(Location location) {
+
+        if (location == null) {
+            return false;
+        }
+
+        double lat = location.getLatitude();
+        double lon = location.getLongitude();
+        float accuracy = location.getAccuracy();
+
+        if (lat == 0.0 || lon == 0.0) {
+            return false;
+        }
+
+        if (Math.abs(lat) < 0.0001 || Math.abs(lon) < 0.0001) {
+            return false;
+        }
+
+        if (lat < -90.0 || lat > 90.0 ||
+                lon < -180.0 || lon > 180.0) {
+            return false;
+        }
+
+        if (accuracy <= 0 || accuracy > 45f) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private Location getLastTrackMasterLocation() {
+
+        Cursor cursor = null;
+
+        try {
+
+            cursor = database.rawQuery("SELECT lat, lon, accuracy " + "FROM track_master " + "WHERE lat IS NOT NULL " + "AND lon IS NOT NULL " + "ORDER BY date DESC LIMIT 1", null);
+
+            if (cursor.moveToFirst()) {
+
+                double lat = Double.parseDouble(cursor.getString(0));
+                double lon = Double.parseDouble(cursor.getString(1));
+
+                if (Double.isFinite(lat) &&
+                        Double.isFinite(lon) &&
+                        !(lat == 0.0 && lon == 0.0)) {
+
+                    Location fallback = new Location("track_master");
+
+                    fallback.setLatitude(lat);
+                    fallback.setLongitude(lon);
+
+
+//                    Log.d("TRIP_END_LOCATION",
+//                            "Using TRACK_MASTER fallback: " +
+//                                    lat + "," + lon +
+//                                    " accuracy=" + accuracy);
+
+                    return fallback;
+                }
+            }
+
+        } catch (Exception e) {
+
+            Log.e("TRIP_END_LOCATION",
+                    "Error getting track_master location", e);
+
+        } finally {
+
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return null;
     }
 }
