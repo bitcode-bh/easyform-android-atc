@@ -2648,7 +2648,7 @@ function clear_localStorage() {
     localStorage.setItem('user_list_feature_id', user_list_feature_id);
     localStorage.setItem('user_consent', user_consent);
 
-    if (Language == "") {
+    if (Language == "" || Language == null || Language == undefined || Language == "null" || Language == "udenfined") {
         localStorage.setItem('user_language', user_language);
     }
     else {
