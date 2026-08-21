@@ -554,7 +554,7 @@ public class newfused extends Service implements LocationListener {
 
             // Reject Kalman output if correction is implausibly large (> 100m)
             // Indicates filter state corruption (e.g., from mock locations)
-            if (kalmanCorrection[0] > 150f) {
+            if (kalmanCorrection[0] > 100f) {
                 Log.w("LOCATION_FILTER", "Kalman diverged (" + kalmanCorrection[0] + "m). Resetting.");
                 filteredLocation.setLatitude(rawLat);
                 filteredLocation.setLongitude(rawLon);
