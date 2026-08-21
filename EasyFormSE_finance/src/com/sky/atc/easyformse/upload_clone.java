@@ -55,11 +55,16 @@ public class upload_clone extends WakefulIntentService {
 		super("f_upload1");
 		// TODO Auto-generated constructor stub
 	}
-
+	@SuppressLint("WrongConstant")
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		showNotificationstartForeground();
+		return super.onStartCommand(intent, flags, startId);
+	}
 	@Override
 	protected void doWakefulWork(Intent arg0) {
 
-		showNotificationstartForeground();
+
 
 		if (sqlitewraper.internetflag == 1) {
 			database = sqlitewraper.getDatabase();

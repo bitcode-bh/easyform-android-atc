@@ -94,6 +94,17 @@ public class activity_recognize extends BroadcastReceiver {
     private static final String MY_PREFS_NAME = "MY_TRIP";
     int StillUploadEventCount =0;
     MySharedPreferences Eventprefs = sqlitewraper.getSecureShared(MY_PREFS_NAME);
+
+    private static long DRIVING_ALERT_TIME = 0;
+    private static long DRIVING_RESET_GRACE_PERIOD = 0;
+
+    private static final String KEY_DRIVING_START = "driving_start_time";
+    private static final String KEY_DRIVING_LAST_VEHICLE = "driving_last_vehicle_time";
+    private static final String KEY_DRIVING_ALERT = "driving_alert_sent";
+    private static final boolean TEST_MODE = false;
+    String normal_acc, normal_deacc, hard_acc, hard_deacc;
+    String newspeed,speed_violation_time,  gap_milli,continuous_driving_alert_time,continuous_driving_reset_alert_time;
+
     @Override
     public void onReceive(Context context, Intent intent) {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -116,8 +127,35 @@ public class activity_recognize extends BroadcastReceiver {
             eve_lat = pref.getString("eve_lat", "NA");
             eve_lon = pref.getString("eve_lon", "NA");
             IsCheckAlaraSet = pref.getBoolean("isAlarmSet", false);
-            // Extract the result from the Response
 
+
+            String vehicaletype = pref.getString("vehicle_type","Private-2W");
+
+
+            Cursor a_t2 = databse
+                    .rawQuery(
+                            "select speed,speed_violation_time,normal_acc,normal_deacc,hard_acc,hard_deacc,gap_milli,call_event_speed_limit,fall_detection,continuous_driving_alert_time,continuous_driving_reset_alert_time from Thresold_New WHERE vehicle_type =" + "'" + vehicaletype + "'" , null);
+
+
+            if(a_t2.getCount() > 0)
+            {
+                a_t2.moveToFirst();
+                newspeed = a_t2.getString(0);
+                speed_violation_time = a_t2.getString(1);
+                normal_acc = a_t2.getString(2);
+                normal_deacc = a_t2.getString(3);
+                hard_acc = a_t2.getString(4);
+                hard_deacc = a_t2.getString(5);
+                gap_milli = a_t2.getString(6);
+                continuous_driving_alert_time = a_t2.getString(9);
+                continuous_driving_reset_alert_time = a_t2.getString(10);
+
+
+
+                a_t2.close();
+            }
+
+            // Extract the result from the Response
             ActivityRecognitionResult result = ActivityRecognitionResult
                     .extractResult(intent);
             DetectedActivity detectedActivity = result
@@ -127,6 +165,11 @@ public class activity_recognize extends BroadcastReceiver {
             int confidence = detectedActivity.getConfidence();
             String mostProbableName = getActivityName(detectedActivity
                     .getType());
+
+//            if (TEST_MODE && !mostProbableName.equalsIgnoreCase("V")) {
+//                mostProbableName = "V";
+//                confidence = 100;
+//            }
             Log.d("##confidence", String.valueOf(confidence));
             Log.d("##mostProbableName", mostProbableName);
 
@@ -170,7 +213,7 @@ public class activity_recognize extends BroadcastReceiver {
                     }
                 //Check if user is in Vehicle
                 if (mostProbableName.equalsIgnoreCase("V") && confidence > 60) {
-
+                    checkContinuousDriving();
                     try {
                         time_c = System.currentTimeMillis();
 
@@ -194,44 +237,50 @@ public class activity_recognize extends BroadcastReceiver {
                             if (vehicleflag_check >= 3) {
                                 //insert vehicle event if the distance is more than 100 meter
                                 if (distnace > 100) {
-                                    insertIntoEvents(String.valueOf(eve_time), String.valueOf(time_c), "0", "vehicle");
+                                    // Start continuous driving session only once
 
-                                    //save current time to use in next Event start time
-                                    pref.putString("still_flag", "0");
-                                    pref.putString("event_name", "V");
-                                    pref.putString("eve_lat", d.getlatlon()[0]);
-                                    pref.putString("eve_lon", d.getlatlon()[1]);
+                                    if (pref.getLong(KEY_DRIVING_START, 0) == 0) {
 
-                                    pref.putString("vehicle_flag", "1");
-                                    pref.putLong("event_start", time_c);
-                                    pref.putInt("vehicleflag", 0);
-                                    pref.commit();
+                                        pref.putLong(KEY_DRIVING_START, time_c);
+                                        pref.putBoolean(KEY_DRIVING_ALERT, false);
 
-                                    if (tripStatus() > 0) {
-                                        boolean check1 = isMyServiceRunning(
-                                                sqlitewraper.context,
-                                                newfused_accel.class.getName());
-                                        if (!check1) {
-                                            //start the acc/deacc service for calculation
-                                            Intent i = new Intent(sqlitewraper.context, newfused_accel.class);
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                sqlitewraper.context.startForegroundService(i);
-                                            } else {
-                                                sqlitewraper.context.startService(i);
+                                        pref.putString("still_flag", "0");
+                                        pref.putString("event_name", "V");
+                                        pref.putString("eve_lat", d.getlatlon()[0]);
+                                        pref.putString("eve_lon", d.getlatlon()[1]);
+
+                                        pref.putString("vehicle_flag", "1");
+                                        pref.putLong("event_start", time_c);
+                                        pref.putInt("vehicleflag", 0);
+                                        pref.commit();
+
+                                        Log.d("DrivingAlert", "Continuous Driving Started");
+                                    }
+
+                                    if(!normal_acc.equalsIgnoreCase("0") || !normal_deacc.equalsIgnoreCase("0") || !hard_acc.equalsIgnoreCase("0") || !hard_deacc.equalsIgnoreCase("0")) {
+                                        if (tripStatus() > 0) {
+                                            boolean check1 = isMyServiceRunning(
+                                                    sqlitewraper.context,
+                                                    newfused_accel.class.getName());
+                                            if (!check1) {
+                                                //start the acc/deacc service for calculation
+                                                Intent i = new Intent(sqlitewraper.context, newfused_accel.class);
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                    sqlitewraper.context.startForegroundService(i);
+                                                } else {
+                                                    sqlitewraper.context.startService(i);
+                                                }
+                                            }
+                                        } else {
+                                            //stop newfused_accel service if trip is stopped
+                                            boolean check12 = isMyServiceRunning(sqlitewraper.context,
+                                                    newfused_accel.class.getName());
+                                            if (check12) {
+                                                Intent i12 = new Intent(sqlitewraper.context, newfused_accel.class);
+                                                sqlitewraper.context.stopService(i12);
                                             }
                                         }
-                                    } else {
-                                        //stop newfused_accel service if trip is stopped
-                                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                                                newfused_accel.class.getName());
-                                        if (check12) {
-                                            Intent i12 = new Intent(sqlitewraper.context, newfused_accel.class);
-                                            sqlitewraper.context.stopService(i12);
-                                        }
                                     }
-                                } else {
-                                    pref.putInt("vehicleflag", 0);
-                                    pref.commit();
                                 }
 
                             }
@@ -243,7 +292,7 @@ public class activity_recognize extends BroadcastReceiver {
                 }
                 //Check if user is not in Vehicle
                 else if (mostProbableName.equalsIgnoreCase("Still")) {
-
+                    resetDrivingTimer();
                     try {
                         time_c = System.currentTimeMillis();
 
@@ -375,19 +424,14 @@ public class activity_recognize extends BroadcastReceiver {
                         }
 
 //                stop the newfused_accel service as user is not in vehicle
-//                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
-//                                newfused_accel.class.getName());
-//                        if (check12) {
-//                            Intent i12 = new Intent(sqlitewraper.context,
-//                                    newfused_accel.class);
-//                            sqlitewraper.context.stopService(i12);
-//                        }
+                        stopaccelrationservice();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
                 // if user walking
                 else if (mostProbableName.equalsIgnoreCase("Walking")) {
+                    resetDrivingTimer();
                     try {
                         time_c = System.currentTimeMillis();
 
@@ -407,19 +451,14 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.commit();
 
                         //stop the newfused_accel service as user is not in vehicle
-                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                                newfused_accel.class.getName());
-                        if (check12) {
-                            Intent i12 = new Intent(sqlitewraper.context,
-                                    newfused_accel.class);
-                            sqlitewraper.context.stopService(i12);
-                        }
+                        stopaccelrationservice();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
 //          if user Running
                 else if (mostProbableName.equalsIgnoreCase("Running")) {
+                    resetDrivingTimer();
                     try {
                         time_c = System.currentTimeMillis();
 
@@ -438,18 +477,13 @@ public class activity_recognize extends BroadcastReceiver {
 
                         //stop the newfused_accel service as user is not in vehicle
 
-                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                                newfused_accel.class.getName());
-                        if (check12) {
-                            Intent i12 = new Intent(sqlitewraper.context,
-                                    newfused_accel.class);
-                            sqlitewraper.context.stopService(i12);
-                        }
+                        stopaccelrationservice();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
                 else if (mostProbableName.equalsIgnoreCase("On Bicycle")) {
+                    resetDrivingTimer();
                     try {
                         time_c = System.currentTimeMillis();
                         if (eve_time == 0) {
@@ -467,18 +501,13 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.commit();
 
                         //stop the newfused_accel service as user is not in vehicle
-                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                                newfused_accel.class.getName());
-                        if (check12) {
-                            Intent i12 = new Intent(sqlitewraper.context,
-                                    newfused_accel.class);
-                            sqlitewraper.context.stopService(i12);
-                        }
+                        stopaccelrationservice();
                     } catch (Exception e) {
 
                     }
                 }
                 else if (mostProbableName.equalsIgnoreCase("On Foot")) {
+                    resetDrivingTimer();
                     try {
                         time_c = System.currentTimeMillis();
 
@@ -497,13 +526,7 @@ public class activity_recognize extends BroadcastReceiver {
 
                         //stop the newfused_accel service as user is not in vehicle
 
-                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                                newfused_accel.class.getName());
-                        if (check12) {
-                            Intent i12 = new Intent(sqlitewraper.context,
-                                    newfused_accel.class);
-                            sqlitewraper.context.stopService(i12);
-                        }
+                        stopaccelrationservice();
                     } catch (Exception e) {
 
                     }
@@ -545,7 +568,7 @@ public class activity_recognize extends BroadcastReceiver {
                                 Intent mIntent1 = new Intent(context, activity_recognize.class);
                                 int flags = PendingIntent.FLAG_CANCEL_CURRENT;
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                    flags = PendingIntent.FLAG_MUTABLE;
+                                    flags = PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE;
                                 }
                                 @SuppressLint("WrongConstant") PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, mIntent1, flags);
                                 alarmManager = (AlarmManager) sqlitewraper.context.getSystemService(Context.ALARM_SERVICE);
@@ -567,14 +590,7 @@ public class activity_recognize extends BroadcastReceiver {
                 }
                 }
                 else {
-                    // trip is not running stop service
-                    boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                            newfused_accel.class.getName());
-                    if (check12) {
-                        Intent i12 = new Intent(sqlitewraper.context,
-                                newfused_accel.class);
-                        sqlitewraper.context.stopService(i12);
-                    }
+                    stopaccelrationservice();
                 }
             }
         } else if (intent.getAction() != null && intent.getAction().equals("ALARM_ACTION")) {
@@ -614,7 +630,7 @@ public class activity_recognize extends BroadcastReceiver {
 
         NotificationChannel channel;
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
 //            AudioAttributes attributes;
 //            attributes = new AudioAttributes.Builder()
@@ -825,7 +841,12 @@ public class activity_recognize extends BroadcastReceiver {
 
             Intent intent = new Intent(sqlitewraper.context, activity_recognize.class);
             intent.setAction("ALARM_ACTION");
-            pendingIntent = (PendingIntent.getBroadcast(sqlitewraper.context, 0, intent, 0));
+            
+            int flags = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                flags = PendingIntent.FLAG_IMMUTABLE;
+            }
+            pendingIntent = (PendingIntent.getBroadcast(sqlitewraper.context, 0, intent, flags));
 
              // 30 minutes
             long triggerTime = System.currentTimeMillis() + intervalMillis;
@@ -894,4 +915,167 @@ public class activity_recognize extends BroadcastReceiver {
         }
     }
 
+    public void stopaccelrationservice()
+    {
+        // stop the newfused_accel service as user is not in vehicle
+        if(normal_acc != null || normal_deacc != null || hard_acc != null || hard_deacc != null) {
+
+            if (!normal_acc.equalsIgnoreCase("0") || !normal_deacc.equalsIgnoreCase("0") ||
+                    !hard_acc.equalsIgnoreCase("0") || !hard_deacc.equalsIgnoreCase("0")) {
+                {
+                    boolean check12 = isMyServiceRunning(sqlitewraper.context,
+                            newfused_accel.class.getName());
+                    if (check12) {
+                        Intent i12 = new Intent(sqlitewraper.context,
+                                newfused_accel.class);
+                        sqlitewraper.context.stopService(i12);
+                    }
+                }
+            }
+        }
+    }
+
+    private void checkContinuousDriving() {
+
+        long currentTime = System.currentTimeMillis();
+        long drivingStart = pref.getLong(KEY_DRIVING_START, 0);
+        boolean alertSent = pref.getBoolean(KEY_DRIVING_ALERT, false);
+
+        // Always update the last seen vehicle timestamp when driving is detected
+        pref.putLong(KEY_DRIVING_LAST_VEHICLE, currentTime);
+
+        // First Vehicle Detection
+        if (drivingStart == 0) {
+            pref.putLong(KEY_DRIVING_START, currentTime);
+            pref.putBoolean(KEY_DRIVING_ALERT, false);
+            pref.commit();
+            Log.d("DrivingAlert", "Continuous Driving Session Started");
+            return;
+        }
+
+        long duration = currentTime - drivingStart;
+        Log.d("DrivingAlert", "Duration: " + (duration / 1000) + "s, AlertSent: " + alertSent);
+
+        DRIVING_ALERT_TIME = parseTimeToMillis(continuous_driving_alert_time, 2 * 60 * 60 * 1000L);
+        if (!alertSent && duration >= DRIVING_ALERT_TIME) {
+
+            // Capture final telematics for the event
+            long endTime = System.currentTimeMillis();
+            
+            // Insert ONE event for the continuous driving session
+            boolean isInserted = insertIntoEvents(
+                    String.valueOf(drivingStart),
+                    String.valueOf(endTime),
+                    String.valueOf(duration ), // duration in millisecond
+                    "continuous_driving"
+            );
+
+            if (isInserted) {
+                Show_Driving_Alert();
+                pref.putLong(KEY_DRIVING_START, 0);
+                pref.putLong(KEY_DRIVING_LAST_VEHICLE, 0);
+                pref.putBoolean(KEY_DRIVING_ALERT, false);
+                pref.commit();
+                Log.d("DrivingAlert", "Continuous Driving Event Logged and Alert Triggered");
+            }
+        } else {
+            pref.commit();
+        }
+    }
+
+    private long parseTimeToMillis(String timeValue, long defaultMillis) {
+
+        try {
+            if (timeValue == null || timeValue.trim().isEmpty()) {
+                return defaultMillis;
+            }
+
+            String[] parts = timeValue.trim().split(":");
+
+            long hours = Long.parseLong(parts[0]);
+            long minutes = Long.parseLong(parts[1]);
+
+            return (hours * 60 * 60 * 1000L)
+                    + (minutes * 60 * 1000L);
+
+        } catch (Exception e) {
+            Log.e("DrivingAlert",
+                    "Invalid time value: " + timeValue, e);
+
+            return defaultMillis;
+        }
+    }
+    private void resetDrivingTimer() {
+        long currentTime = System.currentTimeMillis();
+        long lastVehicleTime = pref.getLong(KEY_DRIVING_LAST_VEHICLE, 0);
+        long drivingStart = pref.getLong(KEY_DRIVING_START, 0);
+
+        if (drivingStart == 0) return;
+
+        // Implement grace period: Only reset if user has been non-vehicle for > 15 minutes
+        long idleDuration = currentTime - lastVehicleTime;
+        DRIVING_RESET_GRACE_PERIOD =  parseTimeToMillis(continuous_driving_reset_alert_time, 15 * 60 * 1000L);
+        if (idleDuration >= DRIVING_RESET_GRACE_PERIOD) {
+            pref.putLong(KEY_DRIVING_START, 0);
+            pref.putLong(KEY_DRIVING_LAST_VEHICLE, 0);
+            pref.putBoolean(KEY_DRIVING_ALERT, false);
+            pref.commit();
+
+            pref.putInt("vehicleflag", 0);
+            pref.commit();
+
+            Log.d("DrivingAlert", "Driving Session Reset after Grace Period");
+        } else {
+            Log.d("DrivingAlert", "Idle for " + (idleDuration / 1000) + "s. Within Grace Period.");
+        }
+    }
+
+    @SuppressLint("WrongConstant")
+    private void Show_Driving_Alert() {
+
+        Uri sound = Uri.parse(
+                ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
+                        + sqlitewraper.context.getPackageName()
+                        + "/"
+                        + R.raw.emergencytone);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            NotificationChannel channel =
+                    new NotificationChannel(
+                            "channel02",
+                            "Driving Alert",
+                            NotificationManager.IMPORTANCE_HIGH);
+
+            channel.setDescription("Driving Alert");
+
+            Ringtone r = RingtoneManager.getRingtone(sqlitewraper.context, sound);
+            if (r != null) {
+                r.play();
+            }
+
+            NotificationManager manager =
+                    sqlitewraper.context.getSystemService(NotificationManager.class);
+
+            manager.createNotificationChannel(channel);
+        }
+        String notificationMessage = "You have been driving continuously. Please take a break.";
+        Notification notification =
+                new NotificationCompat.Builder(sqlitewraper.context, "channel02")
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .setContentTitle("Driving Alert")
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationMessage)).setContentText(notificationMessage)
+                        .setSound(sound)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .build();
+
+        if (ActivityCompat.checkSelfPermission(sqlitewraper.context,
+                Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        NotificationManagerCompat.from(sqlitewraper.context)
+                .notify(303, notification);
+    }
 }

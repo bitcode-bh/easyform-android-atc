@@ -85,7 +85,7 @@ public class SpeedCalculation {
 
             float seconds = timeDiff / 1000f;
 
-            if (seconds <= 0 || seconds > 30f) {
+            if (seconds <= 0 || seconds > 120f) {
                 locationA = new Location(locationB);
                 return 10000;
             }
@@ -98,7 +98,7 @@ public class SpeedCalculation {
                 return 10000;
             }
 
-            if (distance < 5f) {
+            if (distance < 3f) {
                 locationA = new Location(locationB);
                 return 10000;
             }

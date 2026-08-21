@@ -25,7 +25,7 @@ import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 public class MySQLiteHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "location.db";
-    private static final int DATABASE_VERSION = 76;
+    private static final int DATABASE_VERSION = 77;
     private static final String DATABASE_CREATE0 = " CREATE TABLE Login_Master (username TEXT,password TEXT, u_c TEXT, imei TEXT, company_id INTEGER,user_id INTEGER,appid TEXT,servermilli TEXT,devicetype TEXT,appversion TEXT,main_milli,sub_milli,main_id,sub_id) ;";
 
     // Database creation sql statement
@@ -71,7 +71,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_CREATE49 = " CREATE TABLE delete_old_task (id INTEGER PRIMARY KEY AUTOINCREMENT,udf_id INTEGER,role_id INTEGER,flow_id INTEGER,allowstatus TEXT,isoffline TEXT);";
     private static final String DATABASE_CREATE50 = " CREATE TABLE meterreading (id INTEGER PRIMARY KEY AUTOINCREMENT,detectedtext TEXT,sid TEXT,checksheetid TEXT,queid TEXT,detectiontype TEXT,imgpath TEXT,orpath TEXT,Unique_id TEXT,hasResponse INTEGER);";
     private static final String DATABASE_CREATE51 = "CREATE TABLE deleted_task (id INTEGER PRIMARY KEY AUTOINCREMENT,tid INTEGER,server_task_id INTEGER,dataTime TEXT);";
-    private static final String DATABASE_CREATE52 = " CREATE TABLE Thresold_New(_id INTEGER PRIMARY KEY AUTOINCREMENT,threshold_id INTEGER,speed text,normal_acc text,normal_deacc TEXT,hard_acc TEXT,hard_deacc TEXT,gap_milli TEXT,speed_violation_time TEXT ,territory TEXT ,vehicle_type TEXT ,millisecond TEXT);"; // p_id,s_id,path,o_name,name
+    private static final String DATABASE_CREATE52 = " CREATE TABLE Thresold_New(_id INTEGER PRIMARY KEY AUTOINCREMENT,threshold_id INTEGER,speed text,normal_acc text,normal_deacc TEXT,hard_acc TEXT,hard_deacc TEXT,gap_milli TEXT,speed_violation_time TEXT ,territory TEXT ,vehicle_type TEXT ,millisecond TEXT,call_event_speed_limit TEXT,fall_detection TEXT,continuous_driving_alert_time TEXT, continuous_driving_reset_alert_time TEXT);"; // p_id,s_id,path,o_name,name
 
     private static final String DATABASE_CREATE53 = " CREATE TABLE download_live_url(_id INTEGER PRIMARY KEY AUTOINCREMENT,video_url_id INTEGER,live_url text,download_url_path text);";
 
@@ -732,6 +732,24 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
         }
 
+        if (oldVersion < 77) {
+
+            if (!isColumnExists(database, "Thresold_New", "call_event_speed_limit")) {
+                database.execSQL("ALTER TABLE Thresold_New ADD COLUMN call_event_speed_limit TEXT");
+            }
+
+            if (!isColumnExists(database, "Thresold_New", "fall_detection")) {
+                database.execSQL("ALTER TABLE Thresold_New ADD COLUMN fall_detection TEXT");
+            }
+
+            if (!isColumnExists(database, "Thresold_New", "continuous_driving_alert_time")) {
+                database.execSQL("ALTER TABLE Thresold_New ADD COLUMN continuous_driving_alert_time TEXT");
+            }
+
+            if (!isColumnExists(database, "Thresold_New", "continuous_driving_reset_alert_time")) {
+                database.execSQL("ALTER TABLE Thresold_New ADD COLUMN continuous_driving_reset_alert_time TEXT");
+            }
+        }
     }
 
 

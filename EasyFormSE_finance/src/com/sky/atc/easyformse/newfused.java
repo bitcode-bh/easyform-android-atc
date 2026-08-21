@@ -762,27 +762,27 @@ public class newfused extends Service implements LocationListener {
 //                             " speedViolation=" + speedViolation +
 //                            " speed=" + currentSpeed);
 //            Log.d("WHATSAPP_CALL", "currentSpeed " + currentSpeed);
-//            String vehicaletype = pref.getString("vehicle_type","Private-2W");
-//            String call_event_speed_limit = "";
-//            android.database.Cursor a_t2 = database
-//                    .rawQuery(
-//                            "select call_event_speed_limit from Thresold_New WHERE vehicle_type =" + "'" + vehicaletype + "'" , null);
-//
-//
-//            if(a_t2.getCount() > 0)
-//            {
-//                a_t2.moveToFirst();
-//                call_event_speed_limit = a_t2.getString(0);
-//                a_t2.close();
-//            }
-//
-//            if(call_event_speed_limit == null || call_event_speed_limit.equalsIgnoreCase("") || call_event_speed_limit.equalsIgnoreCase("null") || call_event_speed_limit.equalsIgnoreCase("0"))
-//            {
-//                CALL_SPEED_LIMIT = 15 ;  // call speed default is 15 km/h
-//            }
-//            else {
-//                CALL_SPEED_LIMIT = Float.parseFloat(call_event_speed_limit) ;
-//            }
+            String vehicaletype = pref.getString("vehicle_type","Private-2W");
+            String call_event_speed_limit = "";
+            android.database.Cursor a_t2 = database
+                    .rawQuery(
+                            "select call_event_speed_limit from Thresold_New WHERE vehicle_type =" + "'" + vehicaletype + "'" , null);
+
+
+            if(a_t2.getCount() > 0)
+            {
+                a_t2.moveToFirst();
+                call_event_speed_limit = a_t2.getString(0);
+                a_t2.close();
+            }
+
+            if(call_event_speed_limit == null || call_event_speed_limit.equalsIgnoreCase("") || call_event_speed_limit.equalsIgnoreCase("null") || call_event_speed_limit.equalsIgnoreCase("0"))
+            {
+                CALL_SPEED_LIMIT = 15 ;  // call speed default is 15 km/h
+            }
+            else {
+                CALL_SPEED_LIMIT = Float.parseFloat(call_event_speed_limit) ;
+            }
 
             float fact = (float) 18 / 5;
             float ac_speed = currentSpeed * fact;

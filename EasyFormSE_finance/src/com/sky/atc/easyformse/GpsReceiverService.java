@@ -436,21 +436,22 @@ public class GpsReceiverService extends WakefulIntentService {
 
             if (isact_track.equalsIgnoreCase("1")) {
                 //hide newfused and activity_recognition code  23-07-2025
-//                boolean check4 = isMyServiceRunning(sqlitewraper.context,
-//                        Activity_recognition.class.getName());
-//                if (check4) {
-//                } else {
-//
-//                    Intent i = new Intent(sqlitewraper.context,
-//                            Activity_recognition.class);
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                        sqlitewraper.context.startForegroundService(i);
-//                    }else {
-//                        sqlitewraper.context.startService(i);
-//                    }
-//
-//
-//                }
+                // enbale activity_recognition code  07082026
+                boolean check4 = isMyServiceRunning(sqlitewraper.context,
+                        Activity_recognition.class.getName());
+                if (check4) {
+                } else {
+
+                    Intent i = new Intent(sqlitewraper.context,
+                            Activity_recognition.class);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        sqlitewraper.context.startForegroundService(i);
+                    }else {
+                        sqlitewraper.context.startService(i);
+                    }
+
+
+                }
             }
 
 

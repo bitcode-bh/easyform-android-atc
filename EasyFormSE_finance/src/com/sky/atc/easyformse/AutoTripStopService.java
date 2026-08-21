@@ -720,16 +720,14 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                         // duration hours getting null use 24 hours
                                         duration_hour = "24:00";
                                         if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
-                                            stopTrip(location,punchoutstatus);
-                                            return;
+                                            shouldStopTrip = true;
                                         }
                                     }
                                     else {
                                         duration_hour = mAttendanceData.getAuto_punchout_duration_hours();
 //                                    duration_hour = "5:00";
                                         if (isTripFinished_hourbase(TripStartTime,duration_hour)) {
-                                            stopTrip(location,punchoutstatus);
-                                            return;
+                                            shouldStopTrip = true;
                                         }
                                     }
 
@@ -738,8 +736,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                                     // Check duration or 24-hour time condition
                                     if (mAttendanceData.getAuto_punchout_duration() == null || mAttendanceData.getAuto_punchout_duration().equalsIgnoreCase("")) {
                                         if (is24HoursPassed(Long.parseLong(TripStartTime))) {
-                                            stopTrip(location,punchoutstatus);
-                                            return;
+                                            shouldStopTrip = true;
                                         }
                                     }
                                     else {

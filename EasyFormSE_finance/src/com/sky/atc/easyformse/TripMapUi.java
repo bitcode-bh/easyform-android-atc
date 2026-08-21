@@ -613,6 +613,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                     pref1.commit();
                     startgeofence(new LatLng(Double.parseDouble(s_lat), Double.parseDouble(s_lon)),200,tid,1);
                 }
+                else {
+                    MySharedPreferences pref1 = sqlitewraper.getSecureShared("MyPref");
+                    pref1.putBoolean("ISTripStartAfter6PM",false);
+                    pref1.commit();
+                }
             }
 
 
