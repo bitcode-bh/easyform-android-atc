@@ -191,6 +191,7 @@ get_dashboard = () => {
 }
 
 get_vertical_dashboard = (flag_dashboard) => {
+    $('#div_trip_list').hide();
     $('#div_page_content').hide();
     dashboard_id = $('#ddl_dashboard_list').val();
     get_dashboard_config_data(dashboard_id, flag_dashboard);

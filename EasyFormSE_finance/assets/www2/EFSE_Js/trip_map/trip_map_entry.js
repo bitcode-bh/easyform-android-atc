@@ -4,6 +4,8 @@
 var TripSiteMap = (function () {
     'use strict';
 
+    // Home bottom bar no longer hosts Map (Trip List replaced it). Widgets
+    // and list pages still call open() / bindButton(selector).
     var BUTTON_ID = '#btn_trip_map';
 
     function isEnabled() {
@@ -85,6 +87,39 @@ var TripSiteMap = (function () {
         }
     }
 
+    // Trip list row: native Google Map overlay (Maps SDK). maxMs <= 0 means
+    // live / until now.
+    function openRoute(minMs, maxMs, title) {
+        try {
+            var min = parseInt(minMs, 10);
+            var max = parseInt(maxMs, 10);
+            if (isNaN(min) || min <= 0) {
+                return;
+            }
+            if (isNaN(max) || max < 0) {
+                max = 0;
+            }
+            var payload = {
+                overlay: true,
+                title: title ? String(title) : '',
+                path_min_ms: min,
+                path_max_ms: max
+            };
+            var profile = TripMapProfile.resolve();
+            if (profile) {
+                payload.profile = profile;
+                payload.cluster_value = TripMapProfile.readClusterValue(profile);
+                payload.username = readUsername();
+                payload.sites = forPlugin(TripMapCache.getSites());
+            }
+            cordova.exec(function () { }, function (e) {
+                alert1(e + '_TripSiteMap.openRoute()');
+            }, 'TripTrackingMapPlugin', 'anAction', [payload]);
+        } catch (e) {
+            alert1(e + '_TripSiteMap.openRoute()');
+        }
+    }
+
     // Shows the caller's button element only when a profile resolves (FR-01/FR-04).
     function bindButton(selector) {
         try {
@@ -108,6 +143,7 @@ var TripSiteMap = (function () {
 
     return {
         open: open,
+        openRoute: openRoute,
         cacheListing: cacheListing,
         isEnabled: isEnabled,
         bindButton: bindButton

@@ -13,6 +13,10 @@ public final class MapConstants {
     public static final String EXTRA_SITES = "trip_map_sites";
     public static final String EXTRA_CLUSTER_VALUE = "trip_map_cluster_value";
     public static final String EXTRA_FROM_GEOFENCE = "trip_map_from_geofence";
+    public static final String EXTRA_PATH_MIN_MS = "trip_map_path_min_ms";
+    public static final String EXTRA_PATH_MAX_MS = "trip_map_path_max_ms";
+    public static final String EXTRA_ROUTE_OVERLAY = "trip_map_route_overlay";
+    public static final String EXTRA_ROUTE_TITLE = "trip_map_route_title";
 
     // Emitted by the existing engine (LocationOutageUtils); this module only listens.
     public static final String ACTION_TRIP_LOCATION = "trip-background-map";

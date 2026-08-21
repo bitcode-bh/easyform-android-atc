@@ -18,34 +18,38 @@ public class TripTrackingMapPlugin extends CordovaPlugin {
         try {
             JSONObject payload = args.getJSONObject(0);
             JSONObject profileJson = payload.optJSONObject("profile");
+            if (profileJson == null && payload.optLong("path_min_ms", 0) > 0) {
+                profileJson = new JSONObject();
+                profileJson.put("type", MapProfile.TYPE_GEOFENCE_DOWNLOAD);
+            }
 
-            // An empty site list is a valid state: the map opens on the user's
-            // position and its range chips let them widen the search. Only a
-            // missing/unusable profile stops it.
             MapProfile profile = MapProfile.fromJson(profileJson);
             if (profile == null) {
                 callbackContext.error("trip_map: no map profile configured");
                 return true;
             }
 
-            // geofence_tracking is the map's single source of sites, for every
-            // profile type — not just GEOFENCE_DOWNLOAD.
-            //
-            // The task_master path this replaced was unusable in practice: it
-            // is filled only once tasks are actually downloaded, and on real
-            // accounts it was repeatedly found empty while geofence_tracking
-            // held data (geofence download is its own step and does not depend
-            // on a task list ever being opened). The listing cache the JS layer
-            // passes is not consulted either, so the map draws the same sites
-            // no matter which screen it was opened from.
-            JSONArray sites = GeofenceTrackingReader.read();
+            JSONArray sites;
+            boolean overlay = payload.optBoolean("overlay", false);
+            if (overlay) {
+                sites = new JSONArray();
+            } else {
+                sites = GeofenceTrackingReader.read();
+            }
 
             Intent intent = new Intent(this.cordova.getActivity(), VtTripTrackingMapActivity.class);
             intent.putExtra(MapConstants.EXTRA_PROFILE, profileJson.toString());
             intent.putExtra(MapConstants.EXTRA_SITES, sites.toString());
             intent.putExtra(MapConstants.EXTRA_CLUSTER_VALUE, payload.optString("cluster_value", ""));
             intent.putExtra(MapConstants.EXTRA_FROM_GEOFENCE, sites.length() > 0);
+            intent.putExtra(MapConstants.EXTRA_PATH_MIN_MS, payload.optLong("path_min_ms", 0));
+            intent.putExtra(MapConstants.EXTRA_PATH_MAX_MS, payload.optLong("path_max_ms", 0));
+            intent.putExtra(MapConstants.EXTRA_ROUTE_OVERLAY, overlay);
+            intent.putExtra(MapConstants.EXTRA_ROUTE_TITLE, payload.optString("title", ""));
             this.cordova.getActivity().startActivity(intent);
+            if (overlay) {
+                this.cordova.getActivity().overridePendingTransition(0, 0);
+            }
 
             callbackContext.success();
             return true;

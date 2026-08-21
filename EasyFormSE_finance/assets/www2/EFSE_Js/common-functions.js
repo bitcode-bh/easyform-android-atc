@@ -244,6 +244,10 @@ function back_button(page) {
         popup_items_hide_type22();
         return false;
     }
+    else if (typeof TripListSheet !== 'undefined' && TripListSheet.isOpen && TripListSheet.isOpen()) {
+        TripListSheet.close();
+        return false;
+    }
     else if (notification_popup.length > 0) {
         // notification popup is open
         myApp.closeModal('.popup-notifications.modal-in');

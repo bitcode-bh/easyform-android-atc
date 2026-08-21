@@ -858,22 +858,26 @@ public class TripUploadNew {
 //                            SOAP_ACTION_site2);
                     String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, WCFURL, METHOD_NAME_corner2, matchKeyID,null);
 
-                    Log.d("##EndTripSeWebserice", restext);
-                    Log.d("##EndTripSeWebserice", restext);
+                    if (restext != null) {
+                        Log.d("##EndTripSeWebserice", restext);
+                        String trimmed = restext.trim();
+                        String status1 = null;
+                        String message = "";
 
-                    JSONArray jsonArray = new JSONArray(restext);
-                    String status1 = null;
-                    String message = "";
-
-                    for (int k1 = 0; k1 < jsonArray.length(); k1++) {
-                        JSONObject jsonObject = jsonArray
-                                .getJSONObject(0);
-
-                        status1 = jsonObject.getString("status");
-                        if (jsonObject.has("message")) {
-                            message = jsonObject.getString("message");
+                        if (trimmed.startsWith("[")) {
+                            JSONArray jsonArray = new JSONArray(trimmed);
+                            if (jsonArray.length() > 0) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                status1 = jsonObject.optString("status", "");
+                                message = jsonObject.optString("message", "");
+                            }
+                        } else if (trimmed.startsWith("{")) {
+                            JSONObject jsonObject = new JSONObject(trimmed);
+                            status1 = jsonObject.optString("status", "");
+                            message = jsonObject.optString("message", "");
                         }
-                        if (status1.equalsIgnoreCase("1")) {
+
+                        if ("1".equalsIgnoreCase(status1)) {
                             String cnd;
                             cnd = "_id=" + id;
                             ContentValues c_path = new ContentValues();
@@ -881,12 +885,15 @@ public class TripUploadNew {
                             long temp = database.update("lat_plug",
                                     c_path, cnd, null);
                             Log.d("##TripCompleted", String.valueOf(temp));
-                        } else if (status1.equalsIgnoreCase("4")) {
+                        } else if ("4".equalsIgnoreCase(status1)) {
                             Utils.logoutUser(message);
                         } else {
                             k++;
-                            writeLogToFile("Status: " + status1 + " ( " + message + " ) ",METHOD_NAME_corner2,"uploadTrip");
+                            writeLogToFile("Status: " + status1 + " ( " + message + " ) ", METHOD_NAME_corner2, "uploadTrip");
                         }
+                    } else {
+                        k++;
+                        writeLogToFile("Null response from server", METHOD_NAME_corner2, "uploadTrip");
                     }
                 } catch (Exception e) {
                     k++;
@@ -990,26 +997,35 @@ public class TripUploadNew {
                     String data12=data1.toString();
 
                     String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, WCFURL, METHOD_NAME_corner13, matchKeyID,null);
-                    JSONArray jsonArray = new JSONArray(restext);
-                    String status1 = null;
-                    String message="";
-                    for (int k1 = 0; k1 < jsonArray.length(); k1++) {
-                        JSONObject jsonObject = jsonArray
-                                .getJSONObject(0);
+                    if (restext != null) {
+                        String trimmed = restext.trim();
+                        String status1 = null;
+                        String message = "";
 
-                        status1 = jsonObject.getString("status");
-                        if (jsonObject.has("message")) {
-                            message = jsonObject.getString("message");
+                        if (trimmed.startsWith("[")) {
+                            JSONArray jsonArray = new JSONArray(trimmed);
+                            if (jsonArray.length() > 0) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                status1 = jsonObject.optString("status", "");
+                                message = jsonObject.optString("message", "");
+                            }
+                        } else if (trimmed.startsWith("{")) {
+                            JSONObject jsonObject = new JSONObject(trimmed);
+                            status1 = jsonObject.optString("status", "");
+                            message = jsonObject.optString("message", "");
                         }
 
-                        if (status1.equalsIgnoreCase("1")) {
+                        if ("1".equalsIgnoreCase(status1)) {
                             Log.d("##milliUpdate", "Pulling Ruuning");
-                        }else if (status1.equalsIgnoreCase("4")) {
+                        } else if ("4".equalsIgnoreCase(status1)) {
                             Utils.logoutUser(message);
-                        }else {
+                        } else {
                             k++;
-                            writeLogToFile("Status: "+ status1 + " ( " + message + " ) ",METHOD_NAME_corner13,"uploadTripContinues");
+                            writeLogToFile("Status: " + status1 + " ( " + message + " ) ", METHOD_NAME_corner13, "uploadTripContinues");
                         }
+                    } else {
+                        k++;
+                        writeLogToFile("Null response from server", METHOD_NAME_corner13, "uploadTripContinues");
                     }
                 } catch (Exception e) {
                     k++;

@@ -3,7 +3,10 @@ package com.sky.atc.easyformse.trip.mapui;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -62,6 +65,11 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     private TextView headerView;
     private LinearLayout detailPanel;
     private TextView detailText;
+    private LinearLayout statsCard;
+    private TextView statsTitle;
+    private TextView statsDistance;
+    private TextView statsTime;
+    private TextView statsViolations;
 
     // Sites currently drawn (after range + search); allSites is the full result
     // of the last range load, so searching never re-runs the distance filter.
@@ -94,6 +102,13 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
 
     private LatLng userPosition;
     private Marker userMarker;
+    private Marker pathStartMarker;
+    private Marker pathEndMarker;
+    private long pathMinMs;
+    private long pathMaxMs;
+    private boolean routeOverlay;
+    private String routeTitle;
+    private final List<TrackPathReader.TrackPoint> lastPathPoints = new ArrayList<TrackPathReader.TrackPoint>();
 
     private MapBroadcastReceiver locationReceiver;
     private int mapContainerId;
@@ -114,6 +129,11 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             finish();
             return;
         }
+        if (routeOverlay) {
+            getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        } else {
+            getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        }
         setContentView(buildLayout());
 
         SupportMapFragment mapFragment = SupportMapFragment.newInstance();
@@ -123,6 +143,9 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         locationReceiver = new MapBroadcastReceiver(new MapBroadcastReceiver.Listener() {
             @Override
             public void onEngineLocation(LatLng position) {
+                if (routeOverlay) {
+                    return;
+                }
                 // The engine had no location yet when onMapReady() ran its
                 // one-shot read, so the profile's own default radius
                 // (NEARBY_RADIUS/GEOFENCE_DOWNLOAD) was skipped and the
@@ -151,7 +174,11 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     }
 
     private View buildLayout() {
+        if (routeOverlay) {
+            return buildRouteOverlayLayout();
+        }
         FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.WHITE);
 
         FrameLayout mapContainer = new FrameLayout(this);
         mapContainerId = View.generateViewId();
@@ -256,13 +283,161 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         detailParams.gravity = Gravity.BOTTOM;
         root.addView(detailPanel, detailParams);
 
+        statsCard = buildStatsCard();
+        FrameLayout.LayoutParams statsParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        statsParams.gravity = Gravity.BOTTOM;
+        int gutter = dp(12);
+        statsParams.setMargins(gutter, gutter, gutter, gutter);
+        root.addView(statsCard, statsParams);
+
         return root;
     }
 
+    // Trip-list overlay: native Maps SDK (the JS key cannot load in WebView).
+    // Same card chrome as the old popup — grey bar, 12dp corners — over a dim scrim.
+    private View buildRouteOverlayLayout() {
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.parseColor("#99000000"));
+        root.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setBackground(roundedBackground(Color.parseColor("#fcfcfb"), dp(12)));
+        card.setClipToOutline(true);
+        card.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Swallow so tapping the card does not dismiss.
+            }
+        });
+
+        LinearLayout bar = new LinearLayout(this);
+        bar.setOrientation(LinearLayout.HORIZONTAL);
+        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setBackgroundColor(Color.parseColor("#ecedef"));
+        bar.setPadding(dp(4), 0, dp(12), 0);
+        bar.setMinimumHeight(dp(48));
+
+        TextView back = new TextView(this);
+        back.setText("←");
+        back.setTextColor(Color.parseColor("#0D1829"));
+        back.setTextSize(22f);
+        back.setPadding(dp(12), dp(10), dp(12), dp(10));
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        bar.addView(back);
+
+        TextView title = new TextView(this);
+        String label = (routeTitle != null && routeTitle.length() > 0 && !routeTitle.equals("0") && !routeTitle.equals("0.0") && !routeTitle.equalsIgnoreCase("o") && !routeTitle.equalsIgnoreCase("null")) ? routeTitle : "Trip route";
+        title.setText(label);
+        title.setTextColor(Color.parseColor("#0D1829"));
+        title.setTextSize(14f);
+        title.setMaxLines(1);
+        title.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        bar.addView(title, titleLp);
+        card.addView(bar, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(48)));
+
+        FrameLayout mapContainer = new FrameLayout(this);
+        mapContainerId = View.generateViewId();
+        mapContainer.setId(mapContainerId);
+        card.addView(mapContainer, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+
+        int w = Math.round(getResources().getDisplayMetrics().widthPixels * 0.94f);
+        int h = Math.round(getResources().getDisplayMetrics().heightPixels * 0.78f);
+        FrameLayout.LayoutParams cardLp = new FrameLayout.LayoutParams(w, h, Gravity.CENTER);
+        root.addView(card, cardLp);
+        return root;
+    }
+
+    // Same language as Home trip_stats + Trips list: grey #ecedef card,
+    // 12dp corners, three metric cells.
+    private LinearLayout buildStatsCard() {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setBackground(roundedBackground(Color.parseColor("#ecedef"), dp(12)));
+        card.setPadding(dp(14), dp(12), dp(14), dp(12));
+        card.setElevation(dp(4));
+        card.setVisibility(View.GONE);
+
+        statsTitle = new TextView(this);
+        statsTitle.setText("TRIP");
+        statsTitle.setTextColor(Color.parseColor("#6b7280"));
+        statsTitle.setTextSize(12f);
+        statsTitle.setTypeface(Typeface.DEFAULT_BOLD);
+        statsTitle.setLetterSpacing(0.02f);
+        LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        titleLp.bottomMargin = dp(8);
+        card.addView(statsTitle, titleLp);
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        statsDistance = addMetricCell(row, "Distance");
+        statsTime = addMetricCell(row, "Time");
+        statsViolations = addMetricCell(row, "Violations");
+        card.addView(row, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        return card;
+    }
+
+    private TextView addMetricCell(LinearLayout row, String label) {
+        LinearLayout cell = new LinearLayout(this);
+        cell.setOrientation(LinearLayout.VERTICAL);
+        cell.setGravity(Gravity.CENTER);
+        cell.setBackground(roundedBackground(Color.parseColor("#fcfcfb"), dp(6)));
+        cell.setPadding(dp(6), dp(8), dp(6), dp(8));
+
+        TextView value = new TextView(this);
+        value.setText("—");
+        value.setTextColor(Color.parseColor("#0D1829"));
+        value.setTextSize(16f);
+        value.setTypeface(Typeface.DEFAULT_BOLD);
+        value.setGravity(Gravity.CENTER);
+        cell.addView(value);
+
+        TextView caption = new TextView(this);
+        caption.setText(label);
+        caption.setTextColor(Color.parseColor("#6A6C74"));
+        caption.setTextSize(11f);
+        caption.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams capLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        capLp.topMargin = dp(2);
+        cell.addView(caption, capLp);
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        lp.rightMargin = "Violations".equals(label) ? 0 : dp(8);
+        row.addView(cell, lp);
+        return value;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
     private static GradientDrawable roundedBackground(int color) {
+        return roundedBackground(color, 28f);
+    }
+
+    private static GradientDrawable roundedBackground(int color, float radiusPx) {
         GradientDrawable d = new GradientDrawable();
         d.setColor(color);
-        d.setCornerRadius(28f);
+        d.setCornerRadius(radiusPx);
         return d;
     }
 
@@ -316,6 +491,10 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             payloadSites = new JSONArray(intent.getStringExtra(MapConstants.EXTRA_SITES));
             clusterValue = intent.getStringExtra(MapConstants.EXTRA_CLUSTER_VALUE);
             fromGeofenceTracking = intent.getBooleanExtra(MapConstants.EXTRA_FROM_GEOFENCE, false);
+            pathMinMs = intent.getLongExtra(MapConstants.EXTRA_PATH_MIN_MS, 0);
+            pathMaxMs = intent.getLongExtra(MapConstants.EXTRA_PATH_MAX_MS, 0);
+            routeOverlay = intent.getBooleanExtra(MapConstants.EXTRA_ROUTE_OVERLAY, false);
+            routeTitle = intent.getStringExtra(MapConstants.EXTRA_ROUTE_TITLE);
         } catch (Exception e) {
             return false;
         }
@@ -329,6 +508,13 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
         map.getUiSettings().setZoomControlsEnabled(true);
+        if (routeOverlay) {
+            map.getUiSettings().setMapToolbarEnabled(false);
+            map.getUiSettings().setMyLocationButtonEnabled(false);
+            drawCoveredPath();
+            frameCamera();
+            return;
+        }
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -346,6 +532,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
                 detailPanel.setVisibility(View.GONE);
                 selectedSite = null;
                 clearPlannedRoute();
+                updateTripStatsCard();
             }
         });
 
@@ -360,8 +547,6 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         reloadForRange();
         drawUserMarker();
         drawCoveredPath();
-        // Unconditional: with no sites at all the map should still open on the
-        // user's own position rather than sitting at the world view.
         frameCamera();
     }
 
@@ -645,16 +830,41 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         if (map == null) {
             return;
         }
-        TrackPathReader.ActiveTrip trip = TrackPathReader.activeTrip();
-        if (trip == null) {
-            return;
+        List<TrackPathReader.TrackPoint> points;
+        if (pathMinMs > 0) {
+            points = TrackPathReader.readWindow(pathMinMs, pathMaxMs);
+        } else {
+            TrackPathReader.ActiveTrip trip = TrackPathReader.activeTrip();
+            points = TrackPathReader.read(trip);
         }
-        List<TrackPathReader.TrackPoint> points = TrackPathReader.read(trip);
+        lastPathPoints.clear();
+        lastPathPoints.addAll(points);
         for (int i = 0; i < pathOverlays.size(); i++) {
             pathOverlays.get(i).remove();
         }
         pathOverlays.clear();
+        if (pathStartMarker != null) {
+            pathStartMarker.remove();
+            pathStartMarker = null;
+        }
+        if (pathEndMarker != null) {
+            pathEndMarker.remove();
+            pathEndMarker = null;
+        }
+        if (points.size() < 1) {
+            updateTripStatsCard();
+            return;
+        }
+        pathStartMarker = map.addMarker(new MarkerOptions()
+                .position(points.get(0).position)
+                .title("Start")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        pathEndMarker = map.addMarker(new MarkerOptions()
+                .position(points.get(points.size() - 1).position)
+                .title("End")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         if (points.size() < 2) {
+            updateTripStatsCard();
             return;
         }
 
@@ -678,6 +888,114 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             pathOverlays.add(map.addPolyline(options));
             runStart = i;
         }
+        updateTripStatsCard();
+    }
+
+    private void updateTripStatsCard() {
+        if (statsCard == null) {
+            return;
+        }
+        boolean tripContext = pathMinMs > 0 || !lastPathPoints.isEmpty();
+        if (!tripContext) {
+            statsCard.setVisibility(View.GONE);
+            applyMapBottomPadding();
+            return;
+        }
+        if (detailPanel != null && detailPanel.getVisibility() == View.VISIBLE) {
+            statsCard.setVisibility(View.GONE);
+            applyMapBottomPadding();
+            return;
+        }
+
+        long startMs = pathMinMs;
+        long endMs = pathMaxMs > 0 ? pathMaxMs : System.currentTimeMillis();
+        if (startMs <= 0 && !lastPathPoints.isEmpty()) {
+            TrackPathReader.ActiveTrip trip = TrackPathReader.activeTrip();
+            if (trip != null) {
+                try {
+                    startMs = Long.parseLong(trip.minMilli);
+                } catch (NumberFormatException ignored) {
+                    startMs = 0;
+                }
+            }
+        }
+
+        statsTitle.setText(pathMinMs > 0 && pathMaxMs <= 0 ? "LIVE TRIP" : "TRIP");
+        statsDistance.setText(formatDistanceKm(sumPathMeters(lastPathPoints)));
+        statsTime.setText(formatDuration(startMs, endMs));
+        statsViolations.setText(String.valueOf(countViolationRuns(lastPathPoints)));
+        statsCard.setVisibility(View.VISIBLE);
+        statsCard.post(new Runnable() {
+            @Override
+            public void run() {
+                applyMapBottomPadding();
+            }
+        });
+    }
+
+    private void applyMapBottomPadding() {
+        if (map == null || statsCard == null) {
+            return;
+        }
+        int bottom = 0;
+        if (statsCard.getVisibility() == View.VISIBLE) {
+            bottom = statsCard.getHeight() + dp(16);
+        }
+        map.setPadding(0, 0, 0, bottom);
+    }
+
+    private static float sumPathMeters(List<TrackPathReader.TrackPoint> points) {
+        float total = 0f;
+        float[] out = new float[1];
+        for (int i = 1; i < points.size(); i++) {
+            LatLng a = points.get(i - 1).position;
+            LatLng b = points.get(i).position;
+            Location.distanceBetween(a.latitude, a.longitude, b.latitude, b.longitude, out);
+            // Drop GPS jumps the engine already rejects (> 1 km between ticks).
+            if (out[0] > 0f && out[0] <= 1000f) {
+                total += out[0];
+            }
+        }
+        return total;
+    }
+
+    private static int countViolationRuns(List<TrackPathReader.TrackPoint> points) {
+        int runs = 0;
+        boolean inRun = false;
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i).violation) {
+                if (!inRun) {
+                    runs++;
+                    inRun = true;
+                }
+            } else {
+                inRun = false;
+            }
+        }
+        return runs;
+    }
+
+    private static String formatDistanceKm(float meters) {
+        if (meters < 1f) {
+            return "0 km";
+        }
+        if (meters < 1000f) {
+            return Math.round(meters) + " m";
+        }
+        return String.format(Locale.US, "%.1f km", meters / 1000f);
+    }
+
+    private static String formatDuration(long startMs, long endMs) {
+        if (startMs <= 0 || endMs < startMs) {
+            return "—";
+        }
+        long totalMin = (endMs - startMs) / 60000L;
+        if (totalMin < 1L) {
+            return "< 1m";
+        }
+        long h = totalMin / 60L;
+        long m = totalMin % 60L;
+        return h > 0 ? (h + "h " + m + "m") : (m + "m");
     }
 
     // Frames every drawn site (plus the user) so all of them are visible by
@@ -688,6 +1006,24 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     // somewhere meaningful instead of the world view.
     private void frameCamera() {
         if (map == null) {
+            return;
+        }
+        if (pathMinMs > 0 && !lastPathPoints.isEmpty()) {
+            if (lastPathPoints.size() == 1) {
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        lastPathPoints.get(0).position, MapConstants.SITE_ZOOM));
+                return;
+            }
+            LatLngBounds.Builder pathBounds = new LatLngBounds.Builder();
+            for (int i = 0; i < lastPathPoints.size(); i++) {
+                pathBounds.include(lastPathPoints.get(i).position);
+            }
+            try {
+                map.moveCamera(CameraUpdateFactory.newLatLngBounds(pathBounds.build(), 120));
+            } catch (Exception e) {
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        lastPathPoints.get(0).position, MapConstants.SITE_ZOOM));
+            }
             return;
         }
         if (sites.isEmpty()) {
@@ -747,6 +1083,10 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         }
         detailText.setText(text.toString());
         selectedSite = site;
+        if (statsCard != null) {
+            statsCard.setVisibility(View.GONE);
+            applyMapBottomPadding();
+        }
         // Without a known origin there is no route to ask for.
         routeButton.setEnabled(userPosition != null);
         routeButton.setText(userPosition != null ? "Show route" : "Route needs your location");
@@ -800,13 +1140,24 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     @Override
     protected void onResume() {
         super.onResume();
-        pathHandler.postDelayed(pathPoll, MapConstants.PATH_POLL_MS);
+        // Ended trip windows are static; keep polling for live / unbounded path.
+        if (pathMinMs <= 0 || pathMaxMs <= 0) {
+            pathHandler.postDelayed(pathPoll, MapConstants.PATH_POLL_MS);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         pathHandler.removeCallbacks(pathPoll);
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        if (routeOverlay) {
+            overridePendingTransition(0, 0);
+        }
     }
 
     @Override

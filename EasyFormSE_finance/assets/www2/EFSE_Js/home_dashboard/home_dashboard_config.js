@@ -10,7 +10,7 @@ var HomeDashboardConfig = (function () {
     // flag) always wins when present; this is only the fallback when neither
     // exists yet — which is every account today, since no backend ships that
     // config, so this is what actually decides whether the cards render.
-    var DEFAULT_ENABLED = true;
+    var DEFAULT_ENABLED = false;
 
     // Two former widgets are deliberately absent, and neither is a
     // "not implemented yet" gap — both were promoted to permanent chrome:

@@ -263,3 +263,51 @@
     opacity: 1 !important;
     pointer-events: auto !important;
 }
+
+/* Trips tab: hide greeting (can leak a "G" from Good morning) and keep
+   Week/Month chips as regular-weight text, not bold pills. */
+.views .navbar-inner.trip-filters-on > .left,
+.views .navbar-inner.trip-filters-on > .left.home-greeting,
+.views .navbar-inner.trip-filters-on > .center,
+.views .navbar-inner.trip-filters-on > .right {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 0 0 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.views .navbar-inner.trip-filters-on .trip-filter-chip {
+    font-weight: 400 !important;
+    background: #e5e7eb !important;
+    color: #4b5563 !important;
+    border-radius: 6px !important;
+}
+.views .navbar-inner.trip-filters-on .trip-filter-chip.active {
+    font-weight: 400 !important;
+    background: #2a3086 !important;
+    color: #fff !important;
+}
+.views .navbar-inner.trip-filters-on .trip-filter-chip.trip-filter-cal,
+.views .navbar-inner.trip-filters-on .trip-filter-chip.trip-filter-cal.active {
+    background: transparent !important;
+    border-radius: 0 !important;
+}
+.views .navbar-inner.trip-filters-on .trip-filter-chip.trip-filter-cal {
+    color: #4b5563 !important;
+}
+.views .navbar-inner.trip-filters-on .trip-filter-chip.trip-filter-cal.active {
+    color: #2a3086 !important;
+}
+.views .navbar-inner.trip-filters-on .trip-filter-count {
+    font-weight: 400 !important;
+    background: #e5e7eb !important;
+    color: #4b5563 !important;
+    border-radius: 6px !important;
+}
+.views .navbar-inner.trip-filters-on .trip-filter-cal .fa {
+    font-size: 16px !important;
+    color: inherit !important;
+    font-weight: 400 !important;
+}

@@ -628,11 +628,51 @@ var HomeDashboardData = (function () {
         );
     }
 
+    // Recent trips from lat_plug. trip_status 0 = in progress (same as
+    // getTripStatus / TrackPathReader); anything else is an ended row.
+    // Ordered by _id desc (autoincrement) — min_milli is TEXT so we don't
+    // CAST. Cap keeps the sheet snappy on long-lived devices.
+    function getTripList(startMs, endMs, onDone) {
+        var start = parseInt(startMs, 10);
+        var end = parseInt(endMs, 10);
+        if (isNaN(start)) start = 0;
+        if (isNaN(end) || end <= 0) end = Date.now();
+        sql(
+            "select lp._id, lp.tid, lp.sid, tm.server_task_id, lp.trip_status, lp.min_milli, lp.max_milli, lp.site_name, lp.unique_trip_id, lp.issend, lp.distance from lat_plug lp left join task_master tm on tm.tid = lp.tid where (lp.min_milli+0) >= " + start + " and (lp.min_milli+0) <= " + end + " order by lp._id desc limit 80",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                onDone(rows);
+            },
+            function () { onDone([]); }
+        );
+    }
+
+    // GPS breadcrumbs for one lat_plug window (same tripflag filter as
+    // TrackPathReader). date is millis text, compared numerically.
+    function getTripPath(minMs, maxMs, onDone) {
+        var min = parseInt(minMs, 10);
+        var max = parseInt(maxMs, 10);
+        if (isNaN(min)) min = 0;
+        if (isNaN(max) || max <= 0) max = Date.now();
+        sql(
+            "select lat,lon,tripflag,date from track_master where tripflag IN (2,3) and (date+0) >= " + min + " and (date+0) <= " + max + " order by date limit 5000",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                onDone(rows);
+            },
+            function () { onDone([]); }
+        );
+    }
+
     return {
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,
         getUploadCounts: getUploadCounts,
         getTripStats: getTripStats,
+        getTripList: getTripList,
+        getTripPath: getTripPath,
         getAttendanceToday: getAttendanceToday,
         getNotificationsSummary: getNotificationsSummary,
         getSiteSummary: getSiteSummary

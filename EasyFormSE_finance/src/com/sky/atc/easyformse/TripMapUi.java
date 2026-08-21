@@ -13,6 +13,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -24,6 +28,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Gravity;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -135,71 +143,158 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     private PendingIntent geoFencePendingIntent;
     boolean ischeckfirst = false;
     ArrayList<String> permissionList = new ArrayList<>();
+    private int mapContainerId;
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private static GradientDrawable roundedBackground(int color, float radiusPx) {
+        GradientDrawable d = new GradientDrawable();
+        d.setColor(color);
+        d.setCornerRadius(radiusPx);
+        return d;
+    }
+
+    private void cancelAndFinish() {
+        Bundle b = new Bundle();
+        b.putString("result", "outside");
+        Intent intent = new Intent();
+        intent.putExtras(b);
+        setResult(RESULT_CANCELED, intent);
+        finish();
+    }
+
+    private View buildPopupLayout() {
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.parseColor("#99000000"));
+        root.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelAndFinish();
+            }
+        });
+
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setBackground(roundedBackground(Color.parseColor("#fcfcfb"), dp(12)));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            card.setClipToOutline(true);
+        }
+        card.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Swallow clicks so tapping inside card does not dismiss
+            }
+        });
+
+        // Top bar
+        LinearLayout bar = new LinearLayout(this);
+        bar.setOrientation(LinearLayout.HORIZONTAL);
+        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setBackgroundColor(Color.parseColor("#ecedef"));
+        bar.setPadding(dp(4), 0, dp(12), 0);
+        bar.setMinimumHeight(dp(48));
+
+        btnBack = new Button(this);
+        btnBack.setText("←");
+        btnBack.setTextColor(Color.parseColor("#0D1829"));
+        btnBack.setTextSize(20f);
+        btnBack.setBackground(null);
+        btnBack.setPadding(dp(12), dp(8), dp(12), dp(8));
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                cancelAndFinish();
+            }
+        });
+        bar.addView(btnBack, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        TextView title = new TextView(this);
+        String label = (tripstatus != null && tripstatus.equalsIgnoreCase("1")) ? "Ending Trip..." : "Starting Trip...";
+        title.setText(label);
+        title.setTextColor(Color.parseColor("#0D1829"));
+        title.setTextSize(14f);
+        title.setTypeface(Typeface.DEFAULT_BOLD);
+        title.setMaxLines(1);
+        title.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        bar.addView(title, titleLp);
+
+        card.addView(bar, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(48)));
+
+        // Map container
+        FrameLayout mapContainer = new FrameLayout(this);
+        mapContainerId = View.generateViewId();
+        mapContainer.setId(mapContainerId);
+        card.addView(mapContainer, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+
+        // Bottom status strip
+        LinearLayout bottomBar = new LinearLayout(this);
+        bottomBar.setOrientation(LinearLayout.HORIZONTAL);
+        bottomBar.setGravity(Gravity.CENTER_VERTICAL);
+        bottomBar.setBackgroundColor(Color.parseColor("#ecedef"));
+        bottomBar.setPadding(dp(16), dp(8), dp(16), dp(8));
+        bottomBar.setMinimumHeight(dp(44));
+
+        progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleSmall);
+        progressBar.setIndeterminate(true);
+        progressBar.setVisibility(View.VISIBLE);
+        LinearLayout.LayoutParams pbLp = new LinearLayout.LayoutParams(
+                dp(24), dp(24));
+        pbLp.rightMargin = dp(12);
+        bottomBar.addView(progressBar, pbLp);
+
+        refreshLat = new Button(this);
+        refreshLat.setText("Locking GPS location...");
+        refreshLat.setTextColor(Color.parseColor("#374151"));
+        refreshLat.setTextSize(13f);
+        refreshLat.setGravity(Gravity.CENTER_VERTICAL);
+        refreshLat.setBackground(null);
+        refreshLat.setClickable(false);
+        refreshLat.setEnabled(false);
+        refreshLat.setPadding(0, 0, 0, 0);
+        LinearLayout.LayoutParams rfLp = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        bottomBar.addView(refreshLat, rfLp);
+
+        card.addView(bottomBar, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(44)));
+
+        int w = Math.round(getResources().getDisplayMetrics().widthPixels * 0.94f);
+        int h = Math.round(getResources().getDisplayMetrics().heightPixels * 0.78f);
+        FrameLayout.LayoutParams cardLp = new FrameLayout.LayoutParams(w, h, Gravity.CENTER);
+        root.addView(card, cardLp);
+
+        return root;
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.tripmap_layout);
+        getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        overridePendingTransition(0, 0);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        if (getIntent() != null && getIntent().getExtras() != null) {
+            tid = getIntent().getExtras().getString("tid");
+            tripstatus = getIntent().getExtras().getString("tripstatus");
+            odometerpoint = getIntent().getExtras().getString("odometer_point");
+            etaFlag = getIntent().getExtras().getString("ETA");
+        }
+
+        setContentView(buildPopupLayout());
+
+        SupportMapFragment mapFragment = SupportMapFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(mapContainerId, mapFragment).commitNow();
         mapFragment.getMapAsync(this);
-        btnBack = (Button) findViewById(R.id.btn_back);
-        refreshLat = (Button) findViewById(R.id.btn_refresh);
-
 
         database = sqlitewraper.getDatabase();
-        refreshLat.setClickable(false);
-        refreshLat.setEnabled(false);
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-//        locationProvider();
-//        locationManagerGPS();
-        progressBar.setVisibility(View.VISIBLE);
-
-
-        tid = getIntent().getExtras().getString("tid");
-        tripstatus = getIntent().getExtras().getString("tripstatus");
-        odometerpoint = getIntent().getExtras().getString("odometer_point");
-        etaFlag = getIntent().getExtras().getString("ETA");
-
         updateTripflagTaskMaster(tid, "1");
-
-        //Cancle the trip(NOT IN USE)
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                btnBack.setBackgroundDrawable(getResources().getDrawable(R.drawable.button_selected));
-                Bundle b = new Bundle();
-                b.putString("result", "outside");
-                Intent intent = new Intent();
-                intent.putExtras(b);
-                setResult(RESULT_CANCELED, intent);
-                finish();
-            }
-        });
-        //click on refresh lat (Not in use)
-        refreshLat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                refreshLat.setBackgroundDrawable(getResources().getDrawable(R.drawable.button_selected));
-//                tripStart(pointOneLat,pointOneLang,uniqtripid);
-
-                if (isClickable) {
-
-//                  latPlugUpdate(tid, tripstatus, odometerpoint);
-                    Bundle b = new Bundle();
-                    Intent intent = new Intent();
-                    intent.putExtras(b);
-                    setResult(RESULT_OK, intent);
-                    finish();
-                    isClickable = false;
-
-                }
-            }
-
-        });
-
-
-
     }
 
     //Load map
@@ -1639,5 +1734,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             }
         }
         return false;
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(0, 0);
     }
 }

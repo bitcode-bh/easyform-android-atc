@@ -2573,9 +2573,10 @@ home_tab_click = () => {
     storage.setItem('list_json', JSON.stringify(''));
     storage.setItem('cust_flow_Array', JSON.stringify(''));
 
-    //changeurl('selection.html');
+    $('#div_trip_list').hide();
     $('#div_page_content').show();
     $('#div_vertical_dashboard').hide();
+    if (typeof TripListSheet !== 'undefined' && TripListSheet.close) TripListSheet.close();
     pageload_main();
 }
 

@@ -107,4 +107,50 @@ public final class TrackPathReader {
             }
         }
     }
+
+    // Historical window for a lat_plug row. maxMilli <= 0 means until now
+    // (live trip). Same tripflag filter as read(ActiveTrip).
+    public static List<TrackPoint> readWindow(long minMilli, long maxMilli) {
+        List<TrackPoint> points = new ArrayList<TrackPoint>();
+        if (minMilli <= 0) {
+            return points;
+        }
+        Cursor c = null;
+        try {
+            SQLiteDatabase database = sqlitewraper.getDatabase();
+            if (database == null) {
+                return points;
+            }
+            String sql = "select lat,lon,tripflag from track_master where tripflag IN (2,3) and date>="
+                    + minMilli;
+            if (maxMilli > 0) {
+                sql += " and date<=" + maxMilli;
+            }
+            sql += " order by date";
+            c = database.rawQuery(sql, null);
+            if (c.getCount() == 0) {
+                return points;
+            }
+            for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
+                String lat = c.getString(0);
+                String lon = c.getString(1);
+                if (lat == null || lon == null || lat.length() == 0 || lon.length() == 0) {
+                    continue;
+                }
+                try {
+                    points.add(new TrackPoint(
+                            new LatLng(Double.parseDouble(lat), Double.parseDouble(lon)),
+                            MapConstants.TRIPFLAG_VIOLATION.equals(c.getString(2))));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            return points;
+        } catch (Exception e) {
+            return points;
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+    }
 }

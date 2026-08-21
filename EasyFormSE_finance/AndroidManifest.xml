@@ -366,7 +366,8 @@
         <activity android:name=".CustomerPageMapsActivity" />
         <activity
             android:name=".TripMapUi"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Transparent" />
 
         <activity
             android:name=".BiometricLogin"
@@ -506,7 +507,7 @@
             android:name=".trip.mapui.VtTripTrackingMapActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/Theme.Transparent"
             android:exported="false"/>
 
         <activity

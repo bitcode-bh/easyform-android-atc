@@ -43,6 +43,7 @@
     <script src="EFSE_Js/home_dashboard/widgets/widget_notifications.js" type="text/javascript"></script>
     <script src="EFSE_Js/home_dashboard/widgets/widget_feature_links.js" type="text/javascript"></script>
     <script src="EFSE_Js/home_dashboard/home_dashboard_entry.js" type="text/javascript"></script>
+    <script src="EFSE_Js/home_dashboard/trip_list.js" type="text/javascript"></script>
 
     <link href="css/selection_dashboard.css" rel="stylesheet" />
     <script src="EFSE_Js/selection_dashboard.js"></script>
@@ -555,6 +556,13 @@
                                         <span class="badge notification-badge" style="opacity:0; position: absolute; top: -2px; right: -4px;"></span>
                                     </a>
                                 </div>
+                                <div id="navbar_trip_filters" class="trip-navbar-filters">
+                                    <span id="trip_filter_count" class="trip-filter-count">0</span>
+                                    <a href="#" class="trip-filter-chip" data-range="week">Week</a>
+                                    <a href="#" class="trip-filter-chip active" data-range="month">Month</a>
+                                    <a href="#" class="trip-filter-chip" data-range="quarter">Quarter</a>
+                                    <a href="#" class="trip-filter-chip trip-filter-cal" data-range="custom" aria-label="Custom dates"><i class="fa fa-calendar"></i></a>
+                                </div>
                             </div>
                         </div>
 
@@ -763,6 +771,31 @@
                             </div>
                         </div>
 
+                        <div id="div_trip_list" class="page-content" style="display:none; width:100%; max-width:100%; overflow-x:hidden;">
+                            <div id="trip_custom_row" class="trip-custom-row" style="display:none">
+                                <input type="date" id="trip_date_from" class="trip-date-input" aria-label="From date" />
+                                <span class="trip-date-sep">–</span>
+                                <input type="date" id="trip_date_to" class="trip-date-input" aria-label="To date" />
+                            </div>
+                            <div class="trip-list-stats-card">
+                                <div class="trip-list-metric">
+                                    <span class="trip-list-metric-val" id="trip_stat_km">—</span>
+                                    <span class="trip-list-metric-lab">Distance</span>
+                                </div>
+                                <div class="trip-list-metric">
+                                    <span class="trip-list-metric-val" id="trip_stat_time">—</span>
+                                    <span class="trip-list-metric-lab">Time</span>
+                                </div>
+                                <div class="trip-list-metric">
+                                    <span class="trip-list-metric-val" id="trip_stat_violations">—</span>
+                                    <span class="trip-list-metric-lab">Violations</span>
+                                </div>
+                            </div>
+                            <div class="list-block trip-list-card">
+                                <ul id="trip_list_ul"></ul>
+                            </div>
+                        </div>
+
                         <div id="div_vertical_dashboard" class="page-content">
                             <div id="dashboard_container">
                             </div>
@@ -788,9 +821,9 @@
                                     </span>
                                     <span class="tabbar-label mt-1" id="lbl_start_trip">Start Trip</span>
                                 </a>
-                                <a href="#" class="tab-link" id="btn_trip_map" style="display:none" onclick="TripSiteMap.open()">
-                                    <span class="tab-ico"><i class="fa-solid fa-map-location-dot ico-outline"></i><i class="fa-solid fa-map-location-dot ico-filled"></i></span>
-                                    <span class="tabbar-label mt-1">Map</span>
+                                <a href="#" class="tab-link" id="btn_trip_list" onclick="return TripListSheet.open()">
+                                    <span class="tab-ico"><i class="fa-regular fa-rectangle-list ico-outline"></i><i class="fa-solid fa-rectangle-list ico-filled"></i></span>
+                                    <span class="tabbar-label mt-1">Trips</span>
                                 </a>
                                 <a href="#" class="tab-link" id="btn_LMS" onclick="return crossToLMS('LMS_Dashboard.html')">
                                     <span class="tab-ico"><i class="fa-solid fa-shield ico-outline"></i><i class="fa-solid fa-shield ico-filled"></i></span>
