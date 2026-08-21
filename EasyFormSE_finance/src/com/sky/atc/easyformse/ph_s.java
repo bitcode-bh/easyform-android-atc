@@ -396,15 +396,15 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         stopService(i);
                     }
 
-                    if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
-                    {
-                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                                SafetyDetectionService.class.getName());
-                        if (check12) {
-                            Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
-                            sqlitewraper.context.stopService(mIntent1);
-                        }
-                    }
+//                    if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
+//                    {
+//                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
+//                                SafetyDetectionService.class.getName());
+//                        if (check12) {
+//                            Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
+//                            sqlitewraper.context.stopService(mIntent1);
+//                        }
+//                    }
 //                    hide newfused and activity_recognition code  23-07-2025
 
 //                    boolean check = isMyServiceRunning(sqlitewraper.context,
