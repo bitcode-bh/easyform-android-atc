@@ -75,7 +75,7 @@ import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.datautils.OnHomePressedListener;
 import com.sky.atc.easyformse.geofencenew.GeoFenceDraw;
 import com.sky.atc.easyformse.location.FakeLocationUtils;
-import com.sky.atc.easyformse.sensordetection.SafetyDetectionService;
+
 import com.sky.atc.easyformse.trip.FloatingBubbleService;
 import com.sky.atc.easyformse.trip.LocationOutageUtils;
 import com.sky.atc.easyformse.trip.ServiceOutage;
