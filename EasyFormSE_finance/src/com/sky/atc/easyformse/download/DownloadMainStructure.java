@@ -3052,11 +3052,15 @@ class DownloadMainStructure {
                                     cv1.put("continuous_driving_alert_time", continuous_driving_alert_time);
                                     cv1.put("continuous_driving_reset_alert_time", continuous_driving_reset_alert_time);
 
-                                    c4 = database.rawQuery(
-                                            "SELECT threshold_id FROM Thresold_New WHERE threshold_id = " + threshold_id,
-                                            null
-                                    );
-                                    c4.moveToFirst();
+                                    int thresholdount =0;
+                                    if(!threshold_id.equalsIgnoreCase("")) {
+                                        c4 = database.rawQuery(
+                                                "SELECT threshold_id FROM Thresold_New WHERE threshold_id = " + threshold_id,
+                                                null
+                                        );
+                                        c4.moveToFirst();
+                                        thresholdount = c4.getCount();
+                                    }
                                     c5 = database.rawQuery(
                                             "SELECT vehicle_type FROM Thresold_New WHERE vehicle_type = " + "'" + vehicle_type + "'",
                                             null
@@ -3065,7 +3069,7 @@ class DownloadMainStructure {
 
                                     // threshold_id is get - recoder update 21-08-2026
                                     // threshold_id is null = check vehicle_type
-                                    if (c4.getCount() > 0 )
+                                    if (thresholdount > 0 )
                                     {
                                         database.update(
                                                 "Thresold_New",

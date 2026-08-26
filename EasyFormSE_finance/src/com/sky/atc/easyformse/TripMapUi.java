@@ -1374,24 +1374,24 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 manageHandlerFused(200);
             }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-        {
-            boolean isEnabled = isNotificationServiceEnabled(this);
-            if (isEnabled)
-            {
-                Intent mServiceIntent = new Intent(this, VoipNotificationService.class);
-                startService(mServiceIntent);
-
-                manageHandler(30000);
-                //start the fused location update
-                manageHandlerFused(200);
-            } else {
-                //service is not enabled try to enable by calling...
-
-                requestNotificationaccess();
-                return;
-            }
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+//        {
+//            boolean isEnabled = isNotificationServiceEnabled(this);
+//            if (isEnabled)
+//            {
+//                Intent mServiceIntent = new Intent(this, VoipNotificationService.class);
+//                startService(mServiceIntent);
+//
+//                manageHandler(30000);
+//                //start the fused location update
+//                manageHandlerFused(200);
+//            } else {
+//                //service is not enabled try to enable by calling...
+//
+//                requestNotificationaccess();
+//                return;
+//            }
+//        }
         else {
             manageHandler(30000);
             //start the fused location update

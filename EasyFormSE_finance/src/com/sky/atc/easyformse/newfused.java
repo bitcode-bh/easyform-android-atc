@@ -201,7 +201,7 @@ public class newfused extends Service implements LocationListener {
         checkServicemilli();
         startServUpdateTask();
         registerCallListener();
-        registerWhatsAppCallReceiver();
+       // registerWhatsAppCallReceiver();
         initSensorFusion();
         boolean isuploadlastentry = pref.getBoolean("isuploadlastentry",false);
 //        check location and upload in server
