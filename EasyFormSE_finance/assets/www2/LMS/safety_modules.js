@@ -1,6 +1,10 @@
 
 // Safety module listing (level 1)
 var glob_Module_Schedule_Id = 0;
+// Guards the hardware-Back watch-log request for the currently open lesson.
+var safetyVideoWatchLogInProgress = false;
+// True only after playback occurs during the currently open Safety video.
+var safety_video_played = false;
 var safety_module_data = [];
 var selected_safety_tag = "All";
 var selected_safety_sort = "recommended";
@@ -747,6 +751,15 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 else if (Video_Time == "" || Video_Time == null || Video_Time == undefined) {
                     Video_Time = "00:00";
                 }
+                // Bind each card to the watched time returned for that skill by
+                // LMS_Select_Skill_Master_RoleWise; blank values retain 00:00.
+                let Watch_Video_Time = data[m].Watch_Video_Time;
+                if (Watch_Video_Time == null || String(Watch_Video_Time).trim() === "") {
+                    Watch_Video_Time = "00:00";
+                }
+                else {
+                    Watch_Video_Time = String(Watch_Video_Time).trim();
+                }
                 lessonMeta.push({
                     skillId: Skill_Id,
                     totalSec: (typeof real_duration_sec === 'number' && real_duration_sec > 0) ? real_duration_sec : 0
@@ -777,13 +790,9 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                     ? lms_get_lesson_effective_progress(Skill_Id, Progress)
                     : Number(Progress) || 0;
 
-                // Watched / total, e.g. "01:12/06:19". Elapsed comes from the saved
-                // resume position for this skill, so it matches where the video will
-                // actually pick up; a finished lesson always reads as its full length
-                // rather than wherever the last save happened to land.
-                let elapsed_str = (typeof lms_format_lesson_elapsed_display === 'function')
-                    ? lms_format_lesson_elapsed_display(Skill_Id, real_duration_sec > 0 ? real_duration_sec : Video_Time)
-                    : "00:00";
+                // Watched / total, e.g. "01:12/06:19". Watched time is supplied
+                // per skill by the listing API rather than inferred locally.
+                let elapsed_str = Watch_Video_Time;
 
                 // Thumbnail opens the lesson directly; tapping the body toggles the
                 // full description. Duration now sits under the thumbnail (it was an
@@ -791,7 +800,7 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 // skill/module ids + video length live on the element so the row can
                 // be refreshed in place (see refresh_lesson_preview_rows) without
                 // re-fetching the whole lesson list.
-                let str = '<div class="lesson-preview-card" data-skill-id="' + Skill_Id + '" data-module-id="' + Module_Id + '" data-video-time="' + Video_Time + '" data-server-progress="' + Progress + '">';
+                let str = '<div class="lesson-preview-card" data-skill-id="' + Skill_Id + '" data-module-id="' + Module_Id + '" data-module-schedule-id="' + glob_Module_Schedule_Id + '" data-video-time="' + Video_Time + '" data-watch-video-time="' + Watch_Video_Time + '" data-server-progress="' + Progress + '">';
                 str += '<div class="lesson-preview-media">';
                 str += '<div class="lesson-preview-thumb" onclick="' + onclick_str + '">';
 
@@ -948,6 +957,7 @@ function refresh_lesson_preview_rows() {
 
         var serverProgress = card.getAttribute('data-server-progress');
         var Video_Time = card.getAttribute('data-video-time') || '00:00';
+        var Watch_Video_Time = card.getAttribute('data-watch-video-time') || '00:00';
         var eff = (typeof lms_get_lesson_effective_progress === 'function')
             ? lms_get_lesson_effective_progress(Skill_Id, serverProgress)
             : Number(serverProgress) || 0;
@@ -960,11 +970,7 @@ function refresh_lesson_preview_rows() {
         if (totalEl) totalEl.textContent = Video_Time;
 
         var elapsedEl = card.querySelector('.lesson-preview-elapsed');
-        if (elapsedEl && typeof lms_format_lesson_elapsed_display === 'function') {
-            var totalSec = (typeof lms_parse_clock_to_seconds === 'function')
-                ? lms_parse_clock_to_seconds(Video_Time) : 0;
-            elapsedEl.textContent = lms_format_lesson_elapsed_display(Skill_Id, totalSec > 0 ? totalSec : Video_Time);
-        }
+        if (elapsedEl) elapsedEl.textContent = Watch_Video_Time;
 
         var statusEl = card.querySelector('.lesson-preview-status');
         if (statusEl) {
@@ -1001,8 +1007,16 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
         try { prevVideo.pause(); } catch (e) { }
     }
 
+    // Keep resume state on the shared video element, scoped to the exact card
+    // selected from the current module/schedule listing response.
+    var selectedCard = findSafetyVideoCard(Skill_Id, Module_Id, glob_Module_Schedule_Id);
+    var apiWatchTime = selectedCard ? selectedCard.getAttribute('data-watch-video-time') : '';
+
     safetyVideoPopupActive = true;
     safetyVideoReturnedFromFullscreen = false;
+    // A newly opened lesson is a new opportunity to submit one Back-button log.
+    safetyVideoWatchLogInProgress = false;
+    safety_video_played = false;
     myApp.popup.open('.popup-level-4');
     $("#dv_Question_List").empty();
 
@@ -1017,10 +1031,16 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
         lessonBtn.textContent = 'Submit';
     }
 
-    $("#vdo_Question").attr("src", Video_Link);
-    $("#vdo_Question").attr("skil_id", Skill_Id);
-    $("#vdo_Question").attr("module_id", Module_Id);
-    $("#vdo_Question").attr("Module_Id", Module_Id);
+    var safetyVideo = $("#vdo_Question")[0];
+    if (safetyVideo) {
+        $(safetyVideo).attr("skil_id", Skill_Id);
+        $(safetyVideo).attr("module_id", Module_Id);
+        $(safetyVideo).attr("Module_Id", Module_Id);
+        safetyVideo._safetyResumeTimeSeconds = videoClockToSeconds(apiWatchTime);
+        // Set src last so even a cached video's metadata cannot arrive before
+        // the selected lesson's resume position has been attached.
+        $(safetyVideo).attr("src", Video_Link);
+    }
     let vdo_Description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-desc").html();
     $("#vdo_Description").html(vdo_Description);
 
@@ -1057,6 +1077,141 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
 
     }, onfail);
     getdata.callOtherDomain();
+}
+
+// Convert a finite video time in seconds to the API's MM:SS format.
+function secondsToMMSS(seconds) {
+    var value = Number(seconds);
+    if (!isFinite(value) || value < 0) value = 0;
+    value = Math.floor(value);
+
+    var minutes = Math.floor(value / 60);
+    var secs = value % 60;
+    return (minutes < 10 ? '0' : '') + minutes + ':' +
+        (secs < 10 ? '0' : '') + secs;
+}
+
+// Parse API video clocks in HH:mm:ss (and tolerate MM:SS for compatibility).
+// Invalid/blank values deliberately resolve to the beginning of the video.
+function videoClockToSeconds(clockValue) {
+    if (clockValue == null || String(clockValue).trim() === '') return 0;
+    var parts = String(clockValue).trim().split(':');
+    if (parts.length !== 2 && parts.length !== 3) return 0;
+    for (var i = 0; i < parts.length; i++) {
+        if (!/^\d+$/.test(parts[i])) return 0;
+    }
+
+    var hours = parts.length === 3 ? Number(parts[0]) : 0;
+    var minutes = Number(parts[parts.length - 2]);
+    var seconds = Number(parts[parts.length - 1]);
+    if (seconds >= 60 || (parts.length === 3 && minutes >= 60)) return 0;
+    return (hours * 3600) + (minutes * 60) + seconds;
+}
+
+// Locate the selected lesson without relying on a global watch-time value.
+function findSafetyVideoCard(skillId, moduleId, moduleScheduleId) {
+    var cards = document.querySelectorAll('.lesson-preview-card');
+    for (var i = 0; i < cards.length; i++) {
+        if (String(cards[i].getAttribute('data-skill-id')) === String(skillId) &&
+            String(cards[i].getAttribute('data-module-id')) === String(moduleId) &&
+            String(cards[i].getAttribute('data-module-schedule-id')) === String(moduleScheduleId)) {
+            return cards[i];
+        }
+    }
+    return null;
+}
+
+// Log the active Safety Module video's resume/progress position before Back
+// closes its popup. Existing LMS lesson progress is also currentTime-based, so
+// seeking intentionally changes this value; it is not an accumulated-time field.
+function logSafetyVideoWatchOnBack(done) {
+    var finish = (typeof done === 'function') ? done : function () { };
+    if (safetyVideoWatchLogInProgress) return false;
+
+    // Seeking to the API resume position does not count as watching. Submit a
+    // new watch log only when playback occurred during this open session.
+    if (!safety_video_played) {
+        finish();
+        return false;
+    }
+
+    var video = document.getElementById('vdo_Question');
+    if (!video) {
+        finish();
+        return false;
+    }
+
+    safetyVideoWatchLogInProgress = true;
+
+    // Snapshot before the async request so playback cannot change submitted data.
+    var duration = Number(video.duration);
+    if (!isFinite(duration) || duration <= 0) duration = 0;
+    var currentTime = Number(video.currentTime);
+    if (!isFinite(currentTime) || currentTime < 0) currentTime = 0;
+    if (duration > 0 && currentTime > duration) currentTime = duration;
+    try { video.pause(); } catch (pauseError) { }
+
+    var moduleId = $(video).attr('module_id');
+    if (moduleId == null || moduleId === '') moduleId = $(video).attr('Module_Id');
+    var skillId = $(video).attr('skil_id');
+    var payload = [{
+        "Module_Id": String(moduleId == null ? '' : moduleId),
+        "Module_Schedule_Id": String(glob_Module_Schedule_Id == null ? '' : glob_Module_Schedule_Id),
+        "Skill_Id": String(skillId == null ? '' : skillId),
+        "Total_Video_Time": secondsToMMSS(duration),
+        "Watch_Video_Time": secondsToMMSS(currentTime)
+    }];
+
+    var completed = false;
+    var backFallbackTimer = null;
+    function continueBack() {
+        if (completed) return;
+        completed = true;
+        if (backFallbackTimer) clearTimeout(backFallbackTimer);
+        finish();
+    }
+
+    // Never hold the existing Back navigation indefinitely on a slow network.
+    backFallbackTimer = setTimeout(continueBack, 5000);
+
+    try {
+        var request = new Webservicecall_REST(
+            global_wcf_url_lms + 'LMS_InsertUpdate_Video_Watch_Log',
+            JSON.stringify(payload),
+            function (response) {
+                try {
+                    var result = JSON.parse(response.responseText || '[]');
+                    if (!result.length || Number(result[0].status) !== 1) {
+                        console.error('Safety video watch log was not accepted by the server.');
+                    } else {
+                        // Keep this open listing current after a successful save,
+                        // so reopening the same lesson resumes from the new value.
+                        var card = findSafetyVideoCard(payload[0].Skill_Id, payload[0].Module_Id, payload[0].Module_Schedule_Id);
+                        if (card) {
+                            card.setAttribute('data-watch-video-time', payload[0].Watch_Video_Time);
+                            var elapsed = card.querySelector('.lesson-preview-elapsed');
+                            if (elapsed) elapsed.textContent = payload[0].Watch_Video_Time;
+                        }
+                    }
+                } catch (parseError) {
+                    console.error('Unable to parse Safety video watch log response.', parseError);
+                }
+                continueBack();
+            },
+            function (error) {
+                console.error('Unable to save Safety video watch log.', error);
+                continueBack();
+            },
+            null,
+            15000
+        );
+        request.callOtherDomain();
+    } catch (requestError) {
+        console.error('Unable to start Safety video watch log request.', requestError);
+        continueBack();
+    }
+
+    return true;
 }
 
 function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {

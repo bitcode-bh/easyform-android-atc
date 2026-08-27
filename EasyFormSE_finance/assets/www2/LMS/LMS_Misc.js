@@ -1061,24 +1061,42 @@ $(document).ready(function () {
             event.stopPropagation();
         });
 
-    $(video).on("loadedmetadata", function () {
-        var skillId = $(video).attr("skil_id");
-        var moduleId = $(video).attr("module_id");
-        var data = JSON.parse(localStorage.getItem('video_progress_' + skillId)) || [];
+    // The in-player chevron intentionally uses the exact same Safety video
+    // exit/watch-log flow as native Back. Namespacing prevents duplicate binds.
+    $("#safety-video-close")
+        .off("click.safetyVideoBack")
+        .on("click.safetyVideoBack", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            handleSafetyVideoBack();
+            return false;
+        });
 
-        if (data.length > 0) {
-            var saved = data.find(item => item.Skill_Id == skillId);
+    // Bound once during LMS initialization. The selected Safety lesson places
+    // its own API resume time on the shared element before changing its src.
+    $(video).off("loadedmetadata.safetyResume").on("loadedmetadata.safetyResume", function () {
+        var savedSeconds = Number(video._safetyResumeTimeSeconds);
+        if (!isFinite(savedSeconds) || savedSeconds < 0) savedSeconds = 0;
 
-            if (saved && saved.currentTime) {
-                video.currentTime = saved.currentTime;
-            }
+        var duration = Number(video.duration);
+        if (!isFinite(duration) || duration <= 0 || savedSeconds >= duration) {
+            savedSeconds = 0;
         }
 
+        try {
+            video.currentTime = savedSeconds;
+        } catch (resumeError) {
+            console.error('Unable to restore Safety video position.', resumeError);
+            try { video.currentTime = 0; } catch (resetError) { }
+        }
     });
 
     var lastProgressSaveAt = 0;
 
     $(video).on("play", function () {
+        // This handler is registered once during LMS initialization. Once set,
+        // pause/resume must not clear the current Safety video session flag.
+        if (typeof safety_video_played !== 'undefined') safety_video_played = true;
         video._lmsPlaySkillId = $(video).attr("skil_id");
         if (this.currentTime < 0.5) {
             call_by_videolog('start'); // call api
@@ -1423,27 +1441,40 @@ document.addEventListener('webkitfullscreenchange', function () {
     else if (!el && safetyVideoLandscapeMode) finishSafetyVideoLandscape();
 });
 
-function back_button_LMS() {
-    // Mandatory full-screen quiz in progress — swallow back until it's submitted.
+// Common Safety player exit for both native Back and #safety-video-close.
+// logSafetyVideoWatchOnBack handles played-session gating and duplicate calls.
+function handleSafetyVideoBack() {
+    // Match native Back while the mandatory completion quiz owns the player.
     if (typeof safety_quiz_mandatory_active !== 'undefined' && safety_quiz_mandatory_active) {
-        return false;
+        return true;
     }
 
     if (safetyVideoLandscapeMode || document.fullscreenElement === document.getElementById('safety-video-container') || document.webkitFullscreenElement === document.getElementById('safety-video-container')) {
         exitSafetyVideoLandscape();
+        return true;
+    }
+
+    var popupVisible = $('.popup-level-4.modal-in, .popup-level-4.popup-in, .popup-level-4.popup-opened').length > 0;
+    if (!safetyVideoPopupActive && !safetyVideoReturnedFromFullscreen && !popupVisible) {
         return false;
     }
 
-    if (safetyVideoPopupActive) {
+    function closeSafetyVideoPopup() {
         safetyVideoPopupActive = false;
         safetyVideoReturnedFromFullscreen = false;
         myApp.popup.close('.popup-level-4');
-        return false;
     }
 
-    if (safetyVideoReturnedFromFullscreen) {
-        safetyVideoReturnedFromFullscreen = false;
-        myApp.popup.close('.popup-level-4');
+    if (typeof logSafetyVideoWatchOnBack === 'function') {
+        logSafetyVideoWatchOnBack(closeSafetyVideoPopup);
+    } else {
+        closeSafetyVideoPopup();
+    }
+    return true;
+}
+
+function back_button_LMS() {
+    if (handleSafetyVideoBack()) {
         return false;
     }
 
@@ -1453,14 +1484,9 @@ function back_button_LMS() {
         return false;
     }
 
-    var level4_popup = $('.popup-level-4.modal-in, .popup-level-4.popup-in, .popup-level-4.popup-opened');
     var level3_popup = $('.lms-module-preview-popup.modal-in, .lms-module-preview-popup.popup-in, .lms-module-preview-popup.popup-opened');
     var level2_popup = $('.popup-assessment-que.modal-in, .popup-assessment-que.popup-in, .popup-assessment-que.popup-opened');
-    if (level4_popup.length > 0) {
-        myApp.popup.close('.popup-level-4');
-        return false;
-    }
-    else if (level3_popup.length > 0) {
+    if (level3_popup.length > 0) {
         myApp.popup.close('.lms-module-preview-popup');
         return false;
     }
