@@ -44,15 +44,28 @@
     <script src="LMS/LMS_Misc.js"></script>
 
     <style>
-        .duotone-icon {
-            font-size: 28px;
-            color: black;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.15);
-        }
+             .duotone-icon {
+                 font-size: 28px;
+                 color: black;
+                 text-shadow: 2px 2px 0px rgba(0,0,0,0.15);
+             }
 
-        .md .tabbar-label {
-            font-size: 10px;
-        }
+             .md .tabbar-label {
+                 font-size: 10px;
+             }
+
+             /* Cordova Android already excludes the system navigation area from the WebView.
+        Keep the existing 56px toolbar flush with that viewport instead of adding a second inset. */
+             #lms_toolbar_bottom {
+                 height: 56px !important;
+             }
+
+                 /* Override Framework7's generic safe-area lift on the Android/Material toolbar. */
+                 #lms_toolbar_bottom > .toolbar-inner {
+                     top: 0;
+                     bottom: 0;
+                     height: auto;
+                 }
     </style>
     <script type="text/javascript">
 
@@ -162,7 +175,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="toolbar toolbar-bottom tabbar">
+                <div id="lms_toolbar_bottom" class="toolbar toolbar-bottom tabbar">
                     <div class="toolbar-inner">
                         <div class="toolbar-pane">
                             <a href="#tab-1" class="tab-link" onclick="lms_set_title('Modules')">
@@ -198,57 +211,57 @@
                                 <!-- Frozen while the module list below scrolls (position:sticky against
                                      #tab-1's own scroll box — verified live via CDP before shipping). -->
                                 <div class="lms-sticky-header">
-                                <!-- Summary bar -->
-                                <div class="lms-info-bar">
-                                    <div class="lms-info-item">
-                                        <div class="lms-info-top">
-                                            <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
-                                            <div class="lms-info-value" id="kpi_module_completed_pct">0%</div>
+                                    <!-- Summary bar -->
+                                    <div class="lms-info-bar">
+                                        <div class="lms-info-item">
+                                            <div class="lms-info-top">
+                                                <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                                                <div class="lms-info-value" id="kpi_module_completed_pct">0%</div>
+                                            </div>
+                                            <div class="lms-info-label">Completed</div>
                                         </div>
-                                        <div class="lms-info-label">Completed</div>
-                                    </div>
-                                    <div class="lms-info-divider"></div>
-                                    <div class="lms-info-item">
-                                        <div class="lms-info-top">
-                                            <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
-                                            <div class="lms-info-value" id="kpi_module_avg_score">0%</div>
+                                        <div class="lms-info-divider"></div>
+                                        <div class="lms-info-item">
+                                            <div class="lms-info-top">
+                                                <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+                                                <div class="lms-info-value" id="kpi_module_avg_score">0%</div>
+                                            </div>
+                                            <div class="lms-info-label">Avg score</div>
                                         </div>
-                                        <div class="lms-info-label">Avg score</div>
-                                    </div>
-                                    <div class="lms-info-divider"></div>
-                                    <div class="lms-info-item">
-                                        <div class="lms-info-top">
-                                            <span class="lms-info-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
-                                            <div class="lms-info-value" id="kpi_module_watch_time">0s</div>
+                                        <div class="lms-info-divider"></div>
+                                        <div class="lms-info-item">
+                                            <div class="lms-info-top">
+                                                <span class="lms-info-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
+                                                <div class="lms-info-value" id="kpi_module_watch_time">0s</div>
+                                            </div>
+                                            <div class="lms-info-label">Watch time</div>
                                         </div>
-                                        <div class="lms-info-label">Watch time</div>
-                                    </div>
-                                    <div class="lms-info-divider"></div>
-                                    <div class="lms-info-item">
-                                        <div class="lms-info-top">
-                                            <span class="lms-info-icon"><i class="fa-solid fa-film" aria-hidden="true"></i></span>
-                                            <div class="lms-info-value" id="kpi_module_total_time">0s</div>
+                                        <div class="lms-info-divider"></div>
+                                        <div class="lms-info-item">
+                                            <div class="lms-info-top">
+                                                <span class="lms-info-icon"><i class="fa-solid fa-film" aria-hidden="true"></i></span>
+                                                <div class="lms-info-value" id="kpi_module_total_time">0s</div>
+                                            </div>
+                                            <div class="lms-info-label">Total video time</div>
                                         </div>
-                                        <div class="lms-info-label">Total video time</div>
                                     </div>
-                                </div>
 
-                                <!-- search moved to the shared top app bar; sort removed -->
-                                <div class="sample-safety-search-row" style="display:none">
-                                    <div class="sample-safety-search"></div>
-                                </div>
-
-                                <div class="sample-safety-tabs swiper-no-swiping">
-                                    <div class="sample-safety-chip active">
-                                        <span class="sample-safety-check"><i class="fa fa-check"></i></span>
-                                        <span>All</span>
+                                    <!-- search moved to the shared top app bar; sort removed -->
+                                    <div class="sample-safety-search-row" style="display:none">
+                                        <div class="sample-safety-search"></div>
                                     </div>
-                                    <div class="sample-safety-chip">Safety</div>
-                                    <div class="sample-safety-chip">Field Ops</div>
-                                    <div class="sample-safety-chip">Compliance</div>
-                                </div>
-                                <!-- Selected filter + live count; filled by lms_render_filter_summary(). -->
-                                <div class="lms-filter-summary" id="lms_module_filter_summary"></div>
+
+                                    <div class="sample-safety-tabs swiper-no-swiping">
+                                        <div class="sample-safety-chip active">
+                                            <span class="sample-safety-check"><i class="fa fa-check"></i></span>
+                                            <span>All</span>
+                                        </div>
+                                        <div class="sample-safety-chip">Safety</div>
+                                        <div class="sample-safety-chip">Field Ops</div>
+                                        <div class="sample-safety-chip">Compliance</div>
+                                    </div>
+                                    <!-- Selected filter + live count; filled by lms_render_filter_summary(). -->
+                                    <div class="lms-filter-summary" id="lms_module_filter_summary"></div>
                                 </div>
 
                                 <div id="dv_Module_List"></div>
@@ -285,32 +298,32 @@
                                 <!-- Frozen while the assessments list below scrolls — same sticky treatment
                                      as Modules (#tab-1). -->
                                 <div class="lms-sticky-header">
-                                <!-- Summary bar -->
-                                <div class="lms-info-bar">
-                                    <div class="lms-info-item">
-                                        <div class="lms-info-top">
-                                            <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
-                                            <div class="lms-info-value" id="kpi_assessment_completed_pct">0%</div>
+                                    <!-- Summary bar -->
+                                    <div class="lms-info-bar">
+                                        <div class="lms-info-item">
+                                            <div class="lms-info-top">
+                                                <span class="lms-info-icon"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                                                <div class="lms-info-value" id="kpi_assessment_completed_pct">0%</div>
+                                            </div>
+                                            <div class="lms-info-label">Completed</div>
                                         </div>
-                                        <div class="lms-info-label">Completed</div>
-                                    </div>
-                                    <div class="lms-info-divider"></div>
-                                    <div class="lms-info-item">
-                                        <div class="lms-info-top">
-                                            <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
-                                            <div class="lms-info-value" id="kpi_assessment_avg_score">0%</div>
+                                        <div class="lms-info-divider"></div>
+                                        <div class="lms-info-item">
+                                            <div class="lms-info-top">
+                                                <span class="lms-info-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+                                                <div class="lms-info-value" id="kpi_assessment_avg_score">0%</div>
+                                            </div>
+                                            <div class="lms-info-label">Avg score</div>
                                         </div>
-                                        <div class="lms-info-label">Avg score</div>
                                     </div>
-                                </div>
 
-                                <!-- search moved to the shared top app bar; sort removed -->
-                                <div class="assessment-search-row" style="display:none">
-                                    <div class="sample-safety-search assessment-search"></div>
-                                </div>
-                                <div class="sample-safety-tabs assessment-tabs swiper-no-swiping"></div>
-                                <!-- Selected filter + live count; filled by lms_render_filter_summary(). -->
-                                <div class="lms-filter-summary" id="lms_assessment_filter_summary"></div>
+                                    <!-- search moved to the shared top app bar; sort removed -->
+                                    <div class="assessment-search-row" style="display:none">
+                                        <div class="sample-safety-search assessment-search"></div>
+                                    </div>
+                                    <div class="sample-safety-tabs assessment-tabs swiper-no-swiping"></div>
+                                    <!-- Selected filter + live count; filled by lms_render_filter_summary(). -->
+                                    <div class="lms-filter-summary" id="lms_assessment_filter_summary"></div>
                                 </div>
 
                                 <div id="dv_Assessments_List"></div>

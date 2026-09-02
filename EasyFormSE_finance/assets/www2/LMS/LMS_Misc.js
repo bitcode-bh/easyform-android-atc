@@ -1281,7 +1281,8 @@ function onfail(e) {
     assessment_listing_requested = false;
     loading_hide();
     try { console.error('LMS request failed:', e); } catch (ignored) { }
-    alert("Couldn't reach the server. Check your connection and try again.");
+    // alert("Couldn't reach the server. Check your connection and try again.");
+    alert("Our team is working on it. Please try again after some time.");
 }
 function vibrate_device() {
     try {

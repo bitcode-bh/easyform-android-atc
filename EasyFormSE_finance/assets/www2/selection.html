@@ -130,10 +130,10 @@
                 menu_smallImage.src = pro_pic_path;
             }
 
-            var t_global_wcf_url = JSON.parse(storage.getItem('global_wcf_url'));
-            if (t_global_wcf_url.indexOf("https://mwfm-uat.altiusinfra.com/") > -1) {
-                $("#btn_LMS").show();
-            }
+            // var t_global_wcf_url = JSON.parse(storage.getItem('global_wcf_url'));
+            // if (t_global_wcf_url.indexOf("https://mwfm-uat.altiusinfra.com/") > -1) {
+            //     $("#btn_LMS").show();
+            // }
 
             if (F7_device == "ios") {
                 $(".panel-nav-ios").show();
@@ -693,7 +693,7 @@
                                     <i class="icon fa fa-tachometer"></i>
                                     <span class="tabbar-label">Report</span>
                                 </a>
-                                <a href="#" class="tab-link" id="btn_LMS" onclick="changeurl('LMS_Dashboard.html');" style="display:none">
+                                <a href="#" class="tab-link" id="btn_LMS" onclick="changeurl('LMS_Dashboard.html');">
                                     <i class="icon fa fa-shield"></i>
                                     <span class="tabbar-label">LMS</span>
                                 </a>
