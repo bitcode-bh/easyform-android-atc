@@ -131,9 +131,14 @@ function lms_format_clock_time(totalSeconds) {
 function lms_parse_clock_to_seconds(clock) {
     if (typeof clock === 'number' && isFinite(clock)) return Math.max(0, clock);
     if (!clock) return 0;
-    var parts = String(clock).split(':');
-    if (parts.length !== 2) return 0;
-    return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    var parts = String(clock).trim().split(':');
+    if (parts.length !== 2 && parts.length !== 3) return 0;
+    var total = 0;
+    for (var i = 0; i < parts.length; i++) {
+        if (!/^\d+$/.test(parts[i])) return 0;
+        total = (total * 60) + Number(parts[i]);
+    }
+    return isFinite(total) ? Math.max(0, total) : 0;
 }
 
 // Lesson rows and module cards must read from the same elapsed source — never
@@ -593,8 +598,18 @@ function lms_is_active_dashboard_module(modKey) {
 
 function lms_sum_active_modules_watch_seconds() {
     var sum = 0;
+    var seenSkills = {};
     (typeof safety_module_data !== 'undefined' && safety_module_data ? safety_module_data : []).forEach(function (m) {
-        if (typeof lms_get_module_watched_seconds === 'function') {
+        var skills = lms_module_skill_index[String(m.Module_Id)] || [];
+        if (skills.length) {
+            skills.forEach(function (sid) {
+                sid = String(sid);
+                if (seenSkills[sid]) return;
+                seenSkills[sid] = true;
+                sum += lms_get_lesson_elapsed_seconds(sid);
+            });
+        } else if (typeof lms_get_module_watched_seconds === 'function') {
+            // Legacy fallback until this module's skill listing is available.
             sum += lms_get_module_watched_seconds(m.Module_Id);
         }
     });
@@ -603,11 +618,22 @@ function lms_sum_active_modules_watch_seconds() {
 
 function lms_sum_active_modules_total_video_seconds() {
     var sum = 0;
+    var seenSkills = {};
     (typeof safety_module_data !== 'undefined' && safety_module_data ? safety_module_data : []).forEach(function (m) {
         var mid = m.Module_Id;
-        var t = (typeof lms_module_video_totals !== 'undefined' && lms_module_video_totals)
-            ? (lms_module_video_totals[mid] || lms_module_video_totals[String(mid)] || 0) : 0;
-        sum += t;
+        var skills = lms_module_skill_index[String(mid)] || [];
+        if (skills.length) {
+            skills.forEach(function (sid) {
+                sid = String(sid);
+                if (seenSkills[sid]) return;
+                seenSkills[sid] = true;
+                sum += Number(lms_skill_total_seconds[sid]) || 0;
+            });
+        } else {
+            var t = (typeof lms_module_video_totals !== 'undefined' && lms_module_video_totals)
+                ? (lms_module_video_totals[mid] || lms_module_video_totals[String(mid)] || 0) : 0;
+            sum += t;
+        }
     });
     return sum;
 }
@@ -707,11 +733,17 @@ function lms_get_lesson_local_record(skillId) {
 // ever touching the quiz would otherwise read as Completed (checkmark, status,
 // and load_lesson_scores() would fetch a score for a lesson never submitted).
 // Capped at 99 so it can only ever push the lesson into "In Progress".
-function lms_get_lesson_effective_progress(skillId, serverProgress) {
+function lms_get_lesson_effective_progress(skillId, serverProgress, watchVideoTime) {
     var server = Number(serverProgress) || 0;
+    // Preserve the API's existing completion decision exactly; watch time may
+    // only distinguish an untouched lesson from one that is in progress.
     if (server >= 100) return 100;
     var rec = lms_get_lesson_local_record(skillId);
     var local = rec ? Math.min(Number(rec.Progress) || 0, 99) : 0;
+    // Watch_Video_Time is already present on each skill row. A valid positive
+    // clock value means playback previously occurred even when this device has
+    // no local progress record. Null, blank, zero, and invalid clocks parse to 0.
+    if (local === 0 && lms_parse_clock_to_seconds(watchVideoTime) > 0) local = 1;
     if (local === 0 && typeof lms_get_watch_seconds_by_item === 'function') {
         var wall = lms_get_watch_seconds_by_item('lms_watch_seconds_skills', skillId);
         if (wall > 0) local = 1;
@@ -883,9 +915,16 @@ function lms_sum_video_durations(cacheKey, items, idField, urlField, onDone) {
     (items || []).forEach(function (item) {
         var id = String(item[idField] || '');
         var url = item[urlField];
-        if (!id || !url) return;
+        if (!id) return;
         validIds[id] = true;
-        if (typeof cache[id] !== 'number') toFetch.push({ id: id, url: url });
+
+        // Modules APIs can return a real duration as Total_Video_Time or
+        // Video_Time. Seed/refresh the cache from that authoritative value and
+        // fetch media metadata only when the API duration is absent or zero.
+        var apiDuration = lms_parse_clock_to_seconds(item.Total_Video_Time);
+        if (apiDuration <= 0) apiDuration = lms_parse_clock_to_seconds(item.Video_Time);
+        if (apiDuration > 0) cache[id] = apiDuration;
+        if (typeof cache[id] !== 'number' && url) toFetch.push({ id: id, url: url });
     });
 
     function finish() {

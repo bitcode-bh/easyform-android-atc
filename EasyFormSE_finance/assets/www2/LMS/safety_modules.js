@@ -371,6 +371,10 @@ function lms_compute_module_total_video_time() {
     lms_module_total_time_started = true;
 
     lms_fetch_all_module_skills(safety_module_data, function (allSkills) {
+        // The background fetch is the only place that sees every assigned
+        // lesson at once. Ingest its saved Watch_Video_Time values before
+        // calculating Dashboard totals; opening a module must not be required.
+        if (typeof LmsBackend !== 'undefined') LmsBackend.ingestSkillRows(allSkills);
         lms_sum_video_durations('lms_video_durations_modules', allSkills, 'Skill_Id', 'Video_Link', function () {
             var cached = {};
             try { cached = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { cached = {}; }
@@ -394,6 +398,9 @@ function lms_compute_module_total_video_time() {
             lms_module_video_totals = totals;
             if (typeof lms_reconcile_all_module_watch === 'function') lms_reconcile_all_module_watch();
             update_module_kpi();
+            // The Dashboard may have rendered before these asynchronous skill
+            // rows arrived, so refresh its existing cards with API totals now.
+            if (typeof update_lms_kpi === 'function') update_lms_kpi();
             // per-card watched/total row now has real totals to show
             if (typeof render_safety_module_cards === 'function') render_safety_module_cards();
         });
@@ -787,7 +794,7 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 // Server Progress is only ever 0 or 100 here, so fold in local
                 // playback progress to tell "part-watched" apart from "untouched".
                 let eff_progress = (typeof lms_get_lesson_effective_progress === 'function')
-                    ? lms_get_lesson_effective_progress(Skill_Id, Progress)
+                    ? lms_get_lesson_effective_progress(Skill_Id, Progress, Watch_Video_Time)
                     : Number(Progress) || 0;
 
                 // Watched / total, e.g. "01:12/06:19". Watched time is supplied
@@ -959,7 +966,7 @@ function refresh_lesson_preview_rows() {
         var Video_Time = card.getAttribute('data-video-time') || '00:00';
         var Watch_Video_Time = card.getAttribute('data-watch-video-time') || '00:00';
         var eff = (typeof lms_get_lesson_effective_progress === 'function')
-            ? lms_get_lesson_effective_progress(Skill_Id, serverProgress)
+            ? lms_get_lesson_effective_progress(Skill_Id, serverProgress, Watch_Video_Time)
             : Number(serverProgress) || 0;
 
         // data-video-time is the source of truth for the displayed total — a
@@ -1184,6 +1191,10 @@ function logSafetyVideoWatchOnBack(done) {
                     if (!result.length || Number(result[0].status) !== 1) {
                         console.error('Safety video watch log was not accepted by the server.');
                     } else {
+                        // Refresh the same in-memory cumulative source consumed
+                        // by the Dashboard; do not wait for another API listing.
+                        if (typeof LmsBackend !== 'undefined') LmsBackend.ingestSkillRows(payload);
+                        if (typeof update_lms_kpi === 'function') update_lms_kpi();
                         // Keep this open listing current after a successful save,
                         // so reopening the same lesson resumes from the new value.
                         var card = findSafetyVideoCard(payload[0].Skill_Id, payload[0].Module_Id, payload[0].Module_Schedule_Id);

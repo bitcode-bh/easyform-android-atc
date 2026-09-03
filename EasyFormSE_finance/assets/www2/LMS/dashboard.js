@@ -198,8 +198,12 @@ function lms_compute_module_range_totals() {
         ? lms_compute_completion_kpi(safety_module_data)
         : { avgScorePct: 0 };
 
-    var watchSeconds = (typeof lms_sum_active_modules_watch_seconds_in_range === 'function')
-        ? lms_sum_active_modules_watch_seconds_in_range(range)
+    // Watch_Video_Time is cumulative and has no per-day breakdown. The KPI
+    // therefore uses the all-time, deduplicated per-skill total; applying the
+    // chart's date filter would discard saved API history and show only this
+    // device's current-session daily buckets.
+    var watchSeconds = (typeof lms_sum_active_modules_watch_seconds === 'function')
+        ? lms_sum_active_modules_watch_seconds()
         : 0;
 
     return {
@@ -857,9 +861,8 @@ function render_lms_dashboard_context_kpi() {
     }
 
     if (lms_dashboard_selected_category === 'Modules') {
-        // Same range + same dashboard_kpi_data the chart plots from — these
-        // numbers must always match what the Completions/Score/Watch time
-        // line sums to for the current Week/Month/Custom selection.
+        // Completion remains range-scoped; watch time is intentionally the
+        // saved cumulative total because the API clock has no date dimension.
         var mt = (typeof lms_compute_module_range_totals === 'function') ? lms_compute_module_range_totals() : { completions: 0, avgScorePct: 0, watchSeconds: 0 };
         l1.textContent = 'Completions'; v1.textContent = String(mt.completions);
         l2.textContent = 'Avg score'; v2.textContent = mt.avgScorePct + '%';

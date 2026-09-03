@@ -3,16 +3,10 @@
 
    WHY THIS EXISTS
    ---------------
-   Watch time and resume positions are currently measured on the device and
-   kept in localStorage, so they do not survive an app-data clear, a reinstall,
-   or a change of handset, and they can never appear in a server-side report.
-   The fix is server-side (see LMS_API_SPEC.md): LMS_Skill_VideoLog_Master
-   gains Watch_Seconds / Resume_Position, and the skill listing returns them.
-
-   That backend work is NOT scheduled yet. Rather than leave the client needing
-   a rewrite later, every read of "how far has this lesson been watched" now
-   goes through this module. It is entirely INERT until the server actually
-   sends the fields:
+   The deployed skill listing returns cumulative Watch_Video_Time clock values;
+   newer environments may additionally return Watch_Seconds / Resume_Position.
+   Every read of "how far has this lesson been watched" goes through this module
+   so server history and current-device progress can be reconciled consistently:
 
        server sends the fields  ->  server value wins, automatically
        server does not          ->  local measurement is used, exactly as today
@@ -20,8 +14,8 @@
    PLUGGING IN THE BACKEND
    -----------------------
    Nothing to switch on. Capability is detected from real responses
-   (see ingestSkillRows): the first listing that carries a numeric
-   Watch_Seconds or Resume_Position flips that capability on for the session.
+   (see ingestSkillRows): the first listing that carries Watch_Video_Time,
+   Watch_Seconds, or Resume_Position flips that capability on for the session.
    No flag, no release, no migration step.
 
    DELIBERATELY NOT DONE HERE
@@ -50,6 +44,25 @@ var LmsBackend = (function () {
         return isFinite(n) && n >= 0 ? n : null;
     }
 
+    // API video times are clock strings (MM:SS or HH:MM:SS), whereas newer
+    // environments may expose numeric second fields. Normalize both forms at
+    // the boundary so every Dashboard/Modules consumer works in seconds.
+    function clockSeconds(value) {
+        var numeric = num(value);
+        if (numeric !== null && String(value).indexOf(':') === -1) return numeric;
+        if (value === null || value === undefined) return null;
+        var text = String(value).trim();
+        if (!text) return null;
+        var parts = text.split(':');
+        if (parts.length !== 2 && parts.length !== 3) return null;
+        var total = 0;
+        for (var i = 0; i < parts.length; i++) {
+            if (!/^\d+$/.test(parts[i])) return null;
+            total = (total * 60) + Number(parts[i]);
+        }
+        return isFinite(total) && total >= 0 ? total : null;
+    }
+
     // Feed every skill-listing response through here. Rows that predate the
     // backend work simply carry none of these fields and are ignored.
     function ingestSkillRows(rows) {
@@ -59,12 +72,21 @@ var LmsBackend = (function () {
             if (!row || row.Skill_Id == null) continue;
 
             var id = String(row.Skill_Id);
+            // Watch_Video_Time is the field returned by the currently deployed
+            // skill API. Prefer explicit seconds when both versions exist.
             var watch = num(row.Watch_Seconds);
+            if (watch === null) watch = clockSeconds(row.Watch_Video_Time);
             var resume = num(row.Resume_Position);
             if (watch === null && resume === null) continue;
 
             var entry = serverProgress[id] || (serverProgress[id] = {});
-            if (watch !== null) { entry.watchSeconds = watch; caps.watch_seconds = true; }
+            if (watch !== null) {
+                // Repeated/background responses must never roll a newer local
+                // snapshot backwards or add another copy of the same lesson.
+                entry.watchSeconds = entry.watchSeconds == null
+                    ? watch : Math.max(entry.watchSeconds, watch);
+                caps.watch_seconds = true;
+            }
             if (resume !== null) { entry.resumePosition = resume; caps.resume_position = true; }
         }
     }
