@@ -1288,6 +1288,10 @@ $(document).on("popup:close", ".popup-assessment-que", function () {
 
 $(document).on("popup:closed", ".lms-module-preview-popup", function () {
     safetyModulePreviewActive = false;
+    // Invalidate an in-flight skill request so a response received after Back
+    // cannot repopulate the closed preview with stale module content.
+    if (typeof lms_module_preview_request_id !== 'undefined') lms_module_preview_request_id++;
+    if (typeof loading_hide === 'function') loading_hide();
 });
 function loading() {
     //  loading_hide();

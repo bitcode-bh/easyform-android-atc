@@ -685,14 +685,26 @@ function get_progess_by_module(Module_Id, Skill_Id) {
 }
 
 
+// Monotonic preview request id. A response may only paint the popup when it
+// still belongs to the most recently selected module.
+var lms_module_preview_request_id = 0;
+
 // get modulewise videos (level 2)
 function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Module_Schedule_Id) {
 
+    var previewRequestId = ++lms_module_preview_request_id;
     glob_Module_Schedule_Id = Module_Schedule_Id;
+
+    // Clear every module-bound field before opening/calling the API. The popup
+    // must show the existing preloader over a blank state, never the last
+    // module's title, artwork, progress, description, or lesson/watch data.
+    $('.module-preview-header').css('background-image', 'none');
+    $('.module-preview-tag, .module-preview-title, .module-preview-desc, .lession-count, .module-preview-percent').empty();
+    $('.module-preview-progress').find('span').css('width', '0%');
+    $('.lesson-preview-list').empty();
 
     safetyModulePreviewActive = true;
     myApp.popup.open('.lms-module-preview-popup');
-    $(".lesson-preview-list").empty();
 
     var Param_obj = [];
     Param_obj.push({
@@ -701,6 +713,9 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
     loading();
 
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Skill_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
+        // Ignore stale responses when another module was selected (or this
+        // preview was closed) while the request was in flight.
+        if (previewRequestId !== lms_module_preview_request_id || !safetyModulePreviewActive) return;
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
@@ -878,6 +893,7 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
             // is stuck showing "00:00" for its lessons' total time forever.
             if (typeof lms_sum_video_durations === 'function') {
                 lms_sum_video_durations('lms_video_durations_modules', data, 'Skill_Id', 'Video_Link', function () {
+                    if (previewRequestId !== lms_module_preview_request_id || !safetyModulePreviewActive) return;
                     var fresh_cache = {};
                     try { fresh_cache = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { }
                     $(".lesson-preview-list .lesson-preview-card").each(function () {
@@ -906,7 +922,12 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 
         loading_hide();
 
-    }, onfail);
+    }, function (error) {
+        // A superseded request must not hide the current module's loader or
+        // display an error belonging to the previous selection.
+        if (previewRequestId !== lms_module_preview_request_id || !safetyModulePreviewActive) return;
+        onfail(error);
+    });
     getdata.callOtherDomain();
 }
 
