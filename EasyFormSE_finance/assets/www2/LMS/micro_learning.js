@@ -516,8 +516,10 @@ function playVideo(slideElement) {
         updateReelPlayPauseButton(slideElement, false);
         //console.log("Video completed");
 
-        let Ml_id = $(video).parent(".swiper-slide-active").attr("Ml_id");
-        let watch_icon = $(video).parent(".swiper-slide-active").find(".action-item").find("i.fa-eye");
+        // Use the slide captured by playVideo rather than whichever slide is
+        // active a moment later; a fast swipe must never complete another reel.
+        let Ml_id = slideElement.getAttribute("Ml_id");
+        let watch_icon = $(slideElement).find('.action-item[aria-label="Views"] i.fa-eye');
         add_user_activitiy(Ml_id, 'WATCH', watch_icon);
 
         var answered = JSON.parse(localStorage.getItem('ml_answered_quizzes') || '[]');
@@ -540,6 +542,50 @@ function playVideo(slideElement) {
 
 
 var user_activitiy_Array = [];
+
+// Keep successful reel completions available while navigating/rebuilding the
+// feed. The API remains authoritative on refresh; this local set bridges the
+// interval between the WATCH save and the next activity-list response.
+function ml_get_completed_reels() {
+    try { return JSON.parse(localStorage.getItem('ml_completed_reels') || '[]'); }
+    catch (e) { return []; }
+}
+
+function ml_is_reel_completed(mlId) {
+    var id = String(mlId);
+    for (var i = 0; i < user_activitiy_Array.length; i++) {
+        if (String(user_activitiy_Array[i].Ml_Id) === id && Number(user_activitiy_Array[i].Watch_Count) > 0) return true;
+    }
+    return ml_get_completed_reels().map(String).indexOf(id) !== -1;
+}
+
+function ml_mark_reel_completed(mlId, $watchButton) {
+    var id = String(mlId);
+    var completed = ml_get_completed_reels().map(String);
+    if (completed.indexOf(id) === -1) {
+        completed.push(id);
+        localStorage.setItem('ml_completed_reels', JSON.stringify(completed));
+    }
+
+    // Update only the matching activity row/reel so navigating away and back
+    // cannot restore the stale pre-request icon state.
+    var row = null;
+    for (var i = 0; i < user_activitiy_Array.length; i++) {
+        if (String(user_activitiy_Array[i].Ml_Id) === id) { row = user_activitiy_Array[i]; break; }
+    }
+    if (!row) {
+        row = { Ml_Id: mlId };
+        user_activitiy_Array.push(row);
+    }
+    row.Watch_Count = 1;
+
+    if ($watchButton && $watchButton.length) {
+        $watchButton.addClass('is-watched');
+        $watchButton.find('i.fa-eye').removeClass('fa-regular').addClass('fa-solid');
+    }
+    update_ml_stat_badge();
+}
+
 function get_user_activities() {
 
     let user_id = JSON.parse(storage.getItem('user_id'));
@@ -759,8 +805,10 @@ function get_micro_learning_videos() {
                         reel_str += '<button type="button" class="action-item swiper-no-swiping" aria-label="Share" onclick="' + share_str + '"><i class="fa-regular fa-paper-plane"></i><span>' + Total_Shares + '</span></button>';
                     }
 
-                    if (Watch_Count == 1) {
-                        reel_str += '<div class="action-item" aria-label="Views"><i class="fa-solid fa-eye"></i><span>' + Total_Watch_Count + '</span></div>';
+                    // Restore completion from the latest API activity or the
+                    // successful local WATCH save for this exact Ml_Id.
+                    if (Watch_Count == 1 || ml_is_reel_completed(Ml_id)) {
+                        reel_str += '<div class="action-item is-watched" aria-label="Views"><i class="fa-solid fa-eye"></i><span>' + Total_Watch_Count + '</span></div>';
                     }
                     else {
                         reel_str += '<div class="action-item" aria-label="Views"><i class="fa-regular fa-eye"></i><span>' + Total_Watch_Count + '</span></div>';
@@ -798,6 +846,9 @@ function get_micro_learning_videos() {
     getdata.callOtherDomain();
 }
 
+// One reaction request per reel at a time. Like and Dislike share the same lock
+// so rapid taps (or one tap on each action) cannot send competing API updates.
+var ml_reaction_requests = {};
 
 function add_user_activitiy(t_ML_id, activity_type, icon_ele) {
 
@@ -806,6 +857,25 @@ function add_user_activitiy(t_ML_id, activity_type, icon_ele) {
     var $btn = $ctx.hasClass('action-item') ? $ctx : $ctx.closest('.action-item');
     var $icon = $btn.length ? $btn.find('i').first() : $ctx;
     var $count = $btn.length ? $btn.find('span').first() : $ctx.next('span');
+
+    var isReaction = activity_type === 'LIKE' || activity_type === 'DISLIKE';
+    var reactionKey = String(t_ML_id);
+    var $reactionButtons = $btn.closest('.swiper-slide').find(
+        '.action-item[aria-label="Like"], .action-item[aria-label="Dislike"]'
+    );
+    if (isReaction) {
+        // Ignore every repeated Like/Dislike invocation until the first request
+        // reaches either its success or failure callback.
+        if (ml_reaction_requests[reactionKey]) return false;
+        ml_reaction_requests[reactionKey] = true;
+        $reactionButtons.prop('disabled', true).attr('aria-busy', 'true');
+    }
+
+    function releaseReactionLock() {
+        if (!isReaction) return;
+        delete ml_reaction_requests[reactionKey];
+        $reactionButtons.prop('disabled', false).removeAttr('aria-busy');
+    }
 
     // LIKE keeps a thin outline icon and tracks state via the .is-liked class
     // (color only); WATCH/others use the solid/regular fill to signal state.
@@ -824,7 +894,15 @@ function add_user_activitiy(t_ML_id, activity_type, icon_ele) {
         var action = "1";
     }
 
-    let user_id = JSON.parse(storage.getItem('user_id'));
+    var user_id;
+    try {
+        user_id = JSON.parse(storage.getItem('user_id'));
+    } catch (storageError) {
+        // A malformed session value is also a failed action; never strand the
+        // reaction controls in their temporary disabled state.
+        releaseReactionLock();
+        throw storageError;
+    }
 
     var Param_obj = [];
     Param_obj.push({
@@ -834,32 +912,55 @@ function add_user_activitiy(t_ML_id, activity_type, icon_ele) {
         "User_ID": user_id
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_InsertUpdateDelete_Micro_Learning_User_Activity', JSON.stringify(Param_obj), function (e) {
-        var responseText = e.responseText;
-        var myArray = JSON.parse(responseText);
-        var status = myArray[0].status;
-        if (status == 1) {
+    var getdata;
+    try {
+        getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_InsertUpdateDelete_Micro_Learning_User_Activity', JSON.stringify(Param_obj), function (e) {
+        try {
+            var responseText = e.responseText;
+            var myArray = JSON.parse(responseText);
+            var status = myArray[0].status;
+            if (status == 1) {
 
-            let curr_count = parseInt($count.text()) || 0;
+                let curr_count = Math.max(0, parseInt($count.text(), 10) || 0);
 
-            if (action == "0") {
-                if (activity_type == "LIKE") { $btn.removeClass("is-liked"); }
-                else { $icon.removeClass("fa-solid").addClass("fa-regular"); }
-                ml_rollCount($count, curr_count - 1);
+                if (activity_type == "WATCH") {
+                    // A reel becomes completed only after its end-triggered
+                    // WATCH request succeeds; apply the blue state immediately.
+                    ml_mark_reel_completed(t_ML_id, $btn);
+                }
+
+                if (action == "0") {
+                    if (activity_type == "LIKE") { $btn.removeClass("is-liked"); }
+                    else { $icon.removeClass("fa-solid").addClass("fa-regular"); }
+                    // Defensive clamp: stale/invalid UI data must never display
+                    // a negative reaction count after removing a reaction.
+                    ml_rollCount($count, Math.max(0, curr_count - 1));
+                }
+                else {
+                    if (activity_type == "LIKE") { $btn.addClass("is-liked"); ml_pop($btn); ml_haptic(15); }
+                    else { $icon.removeClass("fa-regular").addClass("fa-solid"); }
+                    ml_rollCount($count, curr_count + 1);
+                }
             }
-            else {
-                if (activity_type == "LIKE") { $btn.addClass("is-liked"); ml_pop($btn); ml_haptic(15); }
-                else { $icon.removeClass("fa-regular").addClass("fa-solid"); }
-                ml_rollCount($count, curr_count + 1);
+            else if (status == 2 || status == 3) {
+                var message = myArray[0].message;
+                alert(message);
             }
-
+        } catch (responseError) {
+            console.error('Unable to process Micro Learning activity response.', responseError);
+        } finally {
+            releaseReactionLock();
         }
-        else if (status == 2 || status == 3) {
-            var message = myArray[0].message;
-            alert(message);
-        }
-    }, onfail);
-    getdata.callOtherDomain();
+        }, function (error) {
+            releaseReactionLock();
+            onfail(error);
+        });
+        getdata.callOtherDomain();
+    } catch (requestError) {
+        releaseReactionLock();
+        throw requestError;
+    }
+    return false;
 }
 
 

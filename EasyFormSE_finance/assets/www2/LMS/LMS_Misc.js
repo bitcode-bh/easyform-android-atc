@@ -436,7 +436,8 @@ var LMS_PERSISTED_KEYS = [
     'lms_owner_user_id',
     'ml_last_index',
     'ml_muted',
-    'ml_answered_quizzes'
+    'ml_answered_quizzes',
+    'ml_completed_reels'
 ];
 
 function lms_collect_login_backup() {

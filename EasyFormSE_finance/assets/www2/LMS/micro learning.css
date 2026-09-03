@@ -177,6 +177,9 @@
 /* Active like state — solid fill + on-brand tint (thumbs-up) */
 .action-item.is-liked i { color: #4a90d9; }
 
+/* Completed reel state — scoped to the WATCH action's own eye icon. */
+.action-item.is-watched i.fa-eye { color: #4a90d9; }
+
 /* Like bounce / pop */
 @keyframes ml-like-pop {
     0%   { transform: scale(1); }
