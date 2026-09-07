@@ -1276,7 +1276,7 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
                 if (weightage == "" || weightage == null || weightage == undefined) {
                     weightage = 1;
                 }
-                let Valid_Answer = merge_array[i].Valid_Answer[0];
+                let Valid_Answer = merge_array[i].Valid_Answer[0].trim();
                 let ans_label = merge_array[i].ans;
 
                 let str = '<div class="question-card">';

@@ -988,7 +988,7 @@ function get_ML_question(Ml_Id) {
             glob_ML_Que_Id = data[0].Ml_Que_Id;
 
             $("#ML_Question").html('<i class="fa-solid fa-lightbulb" style="color: #fbbc05; margin-right: 8px; font-size: 18px;"></i>' + Question_Name);
-            $("#ML_Question").attr("valid_ans", Valid_Answer[0]);
+            $("#ML_Question").attr("valid_ans", Valid_Answer[0].trim());
 
             $("#option0").text(OptionText[0]);
             $("#option1").text(OptionText[1]);
