@@ -2210,9 +2210,11 @@ function get_today_attendance_for_notification() {
                     $("#noti_Attendance3").css("display", "none");
                 }
                 else {
-                    // hide trip start button
-                    $("#noti_Attendance2").css("display", "none");
-                    $("#noti_Attendance3").css("display", "block");
+                    // display trip end button
+                    // $("#noti_Attendance2").css("display", "none");
+                    // $("#noti_Attendance3").css("display", "block");
+
+                    check_for_auto_close_trip();
                 }
 
             }
@@ -2228,6 +2230,45 @@ function get_today_attendance_for_notification() {
     }
 }
 
+check_for_auto_close_trip = () => {
+    let trip_tid = localStorage.getItem('trip_tid');
+    var query = "select tid, sid, trip_status from lat_plug where tid = '" + trip_tid + "'";
+    var q_jsonobj = [];
+    q_jsonobj.push({
+        data: query,
+        p: "1" // 1 for selecting values from table in json
+    });
+    cordova.exec(function (e) {
+        var myArray = JSON.parse(e);
+        if (myArray.length > 0) {
+            let trip_status = myArray[0].trip_status;
+            if (trip_status == '1' || trip_status == '' || trip_status == null || trip_status == undefined) {
+                // trip is not running
+                localStorage.setItem('trip_status', '1');
+                $("#noti_Attendance2").css("display", "block");
+                $("#noti_Attendance3").css("display", "none");
+            }
+            else {
+                // trip is running
+                $("#noti_Attendance2").css("display", "none");
+                $("#noti_Attendance3").css("display", "block");
+            }
+        }
+        else {
+            // trip is not running
+            $("#noti_Attendance2").css("display", "block");
+            $("#noti_Attendance3").css("display", "none");
+        }
+
+    }, function (e) {
+        // onfail (trip is not running)
+        $("#noti_Attendance2").css("display", "block");
+        $("#noti_Attendance3").css("display", "none");
+
+    }, 'SqlitePlugin', 'showValues', q_jsonobj);
+
+
+}
 
 noti_Attendance_Click = () => {
 

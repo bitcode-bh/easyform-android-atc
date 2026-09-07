@@ -817,6 +817,11 @@ function updateuniquecode_android(invocation, res_type) {
             var url = response[0].url;
             storage.setItem('global_url', JSON.stringify(url));
 
+            let Istripruning = response[0].Istripruning;
+            if (Istripruning == "false") {
+                localStorage.setItem('trip_status', '');
+            }
+
             var iosDirectoryPath = response[0].iosDirectoryPath;
             if (iosDirectoryPath == "" || iosDirectoryPath == null || iosDirectoryPath == undefined) {
                 iosDirectoryPath = "";
