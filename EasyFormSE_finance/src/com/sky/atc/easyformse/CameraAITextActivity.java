@@ -28,6 +28,7 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.ExifInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -43,6 +44,7 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
+import android.util.Size;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.TextureView;
@@ -149,6 +151,9 @@ public class CameraAITextActivity extends AppCompatActivity {
     String companyId;
     String site_id ;
     String Pname;
+    private Size previewSize;
+    private String cameraId;
+    private int sensorOrientation;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -235,7 +240,7 @@ public class CameraAITextActivity extends AppCompatActivity {
             {
                 flowData = "";
             }
-            setup();
+
 
             CaptureImage.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -299,7 +304,7 @@ public class CameraAITextActivity extends AppCompatActivity {
                 cameraDevice.close();
                 cameraDevice = null;
             }
-
+            previewRequestBuilder = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -335,87 +340,220 @@ public class CameraAITextActivity extends AppCompatActivity {
     }
 
     private void openCamera() {
-        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+
+        CameraManager manager =
+                (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+
         try {
-            String selectedCameraId = null;
+
+            cameraId = null;
 
             for (String id : manager.getCameraIdList()) {
-                CameraCharacteristics chars = manager.getCameraCharacteristics(id);
+
+                CameraCharacteristics chars =
+                        manager.getCameraCharacteristics(id);
+
                 Integer facing = chars.get(CameraCharacteristics.LENS_FACING);
 
-                if (isFrontCamera) {
-                    if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
-                        selectedCameraId = id;
-                        break;
-                    }
-                } else {
-                    if (facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
-                        selectedCameraId = id;
-                        break;
-                    }
+                if (facing == null) {
+                    continue;
+                }
+
+                if (isFrontCamera && facing == CameraCharacteristics.LENS_FACING_FRONT) {
+
+                    cameraId = id;
+                    break;
+
+                } else if (!isFrontCamera && facing == CameraCharacteristics.LENS_FACING_BACK) {
+
+                    cameraId = id;
+                    break;
                 }
             }
 
-            // fallback
-            if (selectedCameraId == null && manager.getCameraIdList().length > 0) {
-                selectedCameraId = manager.getCameraIdList()[0];
+            // Fallback camera
+            if (cameraId == null && manager.getCameraIdList().length > 0) {
+
+                cameraId = manager.getCameraIdList()[0];
             }
 
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            if (cameraId == null) {
                 return;
             }
 
-            manager.openCamera(selectedCameraId, new CameraDevice.StateCallback() {
-                @Override
-                public void onOpened(@NonNull CameraDevice camera) {
-                    cameraDevice = camera;
-                    createCameraPreview();
-                }
-                @Override
-                public void onDisconnected(@NonNull CameraDevice camera) {
-                    camera.close();
-                    cameraDevice = null;
-                }
-                @Override
-                public void onError(@NonNull CameraDevice camera, int error) {
-                    camera.close();
-                    cameraDevice = null;
-                    // Toast.makeText(CameraAITextActivity.this, "Camera error: " + error, Toast.LENGTH_SHORT).show();
-                }
-            }, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "openCamera failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
+            CameraCharacteristics chars = manager.getCameraCharacteristics(cameraId);
+
+
+            StreamConfigurationMap map =
+                    chars.get(
+                            CameraCharacteristics
+                                    .SCALER_STREAM_CONFIGURATION_MAP
+                    );
+
+
+            if (map == null) {
+                return;
+            }
+
+
+            Size[] choices = map.getOutputSizes(SurfaceTexture.class);
+
+
+            previewSize = chooseOptimalSize(choices, textureView.getWidth(), textureView.getHeight());
+
+
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+
+
+            manager.openCamera(cameraId,
+
+                    new CameraDevice.StateCallback() {
+
+                        @Override
+                        public void onOpened(@NonNull CameraDevice camera) {
+
+                            cameraDevice = camera;
+                            createCameraPreview();
+                        }
+
+
+                        @Override
+                        public void onDisconnected(@NonNull CameraDevice camera) {
+
+                            camera.close();
+                            cameraDevice = null;
+                        }
+
+
+                        @Override
+                        public void onError(@NonNull CameraDevice camera, int error) {
+
+                            camera.close();
+                            cameraDevice = null;
+                            LogUtils.writeAttendanceLogToFile("open camera error" + error,"Opencamera");
+                            Log.e("CameraAI", "Camera error: " + error);
+                        }
+
+                    },
+
+                    null
+            );
+
+        }
+        catch (Exception e) {
+            LogUtils.writeAttendanceLogToFile("open camera" + e.toString(),"Opencamera");
+            Log.e("CameraAI", "openCamera error", e);
         }
     }
 
 
     private void createCameraPreview() {
-        try {
-            SurfaceTexture texture = textureView.getSurfaceTexture();
-            if (texture == null || cameraDevice == null) return;
 
-            texture.setDefaultBufferSize(textureView.getWidth(), textureView.getHeight());
+        try {
+
+            if (cameraDevice == null) {
+                return;
+            }
+
+
+            SurfaceTexture texture = textureView.getSurfaceTexture();
+
+
+            if (texture == null) {
+                return;
+            }
+
+
+            if (previewSize == null) {
+
+                previewSize = new Size(1280, 720);
+            }
+
+
+            // IMPORTANT:
+            // Use supported camera resolution
+            texture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
+
+
             Surface surface = new Surface(texture);
 
+
             previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+
+
             previewRequestBuilder.addTarget(surface);
 
-            cameraDevice.createCaptureSession(Collections.singletonList(surface),
+
+            previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+
+
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+
+
+            cameraDevice.createCaptureSession(
+                    Collections.singletonList(surface),
+
                     new CameraCaptureSession.StateCallback() {
+
                         @Override
-                        public void onConfigured(@NonNull CameraCaptureSession session) {
-                            if (cameraDevice == null) return;
+                        public void onConfigured(
+                                @NonNull CameraCaptureSession session
+                        ) {
+
+                            if (cameraDevice == null) {
+                                return;
+                            }
+
+
                             captureSession = session;
-                            updatePreview();
+
+
+                            try {
+
+                                captureSession.setRepeatingRequest(
+                                        previewRequestBuilder.build(),
+                                        null,
+                                        null
+                                );
+
+
+                            } catch (Exception e) {
+                                LogUtils.writeAttendanceLogToFile("createCameraPreview error" + e.toString(),"createCameraPreview");
+                                Log.e(
+                                        "CameraAI",
+                                        "Preview error",
+                                        e
+                                );
+                            }
                         }
+
+
                         @Override
-                        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-                            Toast.makeText(CameraAITextActivity.this, "Preview config failed", Toast.LENGTH_SHORT).show();
+                        public void onConfigureFailed(
+                                @NonNull CameraCaptureSession session) {
+                            LogUtils.writeAttendanceLogToFile("createCameraPreview onConfigureFailed" + session.toString(),"createCameraPreview");
+
+                            Log.e("CameraAI",
+                                    "Preview config failed"
+                            );
                         }
-                    }, null);
-        } catch (Exception e) {
-            e.printStackTrace();
+
+                    },
+
+                    null
+            );
+
+        }
+        catch (Exception e) {
+            LogUtils.writeAttendanceLogToFile("createCameraPreview Exception" + e.toString(),"Exception");
+
+            Log.e("CameraAI", "createCameraPreview error", e);
         }
     }
 
@@ -555,11 +693,12 @@ public class CameraAITextActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (camera != null) {
-            camera.stopPreview();
-            camera.release();
-            camera = null;
-        }
+//        if (camera != null) {
+//            camera.stopPreview();
+//            camera.release();
+//            camera = null;
+//        }
+        closeCamera();
     }
 
     public void setup()
@@ -814,7 +953,11 @@ public class CameraAITextActivity extends AppCompatActivity {
             return null;
         }
     }
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setup();
+    }
 
     public String saveBitmapToFile(Bitmap bitmap, Context context) {
         //Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, Integer.parseInt(width), Integer.parseInt(height), true);
@@ -1992,5 +2135,62 @@ public class CameraAITextActivity extends AppCompatActivity {
             Log.d("Exception",e.toString());
         }
         return count;
+    }
+
+    private Size chooseOptimalSize(
+            Size[] choices,
+            int viewWidth,
+            int viewHeight
+    ) {
+
+        if (choices == null ||
+                choices.length == 0) {
+            LogUtils.writeAttendanceLogToFile("chooseOptimalSize is null" + choices,"chooseOptimalSize");
+            return new Size(1280, 720);
+        }
+
+
+        Size bestSize = null;
+
+
+        for (Size option : choices) {
+
+            LogUtils.writeAttendanceLogToFile("chooseOptimalSize for loop" + option.getWidth() + option.getHeight(),"chooseOptimalSize");
+            // Avoid huge preview resolution
+            if (option.getWidth() <= 1280 &&
+                    option.getHeight() <= 720) {
+                LogUtils.writeAttendanceLogToFile("chooseOptimalSize for after loop" + option.getWidth() + option.getHeight(),"chooseOptimalSize");
+
+                if (bestSize == null) {
+
+                    bestSize = option;
+
+                } else {
+
+                    long currentPixels =
+                            (long) option.getWidth()
+                                    * option.getHeight();
+
+                    long bestPixels =
+                            (long) bestSize.getWidth()
+                                    * bestSize.getHeight();
+
+
+                    if (currentPixels > bestPixels) {
+
+                        bestSize = option;
+                    }
+                }
+            }
+        }
+
+
+        if (bestSize == null) {
+
+            bestSize = choices[0];
+        }
+
+
+        return bestSize;
     }
 }
