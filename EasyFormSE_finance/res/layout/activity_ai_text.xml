@@ -21,10 +21,10 @@
             android:id="@+id/browseimage"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginTop="75dp"
+            android:layout_marginTop="15dp"
             android:layout_marginEnd="5dp"
             android:padding="7dp"
-            android:visibility="visible"
+            android:visibility="gone"
             android:layout_gravity="top|end"
             android:src="@drawable/browse"
             />
