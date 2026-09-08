@@ -1,5 +1,17 @@
 
 var reelsSwiper;
+// Retain original nodes for filtering; loop mode moves nodes without cloning videos.
+var ml_reel_nodes = [];
+var ml_reels_request_pending = false;
+
+// Destroy before replacing/filtering slides so old Swiper listeners cannot accumulate.
+function ml_destroy_reels() {
+    pauseAllVideos();
+    clearTimeout(ml_click_timer);
+    ml_click_timer = null;
+    if (reelsSwiper) reelsSwiper.destroy(true, true);
+    reelsSwiper = null;
+}
 
 /* ===== Premium reels helpers ==================================== */
 var ml_scrubbing = false;      // true while the user is dragging the progress bar
@@ -35,7 +47,10 @@ function ml_updateBuffered(video, slide) {
 function ml_preloadAdjacent() {
     if (!reelsSwiper || !reelsSwiper.slides) return;
     var idx = reelsSwiper.activeIndex;
-    [idx - 1, idx + 1].forEach(function (i) {
+    // Warm neighbours across both circular boundaries as well.
+    var count = reelsSwiper.slides.length;
+    if (!count) return;
+    [(idx - 1 + count) % count, (idx + 1) % count].forEach(function (i) {
         if (i >= 0 && reelsSwiper.slides[i]) {
             var v = reelsSwiper.slides[i].querySelector('.reel-video');
             if (v) {
@@ -91,85 +106,58 @@ function ml_seekStart(event, progressEl) {
 /* ================================================================ */
 
 function bind_micro_learning_events() {
-    //setTimeout(function () {
-    
-    let lastIdx = parseInt(localStorage.getItem('ml_last_index') || '0', 10);
-
-    if (reelsSwiper) {
-        //reelsSwiper.destroy(true, true);
+    // Repeated binding updates the existing instance without extra timers or listeners.
+    if (reelsSwiper && !reelsSwiper.destroyed) {
         reelsSwiper.update();
-        if (lastIdx >= reelsSwiper.slides.length) lastIdx = 0;
-        reelsSwiper.slideTo(lastIdx, 0);
-
-        setTimeout(function () {
-            if ($('#tab-4').hasClass('tab-active')) {
-                playVideo(reelsSwiper.slides[reelsSwiper.activeIndex]);
-            }
-        }, 100);
+        ml_update_preload();
+        if ($('#tab-4').hasClass('tab-active')) playVideo(reelsSwiper.slides[reelsSwiper.activeIndex]);
+        return;
     }
-    else {
-        reelsSwiper = new Swiper('.reels-swiper', {
-            initialSlide: lastIdx,
-            direction: 'vertical',
-            slidesPerView: 1,
-            watchSlidesProgress: true,
-            resistanceRatio: 0,
-            // Swiper's default threshold (5px) treats almost any incidental
-            // finger movement while tapping the video (adjusting grip, a light
-            // touch that isn't a deliberate swipe) as the start of a real slide
-            // change — which immediately pauses the current reel via
-            // slideChangeTransitionStart below. Raising it means a genuine
-            // swipe intent still works, but a near-stationary tap doesn't get
-            // misread as one. mousewheel is dropped entirely: this is a
-            // touch-only Cordova app, and wheel-like input events on some
-            // Android devices could trigger the same false slide change.
-            threshold: 10,
-            rewind: true,
-            // observer/observeParents removed: slide mutations (build, filter)
-            // are followed by an explicit reelsSwiper.update(), so the
-            // MutationObserver was pure per-mutation overhead during the build
-            // loop and every search keystroke.
-            noSwiping: true,
-            noSwipingClass: 'swiper-no-swiping',
-            on: {
-                init: function () {
-                    ml_update_preload();
-                    // Autoplay the first video on load if tab is active
-                    if ($('#tab-4').hasClass('tab-active')) {
-                        playVideo(this.slides[this.activeIndex]);
-                    }
-                },
-                sliderMove: function () {
-                    // Hide chrome only after an actual drag. A simple tap must
-                    // not change playback before the click handler runs.
-                    $(".reel-actions, .reel-caption").css("visibility", "hidden");
-                },
-                touchEnd: function () {
-                    // Playback is handled by slideChangeTransitionEnd. Keeping
-                    // touchEnd free of play/pause logic avoids racing a tap.
-                    $(".reel-actions, .reel-caption").css("visibility", "visible");
-                },
-                slideChangeTransitionStart: function () {
-                    pauseAllVideos();
-                },
-                slideChangeTransitionEnd: function () {
-                    localStorage.setItem('ml_last_index', this.activeIndex);
-                    ml_update_preload();
-                    // Play video in the active slide if tab is active
-                    if ($('#tab-4').hasClass('tab-active')) {
-                        playVideo(this.slides[this.activeIndex]);
-                    }
-                }
+    var count = document.querySelectorAll('#div_Reels .swiper-slide').length;
+    if (!count) return;
+    var lastIdx = parseInt(localStorage.getItem('ml_last_index') || '0', 10);
+    if (!Number.isFinite(lastIdx) || lastIdx < 0 || lastIdx >= count) lastIdx = 0;
+    reelsSwiper = new Swiper('.reels-swiper', {
+        // Initialize after assignment so preload/playback helpers see this instance.
+        init: false,
+        initialSlide: lastIdx,
+        direction: 'vertical',
+        slidesPerView: 1,
+        watchSlidesProgress: true,
+        resistanceRatio: 0,
+        threshold: 10,
+        // Native circular movement preserves each video's controls and event handlers.
+        loop: count > 1,
+        loopAddBlankSlides: false,
+        noSwiping: true,
+        noSwipingClass: 'swiper-no-swiping',
+        on: {
+            init: function () {
+                ml_update_preload();
+                if ($('#tab-4').hasClass('tab-active')) playVideo(this.slides[this.activeIndex]);
+            },
+            sliderMove: function () {
+                $(".reel-actions, .reel-caption").css("visibility", "hidden");
+            },
+            touchEnd: function () {
+                $(".reel-actions, .reel-caption").css("visibility", "visible");
+            },
+            slideChangeTransitionStart: function () {
+                // Cancel a delayed tap on the outgoing reel before it can restart playback.
+                clearTimeout(ml_click_timer);
+                ml_click_timer = null;
+                pauseAllVideos();
+            },
+            slideChangeTransitionEnd: function () {
+                // realIndex remains stable when loop mode rearranges physical slide nodes.
+                localStorage.setItem('ml_last_index', this.realIndex);
+                ml_update_preload();
+                if ($('#tab-4').hasClass('tab-active')) playVideo(this.slides[this.activeIndex]);
             }
-        });
-
-    }
-
-
-    // Helper function to play video and handle errors
-    //}, 2000);
+        }
+    });
+    reelsSwiper.init();
 }
-
 
 // Every programmatic pause of a reel goes through here, never a bare
 // v.pause(). A video whose play() is still in flight (just auto-started, or
@@ -181,9 +169,14 @@ function bind_micro_learning_events() {
 // the race everywhere at once instead of one call site at a time.
 function ml_safe_pause(v) {
     if (!v) return;
+    // A later activation cancels a queued pause from an earlier swipe.
+    var pauseToken = v._mlPauseToken = (v._mlPauseToken || 0) + 1;
     var pending = v._lmsPlayPromise;
     if (pending && typeof pending.then === 'function') {
-        pending.then(function () { try { v.pause(); } catch (e) { } });
+        pending.then(function () {
+            if (v._mlPauseToken !== pauseToken) return;
+            try { v.pause(); } catch (e) { }
+        });
     } else {
         try { v.pause(); } catch (e) { }
     }
@@ -303,7 +296,9 @@ function ml_update_preload() {
     reelsSwiper.slides.forEach(function (s, i) {
         var v = s.querySelector('.reel-video');
         if (!v) return;
-        if (Math.abs(i - active) <= 1) {
+        // Keep circular neighbours attached when the active reel is at either end.
+        var distance = Math.abs(i - active);
+        if (Math.min(distance, reelsSwiper.slides.length - distance) <= 1) {
             ml_attach_source(v);
             v.preload = 'auto';
         } else {
@@ -396,50 +391,33 @@ function toggleReelPlayback(control, event) {
 }
 
 function playNextReelOrRestart() {
-    if (!reelsSwiper || reelsSwiper.slides.length == 0) return;
-
-    if (reelsSwiper.activeIndex < reelsSwiper.slides.length - 1) {
-        reelsSwiper.slideNext();
-    }
-    else {
-        // All reels played → loop back to the first, seamlessly.
-        ml_positions = {};                         // clear saved positions so videos restart at 0
-        document.querySelectorAll('.reel-video').forEach(function (v) {
-            try { v.pause(); v.currentTime = 0; v.onended = null; } catch (e) { }
-        });
-        $(".video-progress-fill").css("transform", "scaleX(0)");
-        $(".video-progress-handle").css("left", "0%");
-        reelsSwiper.update();
-        reelsSwiper.slideTo(0, 0);                  // instant, no visible scroll
-        // play after the slide settles so the first video reliably restarts
-        setTimeout(function () { playVideo(reelsSwiper.slides[0]); }, 30);
-    }
+    if (!reelsSwiper || !reelsSwiper.slides.length) return;
+    // Let Swiper advance through the circular feed without resetting other videos.
+    if (reelsSwiper.slides.length > 1) reelsSwiper.slideNext();
+    else playVideo(reelsSwiper.slides[0]);
 }
 
-// Shared search hook: filter reels by title. Non-matching slides are hidden.
+// Filter original nodes, then rebuild one loop containing only matching reels.
 function ml_filter_reels(q) {
-    if (!reelsSwiper) return;
     q = (q || '').toString().toLowerCase().trim();
-    var slides = document.querySelectorAll('#div_Reels .swiper-slide');
-    var firstVisible = -1;
-    slides.forEach(function (s, i) {
-        var titleEl = s.querySelector('.video-overlay');
-        var title = titleEl ? titleEl.textContent.toLowerCase() : '';
-        var match = !q || title.indexOf(q) > -1;
-        s.style.display = match ? '' : 'none';
-        if (match && firstVisible === -1) firstVisible = i;
+    ml_destroy_reels();
+    var wrapper = document.getElementById('div_Reels');
+    if (!wrapper) return;
+    if (!ml_reel_nodes.length) ml_reel_nodes = Array.from(wrapper.querySelectorAll('.swiper-slide'));
+    ml_reel_nodes.forEach(function (slide) { slide.remove(); });
+    ml_reel_nodes.forEach(function (slide) {
+        var title = slide.querySelector('.video-overlay');
+        slide.style.display = '';
+        if (!q || (title && title.textContent.toLowerCase().indexOf(q) > -1)) wrapper.appendChild(slide);
     });
-    reelsSwiper.update();
-    if (firstVisible > -1) {
-        reelsSwiper.slideTo(firstVisible, 0);
-        playVideo(reelsSwiper.slides[firstVisible]);
-    } else {
-        pauseAllVideos();
-    }
+    localStorage.setItem('ml_last_index', 0);
+    bind_micro_learning_events();
 }
 
 function playVideo(slideElement) {
     if (!slideElement) return;
+    // Ignore stale callbacks from a previous slide or a destroyed feed.
+    if (!reelsSwiper || reelsSwiper.slides[reelsSwiper.activeIndex] !== slideElement) return;
 
     // A new/active video always starts with the control hidden (no auto-flash).
     hideReelControl();
@@ -448,7 +426,8 @@ function playVideo(slideElement) {
     // slide's own play() has settled — ml_safe_pause (not a bare v.pause())
     // is what keeps that from throwing an interrupted-play error on it.
     document.querySelectorAll('.reel-video').forEach(v => {
-        ml_safe_pause(v);
+        // Rebinding the current reel must not queue a pause against its own play promise.
+        if (v !== slideElement.querySelector('.reel-video')) ml_safe_pause(v);
         //v.currentTime = 0;
         v.onended = null; // Remove previous event
     });
@@ -459,6 +438,9 @@ function playVideo(slideElement) {
     var mlId = slideElement.getAttribute('Ml_id');
 
     if (!video) return;
+    // Returning to this same node invalidates its outgoing asynchronous pause.
+    video._mlPauseToken = (video._mlPauseToken || 0) + 1;
+    ml_attach_source(video);
 
     if (video) {
         if (video.ended || (video.duration && video.currentTime >= video.duration)) {
@@ -478,6 +460,14 @@ function playVideo(slideElement) {
         });
     }
 
+    // Paint this reel immediately; previous asynchronous media events cannot own the bar.
+    var currentProgress = video.duration ? video.currentTime / video.duration : 0;
+    if (progress) progress.style.transform = 'scaleX(' + currentProgress + ')';
+    if (handle) handle.style.left = (currentProgress * 100) + '%';
+    var buffered = document.querySelector('.global-video-progress .video-progress-buffered');
+    if (buffered) buffered.style.width = '0%';
+    updateReelPlayPauseButton(slideElement, !video.paused);
+
     // Warm adjacent videos for instant transitions
     ml_preloadAdjacent();
 
@@ -490,7 +480,10 @@ function playVideo(slideElement) {
         if (mlId) ml_positions[mlId] = video.currentTime;
     };
 
-    video.onprogress = function () { ml_updateBuffered(video, slideElement); };
+    // Only the active reel may update the shared buffered-progress control.
+    video.onprogress = function () {
+        if (reelsSwiper && reelsSwiper.slides[reelsSwiper.activeIndex] === slideElement) ml_updateBuffered(video, slideElement);
+    };
 
     // timeupdate can fire many times per second; coalesce all writes into a
     // single rAF-aligned paint and drive the fill with a compositor-only
@@ -505,6 +498,8 @@ function playVideo(slideElement) {
         mlRafPending = true;
         requestAnimationFrame(function () {
             mlRafPending = false;
+            // Discard a queued paint if the user has swiped to another reel.
+            if (!reelsSwiper || reelsSwiper.slides[reelsSwiper.activeIndex] !== slideElement) return;
             if (ml_scrubbing || !video.duration) return;
             var p = video.currentTime / video.duration;
             if (progress) progress.style.transform = 'scaleX(' + p + ')';
@@ -513,6 +508,9 @@ function playVideo(slideElement) {
     };
 
     video.onended = function () {
+        // Ignore stale ended events and consume completion once per playback.
+        if (!reelsSwiper || reelsSwiper.slides[reelsSwiper.activeIndex] !== slideElement) return;
+        video.onended = null;
         updateReelPlayPauseButton(slideElement, false);
         //console.log("Video completed");
 
@@ -669,6 +667,9 @@ function lms_compute_ml_total_video_time(catalog) {
 var total_reels = 0;
 var ml_catalog_ml_ids = null; // { Ml_id: true, ... } for videos currently in the library
 function get_micro_learning_videos() {
+    // Coalesce refreshes while the catalog request is in flight.
+    if (ml_reels_request_pending) return;
+    ml_reels_request_pending = true;
 
     let role_id = (typeof lms_get_listing_role_ids === 'function')
         ? lms_get_listing_role_ids()
@@ -681,6 +682,8 @@ function get_micro_learning_videos() {
 
     loading();
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Micro_Learning_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
+        // Always release the refresh guard, including malformed responses.
+        try {
         var All_data = e.responseText;
         All_data = JSON.parse(All_data);
         let status = All_data[0]["status"];
@@ -711,11 +714,17 @@ function get_micro_learning_videos() {
             });
 
             if (total_reels == 0) {
+                // Tear down the old loop before replacing its slide nodes.
+                ml_destroy_reels();
+                ml_reel_nodes = [];
                 $('#div_Reels')[0].innerHTML = '';
                 total_reels = data.length;
             }
             else {
                 if (data.length > total_reels && !reelActivelyPlaying) {
+                    // Refresh owns a single Swiper instance and a fresh set of nodes.
+                    ml_destroy_reels();
+                    ml_reel_nodes = [];
                     $('#div_Reels')[0].innerHTML = '';
                     total_reels = data.length;
                 }
@@ -724,7 +733,8 @@ function get_micro_learning_videos() {
             lms_compute_ml_total_video_time(data);
 
             let reelsContent = $('#div_Reels')[0].innerHTML;
-            if (reelsContent == '') {
+            // A search with no matches must not trigger a second catalog render.
+            if (reelsContent == '' && !ml_reel_nodes.length) {
                 // Build the whole list as one string and commit it in a single
                 // innerHTML write instead of N jQuery .append() calls — one
                 // reflow + one parse instead of one per reel.
@@ -822,6 +832,8 @@ function get_micro_learning_videos() {
                     ml_remote_links.push(Video_Link);
                 }
                 $('#div_Reels')[0].innerHTML = reels_html;   // single commit
+                // Cache the original order before circular navigation moves the nodes.
+                ml_reel_nodes = Array.from(document.querySelectorAll('#div_Reels .swiper-slide'));
 
                 if (typeof lms_track_watch_time === 'function') {
                     document.querySelectorAll('.reel-video').forEach(function (v) {
@@ -839,11 +851,29 @@ function get_micro_learning_videos() {
             ml_update_preload();
         }
         else {
+            // Remove old loop listeners and catalog nodes on an empty response.
+            ml_destroy_reels();
+            ml_reel_nodes = [];
+            total_reels = 0;
             $('#div_Reels')[0].innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;color:#888;text-align:center;"><i class="fa fa-video" style="font-size:48px;margin-bottom:12px;opacity:0.5;"></i><p style="font-size:16px;">No videos found</p></div>';
         }
+        } finally {
+            ml_reels_request_pending = false;
+            loading_hide();
+        }
+    }, function (error) {
+        // Failed refreshes remain retryable.
+        ml_reels_request_pending = false;
+        onfail(error);
+    });
+    try {
+        getdata.callOtherDomain();
+    } catch (error) {
+        // Synchronous transport failures must also release the request guard.
+        ml_reels_request_pending = false;
         loading_hide();
-    }, onfail);
-    getdata.callOtherDomain();
+        throw error;
+    }
 }
 
 // One reaction request per reel at a time. Like and Dislike share the same lock

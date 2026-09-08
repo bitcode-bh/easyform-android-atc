@@ -479,7 +479,8 @@ function lms_clear_all_local_state() {
         var k = localStorage.key(i);
         if (!k) continue;
         if (k.indexOf('lms_') === 0 || k.indexOf('video_progress_') === 0 ||
-            k.indexOf('ml_answered') === 0 || k === 'ml_last_index' || k === 'ml_muted' ||
+            // Completion markers belong to the outgoing user just like quiz answers.
+            k.indexOf('ml_answered') === 0 || k === 'ml_completed_reels' || k === 'ml_last_index' || k === 'ml_muted' ||
             k === 'ml_video_cache_map' || k === 'ml_video_cache_order') {
             toRemove.push(k);
         }

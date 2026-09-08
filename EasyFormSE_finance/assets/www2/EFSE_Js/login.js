@@ -782,7 +782,8 @@ function updateuniquecode_android(invocation, res_type) {
 
             Language = result[0].Language;
 
-            clear_localStorage();
+            // Retain LMS values only for the same authenticated user/company/server.
+            clear_localStorage(result[0]);
 
             myApp.setProgressbar('#login_progressbar', 10);
             $("#lbl_progress_details").html("Check for required app");
@@ -2537,7 +2538,58 @@ show_biometric = () => {
 }
 
 
-function clear_localStorage() {
+// LMS data belongs only to the last successful login; no per-user archives are kept.
+// Roles and other application/session keys intentionally remain outside this backup.
+function login_collect_matching_lms_state(loginResult) {
+    function sessionValue(key) {
+        try { return JSON.parse(storage.getItem(key)); } catch (e) { return null; }
+    }
+    function value(value) {
+        return value == null ? '' : String(value).trim();
+    }
+    var endpoint = value(typeof global_wcf_url !== 'undefined' ? global_wcf_url : sessionValue('global_wcf_url')).replace(/\/+$/, '');
+    var next = {
+        userId: value(loginResult && loginResult.user_id),
+        companyId: value(loginResult && loginResult.Company_id),
+        endpoint: endpoint
+    };
+    var previous = null;
+    try { previous = JSON.parse(localStorage.getItem('lms_owner_identity')); } catch (e) { }
+    // Migrate existing installations from the previous authenticated session.
+    if (!previous) {
+        previous = {
+            userId: value(sessionValue('user_id')),
+            companyId: value(sessionValue('company_id')),
+            endpoint: value(sessionValue('global_wcf_url')).replace(/\/+$/, '')
+        };
+    }
+    var owner = localStorage.getItem('lms_owner_user_id');
+    var matches = next.userId && next.companyId && next.endpoint &&
+        previous.userId === next.userId && previous.companyId === next.companyId &&
+        previous.endpoint === next.endpoint && (!owner || owner === next.userId);
+    var values = {};
+    if (matches) {
+        for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            if (key && (key.indexOf('lms_') === 0 || key.indexOf('video_progress_') === 0 ||
+                key === 'ml_answered_quizzes' || key === 'ml_completed_reels' ||
+                key === 'ml_last_index' || key === 'ml_muted' ||
+                key === 'ml_video_cache_map' || key === 'ml_video_cache_order')) {
+                values[key] = localStorage.getItem(key);
+            }
+        }
+    }
+    // Unknown/different identities restore no old values. Record only the new owner.
+    if (next.userId && next.companyId && next.endpoint) {
+        values.lms_owner_identity = JSON.stringify(next);
+        values.lms_owner_user_id = next.userId;
+    }
+    return values;
+}
+
+function clear_localStorage(loginResult) {
+    // Capture before clearing jStorage/session identity; restore only matching LMS keys.
+    var retainedLms = login_collect_matching_lms_state(loginResult);
 
     let global_url = JSON.parse(storage.getItem('global_url'));
     let global_wcf_url = JSON.parse(storage.getItem('global_wcf_url'));
@@ -2607,6 +2659,11 @@ function clear_localStorage() {
 
     window.localStorage.clear();
     $.jStorage.flush();
+
+    // Keep same-user LMS progress/caches while preserving the existing app-wide reset.
+    Object.keys(retainedLms).forEach(function (key) {
+        localStorage.setItem(key, retainedLms[key]);
+    });
 
     // default
     var F7_view = 'true';

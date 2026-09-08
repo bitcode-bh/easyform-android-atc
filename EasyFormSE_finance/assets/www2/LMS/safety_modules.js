@@ -3,6 +3,9 @@
 var glob_Module_Schedule_Id = 0;
 // Guards the hardware-Back watch-log request for the currently open lesson.
 var safetyVideoWatchLogInProgress = false;
+// Share confirmed/in-flight watch snapshots between final submission and Back.
+var safetyVideoWatchSaved = {};
+var safetyVideoWatchRequests = {};
 // True only after playback occurs during the currently open Safety video.
 var safety_video_played = false;
 var safety_module_data = [];
@@ -1042,7 +1045,7 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
 
     safetyVideoPopupActive = true;
     safetyVideoReturnedFromFullscreen = false;
-    // A newly opened lesson is a new opportunity to submit one Back-button log.
+    // Playback gating resets per lesson; confirmed watch snapshots remain deduplicated.
     safetyVideoWatchLogInProgress = false;
     safety_video_played = false;
     myApp.popup.open('.popup-level-4');
@@ -1063,6 +1066,8 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
     if (safetyVideo) {
         $(safetyVideo).attr("skil_id", Skill_Id);
         $(safetyVideo).attr("module_id", Module_Id);
+        // Capture the selected schedule on the player alongside its dynamic skill/module.
+        $(safetyVideo).attr("module_schedule_id", glob_Module_Schedule_Id);
         $(safetyVideo).attr("Module_Id", Module_Id);
         safetyVideo._safetyResumeTimeSeconds = videoClockToSeconds(apiWatchTime);
         // Set src last so even a cached video's metadata cannot arrive before
@@ -1149,100 +1154,103 @@ function findSafetyVideoCard(skillId, moduleId, moduleScheduleId) {
     return null;
 }
 
-// Log the active Safety Module video's resume/progress position before Back
-// closes its popup. Existing LMS lesson progress is also currentTime-based, so
-// seeking intentionally changes this value; it is not an accumulated-time field.
+// Back remains best-effort and keeps its existing five-second navigation fallback.
 function logSafetyVideoWatchOnBack(done) {
-    var finish = (typeof done === 'function') ? done : function () { };
-    if (safetyVideoWatchLogInProgress) return false;
-
-    // Seeking to the API resume position does not count as watching. Submit a
-    // new watch log only when playback occurred during this open session.
-    if (!safety_video_played) {
-        finish();
-        return false;
+    var completed = false;
+    var timer;
+    function finish() {
+        if (completed) return;
+        completed = true;
+        clearTimeout(timer);
+        if (typeof done === 'function') done();
     }
+    timer = setTimeout(finish, 5000);
+    return logSafetyVideoWatch(finish, false);
+}
 
+// Save a snapshot of the current player. Final submission waits for confirmed success;
+// identical pending/successful snapshots are shared with the Back-button path.
+function logSafetyVideoWatch(done, requireSave) {
+    var finish = typeof done === 'function' ? done : function () {};
     var video = document.getElementById('vdo_Question');
-    if (!video) {
-        finish();
+    if (!video || (!requireSave && !safety_video_played)) {
+        finish(!requireSave);
         return false;
     }
-
-    safetyVideoWatchLogInProgress = true;
-
-    // Snapshot before the async request so playback cannot change submitted data.
     var duration = Number(video.duration);
     if (!isFinite(duration) || duration <= 0) duration = 0;
     var currentTime = Number(video.currentTime);
     if (!isFinite(currentTime) || currentTime < 0) currentTime = 0;
-    if (duration > 0 && currentTime > duration) currentTime = duration;
-    try { video.pause(); } catch (pauseError) { }
-
-    var moduleId = $(video).attr('module_id');
-    if (moduleId == null || moduleId === '') moduleId = $(video).attr('Module_Id');
+    if (duration > 0) currentTime = Math.min(currentTime, duration);
+    try { video.pause(); } catch (e) {}
+    var moduleId = $(video).attr('module_id') || $(video).attr('Module_Id');
     var skillId = $(video).attr('skil_id');
+    var scheduleId = $(video).attr('module_schedule_id');
+    if (scheduleId == null) scheduleId = glob_Module_Schedule_Id;
     var payload = [{
-        "Module_Id": String(moduleId == null ? '' : moduleId),
-        "Module_Schedule_Id": String(glob_Module_Schedule_Id == null ? '' : glob_Module_Schedule_Id),
-        "Skill_Id": String(skillId == null ? '' : skillId),
-        "Total_Video_Time": secondsToMMSS(duration),
-        "Watch_Video_Time": secondsToMMSS(currentTime)
+        Module_Id: String(moduleId == null ? '' : moduleId),
+        Module_Schedule_Id: String(scheduleId == null ? '' : scheduleId),
+        Skill_Id: String(skillId == null ? '' : skillId),
+        Total_Video_Time: secondsToMMSS(duration),
+        Watch_Video_Time: secondsToMMSS(currentTime)
     }];
-
-    var completed = false;
-    var backFallbackTimer = null;
-    function continueBack() {
-        if (completed) return;
-        completed = true;
-        if (backFallbackTimer) clearTimeout(backFallbackTimer);
-        finish();
+    // Preserve local progress before final submission can close or repurpose the player.
+    if (typeof set_progress_local === 'function') set_progress_local(skillId, currentTime);
+    var identity = JSON.stringify([payload[0].Module_Id, payload[0].Module_Schedule_Id, payload[0].Skill_Id]);
+    var snapshot = JSON.stringify(payload);
+    if (safetyVideoWatchSaved[identity] === snapshot) {
+        finish(true);
+        return false;
     }
-
-    // Never hold the existing Back navigation indefinitely on a slow network.
-    backFallbackTimer = setTimeout(continueBack, 5000);
-
+    if (safetyVideoWatchRequests[snapshot]) {
+        safetyVideoWatchRequests[snapshot].push(finish);
+        return false;
+    }
+    safetyVideoWatchRequests[snapshot] = [finish];
+    safetyVideoWatchLogInProgress = true;
+    function settle(saved) {
+        var callbacks = safetyVideoWatchRequests[snapshot];
+        if (!callbacks) return;
+        delete safetyVideoWatchRequests[snapshot];
+        safetyVideoWatchLogInProgress = Object.keys(safetyVideoWatchRequests).length > 0;
+        // Failed requests remain retryable; only server-confirmed values are deduplicated.
+        if (saved) safetyVideoWatchSaved[identity] = snapshot;
+        callbacks.forEach(function (callback) { callback(saved); });
+    }
     try {
         var request = new Webservicecall_REST(
-            global_wcf_url_lms + 'LMS_InsertUpdate_Video_Watch_Log',
-            JSON.stringify(payload),
+            global_wcf_url_lms + 'LMS_InsertUpdate_Video_Watch_Log', snapshot,
             function (response) {
+                var saved = false;
                 try {
                     var result = JSON.parse(response.responseText || '[]');
-                    if (!result.length || Number(result[0].status) !== 1) {
-                        console.error('Safety video watch log was not accepted by the server.');
-                    } else {
-                        // Refresh the same in-memory cumulative source consumed
-                        // by the Dashboard; do not wait for another API listing.
+                    saved = result.length > 0 && Number(result[0].status) === 1;
+                } catch (e) { console.error('Unable to parse Safety video watch log response.', e); }
+                if (saved) {
+                    // Update the exact submitted lesson, even if navigation already changed.
+                    try {
                         if (typeof LmsBackend !== 'undefined') LmsBackend.ingestSkillRows(payload);
                         if (typeof update_lms_kpi === 'function') update_lms_kpi();
-                        // Keep this open listing current after a successful save,
-                        // so reopening the same lesson resumes from the new value.
                         var card = findSafetyVideoCard(payload[0].Skill_Id, payload[0].Module_Id, payload[0].Module_Schedule_Id);
                         if (card) {
                             card.setAttribute('data-watch-video-time', payload[0].Watch_Video_Time);
                             var elapsed = card.querySelector('.lesson-preview-elapsed');
                             if (elapsed) elapsed.textContent = payload[0].Watch_Video_Time;
                         }
-                    }
-                } catch (parseError) {
-                    console.error('Unable to parse Safety video watch log response.', parseError);
+                    } catch (e) { console.error('Unable to refresh saved watch time.', e); }
                 }
-                continueBack();
+                settle(saved);
             },
             function (error) {
                 console.error('Unable to save Safety video watch log.', error);
-                continueBack();
-            },
-            null,
-            15000
+                settle(false);
+            }, null, 15000
         );
         request.callOtherDomain();
-    } catch (requestError) {
-        console.error('Unable to start Safety video watch log request.', requestError);
-        continueBack();
+    } catch (error) {
+        console.error('Unable to start Safety video watch log request.', error);
+        settle(false);
     }
-
     return true;
 }
 
@@ -1538,7 +1546,18 @@ function safety_quiz_finish() {
             alert(arr[0].message);
         }
     }, onfail);
-    g.callOtherDomain();
+    // Save the latest dynamic watch values before sending/completing the final quiz.
+    logSafetyVideoWatch(function (saved) {
+        if (saved) {
+            g.callOtherDomain();
+        } else {
+            // Keep the final question available for retry when its watch log fails.
+            loading_hide();
+            safety_quiz_index = Math.max(0, safety_quiz_data.length - 1);
+            safety_quiz_render();
+            alert('Unable to save video watch time. Please submit again.');
+        }
+    }, true);
 }
 
 function safety_quiz_close_modal() {
@@ -1669,7 +1688,18 @@ function submit_question_by_skill_id(flag) {
         loading_hide();
 
     }, onfail);
-    getdata.callOtherDomain();
+    // The legacy final-submit path shares the same confirmed watch-log prerequisite.
+    if (flag === 'submit') {
+        logSafetyVideoWatch(function (saved) {
+            if (saved) getdata.callOtherDomain();
+            else {
+                loading_hide();
+                alert('Unable to save video watch time. Please submit again.');
+            }
+        }, true);
+    } else {
+        getdata.callOtherDomain();
+    }
 }
 
 // video submit
