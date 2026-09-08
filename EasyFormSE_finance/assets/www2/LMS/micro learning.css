@@ -413,3 +413,9 @@
     .action-item.ml-pop i, .action-item span.ml-roll,
     .correct-answer, .incorrect-answer, .sheet-modal.modal-in .block > * { animation: none !important; }
 }
+
+/* Color the complete option container; preserve feedback on checked option text. */
+#pnl_ML_Question li.ml-correct-answer { background: rgba(91, 229, 132, 0.18); box-shadow: inset 0 0 0 1px #5be584; }
+#pnl_ML_Question li.ml-incorrect-answer { background: rgba(255, 122, 122, 0.18); box-shadow: inset 0 0 0 1px #ff7a7a; }
+#pnl_ML_Question li.ml-correct-answer input[type="radio"] ~ .item-inner .item-title { color: #5be584 !important; }
+#pnl_ML_Question li.ml-incorrect-answer input[type="radio"] ~ .item-inner .item-title { color: #ff7a7a !important; }

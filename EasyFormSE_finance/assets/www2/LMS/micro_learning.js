@@ -965,6 +965,8 @@ function add_user_activitiy(t_ML_id, activity_type, icon_ele) {
 
 
 var glob_ML_Id, glob_ML_Que_Id;
+// Prevent duplicate submissions and feedback until a new question is loaded.
+var ml_question_submitting = false;
 function get_ML_question(Ml_Id) {
 
     glob_ML_Id = Ml_Id;
@@ -995,8 +997,14 @@ function get_ML_question(Ml_Id) {
             $("#option2").text(OptionText[2]);
             $("#option3").text(OptionText[3]);
 
+            // Reset the submission guard for every newly loaded question.
+            ml_question_submitting = false;
+
             // Clear previous selection
-            $("input[name='quizOption']").prop("checked", false);
+            $("input[name='ML_Option']").prop("checked", false);
+
+            // Remove previous classes
+            $("#pnl_ML_Question .list li").removeClass("ml-correct-answer ml-incorrect-answer");
 
             myApp.sheet.open("#pnl_ML_Question");
 
@@ -1014,6 +1022,8 @@ function get_ML_question(Ml_Id) {
 }
 
 function submit_ML_question() {
+    // Ignore repeated clicks while submitting or displaying the result.
+    if (ml_question_submitting) return false;
     let Param_obj = [];
 
     let user_id = JSON.parse(storage.getItem('user_id'));
@@ -1029,6 +1039,11 @@ function submit_ML_question() {
         alert("Please select answer!");
         return false;
     }
+
+    // Capture both trimmed answers so all feedback evaluates the submitted selection.
+    let validAnswer = ($("#ML_Question").attr("valid_ans") || "").trim();
+    let wasCorrect = selectedAns.trim() === validAnswer;
+    ml_question_submitting = true;
 
     Param_obj.push({
         "User_ID": user_id,
@@ -1058,13 +1073,13 @@ function submit_ML_question() {
             // Remove previous classes
             $("#pnl_ML_Question .list li").removeClass("ml-correct-answer ml-incorrect-answer");
 
-            let validAnswer = $("#ML_Question").attr("valid_ans");
+            // Use one normalized comparison for scoring and haptics.
 
             if (typeof lms_add_ml_quiz_result === 'function') {
-                lms_add_ml_quiz_result(selectedAns.trim() === validAnswer);
+                lms_add_ml_quiz_result(wasCorrect);
             }
 
-            $("input[name='ML_Option']").each(function () {
+            $("#pnl_ML_Question input[name='ML_Option']").each(function () {
 
                 var value = $(this).val();
                 var option = $("#option" + value);
@@ -1074,15 +1089,15 @@ function submit_ML_question() {
                     // Highlight the correct answer
                     $(this).closest("li").addClass("ml-correct-answer");
 
-                } else if ($(this).is(":checked")) {
+                } else if (value === selectedValue) {
 
-                    // Highlight only the selected wrong answer
+                    // Highlight the submitted wrong option on its complete li container.
                     $(this).closest("li").addClass("ml-incorrect-answer");
                 }
             });
 
             // Haptic feedback: success buzz vs. error double-buzz
-            var wasCorrect = (selectedAns && validAnswer && selectedAns.trim() === validAnswer.trim());
+            // Reuse the same trimmed result as scoring and highlighting.
             ml_haptic(wasCorrect ? 25 : [40, 30, 40]);
 
             setTimeout(function () {
@@ -1095,14 +1110,27 @@ function submit_ML_question() {
 
         }
         else {
+            // Permit retry when the server rejects the submission.
+            ml_question_submitting = false;
             var message = myArray[0].message;
             alert(message);
         }
 
         loading_hide();
 
-    }, onfail);
-    getdata.callOtherDomain();
+    }, function (error) {
+        // Permit retry after a failed request.
+        ml_question_submitting = false;
+        onfail(error);
+    });
+    try {
+        getdata.callOtherDomain();
+    } catch (error) {
+        // Release the guard for synchronous request or response-processing failures.
+        ml_question_submitting = false;
+        loading_hide();
+        throw error;
+    }
 }
 
 function share_video_link(t_ML_id, activity_type, icon_ele, Video_Link) {
