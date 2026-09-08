@@ -2145,7 +2145,7 @@ public class CameraAITextActivity extends AppCompatActivity {
 
         if (choices == null ||
                 choices.length == 0) {
-            LogUtils.writeAttendanceLogToFile("chooseOptimalSize is null" + choices,"chooseOptimalSize");
+           // LogUtils.writeAttendanceLogToFile("chooseOptimalSize is null" + choices,"chooseOptimalSize");
             return new Size(1280, 720);
         }
 
@@ -2155,11 +2155,11 @@ public class CameraAITextActivity extends AppCompatActivity {
 
         for (Size option : choices) {
 
-            LogUtils.writeAttendanceLogToFile("chooseOptimalSize for loop" + option.getWidth() + option.getHeight(),"chooseOptimalSize");
+           // LogUtils.writeAttendanceLogToFile("chooseOptimalSize for loop" + option.getWidth() + option.getHeight(),"chooseOptimalSize");
             // Avoid huge preview resolution
             if (option.getWidth() <= 1280 &&
                     option.getHeight() <= 720) {
-                LogUtils.writeAttendanceLogToFile("chooseOptimalSize for after loop" + option.getWidth() + option.getHeight(),"chooseOptimalSize");
+             //   LogUtils.writeAttendanceLogToFile("chooseOptimalSize for after loop" + option.getWidth() + option.getHeight(),"chooseOptimalSize");
 
                 if (bestSize == null) {
 
