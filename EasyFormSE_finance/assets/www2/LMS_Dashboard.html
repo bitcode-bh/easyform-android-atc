@@ -82,8 +82,11 @@
         if (global_wcf_url.indexOf("https://dev.easyform.in/") > -1) {
             var global_wcf_url_lms = 'https://dev.easyform.in/LMS/api/';
         }
-        else {
+        else if (global_wcf_url.indexOf("https://mwfm-uat.altiusinfra.com/") > -1) {
             var global_wcf_url_lms = 'https://mwfm-uat.altiusinfra.com/LMS/api/';
+        }
+        else {
+            var global_wcf_url_lms = 'https://mwfm.altiusinfra.com/LMS/api/';
         }
 
         //var F7_view = JSON.parse(storage.getItem('F7_view'));
