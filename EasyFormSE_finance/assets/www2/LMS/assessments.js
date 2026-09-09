@@ -15,6 +15,12 @@ function render_assessment_search() {
 // Label-only chips — see the matching note in safety_modules.js
 // render_safety_module_tags(); counts now live in .lms-filter-summary.
 function render_assessment_tags() {
+    var panel = $(".assessment-tabs");
+    if (!assessment_data.length) {
+        panel.empty().hide();
+        return;
+    }
+    panel.show();
     var tags = [];
     var seen_tags = {};
     assessment_data.forEach(function (assessment) {
@@ -143,15 +149,17 @@ function apply_assessments(responseText, isRefresh) {
             selected_assessment_sort = "recommended";
             assessment_search_text = "";
             render_assessment_search();
-            render_assessment_tags();
             render_assessment_sort_menu();
             bind_assessment_controls();
         }
+        render_assessment_tags();
         render_assessment_cards();
     }
-    else if (!isRefresh) {
+    else if (status == 2 || !isRefresh) {
         assessment_listing_requested = false;
         assessment_data = [];
+        selected_assessment_tag = "All";
+        render_assessment_tags();
         update_assessment_kpi();
         render_assessment_cards();
     }
@@ -323,6 +331,8 @@ function get_assessments_listing(force_refresh, onNetworkApplied) {
         else {
             assessment_listing_requested = false;
             assessment_data = [];
+            selected_assessment_tag = "All";
+            render_assessment_tags();
             render_assessment_cards();
         }
 

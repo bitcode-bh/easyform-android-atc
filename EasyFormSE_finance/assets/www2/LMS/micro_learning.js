@@ -1119,10 +1119,6 @@ function submit_ML_question() {
                     // Highlight the correct answer
                     $(this).closest("li").addClass("ml-correct-answer");
 
-                } else if (value === selectedValue) {
-
-                    // Highlight the submitted wrong option on its complete li container.
-                    $(this).closest("li").addClass("ml-incorrect-answer");
                 }
             });
 

@@ -353,6 +353,7 @@
                                     <div class="lms-trend-range-label" id="lms_trend_range_label"></div>
                                 </div>
                                 <div id="lms-trend-chart" class="lms-trend-chart swiper-no-swiping"></div>
+                                <div id="lms-trend-status" role="status" aria-live="polite"></div>
                                 <div id="lms-ml-coverage-chart" class="lms-trend-chart swiper-no-swiping" style="display:none;"></div>
 
                                 <!-- Context card: values AND which one drives the chart above depend on the
@@ -824,14 +825,14 @@
             }, 150);
         }
 
-        // Update the header title, switch the nav to dark on Micro Learning, and
-        // reset/scope the shared search when the active tab changes.
+        // Update the header and search scope while keeping bottom navigation
+        // in the shared light theme on every tab.
         function lms_set_title(t) {
             try {
                 lms_active_tab = t;
                 document.querySelector('.sample-safety-titlebar').textContent = t;
                 var tabbar = document.querySelector('.toolbar.tabbar');
-                if (tabbar) tabbar.classList.toggle('tabbar-dark', t === 'Micro Learning');
+                if (tabbar) tabbar.classList.remove('tabbar-dark');
                 // top bar matches the page background: dark on the (black) reels screen
                 var navbar = document.querySelector('.navbar');
                 if (navbar) navbar.classList.toggle('navbar-dark', t === 'Micro Learning');

@@ -12,8 +12,13 @@ var lms_trend_custom_start = null;
 var lms_trend_custom_end = null;
 var lms_trend_chart_instance = null;
 var lms_trend_chart_kind = null; // tracks which config is currently in #lms-trend-chart
+var lms_trend_chart_work = Promise.resolve();
 var lms_ml_coverage_chart_instance = null;
 var lms_trend_calendar_instance = null;
+
+// The pre-active Dashboard tab does not emit tab:show on page load. Render
+// its default range independently of the network/listing startup callbacks.
+$(function () { lms_render_selected_category_chart(); });
 
 // #lms-trend-chart hosts three very different chart shapes depending on the
 // selected category (Modules multi-line trend / Assessments bar / Micro
@@ -22,12 +27,28 @@ var lms_trend_calendar_instance = null;
 // multi-axis array) between them; reuse updateOptions only when re-rendering
 // the same kind (filter change, data refresh).
 function lms_render_apex_chart(elId, options, kind) {
+    // ApexCharts renders/updates asynchronously. Wait for the previous operation
+    // before applying a filter change, including clicks during the first render.
+    lms_trend_chart_work = lms_trend_chart_work.then(function () {
+        return lms_update_apex_chart(elId, options, kind);
+    }).catch(function (err) {
+        console.error('Error rendering LMS chart:', err);
+        if (lms_trend_chart_instance) {
+            try { lms_trend_chart_instance.destroy(); } catch (e) { }
+        }
+        lms_trend_chart_instance = null;
+        lms_trend_chart_kind = null;
+    });
+    return lms_trend_chart_work;
+}
+
+function lms_update_apex_chart(elId, options, kind) {
     var el = document.getElementById(elId);
     if (!el || typeof ApexCharts === 'undefined') return;
 
-    if (lms_trend_chart_instance && lms_trend_chart_kind === kind) {
-        lms_trend_chart_instance.updateOptions(options, true, true);
-        return;
+    if (lms_trend_chart_instance && lms_trend_chart_kind === kind &&
+        el.contains(lms_trend_chart_instance.el) && el.querySelector('.apexcharts-canvas')) {
+        return lms_trend_chart_instance.updateOptions(options, true, true);
     }
     if (lms_trend_chart_instance) {
         lms_trend_chart_instance.destroy();
@@ -36,7 +57,7 @@ function lms_render_apex_chart(elId, options, kind) {
     el.innerHTML = ''; // clear the loading-skeleton/error placeholder before first render
     lms_trend_chart_instance = new ApexCharts(el, options);
     lms_trend_chart_kind = kind;
-    lms_trend_chart_instance.render();
+    return lms_trend_chart_instance.render();
 }
 
 $(document).on('ptr:refresh', '.ptr-content', function (e) {
@@ -738,19 +759,44 @@ function render_lms_ml_coverage_chart() {
 }
 
 function apply_dashboard(responseText) {
-    var myArray;
-    try { myArray = JSON.parse(responseText); } catch (e) { return; }
-    var status = myArray[0].status;
-    if (status != 1) return;
-
-    var data = JSON.parse(myArray[0]["data"]);
+    var data;
+    try {
+        var response = JSON.parse(responseText);
+        if (!Array.isArray(response) || !response[0]) return false;
+        // Status 2 is an empty result, not a refresh failure.
+        if (response[0].status == 2) data = [];
+        else if (response[0].status == 1) data = response[0].data;
+        else return false;
+        if (typeof data === 'string' && !data.trim()) data = [];
+        if (typeof data === 'string') data = JSON.parse(data);
+        if (data == null) data = [];
+        if (!Array.isArray(data)) return false;
+    } catch (e) { return false; }
     dashboard_kpi_data = data;
+    var statusEl = document.getElementById('lms-trend-status');
+    if (statusEl) statusEl.textContent = '';
 
     update_lms_kpi();
     lms_render_selected_category_chart();
+    return true;
 }
 
 function get_dashboard_data(force_refresh) {
+    // Draw the selected range now, even if the request is slow or returns an
+    // unsuccessful response. Never make chart initialization depend on it.
+    lms_render_selected_category_chart();
+    var statusEl = document.getElementById('lms-trend-status');
+    if (statusEl) statusEl.textContent = 'Updating chart…';
+    function dashboard_failed() {
+        // The chart is already visible; a full listing-style error/retry card
+        // pushes its KPI cards off screen. Keep refresh feedback inline.
+        if (statusEl) {
+            statusEl.textContent = 'Could not refresh chart data. Pull down to retry.';
+        }
+    }
+    function dashboard_received(txt) {
+        if (!apply_dashboard(txt)) dashboard_failed();
+    }
     var lms_dash_url = global_wcf_url_lms + 'LMS_Select_Dashboard';
     var lms_dash_cache_key = (typeof lms_listing_cache_key === 'function')
         ? lms_listing_cache_key('dashboard')
@@ -759,27 +805,17 @@ function get_dashboard_data(force_refresh) {
 
     // Cache-first (see get_safety_module_listing); original path preserved as fallback.
     if (typeof LmsData !== 'undefined') {
-        var had_cache = !force_refresh && LmsData.getCache(lms_dash_cache_key) != null;
-        if (!had_cache) {
-            LmsData.showSkeletons("#lms-trend-chart", 3);
-        }
         LmsData.fetch(lms_dash_cache_key, lms_dash_url, JSON.stringify(Param_obj),
-            function (txt, source) { apply_dashboard(txt); },
-            function (err) {
-                if (!had_cache) {
-                    LmsData.showError("#lms-trend-chart", "get_dashboard_data(true)");
-                }
-            },
+            dashboard_received,
+            dashboard_failed,
             { timeout: 15000, retries: 1, force: !!force_refresh }
         );
         return;
     }
 
-    loading();
     var getdata = new Webservicecall_REST(lms_dash_url, JSON.stringify(Param_obj), function (e) {
-        apply_dashboard(e.responseText);
-        loading_hide();
-    }, onfail);
+        dashboard_received(e.responseText);
+    }, dashboard_failed);
     getdata.callOtherDomain();
 }
 

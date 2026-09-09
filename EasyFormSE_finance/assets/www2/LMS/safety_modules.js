@@ -86,6 +86,12 @@ function render_safety_module_search() {
 // favour of the single .lms-filter-summary line below the row (rendered from
 // render_safety_module_cards(), where the real visible count lives).
 function render_safety_module_tags() {
+    var panel = $(".sample-safety-tabs").not(".assessment-tabs");
+    if (!safety_module_data.length) {
+        panel.empty().hide();
+        return;
+    }
+    panel.show();
     var tags = [];
     var seen_tags = {};
 
@@ -238,10 +244,10 @@ function apply_safety_modules(responseText, isRefresh) {
             selected_safety_sort = "recommended";
             safety_module_search_text = "";
             render_safety_module_search();
-            render_safety_module_tags();
             render_safety_module_sort_menu();
             bind_safety_module_controls();
         }
+        render_safety_module_tags();
         render_safety_module_cards();
         update_module_kpi();
         if (isRefresh) {
@@ -250,9 +256,11 @@ function apply_safety_modules(responseText, isRefresh) {
         }
         lms_compute_module_total_video_time();
     }
-    else if (!isRefresh) {
+    else if (status == 2 || !isRefresh) {
         safety_module_listing_requested = false;
         safety_module_data = [];
+        selected_safety_tag = "All";
+        render_safety_module_tags();
         update_module_kpi();
         render_safety_module_cards();
     }
@@ -560,6 +568,8 @@ function get_safety_module_listing(force_refresh) {
         else {
             safety_module_listing_requested = false;
             safety_module_data = [];
+            selected_safety_tag = "All";
+            render_safety_module_tags();
             update_module_kpi();
             render_safety_module_cards();
             // myApp.popup.close('.popup-level-2'); // Optional: Do we really want to close the popup if it was open? Actually the modules are on the main tab now, not a popup.

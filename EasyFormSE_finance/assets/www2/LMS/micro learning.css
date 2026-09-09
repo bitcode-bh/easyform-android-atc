@@ -310,7 +310,7 @@
 .video-progress.is-scrubbing .video-progress-handle,
 .video-progress:hover .video-progress-handle { transform: translateY(-50%) scale(1); }
 
-/* --- Micro Learning quiz sheet — dark floating card (reference design) --- */
+/* --- Micro Learning quiz sheet — shared light quiz appearance --- */
 #pnl_ML_Question.sheet-modal {
     height: auto;
     max-height: 72%;
@@ -318,13 +318,12 @@
     right: 12px;
     width: auto;
     bottom: 14px;
-    background: rgba(20, 20, 26, 0.72);        /* more transparent */
-    -webkit-backdrop-filter: blur(22px);
-    backdrop-filter: blur(22px);
-    color: #e9e9ee;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--c-surface, #ffffff);
+    color: var(--c-fg, #1c2430);
+    color-scheme: light;
+    border: 0;
     border-radius: 20px !important;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
     overflow: hidden;
     --f7-radio-active-color: #2a3086;          /* theme (brand) radio color */
     --f7-radio-inactive-color: #7a7a85;
@@ -335,12 +334,12 @@
 #pnl_ML_Question #ML_Question {
     margin: 0 0 10px;
     padding-bottom: 10px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 400 !important;
-    line-height: 1.3;
-    color: #f3f3f7;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: left;
+    font-size: 13px;
+    font-weight: 800 !important;
+    line-height: 1.35;
+    color: var(--c-fg, #1c2430);
+    border-bottom: 0;
 }
 #pnl_ML_Question .list { margin: 0; background: transparent; }
 #pnl_ML_Question .list ul { background: transparent; }
@@ -350,9 +349,8 @@
 #pnl_ML_Question .item-inner { padding: 6px 6px; min-height: 0; }
 #pnl_ML_Question .item-inner::before,
 #pnl_ML_Question .item-inner::after { display: none !important; }
-#pnl_ML_Question .item-title { color: #ffffff !important; font-size: 13px !important; font-weight: 400 !important; line-height: 1.4 !important; white-space: normal !important; }
-#pnl_ML_Question li { border-radius: 10px; margin-bottom: 0; }
-#pnl_ML_Question input[type="radio"]:checked ~ .item-inner .item-title { color: #ffffff !important; font-weight: 400 !important; }
+#pnl_ML_Question .item-title { color: var(--c-fg, #1c2430) !important; font-size: 13px !important; font-weight: 400 !important; line-height: 1.4 !important; white-space: normal !important; }
+#pnl_ML_Question li { border: 0; border-radius: 0; margin-bottom: 0; background: transparent; box-shadow: none; }
 
 #pnl_ML_Question #btn_ML_Que_Submit {
     margin-top: 12px;
@@ -376,8 +374,8 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-#pnl_ML_Question .ml-correct-answer .item-title { color: #5be584 !important; font-weight: 400 !important; }
-#pnl_ML_Question .ml-incorrect-answer .item-title { color: #ff7a7a !important; font-weight: 400 !important; }
+/* Match Assessment review: only the correct answer gets bold green text. */
+#pnl_ML_Question .ml-correct-answer .item-title { color: #1e8e3e !important; font-weight: 700 !important; }
 
 /* Generic (light) answer states — kept for the Assessments quiz */
 .correct-answer {
@@ -413,9 +411,3 @@
     .action-item.ml-pop i, .action-item span.ml-roll,
     .correct-answer, .incorrect-answer, .sheet-modal.modal-in .block > * { animation: none !important; }
 }
-
-/* Color the complete option container; preserve feedback on checked option text. */
-#pnl_ML_Question li.ml-correct-answer { background: rgba(91, 229, 132, 0.18); box-shadow: inset 0 0 0 1px #5be584; }
-#pnl_ML_Question li.ml-incorrect-answer { background: rgba(255, 122, 122, 0.18); box-shadow: inset 0 0 0 1px #ff7a7a; }
-#pnl_ML_Question li.ml-correct-answer input[type="radio"] ~ .item-inner .item-title { color: #5be584 !important; }
-#pnl_ML_Question li.ml-incorrect-answer input[type="radio"] ~ .item-inner .item-title { color: #ff7a7a !important; }

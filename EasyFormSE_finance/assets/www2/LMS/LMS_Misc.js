@@ -1042,13 +1042,11 @@ $(document).ready(function () {
             pauseAllVideos();
         }
 
-        // Keep the top/bottom bar theme + active-tab state in sync on EVERY tab
-        // change — swipe and hardware-back included, not just tabbar taps. Only
-        // the Micro Learning (tab-4) reels screen uses the dark bars; all others
-        // are light, so switching away from it must clear the dark classes.
+        // Keep the header theme and active tab in sync for taps, swipes and
+        // hardware Back. Bottom navigation stays light on every tab.
         var _isML = (this.id == "tab-4");
         var _tabbar = document.querySelector('.toolbar.tabbar');
-        if (_tabbar) _tabbar.classList.toggle('tabbar-dark', _isML);
+        if (_tabbar) _tabbar.classList.remove('tabbar-dark');
         var _navbar = document.querySelector('.navbar');
         if (_navbar) _navbar.classList.toggle('navbar-dark', _isML);
         try {
