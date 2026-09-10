@@ -86,6 +86,9 @@ function render_safety_module_search() {
 // favour of the single .lms-filter-summary line below the row (rendered from
 // render_safety_module_cards(), where the real visible count lives).
 function render_safety_module_tags() {
+    // A forced fetch with existing cache can be the first paint after login.
+    // Bind on every render, not only initial responses; off/on prevents duplicates.
+    bind_safety_module_controls();
     var panel = $(".sample-safety-tabs").not(".assessment-tabs");
     if (!safety_module_data.length) {
         panel.empty().hide();

@@ -15,6 +15,9 @@ function render_assessment_search() {
 // Label-only chips — see the matching note in safety_modules.js
 // render_safety_module_tags(); counts now live in .lms-filter-summary.
 function render_assessment_tags() {
+    // A forced fetch with existing cache can be the first paint after login.
+    // Bind on every render, not only initial responses; off/on prevents duplicates.
+    bind_assessment_controls();
     var panel = $(".assessment-tabs");
     if (!assessment_data.length) {
         panel.empty().hide();
