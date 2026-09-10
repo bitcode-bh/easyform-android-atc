@@ -908,7 +908,7 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     @Override
     protected void onPause() {
         super.onPause();
-        stopLocationUpdates();
+        //stopLocationUpdates();
     }
 
 
@@ -1361,19 +1361,27 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         }
     }
     private void checkLocationPermissions() {
-        if (!hasLocationPermissions()) {
-//            ActivityCompat.requestPermissions(this, locationPermissions, REQUEST_CODE_LOCATION);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                Locationpermissioncheck();
-                return;
-            }
 
-            else {
-                manageHandler(30000);
-                //start the fused location update
-                manageHandlerFused(200);
-            }
+        if (!hasLocationPermissions()) {
+            Locationpermissioncheck();
+
+        } else {
+            BatteryOptimizationCheck();
         }
+
+//        if (!hasLocationPermissions()) {
+////            ActivityCompat.requestPermissions(this, locationPermissions, REQUEST_CODE_LOCATION);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                Locationpermissioncheck();
+//                return;
+//            }
+//
+//            else {
+//                manageHandler(30000);
+//                //start the fused location update
+//                manageHandlerFused(200);
+//            }
+//        }
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
 //        {
 //            boolean isEnabled = isNotificationServiceEnabled(this);
@@ -1392,53 +1400,153 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 //                return;
 //            }
 //        }
-        else {
-            manageHandler(30000);
-            //start the fused location update
-            manageHandlerFused(200);
-        }
+//        else {
+//
+//
+//            checkBatteryOptimizationWithDialog();
+//
+//            manageHandler(30000);
+//            //start the fused location update
+//            manageHandlerFused(200);
+//        }
+//
+//        String checkfirstattempt = null;
+//        try {
+//            pref = sqlitewraper.getSecureShared("FIRSTTIME");
+//            checkfirstattempt = pref.getString("FIRSTTIME", "0");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        if (!checkfirstattempt.equalsIgnoreCase("1")) {
+//
+//            showAlertDialogAutostartalldevices();
+//
+//        } else {
+//
+//            //Check if trip has outage is more than 15 minutes of total trip time than
+//            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
+//
+//            String serviceoutage = ServiceOutage.getserviceoutage().get(0);
+//            String tid = ServiceOutage.getserviceoutage().get(1);
+//
+//            if (serviceoutage != null && tid != null) {
+//                if (!serviceoutage.equals("0") && !tid.equals("0")) {
+//                    if (Float.parseFloat(serviceoutage) > 900000) {
+//                        showAlertDialogAutostartalldevices();
+//                    }
+//                    String t4;
+//                    t4 = "tid =" + tid;
+//                    ContentValues cv4 = new ContentValues();
+//                    cv4.put("serviceoutage_flag", "1");
+//                    long temp4 = database.update("lat_plug", cv4, t4, null);
+//                }
+//            }
+//        }
+    }
 
-        String checkfirstattempt = null;
-        try {
-            pref = sqlitewraper.getSecureShared("FIRSTTIME");
-            checkfirstattempt = pref.getString("FIRSTTIME", "0");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (!checkfirstattempt.equalsIgnoreCase("1")) {
-
-            showAlertDialogAutostartalldevices();
-
+    private void BatteryOptimizationCheck() {
+        if (!isBatteryOptimizationDisabled()) {
+            showBatteryOptimizationDialog();
         } else {
-
-            //Check if trip has outage is more than 15 minutes of total trip time than
-            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
-
-            String serviceoutage = ServiceOutage.getserviceoutage().get(0);
-            String tid = ServiceOutage.getserviceoutage().get(1);
-
-            if (serviceoutage != null && tid != null) {
-                if (!serviceoutage.equals("0") && !tid.equals("0")) {
-                    if (Float.parseFloat(serviceoutage) > 900000) {
-                        showAlertDialogAutostartalldevices();
-                    }
-                    String t4;
-                    t4 = "tid =" + tid;
-                    ContentValues cv4 = new ContentValues();
-                    cv4.put("serviceoutage_flag", "1");
-                    long temp4 = database.update("lat_plug", cv4, t4, null);
-                }
-            }
+            AutoStartCheck();
         }
     }
-    private boolean hasLocationPermissions() {
-        for (String permission : locationPermissions) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED)
-                return false;
+
+    private void AutoStartCheck() {
+        MySharedPreferences autoStartPref = sqlitewraper.getSecureShared("AUTO_START_PREF");
+        boolean isAutoStartConfigured = autoStartPref.getBoolean("IS_AUTOSTART_CONFIGURED", false);
+        if (!isAutoStartConfigured && isOEMDevice()) {
+            AutoStartDialog();
+        } else {
+            startTripLocationTracking();
+        }
+    }
+    private void startTripLocationTracking() {
+        locationManagerGPS();
+        manageHandler(30000);
+        manageHandlerFused(200);
+    }
+
+    private boolean isOEMDevice() {
+        String brand = Build.MANUFACTURER.toLowerCase(Locale.ROOT);
+        return brand.contains("xiaomi") || brand.contains("oppo") || brand.contains("vivo")
+                || brand.contains("huawei") || brand.contains("oneplus") || brand.contains("zte") || brand.contains("htc");
+    }
+    private void AutoStartDialog() {
+        String brand = Build.MANUFACTURER;
+        String message = "Please enable Auto-Start in settings for background trip tracking.";
+        if (brand.equalsIgnoreCase("xiaomi")) {
+            message = "- Go to Phone Settings > Manage Apps > Select App\n- Enable 'Autostart'\n- Under Battery Saver, select 'No Restrictions'";
+        } else if (brand.equalsIgnoreCase("vivo")) {
+            message = "- Go to Settings > Battery > Autostart\n- Allow app to run in background";
+        } else if (brand.equalsIgnoreCase("oppo")) {
+            message = "- Go to Settings > Security / App Management > Auto-launch\n- Turn ON Auto-launch for this app";
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Auto-Start Permission Required")
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("Open Settings", (dialog, which) -> {
+                    dialog.dismiss();
+                    MySharedPreferences autoStartPref = sqlitewraper.getSecureShared("AUTO_START_PREF");
+                    autoStartPref.putBoolean("IS_AUTOSTART_CONFIGURED", true);
+                    autoStartPref.commit();
+                    showAlertDialogAutostartalldevices();
+                })
+//                .setNegativeButton("Cancel", (dialog, which) -> {
+//                    Toast.makeText(this, "Trip cannot start without Auto-Start permission.", Toast.LENGTH_LONG).show();
+//                    finish(); // BLOCK TRIP START
+//                })
+                .show();
+    }
+    private void showBatteryOptimizationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Disable Battery Optimization")
+                .setMessage("Battery optimization must be disabled for this app to ensure location tracking works continuously during your trip.")
+                .setCancelable(false)
+                .setPositiveButton("Open Settings", (dialog, which) -> {
+                    dialog.dismiss();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                        intent.setData(Uri.parse("package:" + getPackageName()));
+                        startActivity(intent);
+                    }
+                })
+//                .setNegativeButton("Cancel", (dialog, which) -> {
+//                    Toast.makeText(this, "Trip cannot start with battery optimization enabled.", Toast.LENGTH_LONG).show();
+//                    finish(); // BLOCK TRIP START
+//                })
+                .show();
+    }
+    private boolean isBatteryOptimizationDisabled() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                return pm.isIgnoringBatteryOptimizations(getPackageName());
+            }
         }
         return true;
     }
-    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private boolean hasLocationPermissions() {
+//        for (String permission : locationPermissions) {
+//            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED)
+//                return false;
+//        }
+//        return true;
+
+        // 1. Check Fine Location (Android 9 / API 28+)
+        boolean hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+        if (!hasFine) return false;
+        // 2. Check Background Location (Android 10+ / API 29+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            boolean hasBackground = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED;
+            if (!hasBackground) return false;
+        }
+        return true;
+    }
+
     public void Locationpermissioncheck()
     {
 //        int bgLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
