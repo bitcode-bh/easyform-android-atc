@@ -5268,7 +5268,7 @@ function success_check_survey_entry_next_read(e) {
 
             if (user_language != 'en') {
                 var language = myArray[0].language;
-                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                 else {
                     language = itemObj._checkStrObj(language);
                     language = language[0];
@@ -5345,7 +5345,7 @@ function onsuccess_get_checksheet_from_server(e) {
 
                 if (user_language != 'en') {
                     var language = myArray[0].language;
-                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                     else {
                         language = itemObj._checkStrObj(language);
                         language = language[0];

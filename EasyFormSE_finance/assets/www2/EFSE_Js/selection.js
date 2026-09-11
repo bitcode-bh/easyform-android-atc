@@ -441,6 +441,10 @@ function get_list_of_modules() {
         var id_Array = JSON.parse(storage.getItem('id_Array'));
         if (id_Array == '' || id_Array == undefined || id_Array == null) {
 
+            $("#btn_page_back").hide();
+            $("#menu_img_profile").parent("a").show();
+            $("#spn_Username").show();
+
             // site wise module listing change 13/12/2018
             var cust_flow_Array = JSON.parse(storage.getItem('cust_flow_Array'));
             if (cust_flow_Array == '' || cust_flow_Array == null || cust_flow_Array == undefined) {
@@ -508,6 +512,10 @@ function get_list_of_modules() {
             }
         } else {
             $("#menu_MISC").hide();
+
+            $("#btn_page_back").show();
+            $("#menu_img_profile").parent("a").hide();
+            $("#spn_Username").hide();
 
             setTimeout(function () {
                 var module_bottom_image = localStorage.getItem('module_bottom_image');
@@ -876,7 +884,7 @@ function SuccessCallBack_get_modules(e) {
 
                                 if (user_language != 'en') {
                                     let language = myArray[0].language;
-                                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                                     else {
                                         language = itemObj._checkStrObj(language);
                                         language = language[0];
@@ -928,15 +936,15 @@ function SuccessCallBack_get_modules(e) {
 
         localStorage.setItem('last_modulelist_count', module_count);
 
-        //var flow_Array = JSON.parse(storage.getItem('flow_Array'));
-        //var id_Array = JSON.parse(storage.getItem('id_Array'));
-        //var cust_flow_Array = JSON.parse(storage.getItem('cust_flow_Array'));
-        //if (id_Array.length > 0 || flow_Array.length > 0 || cust_flow_Array.length > 0) {
+        // var flow_Array = JSON.parse(storage.getItem('flow_Array'));
+        // var id_Array = JSON.parse(storage.getItem('id_Array'));
+        // var cust_flow_Array = JSON.parse(storage.getItem('cust_flow_Array'));
+        // if (id_Array.length > 0 || flow_Array.length > 0 || cust_flow_Array.length > 0) {
         //    enable_back_button();
-        //}
-        //else {
+        // }
+        // else {
         //    disable_back_button();
-        //}
+        // }
 
         enable_back_button();
 
@@ -2568,9 +2576,9 @@ stop_trip_manualy_from_module_listing = () => {
 
         let AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
         let Punchout_Status = AttendanceJson[0].Punchout_Status;
-        
+
         var company_id = JSON.parse(storage.getItem('company_id'));
-       
+
         if (check_type == '' || check_type == null || check_type == undefined || check_type == "null") {
             check_type = 0;
         }
@@ -2639,7 +2647,7 @@ stop_trip_manualy_from_module_listing = () => {
                     alert("Unable to end trip!")
                 }, 'TripPlugin', 'anAction', q_jsonobj);
 
-                
+
             }
             else {
                 alert1(message);

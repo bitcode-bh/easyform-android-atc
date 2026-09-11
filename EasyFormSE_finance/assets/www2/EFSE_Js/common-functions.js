@@ -3225,7 +3225,8 @@ function get_profile_pic_path_android_ios(page) {
 
     if (page == 'selection') {
         // $("#menu_img_profile").parent("a").append("<span class='tabbar-label'>" + profile_user_name + "</span>");
-        $(".navbar-fixed .navbar-inner .right").append("<span style='display: block; width: max-content; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
+        // $(".navbar-fixed .navbar-inner .right").append("<span style='display: block; width: max-content; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
+        $(".view-main .navbar-fixed .navbar-inner .left").append("<span id='spn_Username' style='display: block; width: max-content; position: absolute; left: 10px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
     }
     else {
         //$(".navbar-fixed .navbar-inner .right").append("<span style='display: block; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
@@ -4346,11 +4347,33 @@ function get_privacy_policy() {
     }
 }
 
+// change language from checksheet page
 change_user_language = (lang) => {
-    localStorage.setItem("user_language", lang);
-    location.reload();
+
+    var Param_obj = [];
+    Param_obj.push({
+        'Language': lang
+    });
+
+    loading();
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'Update_User_Language', JSON.stringify(Param_obj), function (e) {
+        var Search_data = e.responseText;
+        Search_data = eval('(' + Search_data + ')');
+        var message = Search_data[0].message;
+        var status = Search_data[0].status;
+        if (status == 1) {
+            localStorage.setItem("user_language", lang);
+            location.reload();
+        }
+        else {
+            alert(message);
+        }
+        loading_hide();
+    }, onfail);
+    getdata1.callOtherDomain();
 }
 
+// change language from profile menu
 change_user_language_menu = (lang) => {
     
     var Param_obj = [];

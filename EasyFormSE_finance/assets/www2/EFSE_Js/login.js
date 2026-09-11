@@ -2713,7 +2713,7 @@ function clear_localStorage(loginResult) {
     localStorage.setItem('user_list_feature_id', user_list_feature_id);
     localStorage.setItem('user_consent', user_consent);
 
-    if (Language == "" || Language == null || Language == undefined || Language == "null" || Language == "udenfined") {
+    if (Language == "" || Language == null || Language == undefined || Language == "null" || Language == "Unknown" || Language == "udenfined" || Language == "[]") {
         localStorage.setItem('user_language', user_language);
     }
     else {
