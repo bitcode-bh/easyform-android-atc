@@ -929,7 +929,7 @@ function SuccessCallBack_get_modules(e) {
                 $("#module_list").append(list_item);
             }
 
-            compare_time_for_user_notification();
+            //compare_time_for_user_notification();   // commented as always false logic on server - 11092026
             //compare_time_for_online_count();
             get_today_attendance_for_notification();
         }
@@ -2047,7 +2047,7 @@ function get_list_of_modules_online() {
                     }
                 });
 
-                compare_time_for_user_notification();
+                // compare_time_for_user_notification();        // commented as always false logic on server - 11092026
                 //compare_time_for_online_count();
                 get_today_attendance_for_notification();
 
