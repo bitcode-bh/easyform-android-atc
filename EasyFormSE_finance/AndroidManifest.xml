@@ -562,7 +562,14 @@
         <activity android:name=".NotificationActivity"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
-<!--        <service-->
+
+        <receiver
+            android:name=".ServiceRestarter"
+            android:enabled="true"
+            android:exported="false" />
+
+
+        <!--        <service-->
 <!--            android:name=".NotificationListener"-->
 <!--            android:label="Notification Listener"-->
 <!--            android:enabled="true"-->

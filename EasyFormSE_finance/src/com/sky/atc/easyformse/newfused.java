@@ -41,6 +41,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
@@ -1526,4 +1527,54 @@ public class newfused extends Service implements LocationListener {
         maxSpeedMilli = 0L;
     }
 
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+
+        try {
+            boolean isTripRunning = isTripRunning();
+
+            if (isTripRunning ) {
+                scheduleServiceRestart();
+            }
+        } catch (Exception e) {
+            Log.e("NEWFUSED", "Error in onTaskRemoved auto-restart: " + e.getMessage());
+        }
+    }
+
+    private void scheduleServiceRestart() {
+        Intent restartServiceIntent = new Intent(getApplicationContext(), ServiceRestarter.class);
+
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+
+        PendingIntent restartServicePendingIntent = PendingIntent.getBroadcast(
+                getApplicationContext(),
+                1,
+                restartServiceIntent,
+                flags
+        );
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager != null) {
+            long triggerAtMillis = SystemClock.elapsedRealtime() + (15 * 60 * 1000);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        triggerAtMillis,
+                        restartServicePendingIntent
+                );
+            } else {
+                alarmManager.setExact(
+                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        triggerAtMillis,
+                        restartServicePendingIntent
+                );
+            }
+        }
+    }
 }
