@@ -1084,6 +1084,35 @@ $(document).ready(function () {
 
     var video = $("#vdo_Question")[0];
     var timeoutId = null;
+    var modulePlaybackPosition = 0;
+
+    // Restrict only the module player; retain its native play/pause/volume UI.
+    if (video) {
+        var controlTokens = (video.getAttribute('controlslist') || '').split(/\s+/);
+        if (controlTokens.indexOf('noplaybackrate') === -1) controlTokens.push('noplaybackrate');
+        video.setAttribute('controlslist', controlTokens.join(' ').trim());
+    }
+    $(video).off('.modulePlaybackRestrictions')
+        .on('emptied.modulePlaybackRestrictions', function () {
+            modulePlaybackPosition = 0;
+        })
+        .on('timeupdate.modulePlaybackRestrictions', function () {
+            if (!video.seeking) modulePlaybackPosition = video.currentTime;
+        })
+        .on('seeking.modulePlaybackRestrictions', function () {
+            // Also reject keyboard/native fullscreen seeks where CSS is ignored.
+            if (Math.abs(video.currentTime - modulePlaybackPosition) > 0.01) {
+                video.currentTime = modulePlaybackPosition;
+            }
+        })
+        .on('ratechange.modulePlaybackRestrictions', function () {
+            if (video.playbackRate !== 1) video.playbackRate = 1;
+            if (video.defaultPlaybackRate !== 1) video.defaultPlaybackRate = 1;
+        });
+    if (video) {
+        video.playbackRate = 1;
+        video.defaultPlaybackRate = 1;
+    }
 
     // Keep taps on the native video controls inside the player. Framework7's
     // fast-click handling and parent gesture handlers must not turn the same
@@ -1123,9 +1152,12 @@ $(document).ready(function () {
         }
 
         try {
+            // Authorize the saved resume position before its seeking event fires.
+            modulePlaybackPosition = savedSeconds;
             video.currentTime = savedSeconds;
         } catch (resumeError) {
             console.error('Unable to restore Safety video position.', resumeError);
+            modulePlaybackPosition = 0;
             try { video.currentTime = 0; } catch (resetError) { }
         }
     });
@@ -1144,12 +1176,7 @@ $(document).ready(function () {
         set_progress();
     });
 
-    // Otherwise a manual seek/scrub only gets captured by the 10s interval
-    // (set_progress()) or on pause/close — up to a 10s window where the
-    // resume position and effective-progress ("In Progress" vs "Completed")
-    // don't reflect where the user actually dragged to. "seeked" (not
-    // "seeking") fires once the scrub settles, so this doesn't fire on every
-    // intermediate frame while dragging.
+    // Persist authorized resume/restored positions once seeking settles.
     //
     // "pause" is bound here too — this is the ONLY save path that fires on a
     // bare native pause (tapping the native control, or the WebView auto-

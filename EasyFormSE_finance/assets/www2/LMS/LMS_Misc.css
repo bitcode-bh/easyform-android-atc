@@ -1106,6 +1106,12 @@ swiper-container.tabs > .tab {
     aspect-ratio: 16 / 9;
 }
 
+/* Module lessons expose no interactive timeline. Other players are unaffected. */
+#vdo_Question::-webkit-media-controls-timeline {
+    display: none !important;
+    pointer-events: none;
+}
+
 #safety-video-close,
 #safety-video-expand {
     position: absolute;

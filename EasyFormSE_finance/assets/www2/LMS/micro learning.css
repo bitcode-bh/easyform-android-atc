@@ -310,6 +310,16 @@
 .video-progress.is-scrubbing .video-progress-handle,
 .video-progress:hover .video-progress-handle { transform: translateY(-50%) scale(1); }
 
+/* All reels share this read-only progress display. */
+#tab-4 .global-video-progress {
+    pointer-events: none;
+    cursor: default;
+    touch-action: auto;
+}
+#tab-4 .global-video-progress .video-progress-handle {
+    display: none;
+}
+
 /* --- Micro Learning quiz sheet — shared light quiz appearance --- */
 #pnl_ML_Question.sheet-modal {
     height: auto;

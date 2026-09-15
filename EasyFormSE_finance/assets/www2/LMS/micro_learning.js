@@ -14,7 +14,6 @@ function ml_destroy_reels() {
 }
 
 /* ===== Premium reels helpers ==================================== */
-var ml_scrubbing = false;      // true while the user is dragging the progress bar
 var ml_positions = {};         // Ml_id -> last playback position (resume after interruption)
 
 function ml_haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch (e) { } }
@@ -61,47 +60,7 @@ function ml_preloadAdjacent() {
     });
 }
 
-// Tap-to-seek + drag-to-scrub on the slim bottom progress bar
-function ml_seekStart(event, progressEl) {
-    if (!reelsSwiper) return;
-    var slide = reelsSwiper.slides[reelsSwiper.activeIndex];
-    var video = slide && slide.querySelector('.reel-video');
-    var track = progressEl.querySelector('.video-progress-track');
-    var fill = progressEl.querySelector('.video-progress-fill');
-    var handle = progressEl.querySelector('.video-progress-handle');
-    if (!video || !video.duration || !track) return;
-
-    ml_scrubbing = true;
-    progressEl.classList.add('is-scrubbing');
-
-    function pct(clientX) {
-        var r = track.getBoundingClientRect();
-        return Math.max(0, Math.min(1, (clientX - r.left) / r.width));
-    }
-    function apply(clientX) {
-        var p = pct(clientX);
-        try { video.currentTime = p * video.duration; } catch (e) { }
-        if (fill) fill.style.transform = 'scaleX(' + p + ')';
-        if (handle) handle.style.left = (p * 100) + '%';
-    }
-    apply(event.clientX);
-
-    function move(e) { apply(e.clientX); if (e.preventDefault) e.preventDefault(); }
-    function up() {
-        ml_scrubbing = false;
-        progressEl.classList.remove('is-scrubbing');
-        document.removeEventListener('pointermove', move);
-        document.removeEventListener('pointerup', up);
-        document.removeEventListener('pointercancel', up);
-        ml_haptic(8);
-        if (video.paused) video.play().catch(function () { });
-    }
-    document.addEventListener('pointermove', move);
-    document.addEventListener('pointerup', up);
-    document.addEventListener('pointercancel', up);
-    if (event.preventDefault) event.preventDefault();
-    if (event.stopPropagation) event.stopPropagation();
-}
+// The shared reel progress bar is display-only; playback owns its position.
 
 /* ================================================================ */
 
@@ -491,7 +450,6 @@ function playVideo(slideElement) {
     // the bar on every tick and steal frames from the swipe gesture.
     var mlRafPending = false;
     video.ontimeupdate = function () {
-        if (ml_scrubbing) return;           // don't fight the user while scrubbing
         if (!video.duration) return;
         if (mlId) ml_positions[mlId] = video.currentTime;   // cheap, keep in sync
         if (mlRafPending) return;
@@ -500,7 +458,7 @@ function playVideo(slideElement) {
             mlRafPending = false;
             // Discard a queued paint if the user has swiped to another reel.
             if (!reelsSwiper || reelsSwiper.slides[reelsSwiper.activeIndex] !== slideElement) return;
-            if (ml_scrubbing || !video.duration) return;
+            if (!video.duration) return;
             var p = video.currentTime / video.duration;
             if (progress) progress.style.transform = 'scaleX(' + p + ')';
             if (handle) handle.style.left = (p * 100) + '%';
