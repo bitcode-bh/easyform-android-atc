@@ -702,6 +702,38 @@ function get_micro_learning_videos() {
                     let Ml_id = data[i].Ml_id;
                     let Title = data[i].Title;
                     let Description = data[i].Description;
+
+                    // Use the selected-language video text when it is available.
+                    // Otherwise, retain the original Title and Description values.
+                    try {
+                        if (user_language != 'en') {
+                            var language = data[i].Title_Language;
+                            if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                            else {
+                                language = itemObj._checkStrObj(language);
+                                language = language[0];
+
+                                if (language[user_language]) {
+                                    Title = language[user_language];
+                                }
+                            }
+
+                            var language = data[i].Description_Language;
+                            if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                            else {
+                                language = itemObj._checkStrObj(language);
+                                language = language[0];
+
+                                if (language[user_language]) {
+                                    Description = language[user_language];
+                                }
+                            }
+                        }
+                    }
+                    catch (e) {
+                        console.log(e);
+                    }
+
                     //let Video_Id = data[i].Video_Id;
                     let Video_Link = data[i].Video_Link;
 

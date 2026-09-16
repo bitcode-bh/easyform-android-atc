@@ -75,6 +75,49 @@ function render_assessment_cards() {
         var Tag = assessment.Tag != null ? assessment.Tag : assessment.tag;
         var TotalQuestion = assessment.TotalQuestion == null || assessment.TotalQuestion === "" ? 0 : assessment.TotalQuestion;
         var SubmitedQuestion = assessment.SubmitedQuestion == null || assessment.SubmitedQuestion === "" ? 0 : assessment.SubmitedQuestion;
+
+        // Use the selected-language assessment text when it is available.
+        // Otherwise, retain the original Name, Description, and Tag values.
+        try {
+            if (user_language != 'en') {
+                var language = assessment.Title_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Name = language[user_language];
+                    }
+                }
+
+                var language = assessment.Description_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Description = language[user_language];
+                    }
+                }
+
+                var language = assessment.Tag_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Tag = language[user_language];
+                    }
+                }
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+
         var onclick_str = "get_questionlog_by_assessment_id('" + Assessment_Id + "', '" + Assessment_Schedule_Id + "', '" + Progress + "')";
 
         // Exact same card as Safety Modules (sample-module-image/-tag/-score-tag,

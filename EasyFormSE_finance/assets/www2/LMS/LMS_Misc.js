@@ -1603,3 +1603,22 @@ function back_button_LMS() {
     // the sole LMS root state where exiting the app is allowed.
     return true;
 }
+
+var MKCheckItem = function () { };
+MKCheckItem.prototype = {
+    _checkStrObj: function (item) {
+        if (typeof item === 'string' || item instanceof String) {
+            item = JSON.parse(item);
+        }
+        return item;
+    }
+};
+
+function isEmpty(obj) {
+    return (
+        obj &&
+        typeof obj === "object" &&
+        !Array.isArray(obj) &&
+        Object.keys(obj).length === 0
+    );
+}

@@ -159,6 +159,48 @@ function render_safety_module_cards() {
             Thumbnail_link = "images/bg2.jpg";
         }
 
+        try {
+            if (user_language != 'en') {
+                var language = module.Title_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Module_Name = language[user_language];
+                    }
+                }
+
+                var language = module.Description_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+                    
+                    if (language[user_language]) {
+                        Module_Description = language[user_language];
+                    }
+                }
+
+                var language = module.Tag_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Tag = language[user_language];
+                    }
+                }
+
+
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+
         var onclick_str = "get_target_skill_by_module_id('" + Module_Id + "', '" + Progress + "', '" + SubmitedSkill + "', '" + Module_Schedule_Id + "')";
         str += '<div class="sample-module-card" Module_Id="' + Module_Id + '" onclick="' + onclick_str + '">';
         str += '<div class="sample-module-image"><img src="' + Thumbnail_link + '" alt="' + Module_Name + '" loading="lazy" onload="this.parentNode.classList.add(\'img-ready\'); if(typeof lms_apply_corner_contrast===\'function\') lms_apply_corner_contrast(this.src, this.parentNode);">';
