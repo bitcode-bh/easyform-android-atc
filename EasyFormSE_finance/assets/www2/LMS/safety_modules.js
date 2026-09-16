@@ -162,7 +162,7 @@ function render_safety_module_cards() {
         try {
             if (user_language != 'en') {
                 var language = module.Title_Language;
-                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                 else {
                     language = itemObj._checkStrObj(language);
                     language = language[0];
@@ -173,7 +173,7 @@ function render_safety_module_cards() {
                 }
 
                 var language = module.Description_Language;
-                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                 else {
                     language = itemObj._checkStrObj(language);
                     language = language[0];
@@ -184,7 +184,7 @@ function render_safety_module_cards() {
                 }
 
                 var language = module.Tag_Language;
-                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                 else {
                     language = itemObj._checkStrObj(language);
                     language = language[0];
@@ -815,6 +815,38 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 let Skill_Name = data[m].Skill_Name;
                 let Skill_Description = data[m].Skill_Description;
                 let Video_Link = data[m].Video_Link;
+
+                try {
+                    if (user_language != 'en') {
+                        var language = data[m].Skill_Title_Language;
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                Skill_Name = language[user_language];
+                            }
+                        }
+
+                        var language = data[m].Skill_Description_Language;
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                Skill_Description = language[user_language];
+                            }
+                        }
+
+                    }
+                }
+                catch (e) {
+                    console.log(e);
+                }
+
+
                 // The server's own Video_Time field is present in the schema but
                 // empty in practice (see lms_sum_video_durations's own comment) —
                 // prefer the real fetched duration this module's card total

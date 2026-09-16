@@ -336,9 +336,9 @@ function toggleReelPlayback(control, event) {
         // Second tap - double tap detected!
         clearTimeout(ml_click_timer);
         ml_click_timer = null;
-        
+
         ml_haptic([40, 30, 40]); // haptic pattern for double tap
-        
+
         var likeBtn = slideElement.querySelector('.action-item[aria-label="Like"]');
         if (likeBtn && !likeBtn.classList.contains('is-liked')) {
             likeBtn.click();
@@ -642,211 +642,211 @@ function get_micro_learning_videos() {
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Micro_Learning_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
         // Always release the refresh guard, including malformed responses.
         try {
-        var All_data = e.responseText;
-        All_data = JSON.parse(All_data);
-        let status = All_data[0]["status"];
-        if (status == 1) {
-            let data = JSON.parse(All_data[0]["data"]);
+            var All_data = e.responseText;
+            All_data = JSON.parse(All_data);
+            let status = All_data[0]["status"];
+            if (status == 1) {
+                let data = JSON.parse(All_data[0]["data"]);
 
-            // Track which Ml_Ids are actually in the current library — activity
-            // log rows can outlive their video (content rotated/removed), so
-            // "Watched"/"Liked" must be intersected with this or they can
-            // exceed the real library size. See lms_count_distinct_ml.
-            ml_catalog_ml_ids = {};
-            data.forEach(function (v) { ml_catalog_ml_ids[v.Ml_id] = true; });
+                // Track which Ml_Ids are actually in the current library — activity
+                // log rows can outlive their video (content rotated/removed), so
+                // "Watched"/"Liked" must be intersected with this or they can
+                // exceed the real library size. See lms_count_distinct_ml.
+                ml_catalog_ml_ids = {};
+                data.forEach(function (v) { ml_catalog_ml_ids[v.Ml_id] = true; });
 
-            // Re-entering tab-4 resumes the last reel almost immediately
-            // (bind_micro_learning_events' own ~100ms timer), well before this
-            // network response can land. If the library grew since the last
-            // visit, wiping #div_Reels here would destroy that actively-playing
-            // <video> out from under the user — the reel looks like it randomly
-            // died mid-watch. A currently-playing video means it's genuinely
-            // safe to defer: total_reels is only bumped on an actual rebuild, so
-            // the next time this runs (next tab-4 entry, or once the user pauses/
-            // finishes) the same "grew" condition is still true and the rebuild
-            // still happens — nothing is lost, only postponed past the point
-            // where it would be destructive.
-            var reelActivelyPlaying = false;
-            document.querySelectorAll('.reel-video').forEach(function (v) {
-                if (!v.paused && !v.ended) reelActivelyPlaying = true;
-            });
+                // Re-entering tab-4 resumes the last reel almost immediately
+                // (bind_micro_learning_events' own ~100ms timer), well before this
+                // network response can land. If the library grew since the last
+                // visit, wiping #div_Reels here would destroy that actively-playing
+                // <video> out from under the user — the reel looks like it randomly
+                // died mid-watch. A currently-playing video means it's genuinely
+                // safe to defer: total_reels is only bumped on an actual rebuild, so
+                // the next time this runs (next tab-4 entry, or once the user pauses/
+                // finishes) the same "grew" condition is still true and the rebuild
+                // still happens — nothing is lost, only postponed past the point
+                // where it would be destructive.
+                var reelActivelyPlaying = false;
+                document.querySelectorAll('.reel-video').forEach(function (v) {
+                    if (!v.paused && !v.ended) reelActivelyPlaying = true;
+                });
 
-            if (total_reels == 0) {
-                // Tear down the old loop before replacing its slide nodes.
-                ml_destroy_reels();
-                ml_reel_nodes = [];
-                $('#div_Reels')[0].innerHTML = '';
-                total_reels = data.length;
-            }
-            else {
-                if (data.length > total_reels && !reelActivelyPlaying) {
-                    // Refresh owns a single Swiper instance and a fresh set of nodes.
+                if (total_reels == 0) {
+                    // Tear down the old loop before replacing its slide nodes.
                     ml_destroy_reels();
                     ml_reel_nodes = [];
                     $('#div_Reels')[0].innerHTML = '';
                     total_reels = data.length;
                 }
-            }
-            if (typeof update_lms_kpi === 'function') update_lms_kpi();
-            lms_compute_ml_total_video_time(data);
+                else {
+                    if (data.length > total_reels && !reelActivelyPlaying) {
+                        // Refresh owns a single Swiper instance and a fresh set of nodes.
+                        ml_destroy_reels();
+                        ml_reel_nodes = [];
+                        $('#div_Reels')[0].innerHTML = '';
+                        total_reels = data.length;
+                    }
+                }
+                if (typeof update_lms_kpi === 'function') update_lms_kpi();
+                lms_compute_ml_total_video_time(data);
 
-            let reelsContent = $('#div_Reels')[0].innerHTML;
-            // A search with no matches must not trigger a second catalog render.
-            if (reelsContent == '' && !ml_reel_nodes.length) {
-                // Build the whole list as one string and commit it in a single
-                // innerHTML write instead of N jQuery .append() calls — one
-                // reflow + one parse instead of one per reel.
-                var reels_html = '';
-                var ml_remote_links = [];
-                for (let i = 0; i < data.length; i++) {
-                    let Ml_id = data[i].Ml_id;
-                    let Title = data[i].Title;
-                    let Description = data[i].Description;
+                let reelsContent = $('#div_Reels')[0].innerHTML;
+                // A search with no matches must not trigger a second catalog render.
+                if (reelsContent == '' && !ml_reel_nodes.length) {
+                    // Build the whole list as one string and commit it in a single
+                    // innerHTML write instead of N jQuery .append() calls — one
+                    // reflow + one parse instead of one per reel.
+                    var reels_html = '';
+                    var ml_remote_links = [];
+                    for (let i = 0; i < data.length; i++) {
+                        let Ml_id = data[i].Ml_id;
+                        let Title = data[i].Title;
+                        let Description = data[i].Description;
 
-                    // Use the selected-language video text when it is available.
-                    // Otherwise, retain the original Title and Description values.
-                    try {
-                        if (user_language != 'en') {
-                            var language = data[i].Title_Language;
-                            if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
-                            else {
-                                language = itemObj._checkStrObj(language);
-                                language = language[0];
+                        // Use the selected-language video text when it is available.
+                        // Otherwise, retain the original Title and Description values.
+                        try {
+                            if (user_language != 'en') {
+                                var language = data[i].Title_Language;
+                                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                                else {
+                                    language = itemObj._checkStrObj(language);
+                                    language = language[0];
 
-                                if (language[user_language]) {
-                                    Title = language[user_language];
+                                    if (language[user_language]) {
+                                        Title = language[user_language];
+                                    }
                                 }
-                            }
 
-                            var language = data[i].Description_Language;
-                            if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
-                            else {
-                                language = itemObj._checkStrObj(language);
-                                language = language[0];
+                                var language = data[i].Description_Language;
+                                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                                else {
+                                    language = itemObj._checkStrObj(language);
+                                    language = language[0];
 
-                                if (language[user_language]) {
-                                    Description = language[user_language];
+                                    if (language[user_language]) {
+                                        Description = language[user_language];
+                                    }
                                 }
                             }
                         }
-                    }
-                    catch (e) {
-                        console.log(e);
-                    }
+                        catch (e) {
+                            console.log(e);
+                        }
 
-                    //let Video_Id = data[i].Video_Id;
-                    let Video_Link = data[i].Video_Link;
+                        //let Video_Id = data[i].Video_Id;
+                        let Video_Link = data[i].Video_Link;
 
-                    let Total_Likes = data[i].Total_Likes;
-                    let Total_Dislikes = data[i].Total_Dislikes;
-                    let Total_Shares = data[i].Total_Shares;
-                    let Total_Watch_Count = data[i].Total_Watch_Count;
+                        let Total_Likes = data[i].Total_Likes;
+                        let Total_Dislikes = data[i].Total_Dislikes;
+                        let Total_Shares = data[i].Total_Shares;
+                        let Total_Watch_Count = data[i].Total_Watch_Count;
 
-                    let reel_str = '<div class="swiper-slide" Ml_id="' + Ml_id + '">';
+                        let reel_str = '<div class="swiper-slide" Ml_id="' + Ml_id + '">';
 
-                    // Optional poster (thumbnail) — instant first paint instead
-                    // of a black frame while the first keyframe decodes. Emitted
-                    // only when the API supplies one; harmless no-op otherwise.
-                    var ml_poster = data[i].Poster_Link || data[i].Thumbnail || data[i].Poster || '';
-                    // Serve from the local cache when available (see ml_video_cache.js);
-                    // falls back to the remote URL when caching is disabled/absent.
-                    var ml_src = (typeof ml_cache_url === 'function') ? ml_cache_url(Video_Link) : Video_Link;
+                        // Optional poster (thumbnail) — instant first paint instead
+                        // of a black frame while the first keyframe decodes. Emitted
+                        // only when the API supplies one; harmless no-op otherwise.
+                        var ml_poster = data[i].Poster_Link || data[i].Thumbnail || data[i].Poster || '';
+                        // Serve from the local cache when available (see ml_video_cache.js);
+                        // falls back to the remote URL when caching is disabled/absent.
+                        var ml_src = (typeof ml_cache_url === 'function') ? ml_cache_url(Video_Link) : Video_Link;
 
-                    reel_str += '<video class="reel-video" preload="none" playsinline' + (ml_poster ? ' poster="' + ml_poster + '"' : '') + ' data-remote="' + Video_Link + '" onerror="ml_on_video_error(this)" onclick="return toggleReelPlayback(this, event)"><source src="' + ml_src + '" type="video/mp4" /></video>';
-                    reel_str += '<button type="button" class="reel-play-pause swiper-no-swiping is-hidden" aria-label="Play video" title="Play video" onclick="return toggleReelPlayback(this, event)"><span class="reel-play-pause-icon" aria-hidden="true"></span></button>';
-                    reel_str += '<div class="reel-caption">';
-                    reel_str += '<div class="video-overlay">' + Title + '</div>';
-                    reel_str += '<div class="video-overlay-sub">' + Description + '</div>';
-                    reel_str += '</div>';
+                        reel_str += '<video class="reel-video" preload="none" playsinline' + (ml_poster ? ' poster="' + ml_poster + '"' : '') + ' data-remote="' + Video_Link + '" onerror="ml_on_video_error(this)" onclick="return toggleReelPlayback(this, event)"><source src="' + ml_src + '" type="video/mp4" /></video>';
+                        reel_str += '<button type="button" class="reel-play-pause swiper-no-swiping is-hidden" aria-label="Play video" title="Play video" onclick="return toggleReelPlayback(this, event)"><span class="reel-play-pause-icon" aria-hidden="true"></span></button>';
+                        reel_str += '<div class="reel-caption">';
+                        reel_str += '<div class="video-overlay">' + Title + '</div>';
+                        reel_str += '<div class="video-overlay-sub">' + Description + '</div>';
+                        reel_str += '</div>';
 
 
-                    let like_str = "add_user_activitiy('" + Ml_id + "','LIKE', this)";
-                    let dislike_str = "add_user_activitiy('" + Ml_id + "','DISLIKE', this)";
-                    let share_str = "share_video_link('" + Ml_id + "','SHARE', this, '" + Video_Link + "')";
+                        let like_str = "add_user_activitiy('" + Ml_id + "','LIKE', this)";
+                        let dislike_str = "add_user_activitiy('" + Ml_id + "','DISLIKE', this)";
+                        let share_str = "share_video_link('" + Ml_id + "','SHARE', this, '" + Video_Link + "')";
 
-                    reel_str += '<div class="reel-actions swiper-no-swiping">';
+                        reel_str += '<div class="reel-actions swiper-no-swiping">';
 
-                    // Mute / unmute (sticky across reels via localStorage)
-                    var ml_muted = localStorage.getItem('ml_muted') === '1';
-                    reel_str += '<button type="button" class="action-item ml-mute swiper-no-swiping" aria-label="Toggle sound" aria-pressed="' + (ml_muted ? 'false' : 'true') + '" onclick="return ml_toggle_mute(this, event)"><i class="' + (ml_muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high') + '"></i></button>';
+                        // Mute / unmute (sticky across reels via localStorage)
+                        var ml_muted = localStorage.getItem('ml_muted') === '1';
+                        reel_str += '<button type="button" class="action-item ml-mute swiper-no-swiping" aria-label="Toggle sound" aria-pressed="' + (ml_muted ? 'false' : 'true') + '" onclick="return ml_toggle_mute(this, event)"><i class="' + (ml_muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high') + '"></i></button>';
 
-                    var IsLiked = 0, IsDisliked = 0, Watch_Count = 0, Share_Count = 0;
-                    if (user_activitiy_Array.length > 0) {
-                        for (let a = 0; a < user_activitiy_Array.length; a++) {
-                            let t_Ml_Id = user_activitiy_Array[a].Ml_Id;
-                            if (t_Ml_Id == Ml_id) {
-                                IsLiked = user_activitiy_Array[a].IsLiked;
-                                IsDisliked = user_activitiy_Array[a].IsDisliked;
-                                Watch_Count = user_activitiy_Array[a].Watch_Count;
-                                Share_Count = user_activitiy_Array[a].Share_Count;
-                                break;
+                        var IsLiked = 0, IsDisliked = 0, Watch_Count = 0, Share_Count = 0;
+                        if (user_activitiy_Array.length > 0) {
+                            for (let a = 0; a < user_activitiy_Array.length; a++) {
+                                let t_Ml_Id = user_activitiy_Array[a].Ml_Id;
+                                if (t_Ml_Id == Ml_id) {
+                                    IsLiked = user_activitiy_Array[a].IsLiked;
+                                    IsDisliked = user_activitiy_Array[a].IsDisliked;
+                                    Watch_Count = user_activitiy_Array[a].Watch_Count;
+                                    Share_Count = user_activitiy_Array[a].Share_Count;
+                                    break;
+                                }
                             }
                         }
+
+                        if (IsLiked == 1) {
+                            reel_str += '<button type="button" class="action-item swiper-no-swiping is-liked" aria-label="Like" aria-pressed="true" onclick="' + like_str + '"><i class="fa-solid fa-thumbs-up"></i><span>' + Total_Likes + '</span></button>';
+                        }
+                        else {
+                            reel_str += '<button type="button" class="action-item swiper-no-swiping" aria-label="Like" aria-pressed="false" onclick="' + like_str + '"><i class="fa-regular fa-thumbs-up"></i><span>' + Total_Likes + '</span></button>';
+                        }
+
+                        // if (IsDisliked == 1) {
+                        //     reel_str += '<div class="action-item"><i class="fa-solid fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
+                        // }
+                        // else {
+                        //     reel_str += '<div class="action-item"><i class="fa-regular fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
+                        // }
+
+                        if (Share_Count == 1) {
+                            reel_str += '<button type="button" class="action-item swiper-no-swiping" aria-label="Share" onclick="' + share_str + '"><i class="fa-solid fa-paper-plane"></i><span>' + Total_Shares + '</span></button>';
+                        }
+                        else {
+                            reel_str += '<button type="button" class="action-item swiper-no-swiping" aria-label="Share" onclick="' + share_str + '"><i class="fa-regular fa-paper-plane"></i><span>' + Total_Shares + '</span></button>';
+                        }
+
+                        // Restore completion from the latest API activity or the
+                        // successful local WATCH save for this exact Ml_Id.
+                        if (Watch_Count == 1 || ml_is_reel_completed(Ml_id)) {
+                            reel_str += '<div class="action-item is-watched" aria-label="Views"><i class="fa-solid fa-eye"></i><span>' + Total_Watch_Count + '</span></div>';
+                        }
+                        else {
+                            reel_str += '<div class="action-item" aria-label="Views"><i class="fa-regular fa-eye"></i><span>' + Total_Watch_Count + '</span></div>';
+                        }
+
+                        reel_str += '</div>';   // close .reel-actions
+
+                        reel_str += '</div>';   // close .swiper-slide
+
+                        reels_html += reel_str;
+                        ml_remote_links.push(Video_Link);
+                    }
+                    $('#div_Reels')[0].innerHTML = reels_html;   // single commit
+                    // Cache the original order before circular navigation moves the nodes.
+                    ml_reel_nodes = Array.from(document.querySelectorAll('#div_Reels .swiper-slide'));
+
+                    if (typeof lms_track_watch_time === 'function') {
+                        document.querySelectorAll('.reel-video').forEach(function (v) {
+                            lms_track_watch_time(v, 'lms_watch_seconds_ml');
+                            $(v).on('pause ended', function () { update_ml_stat_badge(); });
+                        });
                     }
 
-                    if (IsLiked == 1) {
-                        reel_str += '<button type="button" class="action-item swiper-no-swiping is-liked" aria-label="Like" aria-pressed="true" onclick="' + like_str + '"><i class="fa-solid fa-thumbs-up"></i><span>' + Total_Likes + '</span></button>';
-                    }
-                    else {
-                        reel_str += '<button type="button" class="action-item swiper-no-swiping" aria-label="Like" aria-pressed="false" onclick="' + like_str + '"><i class="fa-regular fa-thumbs-up"></i><span>' + Total_Likes + '</span></button>';
-                    }
-
-                    // if (IsDisliked == 1) {
-                    //     reel_str += '<div class="action-item"><i class="fa-solid fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
-                    // }
-                    // else {
-                    //     reel_str += '<div class="action-item"><i class="fa-regular fa-thumbs-down" onclick="' + dislike_str + '"></i><span>' + Total_Dislikes + '</span></div>';
-                    // }
-
-                    if (Share_Count == 1) {
-                        reel_str += '<button type="button" class="action-item swiper-no-swiping" aria-label="Share" onclick="' + share_str + '"><i class="fa-solid fa-paper-plane"></i><span>' + Total_Shares + '</span></button>';
-                    }
-                    else {
-                        reel_str += '<button type="button" class="action-item swiper-no-swiping" aria-label="Share" onclick="' + share_str + '"><i class="fa-regular fa-paper-plane"></i><span>' + Total_Shares + '</span></button>';
-                    }
-
-                    // Restore completion from the latest API activity or the
-                    // successful local WATCH save for this exact Ml_Id.
-                    if (Watch_Count == 1 || ml_is_reel_completed(Ml_id)) {
-                        reel_str += '<div class="action-item is-watched" aria-label="Views"><i class="fa-solid fa-eye"></i><span>' + Total_Watch_Count + '</span></div>';
-                    }
-                    else {
-                        reel_str += '<div class="action-item" aria-label="Views"><i class="fa-regular fa-eye"></i><span>' + Total_Watch_Count + '</span></div>';
-                    }
-
-                    reel_str += '</div>';   // close .reel-actions
-
-                    reel_str += '</div>';   // close .swiper-slide
-
-                    reels_html += reel_str;
-                    ml_remote_links.push(Video_Link);
+                    // Warm the local cache in the background (no-op unless enabled).
+                    if (typeof ml_cache_warm === 'function') ml_cache_warm(ml_remote_links);
                 }
-                $('#div_Reels')[0].innerHTML = reels_html;   // single commit
-                // Cache the original order before circular navigation moves the nodes.
-                ml_reel_nodes = Array.from(document.querySelectorAll('#div_Reels .swiper-slide'));
 
-                if (typeof lms_track_watch_time === 'function') {
-                    document.querySelectorAll('.reel-video').forEach(function (v) {
-                        lms_track_watch_time(v, 'lms_watch_seconds_ml');
-                        $(v).on('pause ended', function () { update_ml_stat_badge(); });
-                    });
-                }
-
-                // Warm the local cache in the background (no-op unless enabled).
-                if (typeof ml_cache_warm === 'function') ml_cache_warm(ml_remote_links);
+                bind_micro_learning_events();
+                ml_apply_saved_mute();
+                ml_update_preload();
             }
-
-            bind_micro_learning_events();
-            ml_apply_saved_mute();
-            ml_update_preload();
-        }
-        else {
-            // Remove old loop listeners and catalog nodes on an empty response.
-            ml_destroy_reels();
-            ml_reel_nodes = [];
-            total_reels = 0;
-            $('#div_Reels')[0].innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;color:#888;text-align:center;"><i class="fa fa-video" style="font-size:48px;margin-bottom:12px;opacity:0.5;"></i><p style="font-size:16px;">No videos found</p></div>';
-        }
+            else {
+                // Remove old loop listeners and catalog nodes on an empty response.
+                ml_destroy_reels();
+                ml_reel_nodes = [];
+                total_reels = 0;
+                $('#div_Reels')[0].innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;color:#888;text-align:center;"><i class="fa fa-video" style="font-size:48px;margin-bottom:12px;opacity:0.5;"></i><p style="font-size:16px;">No videos found</p></div>';
+            }
         } finally {
             ml_reels_request_pending = false;
             loading_hide();
@@ -935,42 +935,42 @@ function add_user_activitiy(t_ML_id, activity_type, icon_ele) {
     var getdata;
     try {
         getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_InsertUpdateDelete_Micro_Learning_User_Activity', JSON.stringify(Param_obj), function (e) {
-        try {
-            var responseText = e.responseText;
-            var myArray = JSON.parse(responseText);
-            var status = myArray[0].status;
-            if (status == 1) {
+            try {
+                var responseText = e.responseText;
+                var myArray = JSON.parse(responseText);
+                var status = myArray[0].status;
+                if (status == 1) {
 
-                let curr_count = Math.max(0, parseInt($count.text(), 10) || 0);
+                    let curr_count = Math.max(0, parseInt($count.text(), 10) || 0);
 
-                if (activity_type == "WATCH") {
-                    // A reel becomes completed only after its end-triggered
-                    // WATCH request succeeds; apply the blue state immediately.
-                    ml_mark_reel_completed(t_ML_id, $btn);
-                }
+                    if (activity_type == "WATCH") {
+                        // A reel becomes completed only after its end-triggered
+                        // WATCH request succeeds; apply the blue state immediately.
+                        ml_mark_reel_completed(t_ML_id, $btn);
+                    }
 
-                if (action == "0") {
-                    if (activity_type == "LIKE") { $btn.removeClass("is-liked"); }
-                    else { $icon.removeClass("fa-solid").addClass("fa-regular"); }
-                    // Defensive clamp: stale/invalid UI data must never display
-                    // a negative reaction count after removing a reaction.
-                    ml_rollCount($count, Math.max(0, curr_count - 1));
+                    if (action == "0") {
+                        if (activity_type == "LIKE") { $btn.removeClass("is-liked"); }
+                        else { $icon.removeClass("fa-solid").addClass("fa-regular"); }
+                        // Defensive clamp: stale/invalid UI data must never display
+                        // a negative reaction count after removing a reaction.
+                        ml_rollCount($count, Math.max(0, curr_count - 1));
+                    }
+                    else {
+                        if (activity_type == "LIKE") { $btn.addClass("is-liked"); ml_pop($btn); ml_haptic(15); }
+                        else { $icon.removeClass("fa-regular").addClass("fa-solid"); }
+                        ml_rollCount($count, curr_count + 1);
+                    }
                 }
-                else {
-                    if (activity_type == "LIKE") { $btn.addClass("is-liked"); ml_pop($btn); ml_haptic(15); }
-                    else { $icon.removeClass("fa-regular").addClass("fa-solid"); }
-                    ml_rollCount($count, curr_count + 1);
+                else if (status == 2 || status == 3) {
+                    var message = myArray[0].message;
+                    alert(message);
                 }
+            } catch (responseError) {
+                console.error('Unable to process Micro Learning activity response.', responseError);
+            } finally {
+                releaseReactionLock();
             }
-            else if (status == 2 || status == 3) {
-                var message = myArray[0].message;
-                alert(message);
-            }
-        } catch (responseError) {
-            console.error('Unable to process Micro Learning activity response.', responseError);
-        } finally {
-            releaseReactionLock();
-        }
         }, function (error) {
             releaseReactionLock();
             onfail(error);
@@ -1006,16 +1006,94 @@ function get_ML_question(Ml_Id) {
             let Question_Name = data[0].Question_Name;
             let Valid_Answer = data[0].Valid_Answer;
             let OptionText = data[0].OptionText;
+            let op0 = OptionText[0];
+            let op1 = OptionText[1];
+            let op2 = OptionText[2];
+            let op3 = OptionText[3];
+
+            try {
+                if (user_language != 'en') {
+                    var language = data[0].Question_Language;
+                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                    else {
+                        language = itemObj._checkStrObj(language);
+                        language = language[0];
+
+                        if (language[user_language]) {
+                            Question_Name = language[user_language];
+                        }
+                    }
+
+                    var Option_Language = data[0].Option_Language;
+                    if (Option_Language == "" || Option_Language == null || Option_Language == undefined || Option_Language == "null" || Option_Language == "Unknown") { }
+                    else {
+                        Option_Language = itemObj._checkStrObj(Option_Language);
+                        Option_Language = Option_Language[0];
+
+                        var language = Option_Language[op0];
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                op0 = language[user_language];
+                            }
+                        }
+
+                        var language = Option_Language[op1];
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                op1 = language[user_language];
+                            }
+                        }
+
+                        var language = Option_Language[op2];
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                op2 = language[user_language];
+                            }
+                        }
+
+                        var language = Option_Language[op3];
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                op3 = language[user_language];
+                            }
+                        }
+
+                    }
+
+                }
+            }
+            catch (e) {
+                console.log(e);
+            }
+
+
 
             glob_ML_Que_Id = data[0].Ml_Que_Id;
 
             $("#ML_Question").html('<i class="fa-solid fa-lightbulb" style="color: #fbbc05; margin-right: 8px; font-size: 18px;"></i>' + Question_Name);
             $("#ML_Question").attr("valid_ans", Valid_Answer[0].trim());
+            $("#ML_Question").attr("act_text", data[0].Question_Name);
 
-            $("#option0").text(OptionText[0]);
-            $("#option1").text(OptionText[1]);
-            $("#option2").text(OptionText[2]);
-            $("#option3").text(OptionText[3]);
+            $("#option0").text(op0).attr("act_text", OptionText[0]);
+            $("#option1").text(op1).attr("act_text", OptionText[1]);
+            $("#option2").text(op2).attr("act_text", OptionText[2]);
+            $("#option3").text(op3).attr("act_text", OptionText[3]);
 
             // Reset the submission guard for every newly loaded question.
             ml_question_submitting = false;
@@ -1049,11 +1127,13 @@ function submit_ML_question() {
     let user_id = JSON.parse(storage.getItem('user_id'));
     let user_name = JSON.parse(storage.getItem('user_name'));
     let circle_name = JSON.parse(storage.getItem('circle_name'));
-    let questionName = $("#ML_Question").text();
+    //let questionName = $("#ML_Question").text();
+    let questionName = $("#ML_Question").attr("act_text");
     let selectedValue = $('#pnl_ML_Question').find('input[type="radio"][name="ML_Option"]:checked').val();
 
     if (selectedValue !== undefined) {
-        var selectedAns = $("#option" + selectedValue).text();
+        // var selectedAns = $("#option" + selectedValue).text();
+        var selectedAns = $("#option" + selectedValue).attr("act_text");
     }
     else {
         alert("Please select answer!");

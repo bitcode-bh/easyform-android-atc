@@ -81,7 +81,7 @@ function render_assessment_cards() {
         try {
             if (user_language != 'en') {
                 var language = assessment.Title_Language;
-                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                 else {
                     language = itemObj._checkStrObj(language);
                     language = language[0];
@@ -92,7 +92,7 @@ function render_assessment_cards() {
                 }
 
                 var language = assessment.Description_Language;
-                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                 else {
                     language = itemObj._checkStrObj(language);
                     language = language[0];
@@ -103,7 +103,7 @@ function render_assessment_cards() {
                 }
 
                 var language = assessment.Tag_Language;
-                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                 else {
                     language = itemObj._checkStrObj(language);
                     language = language[0];
