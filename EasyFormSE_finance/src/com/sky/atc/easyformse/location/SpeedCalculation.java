@@ -84,24 +84,7 @@ public class SpeedCalculation {
             }
 
             float seconds = timeDiff / 1000f;
-
-            if (seconds <= 0 || seconds > 120f) {
-                locationA = new Location(locationB);
-                return 10000;
-            }
-
             float distance = locationA.distanceTo(locationB);
-
-            // Reject impossible jump
-            if (distance > 1000f) {
-                //Log.d("GPS_FILTER", "Rejected : GPS Jump " + distance);
-                return 10000;
-            }
-
-            if (distance < 3f) {
-                locationA = new Location(locationB);
-                return 10000;
-            }
 
             float speed = distance / seconds;
 

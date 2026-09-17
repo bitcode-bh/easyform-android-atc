@@ -487,18 +487,6 @@ public class newfused extends Service implements LocationListener {
         double rawLon = location.getLongitude();
         float accuracy = location.getAccuracy();
 
-        // Reject invalid coordinates before they can affect Kalman state.
-        if (rawLat == 0.0 || rawLon == 0.0 ||
-                Math.abs(rawLat) < 0.0001 || Math.abs(rawLon) < 0.0001) {
-            Log.d("LOCATION_FILTER", "Rejected invalid lat/lon: " + rawLat + "," + rawLon);
-            return;
-        }
-
-        // Do not feed a very poor GPS measurement into the Kalman filter.
-        if (accuracy <= 0 || accuracy > 45f) {
-            Log.d("LOCATION_FILTER", "Rejected poor accuracy: " + accuracy);
-            return;
-        }
 
         try {
             boolean isMock = isMockAvailable(location);
@@ -573,13 +561,9 @@ public class newfused extends Service implements LocationListener {
             latestLocation = new Location(filteredLocation);
             checkCallTimeSpeed(filteredLocation);
 
-            float manualSpeed =
-                    SpeedCalculation.calculateSpeedBetweenPoints(filteredLocation);
 
-            if (manualSpeed != 10000) {
-                filteredLocation.setSpeed(manualSpeed);
-                onLocationUpdate(filteredLocation, manualSpeed);
-            }
+            float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(filteredLocation);
+            onLocationUpdate(filteredLocation, manualSpeed);
 
         } catch (Exception e) {
             Log.e("LOCATION_FILTER", "Location processing error", e);
@@ -600,13 +584,8 @@ public class newfused extends Service implements LocationListener {
         // Invalid latitude / longitude
         // ---------------------------------------------
 
-        if (lat == 0.0 ||
-                lng == 0.0 ||
-                lat < -90.0 ||
-                lat > 90.0 ||
-                lng < -180.0 ||
+        if (lat == 0.0 || lng == 0.0 || lat < -90.0 || lat > 90.0 || lng < -180.0 ||
                 lng > 180.0) {
-
             Log.d(
                     "LOCATION_FILTER",
                     "Reject invalid lat/lng"
@@ -615,23 +594,7 @@ public class newfused extends Service implements LocationListener {
             return true;
         }
 
-        // ---------------------------------------------
-        // Accuracy
-        // ---------------------------------------------
 
-        float accuracy =
-                location.getAccuracy();
-
-        if (accuracy <= 0 || accuracy > 45f) {
-
-            Log.d(
-                    "LOCATION_FILTER",
-                    "Reject bad accuracy = " +
-                            accuracy
-            );
-
-            return true;
-        }
 
         // First location is OK
         if (lastAcceptedLocation == null) {
@@ -675,28 +638,6 @@ public class newfused extends Service implements LocationListener {
                     "Reject duplicate location: " +
                             distanceMeters +
                             " m"
-            );
-
-            return true;
-        }
-
-
-        double seconds =
-                timeDiff / 1000.0;
-
-        double calculatedSpeedKmh =
-                (distanceMeters / seconds) * 3.6;
-
-
-        if (calculatedSpeedKmh > 180.0) {
-
-            Log.d(
-                    "LOCATION_FILTER",
-                    "Reject GPS jump: distance=" +
-                            distanceMeters +
-                            "m speed=" +
-                            calculatedSpeedKmh +
-                            " km/h"
             );
 
             return true;
