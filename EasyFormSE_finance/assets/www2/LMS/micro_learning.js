@@ -1184,7 +1184,7 @@ function submit_ML_question() {
                 var value = $(this).val();
                 var option = $("#option" + value);
 
-                if (option.text().trim() === validAnswer) {
+                if (option.attr("act_text").trim() === validAnswer) {
 
                     // Highlight the correct answer
                     $(this).closest("li").addClass("ml-correct-answer");
