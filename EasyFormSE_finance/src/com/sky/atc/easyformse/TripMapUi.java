@@ -1203,14 +1203,20 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     }
 
     void createPermissionList() {
-
+        permissionList.clear();
         if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
         {
-            permissionList.add(Manifest.permission.ACTIVITY_RECOGNITION);
-            permissionList.add(Manifest.permission.SEND_SMS);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                permissionList.add(Manifest.permission.ACTIVITY_RECOGNITION);
+                permissionList.add(Manifest.permission.SEND_SMS);
+            }
+
         }
         else {
-            permissionList.add(Manifest.permission.ACTIVITY_RECOGNITION);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                permissionList.add(Manifest.permission.ACTIVITY_RECOGNITION);
+            }
+
         }
 
 
@@ -1227,8 +1233,7 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 checkLocationPermissions();
             }
         } else {
-            createPermissionList();
-            permissionCheck();
+            BatteryOptimizationCheck();
         }
     }
 
@@ -1910,10 +1915,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             return false;
         }
 
-        if (accuracy <= 0 || accuracy > 45f) {
-            return false;
-        }
-
         return true;
     }
 
@@ -1978,18 +1979,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             return false;
         }
         if (lat < -90.0 || lat > 90.0 || lon < -180.0 || lon > 180.0) {
-            return false;
-        }
-
-        if (accuracy <= 0 || accuracy > 50.0f) {
-           // Log.d("LOCATION_FILTER", "Rejected location due to poor accuracy: " + accuracy + "m");
-            return false;
-        }
-
-
-        long ageMillis = System.currentTimeMillis() - location.getTime();
-        if (ageMillis > 120000) {
-            //Log.d("LOCATION_FILTER", "Rejected stale/cached location fix. Age: " + ageMillis + "ms");
             return false;
         }
 
