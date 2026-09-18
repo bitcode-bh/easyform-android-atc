@@ -177,7 +177,7 @@ function render_safety_module_cards() {
                 else {
                     language = itemObj._checkStrObj(language);
                     language = language[0];
-                    
+
                     if (language[user_language]) {
                         Module_Description = language[user_language];
                     }
@@ -1054,7 +1054,7 @@ function load_lesson_scores(Module_Id) {
                 if (!row || Number(row.Total_Score) <= 0) return;
 
                 scoreEl.innerHTML = '<span class="lesson-preview-score-label">Score</span>' +
-                                    '<span class="lesson-preview-score-value"></span>';
+                    '<span class="lesson-preview-score-value"></span>';
                 scoreEl.querySelector('.lesson-preview-score-value').textContent = row.Score + '/' + row.Total_Score;
                 scoreEl.style.display = '';
             } catch (err) { /* leave hidden */ }
@@ -1258,7 +1258,7 @@ function logSafetyVideoWatchOnBack(done) {
 // Save a snapshot of the current player. Final submission waits for confirmed success;
 // identical pending/successful snapshots are shared with the Back-button path.
 function logSafetyVideoWatch(done, requireSave) {
-    var finish = typeof done === 'function' ? done : function () {};
+    var finish = typeof done === 'function' ? done : function () { };
     var video = document.getElementById('vdo_Question');
     if (!video || (!requireSave && !safety_video_played)) {
         finish(!requireSave);
@@ -1269,7 +1269,7 @@ function logSafetyVideoWatch(done, requireSave) {
     var currentTime = Number(video.currentTime);
     if (!isFinite(currentTime) || currentTime < 0) currentTime = 0;
     if (duration > 0) currentTime = Math.min(currentTime, duration);
-    try { video.pause(); } catch (e) {}
+    try { video.pause(); } catch (e) { }
     var moduleId = $(video).attr('module_id') || $(video).attr('Module_Id');
     var skillId = $(video).attr('skil_id');
     var scheduleId = $(video).attr('module_schedule_id');
@@ -1374,8 +1374,38 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
                 let Valid_Answer = merge_array[i].Valid_Answer[0].trim();
                 let ans_label = merge_array[i].ans;
 
+                try {
+
+                    var Option_Language = [];
+
+                    if (user_language != 'en') {
+                        var language = merge_array[i].Question_Language;
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                skill_que_name = language[user_language];
+                            }
+                        }
+
+                        Option_Language = merge_array[i].Option_Language;
+                        if (Option_Language == "" || Option_Language == null || Option_Language == undefined || Option_Language == "null" || Option_Language == "Unknown") { }
+                        else {
+                            Option_Language = itemObj._checkStrObj(Option_Language);
+                            Option_Language = Option_Language[0];
+                        }
+                    }
+                }
+                catch (e) {
+                    console.log(e);
+                }
+
+
+
                 let str = '<div class="question-card">';
-                str += '<div class="question-title" skill_que_id=' + skill_que_id + ' IsActive=' + IsActive + '>' + skill_que_name + '</div>';
+                str += '<div class="question-title" skill_que_id=' + skill_que_id + ' IsActive=' + IsActive + ' act_text="' + merge_array[i].Skill_Question_Name + '">' + skill_que_name + '</div>';
 
                 for (let j = 0; j < optionsArray.length; j++) {
                     let op_text = optionsArray[j].trim();
@@ -1405,7 +1435,22 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
                         str += '<input type="radio" name="skill_que_' + skill_que_id + '" alt="' + weightage + '" id="' + skill_que_id + '_' + j + '">';
                     }
 
-                    str += '<label for="' + skill_que_id + '_' + j + '">' + op_text + '</label>';
+                    if (user_language != 'en') {
+                        if (Option_Language) {
+                            var language = Option_Language[op_text];
+                            if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                            else {
+                                language = itemObj._checkStrObj(language);
+                                language = language[0];
+
+                                if (language[user_language]) {
+                                    op_text = language[user_language];
+                                }
+                            }
+                        }
+                    }
+
+                    str += '<label for="' + skill_que_id + '_' + j + '" act_text="' + optionsArray[j].trim() + '">' + op_text + '</label>';
                     str += '</div>';
                 }
 
@@ -1705,14 +1750,17 @@ function submit_question_by_skill_id(flag) {
 
     for (let i = 0; i < questionCards.length; i++) {
         let questionCard = questionCards[i];
-        let questionName = questionCard.querySelector('.question-title').textContent.trim();
+        // let questionName = questionCard.querySelector('.question-title').textContent.trim();
+        let questionName = $(questionCard.querySelector('.question-title')).attr("act_text").trim();
         let options = questionCard.querySelectorAll('input[type="radio"]');
 
         let selectedAns = [];
 
         for (let j = 0; j < options.length; j++) {
             if (options[j].checked) {
-                selectedAns.push(options[j].nextElementSibling.textContent.trim());
+                // let op_text = options[j].nextElementSibling.textContent.trim();
+                let op_text = $(options[j].nextElementSibling).attr("act_text").trim();
+                selectedAns.push(op_text);
             }
         }
 
