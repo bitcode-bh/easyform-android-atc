@@ -563,7 +563,11 @@ public class newfused extends Service implements LocationListener {
 
 
             float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(filteredLocation);
-            onLocationUpdate(filteredLocation, manualSpeed);
+            if (manualSpeed != 10000) {
+                filteredLocation.setSpeed(manualSpeed);
+                onLocationUpdate(filteredLocation, manualSpeed);
+            }
+
 
         } catch (Exception e) {
             Log.e("LOCATION_FILTER", "Location processing error", e);
@@ -689,7 +693,7 @@ public class newfused extends Service implements LocationListener {
         locationRequest.setInterval(5000);
         locationRequest.setFastestInterval(2000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setSmallestDisplacement(10);
+        locationRequest.setSmallestDisplacement(100);
 
         return locationRequest;
     }
