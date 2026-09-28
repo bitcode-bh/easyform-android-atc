@@ -82,15 +82,18 @@
         var itemObj = new MKCheckItem();
         var user_language = "en";
 
-        if (global_wcf_url.indexOf("https://dev.easyform.in/") > -1) {
-            var global_wcf_url_lms = 'https://dev.easyform.in/LMS/api/';
-        }
-        else if (global_wcf_url.indexOf("https://mwfm-uat.altiusinfra.com/") > -1) {
-            var global_wcf_url_lms = 'https://mwfm-uat.altiusinfra.com/LMS/api/';
-        }
-        else {
-            var global_wcf_url_lms = 'https://mwfm.altiusinfra.com/LMS/api/';
-        }
+        // if (global_wcf_url.indexOf("https://dev.easyform.in/") > -1) {
+        //     var global_wcf_url_lms = 'https://dev.easyform.in/LMS/api/';
+        // }
+        // else if (global_wcf_url.indexOf("https://mwfm-uat.altiusinfra.com/") > -1) {
+        //     var global_wcf_url_lms = 'https://mwfm-uat.altiusinfra.com/LMS/api/';
+        // }
+        // else {
+        //     var global_wcf_url_lms = 'https://mwfm.altiusinfra.com/LMS/api/';
+        // }
+
+        let domain = new URL(global_wcf_url).origin;
+        var global_wcf_url_lms = domain + '/LMS/api/';
 
         //var F7_view = JSON.parse(storage.getItem('F7_view'));
         //var F7_device = JSON.parse(storage.getItem('F7_device'));
