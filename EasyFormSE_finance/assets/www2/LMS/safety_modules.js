@@ -840,6 +840,19 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                             }
                         }
 
+                        var language = data[m].Video_Id_Array;
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            for (let v = 0; v < language.length; v++) {
+                                let lan_t = language[v].Language;
+                                if (lan_t == user_language) {
+                                    Video_Link = language[v].Video_Link;
+                                    break;
+                                }
+                            }
+                        }
+
                     }
                 }
                 catch (e) {
