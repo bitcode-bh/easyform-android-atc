@@ -693,7 +693,7 @@ public class newfused extends Service implements LocationListener {
         locationRequest.setInterval(5000);
         locationRequest.setFastestInterval(2000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setSmallestDisplacement(100);
+        locationRequest.setSmallestDisplacement(10);
 
         return locationRequest;
     }
