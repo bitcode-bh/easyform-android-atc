@@ -2515,7 +2515,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                 // Connection recovered to good quality
                 if ("poor".equals(currentConnectionQuality)) {
                     setVideoQuality(360); // Restore back to standard quality
-                    Toast.makeText(this, "Network restored: Video quality restored to standard", Toast.LENGTH_SHORT).show();
+                   // Toast.makeText(this, "Network restored: Video quality restored to standard", Toast.LENGTH_SHORT).show();
                 }
                 poorConnectionCount = 0;
                 currentConnectionQuality = "good";
