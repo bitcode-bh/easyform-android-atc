@@ -22,6 +22,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -257,7 +258,10 @@ public class NotificationUtils {
                         "CALL_NOTIFICATION",
                         "Full screen intent permission disabled"
                 );
-
+//                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT);
+//                intent.setData(Uri.parse("package:" + context.getPackageName()));
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                context.startActivity(intent);
                 // Notification will still appear,
                 // but activity will not auto open.
             }
@@ -281,7 +285,7 @@ public class NotificationUtils {
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setOngoing(true)
+                .setOngoing(false)
                 .setAutoCancel(false)
                 .setContentIntent(fullScreenPendingIntent)
                 .setFullScreenIntent(fullScreenPendingIntent, true);
@@ -380,23 +384,48 @@ public class NotificationUtils {
     }
 
 
+//    private static MediaPlayer mediaPlayer;
+//
+//    public static void startRingtone(Context context) {
+//        if (mediaPlayer != null && mediaPlayer.isPlaying()) return;
+//
+//        try {
+//            Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
+//                    context.getPackageName() + "/" + R.raw.ringtone_video_call);
+//
+//            mediaPlayer = new MediaPlayer();
+//            mediaPlayer.setDataSource(context, soundUri);
+//            mediaPlayer.setAudioStreamType(AudioManager.STREAM_RING);
+//            mediaPlayer.setLooping(true);
+//            mediaPlayer.prepare();
+//            mediaPlayer.start();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
     private static MediaPlayer mediaPlayer;
 
     public static void startRingtone(Context context) {
+        // 1. Prevent duplicate playback if already ringing
         if (mediaPlayer != null && mediaPlayer.isPlaying()) return;
 
         try {
-            Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
-                    context.getPackageName() + "/" + R.raw.ringtone_video_call);
+            stopRingtone(); // Clean up existing player if any
 
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(context, soundUri);
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_RING);
-            mediaPlayer.setLooping(true);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+
+            mediaPlayer = MediaPlayer.create(context, R.raw.ringtone_video_call);
+            if (mediaPlayer != null) {
+                mediaPlayer.setAudioAttributes(audioAttributes);
+                mediaPlayer.setLooping(true); // Loop until answered/rejected
+                mediaPlayer.start();
+            }
+        } catch (Exception e) {
+            Log.e("NotificationUtils", "Error starting ringtone", e);
         }
     }
 

@@ -51,7 +51,6 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:textStyle="bold"
-            android:src="@drawable/ic_baseline_call_end_24"
             android:text="Decline"
             />
     </LinearLayout>
@@ -72,7 +71,6 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:textStyle="bold"
-            android:src="@drawable/ic_baseline_call_end_24"
             android:text="Accpet"
              />
     </LinearLayout>
