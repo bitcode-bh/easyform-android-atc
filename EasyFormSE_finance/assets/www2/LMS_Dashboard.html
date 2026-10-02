@@ -44,28 +44,28 @@
     <script src="LMS/LMS_Misc.js"></script>
 
     <style>
-             .duotone-icon {
-                 font-size: 28px;
-                 color: black;
-                 text-shadow: 2px 2px 0px rgba(0,0,0,0.15);
-             }
+        .duotone-icon {
+            font-size: 28px;
+            color: black;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.15);
+        }
 
-             .md .tabbar-label {
-                 font-size: 10px;
-             }
+        .md .tabbar-label {
+            font-size: 10px;
+        }
 
-             /* Cordova Android already excludes the system navigation area from the WebView.
+        /* Cordova Android already excludes the system navigation area from the WebView.
         Keep the existing 56px toolbar flush with that viewport instead of adding a second inset. */
-             #lms_toolbar_bottom {
-                 height: 56px !important;
-             }
+        #lms_toolbar_bottom {
+            height: 56px !important;
+        }
 
-                 /* Override Framework7's generic safe-area lift on the Android/Material toolbar. */
-                 #lms_toolbar_bottom > .toolbar-inner {
-                     top: 0;
-                     bottom: 0;
-                     height: auto;
-                 }
+            /* Override Framework7's generic safe-area lift on the Android/Material toolbar. */
+            #lms_toolbar_bottom > .toolbar-inner {
+                top: 0;
+                bottom: 0;
+                height: auto;
+            }
     </style>
     <script type="text/javascript">
 
@@ -80,7 +80,10 @@
         var page_load_over = 1;
 
         var itemObj = new MKCheckItem();
-        var user_language = "en";
+        var user_language = localStorage.getItem("user_language");
+        if (user_language == "" || user_language == null || user_language == undefined) {
+            user_language = "en";
+        }
 
         // if (global_wcf_url.indexOf("https://dev.easyform.in/") > -1) {
         //     var global_wcf_url_lms = 'https://dev.easyform.in/LMS/api/';
