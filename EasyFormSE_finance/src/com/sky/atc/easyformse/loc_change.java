@@ -45,6 +45,7 @@ public class loc_change extends WakefulIntentService {
 	Long fusedtime;
 	// location distance meter value
 	int meterdistancevalue = 300;
+	String gps_speed;
 	static ArrayList<Long> arrayList = new ArrayList<>();
 	public loc_change() {
 		super("loc_change");
@@ -64,7 +65,7 @@ public class loc_change extends WakefulIntentService {
 			//tripflag 2= fused location  1=gps location
 			tripflag = b.getString("tripflag");
 			time = Long.valueOf(b.getString("time"));
-
+			gps_speed = b.getString("gps_speed");
 			//if loc is null (that will not happen)
 			if (loc == null) {
 
@@ -126,7 +127,7 @@ public class loc_change extends WakefulIntentService {
 					chk_insert1(Float.parseFloat(DeviceEventsUtils.LatlngRoundff(String.valueOf(lat))),
 							Float.parseFloat(DeviceEventsUtils.LatlngRoundff(String.valueOf(lon))),
 							loc.getAccuracy(), provider, time.toString(), Date,
-							username, speed,locatiiontime);
+							username, speed,locatiiontime,gps_speed);
 
 					//to insert location into location_log
 					//temporary call to server is closed as per suggestion
@@ -370,7 +371,7 @@ public class loc_change extends WakefulIntentService {
 
 	//to insert location into track
 	void chk_insert1(float lat, float lon, float acc, String provider,
-					 String date1, String date_s, String username, String speed, long locatiiontime) {
+					 String date1, String date_s, String username, String speed, long locatiiontime,String gps_speed) {
 
 		Date now = new Date();
 		database = sqlitewraper.getDatabase();
@@ -404,6 +405,7 @@ public class loc_change extends WakefulIntentService {
 			args.put("speed", speed);
 			args.put("tripflag", tripflag);
 			args.put("locationtime", locatiiontime);
+			args.put("gps_speed",gps_speed);
 
 			database = sqlitewraper.getDatabase();
 
@@ -471,6 +473,7 @@ public class loc_change extends WakefulIntentService {
 
 				args.put("tripflag", tripflag);
 				args.put("locationtime", locatiiontime);
+				args.put("gps_speed",gps_speed);
 
 				database = sqlitewraper.getDatabase();
 				if (TripMapUtils.MOCKLOCATION.equalsIgnoreCase("false")) {
@@ -536,6 +539,7 @@ public class loc_change extends WakefulIntentService {
 					args.put("speed", speed);
 					args.put("tripflag", tripflag);
 					args.put("locationtime",locatiiontime);
+					args.put("gps_speed",gps_speed);
 
 					if (TripMapUtils.MOCKLOCATION.equalsIgnoreCase("false")) {
 						if (sqlitewraper.isMockAvailable) {
@@ -555,7 +559,7 @@ public class loc_change extends WakefulIntentService {
 					}
 
 					//for speed violation calculation
-                    SpeedViolation.onSpeedViolationOccured(Float.parseFloat(speed),lat,lon,provider,tripflag,acc,date1);
+                    SpeedViolation.onSpeedViolationOccured(Float.parseFloat(speed),lat,lon,provider,tripflag,acc,date1,gps_speed);
                     //Broadcast Location update in TripMapBackgroundActivity.java
 					LocationOutageUtils.sendLocationToBackgrounMap(lat,lon);
 

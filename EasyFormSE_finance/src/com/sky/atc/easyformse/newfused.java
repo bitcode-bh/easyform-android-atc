@@ -564,7 +564,7 @@ public class newfused extends Service implements LocationListener {
 
             float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(filteredLocation);
             if (manualSpeed != 10000) {
-                filteredLocation.setSpeed(manualSpeed);
+
                 onLocationUpdate(filteredLocation, manualSpeed);
             }
 
@@ -782,6 +782,15 @@ public class newfused extends Service implements LocationListener {
         Double lon = location.getLongitude();
         float sd = (float) location.getAltitude();
 
+        // Gps Speed set //
+        String gps_speed = String.valueOf(location.getSpeed());
+
+        //if manual speed is accurate than use manual speed instead of location provided speed
+        if (manualSpeed != 10000) {
+            location.setSpeed(manualSpeed);
+            Log.d("##MY_SPEED_MANUAL :", String.valueOf(manualSpeed));
+        }
+
         //----- For Testing Purpose---------------//
         float ac_speed = location.getSpeed();
         float fact = (float) ((float) 18 / 5);
@@ -791,12 +800,6 @@ public class newfused extends Service implements LocationListener {
         String timemilli = String.valueOf(System.currentTimeMillis());
 
         Intent loc_change = new Intent(sqlitewraper.context, loc_change.class);
-
-        //if manual speed is accurate than use manual speed instead of location provided speed
-        if (manualSpeed != 10000) {
-            location.setSpeed(manualSpeed);
-            Log.d("##MY_SPEED_MANUAL :", String.valueOf(manualSpeed));
-        }
 
         //  when mock location provider true, trip flag added 1 because fused location pot map not draw properly 07-04-2025
 //        if(location.isFromMockProvider())
@@ -811,6 +814,7 @@ public class newfused extends Service implements LocationListener {
         loc_change.putExtra("address", "");
         loc_change.putExtra("speed", location.getSpeed());
         loc_change.putExtra("time", timemilli);
+        loc_change.putExtra("gps_speed",gps_speed);
 
         //if speed is less than 118 km/h than process the location for further clculations
         if (location.getSpeed() < 33) {
@@ -823,6 +827,7 @@ public class newfused extends Service implements LocationListener {
         i.putExtra("lon", lon);
         i.putExtra("accuracy", location.getAccuracy());
         i.putExtra("speed", location.getSpeed());
+        i.putExtra("gps_speed",gps_speed);
         if (lat_check.equalsIgnoreCase("2")) {
             sqlitewraper.context.sendBroadcast(i);
         }
