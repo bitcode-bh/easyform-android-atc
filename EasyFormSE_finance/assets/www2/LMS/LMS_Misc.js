@@ -1280,6 +1280,7 @@ $(document).on("click", ".link.popup-close", function () {
 $(document).on("popup:closed", ".popup-level-4", function () {
     safetyVideoPopupActive = false;
     safetyVideoReturnedFromFullscreen = false;
+    if (typeof lms_lesson_popup_closed === 'function') lms_lesson_popup_closed();
 });
 
 // Pause + persist the lesson video and stop its progress timer whenever the

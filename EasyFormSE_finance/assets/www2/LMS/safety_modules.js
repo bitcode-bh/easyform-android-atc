@@ -1858,13 +1858,14 @@ function lms_reopen_module_preview(moduleId) {
     if (opener && typeof opener.onclick === 'function') opener.onclick();
 }
 
-$(document).on('popup:closed', '.popup-level-4', function () {
+// Called from the lesson popup's popup:closed handler (LMS_Misc.js).
+function lms_lesson_popup_closed() {
     safetyLessonReviewAfterSubmit = false;
     if (lms_deferred_module_reopen == null) return;
     var moduleId = lms_deferred_module_reopen;
     lms_deferred_module_reopen = null;
     lms_reopen_module_preview(moduleId);
-});
+}
 
 function submit_question_by_skill_id(flag) {
     // Defensive fallback: the button is disabled until every question is
