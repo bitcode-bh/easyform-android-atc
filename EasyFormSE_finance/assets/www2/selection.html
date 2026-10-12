@@ -779,18 +779,43 @@
                                 <span class="trip-date-sep">–</span>
                                 <input type="date" id="trip_date_to" class="trip-date-input" aria-label="To date" />
                             </div>
-                            <div class="trip-list-stats-card">
-                                <div class="trip-list-metric">
-                                    <span class="trip-list-metric-val" id="trip_stat_km">—</span>
-                                    <span class="trip-list-metric-lab">Distance</span>
+                            <!-- Summary of the trips listed below, for the selected range.
+                                 Totals on the first line, per-trip averages on the second,
+                                 then the same four event counts each trip card shows, summed. -->
+                            <div class="trip-list-stats-card trip-stats-stack">
+                                <div class="trip-stats-line">
+                                    <div class="trip-list-metric">
+                                        <span class="trip-list-metric-val" id="trip_stat_km">—</span>
+                                        <span class="trip-list-metric-lab">Distance</span>
+                                    </div>
+                                    <div class="trip-list-metric">
+                                        <span class="trip-list-metric-val" id="trip_stat_time">—</span>
+                                        <span class="trip-list-metric-lab">Time</span>
+                                    </div>
+                                    <div class="trip-list-metric">
+                                        <span class="trip-list-metric-val" id="trip_stat_violations">—</span>
+                                        <span class="trip-list-metric-lab">Violations</span>
+                                    </div>
                                 </div>
-                                <div class="trip-list-metric">
-                                    <span class="trip-list-metric-val" id="trip_stat_time">—</span>
-                                    <span class="trip-list-metric-lab">Time</span>
+                                <div class="trip-stats-line trip-stats-avg">
+                                    <div class="trip-list-metric">
+                                        <span class="trip-list-metric-val" id="trip_stat_avg_km">—</span>
+                                        <span class="trip-list-metric-lab">Avg distance</span>
+                                    </div>
+                                    <div class="trip-list-metric">
+                                        <span class="trip-list-metric-val" id="trip_stat_avg_time">—</span>
+                                        <span class="trip-list-metric-lab">Avg duration</span>
+                                    </div>
+                                    <div class="trip-list-metric">
+                                        <span class="trip-list-metric-val" id="trip_stat_avg_viol">—</span>
+                                        <span class="trip-list-metric-lab">Violations / trip</span>
+                                    </div>
                                 </div>
-                                <div class="trip-list-metric">
-                                    <span class="trip-list-metric-val" id="trip_stat_violations">—</span>
-                                    <span class="trip-list-metric-lab">Violations</span>
+                                <div class="trip-stats-events">
+                                    <div class="trip-event" id="trip_stat_ev_speed"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span class="trip-event-count">—</span><span class="trip-event-lab">Overspeed</span></div>
+                                    <div class="trip-event" id="trip_stat_ev_accel"><i class="fa-solid fa-angles-up" aria-hidden="true"></i><span class="trip-event-count">—</span><span class="trip-event-lab">Harsh accel.</span></div>
+                                    <div class="trip-event" id="trip_stat_ev_brake"><i class="fa-solid fa-angles-down" aria-hidden="true"></i><span class="trip-event-count">—</span><span class="trip-event-lab">Harsh brake</span></div>
+                                    <div class="trip-event" id="trip_stat_ev_call"><i class="fa-solid fa-phone" aria-hidden="true"></i><span class="trip-event-count">—</span><span class="trip-event-lab">On call</span></div>
                                 </div>
                             </div>
                             <div class="list-block trip-list-card">

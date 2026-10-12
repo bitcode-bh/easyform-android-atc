@@ -688,7 +688,25 @@ var HomeDashboardData = (function () {
         );
     }
 
+    // Every engine event in a time range, for the Trips summary card. SELECT only.
+    function getEventsInRange(minMs, maxMs, onDone) {
+        var min = parseInt(minMs, 10);
+        var max = parseInt(maxMs, 10);
+        if (isNaN(min)) min = 0;
+        if (isNaN(max) || max <= 0) max = Date.now();
+        sql(
+            "select Event_type, Event_strt, tid from Events where (Event_strt+0) >= " + min + " and (Event_strt+0) <= " + max + " limit 5000",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                onDone(rows);
+            },
+            function () { onDone([]); }
+        );
+    }
+
     return {
+        getEventsInRange: getEventsInRange,
         getTripEvents: getTripEvents,
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,

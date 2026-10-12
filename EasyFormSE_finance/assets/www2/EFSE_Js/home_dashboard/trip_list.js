@@ -325,32 +325,115 @@ var TripListSheet = (function () {
         }
     }
 
+    function setText(id, text) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = text;
+    }
+
+    function setEventStat(id, count) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var c = el.querySelector('.trip-event-count');
+        if (c) c.textContent = (count == null) ? '…' : String(count);
+        if (count > 0) el.classList.add('has-events');
+        else el.classList.remove('has-events');
+    }
+
+    // One trip's four violation counts, exactly as its own card shows them.
+    function rowViolations(row) {
+        var ev = bucketEvents(row._events || {});
+        return {
+            speed: Math.max(ev.speed, row._speedRuns || 0),
+            accel: ev.accel,
+            brake: ev.brake,
+            call: ev.call
+        };
+    }
+
+    // Hand each engine event to the trip it belongs to: by trip id when the
+    // event carries one, otherwise by falling inside the trip's time window.
+    function assignEvents(rows, eventRows) {
+        var local = [];
+        for (var i = 0; i < rows.length; i++) {
+            if (!rows[i]._server) { rows[i]._events = {}; local.push(rows[i]); }
+        }
+        for (var e = 0; e < (eventRows || []).length; e++) {
+            var evt = eventRows[e];
+            var at = parseInt(evt.Event_strt, 10);
+            var tid = (evt.tid == null) ? '' : String(evt.tid).trim();
+            var owner = null;
+            for (var k = 0; k < local.length && !owner; k++) {
+                if (tid && tid !== '0' && tid.toLowerCase() !== 'null' && String(local[k].tid) === tid) owner = local[k];
+            }
+            for (var m = 0; m < local.length && !owner; m++) {
+                var min = parseInt(local[m].min_milli, 10);
+                var max = String(local[m].trip_status) === '0' ? Date.now() : parseInt(local[m].max_milli, 10);
+                if (!isNaN(at) && !isNaN(min) && at >= min && (isNaN(max) || at <= max)) owner = local[m];
+            }
+            if (!owner) continue;   // logged outside any listed trip
+            owner._events[evt.Event_type] = (owner._events[evt.Event_type] || 0) + 1;
+        }
+        for (var d = 0; d < local.length; d++) local[d]._eventsLoaded = true;
+    }
+
+    // The summary card is the sum (or per-trip average) of the cards below it,
+    // so it can never disagree with them.
+    function paintSummary(rows, timeMs) {
+        var n = rows.length;
+        var km = 0, speed = 0, accel = 0, brake = 0, call = 0;
+        for (var i = 0; i < n; i++) {
+            km += rows[i]._km || 0;
+            var v = rowViolations(rows[i]);
+            speed += v.speed; accel += v.accel; brake += v.brake; call += v.call;
+        }
+        var violations = speed + accel + brake + call;
+        setStats(formatKm(km), n ? formatTotalDuration(timeMs) : '0m', String(violations));
+        setText('trip_stat_avg_km', n ? formatKm(km / n) : '—');
+        setText('trip_stat_avg_time', n ? formatTotalDuration(timeMs / n) : '—');
+        setText('trip_stat_avg_viol', n ? String(Math.round(violations / n * 10) / 10) : '—');
+        setEventStat('trip_stat_ev_speed', speed);
+        setEventStat('trip_stat_ev_accel', accel);
+        setEventStat('trip_stat_ev_brake', brake);
+        setEventStat('trip_stat_ev_call', call);
+    }
+
     function refreshListStats(rows) {
         rows = rows || [];
         var timeMs = 0;
         for (var i = 0; i < rows.length; i++) {
             timeMs += tripDurationMs(rows[i], String(rows[i].trip_status) === '0');
         }
-        var timeText = rows.length ? formatTotalDuration(timeMs) : '0m';
-        // Downloaded trips have no points in track_master; their distance and
-        // violations are added on top of what the phone's own path yields.
-        var serverKm = 0, serverViol = 0;
-        for (var s = 0; s < rows.length; s++) {
-            if (rows[s]._server) {
-                serverKm += rows[s]._km || 0;
-                serverViol += serverViolationRuns(rows[s]._path);
+        setStats('…', rows.length ? formatTotalDuration(timeMs) : '0m', '…');
+        setText('trip_stat_avg_km', '…');
+        setText('trip_stat_avg_time', '…');
+        setText('trip_stat_avg_viol', '…');
+        setEventStat('trip_stat_ev_speed', null);
+        setEventStat('trip_stat_ev_accel', null);
+        setEventStat('trip_stat_ev_brake', null);
+        setEventStat('trip_stat_ev_call', null);
+
+        var seq = loadSeq;
+        var b = boundsFor(range);
+        function withEvents() {
+            if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getEventsInRange) {
+                paintSummary(rows, timeMs);
+                return;
             }
+            HomeDashboardData.getEventsInRange(b.start, Date.now(), function (eventRows) {
+                if (seq !== loadSeq) return;
+                assignEvents(rows, eventRows);
+                paintSummary(rows, timeMs);
+            });
         }
-        setStats('…', timeText, '…');
         if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getTripPath) {
-            setStats(formatKm(serverKm), timeText, String(serverViol));
+            withEvents();
             return;
         }
-        var b = boundsFor(range);
         HomeDashboardData.getTripPath(b.start, b.end, function (pathRows) {
-            var pts = parsePts(pathRows);
-            setStats(formatKm(pathKm(pts) + serverKm), timeText, String(violationRuns(pts) + serverViol));
-            updateRowDistances(rows, pts);
+            if (seq !== loadSeq) return;
+            // Sets each phone-recorded trip's own distance and overspeed runs.
+            updateRowDistances(rows, parsePts(pathRows));
+            withEvents();
         });
     }
 

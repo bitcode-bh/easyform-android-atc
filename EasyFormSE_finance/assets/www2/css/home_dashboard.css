@@ -509,6 +509,56 @@
     margin-right: 4px;
     font-weight: 400;
 }
+/* Trips summary card: totals, per-trip averages, then event counts. */
+.trip-list-stats-card.trip-stats-stack {
+    flex-direction: column;
+    gap: 4px;
+}
+.trip-stats-stack .trip-stats-line {
+    display: flex;
+    gap: 8px;
+}
+.trip-stats-stack .trip-stats-avg {
+    border-top: 1px solid #dedfe0;
+}
+.trip-stats-stack .trip-stats-avg .trip-list-metric-val {
+    font-size: 14px;
+    font-weight: 700;
+}
+.trip-stats-events {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #dedfe0;
+}
+.trip-stats-events .trip-event {
+    text-align: center;
+    padding: 6px 2px;
+    border-radius: 8px;
+    background: #f5f6f8;
+    color: #6A6C74;
+    min-width: 0;
+}
+.trip-stats-events .trip-event i { font-size: 13px; }
+.trip-stats-events .trip-event-count {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0D1829;
+    line-height: 20px;
+}
+.trip-stats-events .trip-event-lab {
+    display: block;
+    font-size: 10px;
+    line-height: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.trip-stats-events .trip-event.has-events { background: #fdecea; color: #b42318; }
+.trip-stats-events .trip-event.has-events .trip-event-count { color: #b42318; }
+
 /* Trip row: tap to expand, icon on the right opens the map. The row itself
    keeps the list's fixed 50px line; the <li> grows for the details panel. */
 #trip_list_ul > li.trip-li {
