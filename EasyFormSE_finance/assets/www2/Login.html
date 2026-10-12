@@ -332,27 +332,34 @@
                             // shrinks that viewport from the bottom -- so "bottom:16px" keeps
                             // recomputing against an ever-rising bottom edge, and the button
                             // visibly climbs up the screen as you type. Switching to
-                            // position:fixed with an explicit top (captured once, from the
-                            // screen height before any keyboard interaction) pins it to an
-                            // absolute point on the physical screen instead: the resize can
-                            // shrink the viewport around it, but can't move a top offset
-                            // that's no longer being recomputed. Runs once after load and
-                            // deliberately never re-runs on resize/keyboard events.
+                            // position:fixed with an explicit top pins it to an absolute
+                            // point on the physical screen instead.
+                            //
+                            // That top is measured from the tallest viewport seen so far (the
+                            // no-keyboard height), not from a single reading at load: the
+                            // page can load, or be reloaded, while the keyboard is still up,
+                            // and a one-off reading then left both buttons stranded
+                            // mid-screen for good. A shrinking viewport (keyboard opening)
+                            // is ignored, so nothing moves while typing; a taller one
+                            // (keyboard dismissed, or first real reading) re-pins.
                             (function () {
+                                var baseHeight = 0, baseWidth = 0;
                                 function pinNeedHelpButton() {
+                                    var w = window.innerWidth, h = window.innerHeight;
+                                    if (w !== baseWidth) { baseWidth = w; baseHeight = 0; }   // rotation / split-screen
+                                    if (h <= baseHeight) return;
+                                    baseHeight = h;
                                     var bottomMargin = 16;
                                     var help = document.getElementById('btn_company_info');
                                     if (help) {
-                                        var h = help.offsetHeight || 44;
                                         help.style.position = 'fixed';
-                                        help.style.top = (window.innerHeight - bottomMargin - h) + 'px';
+                                        help.style.top = (baseHeight - bottomMargin - (help.offsetHeight || 38)) + 'px';
                                         help.style.bottom = 'auto';
                                     }
                                     var info = document.getElementById('btn_app_info');
                                     if (info) {
-                                        var ih = info.offsetHeight || 48;
                                         info.style.position = 'fixed';
-                                        info.style.top = (window.innerHeight - bottomMargin - ih) + 'px';
+                                        info.style.top = (baseHeight - bottomMargin - (info.offsetHeight || 48)) + 'px';
                                         info.style.bottom = 'auto';
                                         info.style.left = '16px';
                                     }
@@ -362,6 +369,7 @@
                                 } else {
                                     window.addEventListener('load', function () { setTimeout(pinNeedHelpButton, 0); });
                                 }
+                                window.addEventListener('resize', pinNeedHelpButton);
                             })();
 
                             // Same problem, same fix, for the tower-photo background
@@ -381,10 +389,16 @@
                             // viewport on every side.
                             (function () {
                                 var IMG_W = 1024, IMG_H = 1536;
+                                // Tallest viewport seen, as for the buttons above: a reading
+                                // taken with the keyboard up must not become the final size.
+                                var bgBaseW = 0, bgBaseH = 0;
                                 function pinLoginBg() {
                                     var w = window.innerWidth;
                                     var h = window.innerHeight;
                                     if (!w || !h) return;
+                                    if (w !== bgBaseW) { bgBaseW = w; bgBaseH = 0; }
+                                    if (h <= bgBaseH) return;
+                                    bgBaseH = h;
                                     var scale = Math.max(w / IMG_W, h / IMG_H);
                                     var bgW = Math.ceil(IMG_W * scale);
                                     var bgH = Math.ceil(IMG_H * scale);
@@ -395,6 +409,7 @@
                                 } else {
                                     window.addEventListener('load', function () { setTimeout(pinLoginBg, 0); });
                                 }
+                                window.addEventListener('resize', pinLoginBg);
                             })();
                         </script>
 
