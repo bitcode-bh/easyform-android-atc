@@ -156,6 +156,24 @@ function lms_dashboard_module_key(rec) {
     return null;
 }
 
+// Day a dashboard row belongs to. The server's SubmittedDate has been observed
+// about five days behind the real submission time (a quiz saved on 12 Oct came
+// back stamped 7 Oct), which put the day's activity on the wrong point of the
+// chart. For quizzes submitted on this device the device's own record of the
+// moment is used instead (lms_lesson_submit_log, written on submit); anything
+// submitted elsewhere, or before that log existed, still uses the server date.
+function lms_dashboard_row_date(rec) {
+    try {
+        var log = JSON.parse(localStorage.getItem('lms_lesson_submit_log') || '{}') || {};
+        var stamp = log[lms_dashboard_module_key(rec) + '/' + rec.Skill_Id];
+        if (stamp) {
+            var local = new Date(stamp);
+            if (!isNaN(local.getTime())) { local.setHours(0, 0, 0, 0); return local; }
+        }
+    } catch (e) { }
+    return lms_parse_submitted_date(rec.SubmittedDate);
+}
+
 // The Modules chart is an activity trend: one tick per lesson on the day its
 // quiz was submitted. A lesson resubmitted later counts once, on its latest
 // day. (Whole modules finish too rarely to make a daily trend, and a module
@@ -164,7 +182,7 @@ function lms_dashboard_module_key(rec) {
 function lms_dashboard_lesson_days() {
     var latest = {};
     (dashboard_kpi_data || []).forEach(function (rec) {
-        var d = lms_parse_submitted_date(rec.SubmittedDate);
+        var d = lms_dashboard_row_date(rec);
         if (!d) return;
         var modKey = lms_dashboard_module_key(rec);
         if (!modKey || !lms_is_active_dashboard_module(modKey)) return;
@@ -198,7 +216,7 @@ function lms_build_module_buckets(range) {
         cursor.setDate(cursor.getDate() + 1);
     }
     (dashboard_kpi_data || []).forEach(function (rec) {
-        var d = lms_parse_submitted_date(rec.SubmittedDate);
+        var d = lms_dashboard_row_date(rec);
         if (!d || d < range.start || d > range.end) return;
         var b = buckets[lms_date_key(d)];
         if (!b) return;

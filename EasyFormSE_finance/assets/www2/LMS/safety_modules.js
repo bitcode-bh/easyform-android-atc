@@ -1844,6 +1844,14 @@ function lms_refresh_module_after_submit(moduleId, skillId) {
         ? findSafetyVideoCard(skillId, moduleId, glob_Module_Schedule_Id) : null;
     if (card) card.setAttribute('data-server-progress', '100');
     lms_skill_completed[String(skillId)] = true;
+    // When this device saw the quiz go in. The Dashboard prefers it over the
+    // server's SubmittedDate, which has been arriving days out (see
+    // lms_dashboard_row_date in dashboard.js).
+    try {
+        var submitLog = JSON.parse(localStorage.getItem('lms_lesson_submit_log') || '{}') || {};
+        submitLog[String(moduleId) + '/' + String(skillId)] = new Date().toISOString();
+        localStorage.setItem('lms_lesson_submit_log', JSON.stringify(submitLog));
+    } catch (e) { }
     if (typeof refresh_lesson_preview_rows === 'function') refresh_lesson_preview_rows();
     lms_pending_module_reopen = String(moduleId);
     get_safety_module_listing(true);
