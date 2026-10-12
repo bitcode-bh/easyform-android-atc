@@ -45,13 +45,10 @@ function lms_clear_vapt_cache() {
                 }, function () { });
             }
         }
-        // Cached SERVER CONTENT only. Deliberately NOT lms_clear_all_local_state()
-        // — that also deletes lms_watch_seconds_*, lms_ml_quiz_* and
-        // video_progress_*, which are the user's own locally-measured progress
-        // with no server copy to re-fetch, so a logout destroyed them forever.
-        // Cross-user leakage is already handled at LOGIN: lms_finalize_login_user()
-        // restores that backup only for the same user_id and wipes everything
-        // when a different user signs in.
+        // Cached SERVER CONTENT only. The user's own locally-measured progress
+        // (lms_watch_seconds_*, lms_ml_quiz_*, video_progress_*) has no server
+        // copy to re-fetch, so it is left alone here; login decides whether to
+        // keep it, and only does so for the same user/company/server.
         localStorage.removeItem('ml_video_cache_map');
         localStorage.removeItem('ml_video_cache_order');
         if (typeof LmsData !== 'undefined' && LmsData.clearAll) LmsData.clearAll();
@@ -3257,7 +3254,9 @@ function get_profile_pic_path_android_ios(page) {
     let profile_user_name = JSON.parse(storage.getItem('username'));
 
     if (page == 'selection') {
-        $("#menu_img_profile").parent("a").append("<span class='tabbar-label'>" + profile_user_name + "</span>")
+        // $("#menu_img_profile").parent("a").append("<span class='tabbar-label'>" + profile_user_name + "</span>");
+        // $(".navbar-fixed .navbar-inner .right").append("<span style='display: block; width: max-content; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
+        $(".view-main .navbar-fixed .navbar-inner .left").append("<span id='spn_Username' style='display: block; width: max-content; position: absolute; left: 10px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
     }
     else {
         //$(".navbar-fixed .navbar-inner .right").append("<span style='display: block; position: absolute; right: 6px; bottom: 0; font-size: 12px;'>" + profile_user_name + "</span>")
@@ -4378,15 +4377,57 @@ function get_privacy_policy() {
     }
 }
 
+// change language from checksheet page
 change_user_language = (lang) => {
-    localStorage.setItem("user_language", lang);
-    location.reload();
+
+    var Param_obj = [];
+    Param_obj.push({
+        'Language': lang
+    });
+
+    loading();
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'Update_User_Language', JSON.stringify(Param_obj), function (e) {
+        var Search_data = e.responseText;
+        Search_data = eval('(' + Search_data + ')');
+        var message = Search_data[0].message;
+        var status = Search_data[0].status;
+        if (status == 1) {
+            localStorage.setItem("user_language", lang);
+            location.reload();
+        }
+        else {
+            alert(message);
+        }
+        loading_hide();
+    }, onfail);
+    getdata1.callOtherDomain();
 }
 
+// change language from profile menu
 change_user_language_menu = (lang) => {
-    localStorage.setItem("user_language", lang);
-    myApp.closeModal('.popover-language.modal-in');
-    $("#pro_language").html(languages[lang]);
+    
+    var Param_obj = [];
+    Param_obj.push({
+        'Language': lang
+    });
+
+    loading();
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'Update_User_Language', JSON.stringify(Param_obj), function (e) {
+        var Search_data = e.responseText;
+        Search_data = eval('(' + Search_data + ')');
+        var message = Search_data[0].message;
+        var status = Search_data[0].status;
+        if (status == 1) {
+            localStorage.setItem("user_language", lang);
+            myApp.closeModal('.popover-language.modal-in');
+            $("#pro_language").html(languages[lang]);
+        }
+        else {
+            alert(message);
+        }
+        loading_hide();
+    }, onfail);
+    getdata1.callOtherDomain();
 }
 
 // create table by device info json
@@ -4513,3 +4554,12 @@ function create_table_by_device_info() {
         }
     }
 })();
+
+function isEmpty(obj) {
+    return (
+        obj &&
+        typeof obj === "object" &&
+        !Array.isArray(obj) &&
+        Object.keys(obj).length === 0
+    );
+}

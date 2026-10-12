@@ -159,6 +159,17 @@
     min-height: 260px;
 }
 
+#lms-trend-status {
+    color: var(--c-fg-muted);
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 4px 0;
+}
+
+#lms-trend-status:empty {
+    display: none;
+}
+
 /* ===== Summary cards — one tonal brand system (no competing hues) ======= */
 .lms-kpi-container {
     display: grid;

@@ -15,6 +15,15 @@ function render_assessment_search() {
 // Label-only chips — see the matching note in safety_modules.js
 // render_safety_module_tags(); counts now live in .lms-filter-summary.
 function render_assessment_tags() {
+    // A forced fetch with existing cache can be the first paint after login.
+    // Bind on every render, not only initial responses; off/on prevents duplicates.
+    bind_assessment_controls();
+    var panel = $(".assessment-tabs");
+    if (!assessment_data.length) {
+        panel.empty().hide();
+        return;
+    }
+    panel.show();
     var tags = [];
     var seen_tags = {};
     assessment_data.forEach(function (assessment) {
@@ -66,6 +75,49 @@ function render_assessment_cards() {
         var Tag = assessment.Tag != null ? assessment.Tag : assessment.tag;
         var TotalQuestion = assessment.TotalQuestion == null || assessment.TotalQuestion === "" ? 0 : assessment.TotalQuestion;
         var SubmitedQuestion = assessment.SubmitedQuestion == null || assessment.SubmitedQuestion === "" ? 0 : assessment.SubmitedQuestion;
+
+        // Use the selected-language assessment text when it is available.
+        // Otherwise, retain the original Name, Description, and Tag values.
+        try {
+            if (user_language != 'en') {
+                var language = assessment.Title_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Name = language[user_language];
+                    }
+                }
+
+                var language = assessment.Description_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Description = language[user_language];
+                    }
+                }
+
+                var language = assessment.Tag_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Tag = language[user_language];
+                    }
+                }
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+
         var onclick_str = "get_questionlog_by_assessment_id('" + Assessment_Id + "', '" + Assessment_Schedule_Id + "', '" + Progress + "')";
 
         // Exact same card as Safety Modules (sample-module-image/-tag/-score-tag,
@@ -143,15 +195,17 @@ function apply_assessments(responseText, isRefresh) {
             selected_assessment_sort = "recommended";
             assessment_search_text = "";
             render_assessment_search();
-            render_assessment_tags();
             render_assessment_sort_menu();
             bind_assessment_controls();
         }
+        render_assessment_tags();
         render_assessment_cards();
     }
-    else if (!isRefresh) {
+    else if (status == 2 || !isRefresh) {
         assessment_listing_requested = false;
         assessment_data = [];
+        selected_assessment_tag = "All";
+        render_assessment_tags();
         update_assessment_kpi();
         render_assessment_cards();
     }
@@ -237,7 +291,7 @@ function get_assessments_listing(force_refresh, onNetworkApplied) {
                 return assessment;
             });
             if (typeof update_lms_kpi === 'function') update_lms_kpi();
-        update_assessment_kpi();
+            update_assessment_kpi();
             selected_assessment_tag = "All";
             selected_assessment_sort = "recommended";
             assessment_search_text = "";
@@ -323,6 +377,8 @@ function get_assessments_listing(force_refresh, onNetworkApplied) {
         else {
             assessment_listing_requested = false;
             assessment_data = [];
+            selected_assessment_tag = "All";
+            render_assessment_tags();
             render_assessment_cards();
         }
 
@@ -375,9 +431,9 @@ function get_questionlog_by_assessment_id(Assessment_Id, Assessment_Schedule_Id,
         var match = assessment_data.filter(function (a) { return a.Assessment_Id == Assessment_Id; })[0];
         if (match) assessment_desc = match.Description || '';
     }
-    if (!assessment_desc) {
-        assessment_desc = $("#dv_Assessments_List").find("div[Module_Id='" + Assessment_Id + "']").find("div.sample-module-desc").html() || '';
-    }
+    // if (!assessment_desc) {
+    assessment_desc = $("#dv_Assessments_List").find("div[Module_Id='" + Assessment_Id + "']").find("div.sample-module-desc").html() || '';
+    // }
     $("#assessment_Description").html(assessment_desc);
     $("#assessment_Description").toggle(!!assessment_desc);
 
@@ -467,11 +523,40 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                 if (weightage == "" || weightage == null || weightage == undefined) {
                     weightage = 1;
                 }
-                let Valid_Answer = merge_array[i].Valid_Answer[0];
+                let Valid_Answer = merge_array[i].Valid_Answer[0].trim();
                 let ans_label = merge_array[i].ans;
 
+                try {
+
+                    var Option_Language = [];
+
+                    if (user_language != 'en') {
+                        var language = merge_array[i].Question_Language;
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                Question_Name = language[user_language];
+                            }
+                        }
+
+                        Option_Language = merge_array[i].Option_Language;
+                        if (Option_Language == "" || Option_Language == null || Option_Language == undefined || Option_Language == "null" || Option_Language == "Unknown") { }
+                        else {
+                            Option_Language = itemObj._checkStrObj(Option_Language);
+                            Option_Language = Option_Language[0];
+                        }
+
+                    }
+                }
+                catch (e) {
+                    console.log(e);
+                }
+
                 let str = '<div class="question-card">';
-                str += '<div class="question-title" Assessment_Que_Id=' + Assessment_Que_Id + ' IsActive=' + IsActive + '>' + Question_Name + '</div>';
+                str += '<div class="question-title" Assessment_Que_Id=' + Assessment_Que_Id + ' IsActive=' + IsActive + ' act_text="' + merge_array[i].Question_Name + '">' + Question_Name + '</div>';
 
                 for (let j = 0; j < optionsArray.length; j++) {
                     let op_text = optionsArray[j].trim();
@@ -501,7 +586,21 @@ function get_question_by_assessment_id(Assessment_Id, Progress) {
                         str += '<input type="radio" name="q_' + Assessment_Que_Id + '" alt="' + weightage + '" id="' + Assessment_Que_Id + '_' + j + '">';
                     }
 
-                    str += '<label for="' + Assessment_Que_Id + '_' + j + '">' + op_text + '</label>';
+                    if (user_language != 'en') {
+                        if (Option_Language) {
+                            var language = Option_Language[op_text];
+                            if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                            else {
+                                language = itemObj._checkStrObj(language);
+                                language = language[0];
+
+                                if (language[user_language]) {
+                                    op_text = language[user_language];
+                                }
+                            }
+                        }
+                    }
+                    str += '<label for="' + Assessment_Que_Id + '_' + j + '" act_text="' + optionsArray[j].trim() + '">' + op_text + '</label>';
                     str += '</div>';
                 }
 
@@ -613,14 +712,17 @@ function submit_question_by_assessment_id() {
 
     for (let i = 0; i < questionCards.length; i++) {
         let questionCard = questionCards[i];
-        let questionName = questionCard.querySelector('.question-title').textContent.trim();
+        // let questionName = questionCard.querySelector('.question-title').textContent.trim();
+        let questionName = $(questionCard.querySelector('.question-title')).attr("act_text").trim();
         let options = questionCard.querySelectorAll('input[type="radio"]');
 
         let selectedAns = [];
 
         for (let j = 0; j < options.length; j++) {
             if (options[j].checked) {
-                selectedAns.push(options[j].nextElementSibling.textContent.trim());
+                // let op_text = options[j].nextElementSibling.textContent.trim();
+                let op_text = $(options[j].nextElementSibling).attr("act_text").trim();
+                selectedAns.push(op_text);
             }
         }
 

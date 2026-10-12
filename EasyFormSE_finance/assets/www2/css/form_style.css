@@ -281,8 +281,12 @@ div[id^='div_step_Col_'] .cntrl_main_div {
     background: white !important;
 }
 
-.tabbar a.tab-link.active, .tabbar a.tab-link.active-state, html:not(.watch-active-state) .tabbar a.tab-link:active {
+/*.tabbar a.tab-link.active, .tabbar a.tab-link.active-state, html:not(.watch-active-state) .tabbar a.tab-link:active {
     border-bottom: 6px solid #6A6C74 !important;
+}*/
+
+.tabbar a.tab-link.active i, .tabbar a.tab-link.active .tabbar-label {
+    color: #215ba8 !important;
 }
 
 .views .navbar {

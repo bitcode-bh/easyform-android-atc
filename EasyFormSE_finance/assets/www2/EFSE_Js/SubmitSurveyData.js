@@ -4316,6 +4316,24 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                 mk_notify('Task created. Starting trip...');
                                 var myArray = JSON.parse(e);
                                 var t_tid = myArray[0].tid;
+
+                                try {
+                                    let vehicle_type = "";
+                                    for (let vt = 0; vt < json.length; vt++) {
+                                        let vt_qid = json[vt].que_id;
+                                        if (vt_qid == "1109") {
+                                            let t_ans = json[vt].ans[0];
+                                            if (t_ans == "" || t_ans == null || t_ans == undefined) { }
+                                            else {
+                                                vehicle_type = t_ans;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                    localStorage.setItem('trip_vehicle_type', vehicle_type);
+                                }
+                                catch (e) { }
+
                                 auto_start_trip_on_attendane_task_create(t_tid);
                             }
                             else {
@@ -5252,7 +5270,7 @@ function success_check_survey_entry_next_read(e) {
 
             if (user_language != 'en') {
                 var language = myArray[0].language;
-                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                 else {
                     language = itemObj._checkStrObj(language);
                     language = language[0];
@@ -5329,7 +5347,7 @@ function onsuccess_get_checksheet_from_server(e) {
 
                 if (user_language != 'en') {
                     var language = myArray[0].language;
-                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                     else {
                         language = itemObj._checkStrObj(language);
                         language = language[0];

@@ -405,7 +405,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
             if (user_language != 'en') {
                 var language = jsonObj[i].language;
-                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                 else {
                     language = language[0];
 
@@ -4106,7 +4106,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                                                     if (user_language != 'en') {
                                                         var language = json_inv[a].type[0].language;
-                                                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                                                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                                                         else {
                                                             language = language[0];
 

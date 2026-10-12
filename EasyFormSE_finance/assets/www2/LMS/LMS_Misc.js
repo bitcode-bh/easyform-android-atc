@@ -131,9 +131,14 @@ function lms_format_clock_time(totalSeconds) {
 function lms_parse_clock_to_seconds(clock) {
     if (typeof clock === 'number' && isFinite(clock)) return Math.max(0, clock);
     if (!clock) return 0;
-    var parts = String(clock).split(':');
-    if (parts.length !== 2) return 0;
-    return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    var parts = String(clock).trim().split(':');
+    if (parts.length !== 2 && parts.length !== 3) return 0;
+    var total = 0;
+    for (var i = 0; i < parts.length; i++) {
+        if (!/^\d+$/.test(parts[i])) return 0;
+        total = (total * 60) + Number(parts[i]);
+    }
+    return isFinite(total) ? Math.max(0, total) : 0;
 }
 
 // Lesson rows and module cards must read from the same elapsed source — never
@@ -431,7 +436,8 @@ var LMS_PERSISTED_KEYS = [
     'lms_owner_user_id',
     'ml_last_index',
     'ml_muted',
-    'ml_answered_quizzes'
+    'ml_answered_quizzes',
+    'ml_completed_reels'
 ];
 
 function lms_collect_login_backup() {
@@ -473,7 +479,8 @@ function lms_clear_all_local_state() {
         var k = localStorage.key(i);
         if (!k) continue;
         if (k.indexOf('lms_') === 0 || k.indexOf('video_progress_') === 0 ||
-            k.indexOf('ml_answered') === 0 || k === 'ml_last_index' || k === 'ml_muted' ||
+            // Completion markers belong to the outgoing user just like quiz answers.
+            k.indexOf('ml_answered') === 0 || k === 'ml_completed_reels' || k === 'ml_last_index' || k === 'ml_muted' ||
             k === 'ml_video_cache_map' || k === 'ml_video_cache_order') {
             toRemove.push(k);
         }
@@ -593,8 +600,18 @@ function lms_is_active_dashboard_module(modKey) {
 
 function lms_sum_active_modules_watch_seconds() {
     var sum = 0;
+    var seenSkills = {};
     (typeof safety_module_data !== 'undefined' && safety_module_data ? safety_module_data : []).forEach(function (m) {
-        if (typeof lms_get_module_watched_seconds === 'function') {
+        var skills = lms_module_skill_index[String(m.Module_Id)] || [];
+        if (skills.length) {
+            skills.forEach(function (sid) {
+                sid = String(sid);
+                if (seenSkills[sid]) return;
+                seenSkills[sid] = true;
+                sum += lms_get_lesson_elapsed_seconds(sid);
+            });
+        } else if (typeof lms_get_module_watched_seconds === 'function') {
+            // Legacy fallback until this module's skill listing is available.
             sum += lms_get_module_watched_seconds(m.Module_Id);
         }
     });
@@ -603,11 +620,22 @@ function lms_sum_active_modules_watch_seconds() {
 
 function lms_sum_active_modules_total_video_seconds() {
     var sum = 0;
+    var seenSkills = {};
     (typeof safety_module_data !== 'undefined' && safety_module_data ? safety_module_data : []).forEach(function (m) {
         var mid = m.Module_Id;
-        var t = (typeof lms_module_video_totals !== 'undefined' && lms_module_video_totals)
-            ? (lms_module_video_totals[mid] || lms_module_video_totals[String(mid)] || 0) : 0;
-        sum += t;
+        var skills = lms_module_skill_index[String(mid)] || [];
+        if (skills.length) {
+            skills.forEach(function (sid) {
+                sid = String(sid);
+                if (seenSkills[sid]) return;
+                seenSkills[sid] = true;
+                sum += Number(lms_skill_total_seconds[sid]) || 0;
+            });
+        } else {
+            var t = (typeof lms_module_video_totals !== 'undefined' && lms_module_video_totals)
+                ? (lms_module_video_totals[mid] || lms_module_video_totals[String(mid)] || 0) : 0;
+            sum += t;
+        }
     });
     return sum;
 }
@@ -707,11 +735,17 @@ function lms_get_lesson_local_record(skillId) {
 // ever touching the quiz would otherwise read as Completed (checkmark, status,
 // and load_lesson_scores() would fetch a score for a lesson never submitted).
 // Capped at 99 so it can only ever push the lesson into "In Progress".
-function lms_get_lesson_effective_progress(skillId, serverProgress) {
+function lms_get_lesson_effective_progress(skillId, serverProgress, watchVideoTime) {
     var server = Number(serverProgress) || 0;
+    // Preserve the API's existing completion decision exactly; watch time may
+    // only distinguish an untouched lesson from one that is in progress.
     if (server >= 100) return 100;
     var rec = lms_get_lesson_local_record(skillId);
     var local = rec ? Math.min(Number(rec.Progress) || 0, 99) : 0;
+    // Watch_Video_Time is already present on each skill row. A valid positive
+    // clock value means playback previously occurred even when this device has
+    // no local progress record. Null, blank, zero, and invalid clocks parse to 0.
+    if (local === 0 && lms_parse_clock_to_seconds(watchVideoTime) > 0) local = 1;
     if (local === 0 && typeof lms_get_watch_seconds_by_item === 'function') {
         var wall = lms_get_watch_seconds_by_item('lms_watch_seconds_skills', skillId);
         if (wall > 0) local = 1;
@@ -883,9 +917,16 @@ function lms_sum_video_durations(cacheKey, items, idField, urlField, onDone) {
     (items || []).forEach(function (item) {
         var id = String(item[idField] || '');
         var url = item[urlField];
-        if (!id || !url) return;
+        if (!id) return;
         validIds[id] = true;
-        if (typeof cache[id] !== 'number') toFetch.push({ id: id, url: url });
+
+        // Modules APIs can return a real duration as Total_Video_Time or
+        // Video_Time. Seed/refresh the cache from that authoritative value and
+        // fetch media metadata only when the API duration is absent or zero.
+        var apiDuration = lms_parse_clock_to_seconds(item.Total_Video_Time);
+        if (apiDuration <= 0) apiDuration = lms_parse_clock_to_seconds(item.Video_Time);
+        if (apiDuration > 0) cache[id] = apiDuration;
+        if (typeof cache[id] !== 'number' && url) toFetch.push({ id: id, url: url });
     });
 
     function finish() {
@@ -1001,13 +1042,11 @@ $(document).ready(function () {
             pauseAllVideos();
         }
 
-        // Keep the top/bottom bar theme + active-tab state in sync on EVERY tab
-        // change — swipe and hardware-back included, not just tabbar taps. Only
-        // the Micro Learning (tab-4) reels screen uses the dark bars; all others
-        // are light, so switching away from it must clear the dark classes.
+        // Keep the header theme and active tab in sync for taps, swipes and
+        // hardware Back. Bottom navigation stays light on every tab.
         var _isML = (this.id == "tab-4");
         var _tabbar = document.querySelector('.toolbar.tabbar');
-        if (_tabbar) _tabbar.classList.toggle('tabbar-dark', _isML);
+        if (_tabbar) _tabbar.classList.remove('tabbar-dark');
         var _navbar = document.querySelector('.navbar');
         if (_navbar) _navbar.classList.toggle('navbar-dark', _isML);
         try {
@@ -1045,6 +1084,35 @@ $(document).ready(function () {
 
     var video = $("#vdo_Question")[0];
     var timeoutId = null;
+    var modulePlaybackPosition = 0;
+
+    // Restrict only the module player; retain its native play/pause/volume UI.
+    if (video) {
+        var controlTokens = (video.getAttribute('controlslist') || '').split(/\s+/);
+        if (controlTokens.indexOf('noplaybackrate') === -1) controlTokens.push('noplaybackrate');
+        video.setAttribute('controlslist', controlTokens.join(' ').trim());
+    }
+    $(video).off('.modulePlaybackRestrictions')
+        .on('emptied.modulePlaybackRestrictions', function () {
+            modulePlaybackPosition = 0;
+        })
+        .on('timeupdate.modulePlaybackRestrictions', function () {
+            if (!video.seeking) modulePlaybackPosition = video.currentTime;
+        })
+        .on('seeking.modulePlaybackRestrictions', function () {
+            // Also reject keyboard/native fullscreen seeks where CSS is ignored.
+            if (Math.abs(video.currentTime - modulePlaybackPosition) > 0.01) {
+                video.currentTime = modulePlaybackPosition;
+            }
+        })
+        .on('ratechange.modulePlaybackRestrictions', function () {
+            if (video.playbackRate !== 1) video.playbackRate = 1;
+            if (video.defaultPlaybackRate !== 1) video.defaultPlaybackRate = 1;
+        });
+    if (video) {
+        video.playbackRate = 1;
+        video.defaultPlaybackRate = 1;
+    }
 
     // Keep taps on the native video controls inside the player. Framework7's
     // fast-click handling and parent gesture handlers must not turn the same
@@ -1061,24 +1129,45 @@ $(document).ready(function () {
             event.stopPropagation();
         });
 
-    $(video).on("loadedmetadata", function () {
-        var skillId = $(video).attr("skil_id");
-        var moduleId = $(video).attr("module_id");
-        var data = JSON.parse(localStorage.getItem('video_progress_' + skillId)) || [];
+    // The in-player chevron intentionally uses the exact same Safety video
+    // exit/watch-log flow as native Back. Namespacing prevents duplicate binds.
+    $("#safety-video-close")
+        .off("click.safetyVideoBack")
+        .on("click.safetyVideoBack", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            handleSafetyVideoBack();
+            return false;
+        });
 
-        if (data.length > 0) {
-            var saved = data.find(item => item.Skill_Id == skillId);
+    // Bound once during LMS initialization. The selected Safety lesson places
+    // its own API resume time on the shared element before changing its src.
+    $(video).off("loadedmetadata.safetyResume").on("loadedmetadata.safetyResume", function () {
+        var savedSeconds = Number(video._safetyResumeTimeSeconds);
+        if (!isFinite(savedSeconds) || savedSeconds < 0) savedSeconds = 0;
 
-            if (saved && saved.currentTime) {
-                video.currentTime = saved.currentTime;
-            }
+        var duration = Number(video.duration);
+        if (!isFinite(duration) || duration <= 0 || savedSeconds >= duration) {
+            savedSeconds = 0;
         }
 
+        try {
+            // Authorize the saved resume position before its seeking event fires.
+            modulePlaybackPosition = savedSeconds;
+            video.currentTime = savedSeconds;
+        } catch (resumeError) {
+            console.error('Unable to restore Safety video position.', resumeError);
+            modulePlaybackPosition = 0;
+            try { video.currentTime = 0; } catch (resetError) { }
+        }
     });
 
     var lastProgressSaveAt = 0;
 
     $(video).on("play", function () {
+        // This handler is registered once during LMS initialization. Once set,
+        // pause/resume must not clear the current Safety video session flag.
+        if (typeof safety_video_played !== 'undefined') safety_video_played = true;
         video._lmsPlaySkillId = $(video).attr("skil_id");
         if (this.currentTime < 0.5) {
             call_by_videolog('start'); // call api
@@ -1087,12 +1176,7 @@ $(document).ready(function () {
         set_progress();
     });
 
-    // Otherwise a manual seek/scrub only gets captured by the 10s interval
-    // (set_progress()) or on pause/close — up to a 10s window where the
-    // resume position and effective-progress ("In Progress" vs "Completed")
-    // don't reflect where the user actually dragged to. "seeked" (not
-    // "seeking") fires once the scrub settles, so this doesn't fire on every
-    // intermediate frame while dragging.
+    // Persist authorized resume/restored positions once seeking settles.
     //
     // "pause" is bound here too — this is the ONLY save path that fires on a
     // bare native pause (tapping the native control, or the WebView auto-
@@ -1230,6 +1314,10 @@ $(document).on("popup:close", ".popup-assessment-que", function () {
 
 $(document).on("popup:closed", ".lms-module-preview-popup", function () {
     safetyModulePreviewActive = false;
+    // Invalidate an in-flight skill request so a response received after Back
+    // cannot repopulate the closed preview with stale module content.
+    if (typeof lms_module_preview_request_id !== 'undefined') lms_module_preview_request_id++;
+    if (typeof loading_hide === 'function') loading_hide();
 });
 function loading() {
     //  loading_hide();
@@ -1263,7 +1351,8 @@ function onfail(e) {
     assessment_listing_requested = false;
     loading_hide();
     try { console.error('LMS request failed:', e); } catch (ignored) { }
-    alert("Couldn't reach the server. Check your connection and try again.");
+    // alert("Couldn't reach the server. Check your connection and try again.");
+    alert("Our team is working on it. Please try again after some time.");
 }
 function vibrate_device() {
     try {
@@ -1423,27 +1512,40 @@ document.addEventListener('webkitfullscreenchange', function () {
     else if (!el && safetyVideoLandscapeMode) finishSafetyVideoLandscape();
 });
 
-function back_button_LMS() {
-    // Mandatory full-screen quiz in progress — swallow back until it's submitted.
+// Common Safety player exit for both native Back and #safety-video-close.
+// logSafetyVideoWatchOnBack handles played-session gating and duplicate calls.
+function handleSafetyVideoBack() {
+    // Match native Back while the mandatory completion quiz owns the player.
     if (typeof safety_quiz_mandatory_active !== 'undefined' && safety_quiz_mandatory_active) {
-        return false;
+        return true;
     }
 
     if (safetyVideoLandscapeMode || document.fullscreenElement === document.getElementById('safety-video-container') || document.webkitFullscreenElement === document.getElementById('safety-video-container')) {
         exitSafetyVideoLandscape();
+        return true;
+    }
+
+    var popupVisible = $('.popup-level-4.modal-in, .popup-level-4.popup-in, .popup-level-4.popup-opened').length > 0;
+    if (!safetyVideoPopupActive && !safetyVideoReturnedFromFullscreen && !popupVisible) {
         return false;
     }
 
-    if (safetyVideoPopupActive) {
+    function closeSafetyVideoPopup() {
         safetyVideoPopupActive = false;
         safetyVideoReturnedFromFullscreen = false;
         myApp.popup.close('.popup-level-4');
-        return false;
     }
 
-    if (safetyVideoReturnedFromFullscreen) {
-        safetyVideoReturnedFromFullscreen = false;
-        myApp.popup.close('.popup-level-4');
+    if (typeof logSafetyVideoWatchOnBack === 'function') {
+        logSafetyVideoWatchOnBack(closeSafetyVideoPopup);
+    } else {
+        closeSafetyVideoPopup();
+    }
+    return true;
+}
+
+function back_button_LMS() {
+    if (handleSafetyVideoBack()) {
         return false;
     }
 
@@ -1453,14 +1555,9 @@ function back_button_LMS() {
         return false;
     }
 
-    var level4_popup = $('.popup-level-4.modal-in, .popup-level-4.popup-in, .popup-level-4.popup-opened');
     var level3_popup = $('.lms-module-preview-popup.modal-in, .lms-module-preview-popup.popup-in, .lms-module-preview-popup.popup-opened');
     var level2_popup = $('.popup-assessment-que.modal-in, .popup-assessment-que.popup-in, .popup-assessment-que.popup-opened');
-    if (level4_popup.length > 0) {
-        myApp.popup.close('.popup-level-4');
-        return false;
-    }
-    else if (level3_popup.length > 0) {
+    if (level3_popup.length > 0) {
         myApp.popup.close('.lms-module-preview-popup');
         return false;
     }
@@ -1505,4 +1602,23 @@ function back_button_LMS() {
     // The Dashboard tab with no popup, fullscreen player or router history is
     // the sole LMS root state where exiting the app is allowed.
     return true;
+}
+
+var MKCheckItem = function () { };
+MKCheckItem.prototype = {
+    _checkStrObj: function (item) {
+        if (typeof item === 'string' || item instanceof String) {
+            item = JSON.parse(item);
+        }
+        return item;
+    }
+};
+
+function isEmpty(obj) {
+    return (
+        obj &&
+        typeof obj === "object" &&
+        !Array.isArray(obj) &&
+        Object.keys(obj).length === 0
+    );
 }

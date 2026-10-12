@@ -111,6 +111,7 @@ function start_stop_trip_on_attendace(trip_status, t_tid) {
     try {
         storage.setItem('crash_status', JSON.stringify('7'));               //when app is killed before start/stop trip
         localStorage.setItem('trip_status', trip_status);
+        localStorage.setItem('trip_tid', t_tid);
 
         if (btnJsonObj.length > 0) {
             // buttons are available in task form (task created from notification)
@@ -126,13 +127,19 @@ function start_stop_trip_on_attendace(trip_status, t_tid) {
             stillviolation_event = "false";
         }
 
+        let trip_vehicle_type = localStorage.getItem('trip_vehicle_type');
+        if (trip_vehicle_type == "" || trip_vehicle_type == null || trip_vehicle_type == undefined) {
+            trip_vehicle_type = "";
+        }
+
         var q_jsonobj = [];
         q_jsonobj.push({
             'trip_status': trip_status,
             'tid': t_tid,
             'odometer_point': [],
             'ETA': "false",
-            'stillviolation_event': stillviolation_event
+            'stillviolation_event': stillviolation_event,
+            'vehicle_type': trip_vehicle_type
         });
         //alert1(JSON.stringify(q_jsonobj));
 

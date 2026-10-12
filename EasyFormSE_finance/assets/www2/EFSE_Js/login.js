@@ -784,7 +784,10 @@ function updateuniquecode_android(invocation, res_type) {
 
         if (result[0].status == 1) {
 
-            clear_localStorage();
+            Language = result[0].Language;
+
+            // Retain LMS values only for the same authenticated user/company/server.
+            clear_localStorage(result[0]);
 
             myApp.setProgressbar('#login_progressbar', 10);
             $("#lbl_progress_details").html("Check for required app");
@@ -818,6 +821,11 @@ function updateuniquecode_android(invocation, res_type) {
             var gps = response[0].gps;
             var url = response[0].url;
             storage.setItem('global_url', JSON.stringify(url));
+
+            let Istripruning = response[0].Istripruning;
+            if (Istripruning == "false") {
+                localStorage.setItem('trip_status', '');
+            }
 
             var iosDirectoryPath = response[0].iosDirectoryPath;
             if (iosDirectoryPath == "" || iosDirectoryPath == null || iosDirectoryPath == undefined) {
@@ -1061,7 +1069,6 @@ function updateuniquecode_android(invocation, res_type) {
             storage.setItem('contactno', JSON.stringify(Contact_Number));
             storage.setItem('server_date', JSON.stringify(server_date));
             storage.setItem('user_id', JSON.stringify(user_id));
-            finalize_login_lms_storage(user_id);
             storage.setItem('user_name', JSON.stringify(user));
             storage.setItem('company_id', JSON.stringify(Company_id));
             storage.setItem('role_id', JSON.stringify(role_id));
@@ -2612,38 +2619,58 @@ show_biometric = () => {
 }
 
 
-function finalize_login_lms_storage(newUserId) {
-    var backup = window._lmsLoginBackup || null;
-    window._lmsLoginBackup = null;
-    if (typeof lms_finalize_login_user === 'function') {
-        window._lmsLoginBackup = backup;
-        lms_finalize_login_user(newUserId);
-        return;
+// LMS data belongs only to the last successful login; no per-user archives are kept.
+// Roles and other application/session keys intentionally remain outside this backup.
+function login_collect_matching_lms_state(loginResult) {
+    function sessionValue(key) {
+        try { return JSON.parse(storage.getItem(key)); } catch (e) { return null; }
     }
-    var prev = backup && backup._userId ? String(backup._userId) : '';
-    var next = newUserId != null && newUserId !== '' ? String(newUserId) : '';
-    if (prev && next && prev === next && backup) {
-        var keys = [
-            'lms_watch_seconds_modules', 'lms_watch_seconds_modules_daily', 'lms_watch_seconds_modules_by_item',
-            'lms_watch_seconds_skills', 'lms_watch_seconds_skills_by_item', 'lms_watch_seconds_skills_daily',
-            'lms_watch_seconds_ml', 'lms_watch_seconds_ml_daily',
-            'lms_watch_seconds_assessments', 'lms_watch_seconds_assessments_daily', 'lms_watch_seconds_assessments_by_item',
-            'lms_assessment_completion_log', 'lms_module_skill_index', 'lms_skill_total_seconds',
-            'lms_video_durations_modules', 'lms_video_durations_ml',
-            'lms_ml_quiz_correct', 'lms_ml_quiz_total', 'lms_ml_quiz_daily',
-            'ml_last_index', 'ml_muted', 'ml_answered_quizzes'
-        ];
-        keys.forEach(function (key) {
-            if (backup[key] != null) localStorage.setItem(key, backup[key]);
-        });
-        Object.keys(backup._video_progress || {}).forEach(function (k) {
-            localStorage.setItem(k, backup._video_progress[k]);
-        });
+    function value(value) {
+        return value == null ? '' : String(value).trim();
     }
-    if (next) localStorage.setItem('lms_owner_user_id', next);
+    var endpoint = value(typeof global_wcf_url !== 'undefined' ? global_wcf_url : sessionValue('global_wcf_url')).replace(/\/+$/, '');
+    var next = {
+        userId: value(loginResult && loginResult.user_id),
+        companyId: value(loginResult && loginResult.Company_id),
+        endpoint: endpoint
+    };
+    var previous = null;
+    try { previous = JSON.parse(localStorage.getItem('lms_owner_identity')); } catch (e) { }
+    // Migrate existing installations from the previous authenticated session.
+    if (!previous) {
+        previous = {
+            userId: value(sessionValue('user_id')),
+            companyId: value(sessionValue('company_id')),
+            endpoint: value(sessionValue('global_wcf_url')).replace(/\/+$/, '')
+        };
+    }
+    var owner = localStorage.getItem('lms_owner_user_id');
+    var matches = next.userId && next.companyId && next.endpoint &&
+        previous.userId === next.userId && previous.companyId === next.companyId &&
+        previous.endpoint === next.endpoint && (!owner || owner === next.userId);
+    var values = {};
+    if (matches) {
+        for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            if (key && (key.indexOf('lms_') === 0 || key.indexOf('video_progress_') === 0 ||
+                key === 'ml_answered_quizzes' || key === 'ml_completed_reels' ||
+                key === 'ml_last_index' || key === 'ml_muted' ||
+                key === 'ml_video_cache_map' || key === 'ml_video_cache_order')) {
+                values[key] = localStorage.getItem(key);
+            }
+        }
+    }
+    // Unknown/different identities restore no old values. Record only the new owner.
+    if (next.userId && next.companyId && next.endpoint) {
+        values.lms_owner_identity = JSON.stringify(next);
+        values.lms_owner_user_id = next.userId;
+    }
+    return values;
 }
 
-function clear_localStorage() {
+function clear_localStorage(loginResult) {
+    // Capture before clearing jStorage/session identity; restore only matching LMS keys.
+    var retainedLms = login_collect_matching_lms_state(loginResult);
 
     let global_url = JSON.parse(storage.getItem('global_url'));
     let global_wcf_url = JSON.parse(storage.getItem('global_wcf_url'));
@@ -2683,6 +2710,9 @@ function clear_localStorage() {
         trip_status = "";
     }
     let trip_tid = localStorage.getItem('trip_tid');
+    if (trip_tid == "" || trip_tid == null || trip_tid == undefined) {
+        trip_tid = "";
+    }
     let trip_ser_task_id = localStorage.getItem('trip_ser_task_id');
     let trip_Array = localStorage.getItem("trip_Array");
     if (trip_Array == "" || trip_Array == null || trip_Array == undefined) {
@@ -2708,37 +2738,13 @@ function clear_localStorage() {
         livelink_watched_Array = JSON.parse(livelink_watched_Array);
     }
     
-    let ml_last_index = localStorage.getItem('ml_last_index');
-    let ml_muted = localStorage.getItem('ml_muted');
-
-    var lmsLoginBackup = { _userId: '', _video_progress: {} };
-    try {
-        var prevUid = JSON.parse(storage.getItem('user_id'));
-        if (prevUid != null && prevUid !== '') lmsLoginBackup._userId = String(prevUid);
-    } catch (e) { }
-    var lmsPersistKeys = [
-        'lms_watch_seconds_modules', 'lms_watch_seconds_modules_daily', 'lms_watch_seconds_modules_by_item',
-        'lms_watch_seconds_skills', 'lms_watch_seconds_skills_by_item', 'lms_watch_seconds_skills_daily',
-        'lms_watch_seconds_ml', 'lms_watch_seconds_ml_daily',
-        'lms_watch_seconds_assessments', 'lms_watch_seconds_assessments_daily', 'lms_watch_seconds_assessments_by_item',
-        'lms_assessment_completion_log', 'lms_module_skill_index', 'lms_skill_total_seconds',
-        'lms_video_durations_modules', 'lms_video_durations_ml',
-        'lms_ml_quiz_correct', 'lms_ml_quiz_total', 'lms_ml_quiz_daily',
-        'ml_last_index', 'ml_muted', 'ml_answered_quizzes'
-    ];
-    lmsPersistKeys.forEach(function (key) {
-        var val = localStorage.getItem(key);
-        if (val !== null) lmsLoginBackup[key] = val;
-    });
-    for (let i = 0; i < localStorage.length; i++) {
-        let k = localStorage.key(i);
-        if (k && k.indexOf('video_progress_') === 0) {
-            lmsLoginBackup._video_progress[k] = localStorage.getItem(k);
-        }
-    }
-
     window.localStorage.clear();
     $.jStorage.flush();
+
+    // Keep same-user LMS progress/caches while preserving the existing app-wide reset.
+    Object.keys(retainedLms).forEach(function (key) {
+        localStorage.setItem(key, retainedLms[key]);
+    });
 
     // default
     var F7_view = 'true';
@@ -2787,9 +2793,14 @@ function clear_localStorage() {
     localStorage.setItem('redirect_on_module', redirect_on_module);
     localStorage.setItem('user_list_feature_id', user_list_feature_id);
     localStorage.setItem('user_consent', user_consent);
-    localStorage.setItem('user_language', user_language);
+
+    if (Language == "" || Language == null || Language == undefined || Language == "null" || Language == "Unknown" || Language == "udenfined" || Language == "[]") {
+        localStorage.setItem('user_language', user_language);
+    }
+    else {
+        localStorage.setItem('user_language', Language);
+    }
     localStorage.setItem('deviceinfo', deviceinfo);
     localStorage.setItem('livelink_watched_Array', JSON.stringify(livelink_watched_Array));
 
-    window._lmsLoginBackup = lmsLoginBackup;
 }

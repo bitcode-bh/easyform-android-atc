@@ -463,6 +463,10 @@ function get_list_of_modules() {
         var id_Array = JSON.parse(storage.getItem('id_Array'));
         if (id_Array == '' || id_Array == undefined || id_Array == null) {
 
+            $("#btn_page_back").hide();
+            $("#menu_img_profile").parent("a").show();
+            $("#spn_Username").show();
+
             // site wise module listing change 13/12/2018
             var cust_flow_Array = JSON.parse(storage.getItem('cust_flow_Array'));
             if (cust_flow_Array == '' || cust_flow_Array == null || cust_flow_Array == undefined) {
@@ -530,6 +534,10 @@ function get_list_of_modules() {
             }
         } else {
             $("#menu_MISC").hide();
+
+            $("#btn_page_back").show();
+            $("#menu_img_profile").parent("a").hide();
+            $("#spn_Username").hide();
 
             setTimeout(function () {
                 var module_bottom_image = localStorage.getItem('module_bottom_image');
@@ -898,7 +906,7 @@ function SuccessCallBack_get_modules(e) {
 
                                 if (user_language != 'en') {
                                     let language = myArray[0].language;
-                                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown") { }
+                                    if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                                     else {
                                         language = itemObj._checkStrObj(language);
                                         language = language[0];
@@ -943,22 +951,22 @@ function SuccessCallBack_get_modules(e) {
                 $("#module_list").append(list_item);
             }
 
-            compare_time_for_user_notification();
-            compare_time_for_online_count();
+            //compare_time_for_user_notification();   // commented as always false logic on server - 11092026
+            //compare_time_for_online_count();
             get_today_attendance_for_notification();
         }
 
         localStorage.setItem('last_modulelist_count', module_count);
 
-        //var flow_Array = JSON.parse(storage.getItem('flow_Array'));
-        //var id_Array = JSON.parse(storage.getItem('id_Array'));
-        //var cust_flow_Array = JSON.parse(storage.getItem('cust_flow_Array'));
-        //if (id_Array.length > 0 || flow_Array.length > 0 || cust_flow_Array.length > 0) {
+        // var flow_Array = JSON.parse(storage.getItem('flow_Array'));
+        // var id_Array = JSON.parse(storage.getItem('id_Array'));
+        // var cust_flow_Array = JSON.parse(storage.getItem('cust_flow_Array'));
+        // if (id_Array.length > 0 || flow_Array.length > 0 || cust_flow_Array.length > 0) {
         //    enable_back_button();
-        //}
-        //else {
+        // }
+        // else {
         //    disable_back_button();
-        //}
+        // }
 
         enable_back_button();
 
@@ -2112,8 +2120,8 @@ function get_list_of_modules_online() {
                     }
                 });
 
-                compare_time_for_user_notification();
-                compare_time_for_online_count();
+                // compare_time_for_user_notification();        // commented as always false logic on server - 11092026
+                //compare_time_for_online_count();
                 get_today_attendance_for_notification();
 
                 localStorage.setItem('last_modulelist_count', module_count);
@@ -2283,9 +2291,11 @@ function get_today_attendance_for_notification() {
                     $("#noti_Attendance3").css("display", "none");
                 }
                 else {
-                    // hide trip start button
-                    $("#noti_Attendance2").css("display", "none");
-                    $("#noti_Attendance3").css("display", "block");
+                    // display trip end button
+                    // $("#noti_Attendance2").css("display", "none");
+                    // $("#noti_Attendance3").css("display", "block");
+
+                    check_for_auto_close_trip();
                 }
 
             }
@@ -2301,6 +2311,45 @@ function get_today_attendance_for_notification() {
     }
 }
 
+check_for_auto_close_trip = () => {
+    let trip_tid = localStorage.getItem('trip_tid');
+    var query = "select tid, sid, trip_status from lat_plug where tid = '" + trip_tid + "'";
+    var q_jsonobj = [];
+    q_jsonobj.push({
+        data: query,
+        p: "1" // 1 for selecting values from table in json
+    });
+    cordova.exec(function (e) {
+        var myArray = JSON.parse(e);
+        if (myArray.length > 0) {
+            let trip_status = myArray[0].trip_status;
+            if (trip_status == '1' || trip_status == '' || trip_status == null || trip_status == undefined) {
+                // trip is not running
+                localStorage.setItem('trip_status', '1');
+                $("#noti_Attendance2").css("display", "block");
+                $("#noti_Attendance3").css("display", "none");
+            }
+            else {
+                // trip is running
+                $("#noti_Attendance2").css("display", "none");
+                $("#noti_Attendance3").css("display", "block");
+            }
+        }
+        else {
+            // trip is not running
+            $("#noti_Attendance2").css("display", "block");
+            $("#noti_Attendance3").css("display", "none");
+        }
+
+    }, function (e) {
+        // onfail (trip is not running)
+        $("#noti_Attendance2").css("display", "block");
+        $("#noti_Attendance3").css("display", "none");
+
+    }, 'SqlitePlugin', 'showValues', q_jsonobj);
+
+
+}
 
 noti_Attendance_Click = () => {
 
@@ -2601,9 +2650,9 @@ stop_trip_manualy_from_module_listing = () => {
 
         let AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
         let Punchout_Status = AttendanceJson[0].Punchout_Status;
-        
+
         var company_id = JSON.parse(storage.getItem('company_id'));
-       
+
         if (check_type == '' || check_type == null || check_type == undefined || check_type == "null") {
             check_type = 0;
         }
@@ -2672,7 +2721,7 @@ stop_trip_manualy_from_module_listing = () => {
                     alert("Unable to end trip!")
                 }, 'TripPlugin', 'anAction', q_jsonobj);
 
-                
+
             }
             else {
                 alert1(message);

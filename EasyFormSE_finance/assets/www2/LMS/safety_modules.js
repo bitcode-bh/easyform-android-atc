@@ -1,6 +1,13 @@
 
 // Safety module listing (level 1)
 var glob_Module_Schedule_Id = 0;
+// Guards the hardware-Back watch-log request for the currently open lesson.
+var safetyVideoWatchLogInProgress = false;
+// Share confirmed/in-flight watch snapshots between final submission and Back.
+var safetyVideoWatchSaved = {};
+var safetyVideoWatchRequests = {};
+// True only after playback occurs during the currently open Safety video.
+var safety_video_played = false;
 var safety_module_data = [];
 var selected_safety_tag = "All";
 var selected_safety_sort = "recommended";
@@ -79,6 +86,15 @@ function render_safety_module_search() {
 // favour of the single .lms-filter-summary line below the row (rendered from
 // render_safety_module_cards(), where the real visible count lives).
 function render_safety_module_tags() {
+    // A forced fetch with existing cache can be the first paint after login.
+    // Bind on every render, not only initial responses; off/on prevents duplicates.
+    bind_safety_module_controls();
+    var panel = $(".sample-safety-tabs").not(".assessment-tabs");
+    if (!safety_module_data.length) {
+        panel.empty().hide();
+        return;
+    }
+    panel.show();
     var tags = [];
     var seen_tags = {};
 
@@ -141,6 +157,48 @@ function render_safety_module_cards() {
 
         if (Thumbnail_link === "" || Thumbnail_link == null) {
             Thumbnail_link = "images/bg2.jpg";
+        }
+
+        try {
+            if (user_language != 'en') {
+                var language = module.Title_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Module_Name = language[user_language];
+                    }
+                }
+
+                var language = module.Description_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Module_Description = language[user_language];
+                    }
+                }
+
+                var language = module.Tag_Language;
+                if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                else {
+                    language = itemObj._checkStrObj(language);
+                    language = language[0];
+
+                    if (language[user_language]) {
+                        Tag = language[user_language];
+                    }
+                }
+
+
+            }
+        }
+        catch (e) {
+            console.log(e);
         }
 
         var onclick_str = "get_target_skill_by_module_id('" + Module_Id + "', '" + Progress + "', '" + SubmitedSkill + "', '" + Module_Schedule_Id + "')";
@@ -243,10 +301,10 @@ function apply_safety_modules(responseText, isRefresh) {
             selected_safety_sort = "recommended";
             safety_module_search_text = "";
             render_safety_module_search();
-            render_safety_module_tags();
             render_safety_module_sort_menu();
             bind_safety_module_controls();
         }
+        render_safety_module_tags();
         render_safety_module_cards();
         update_module_kpi();
         if (isRefresh) {
@@ -255,9 +313,11 @@ function apply_safety_modules(responseText, isRefresh) {
         }
         lms_compute_module_total_video_time();
     }
-    else if (!isRefresh) {
+    else if (status == 2 || !isRefresh) {
         safety_module_listing_requested = false;
         safety_module_data = [];
+        selected_safety_tag = "All";
+        render_safety_module_tags();
         update_module_kpi();
         render_safety_module_cards();
     }
@@ -382,6 +442,10 @@ function lms_compute_module_total_video_time() {
     lms_module_total_time_started = true;
 
     lms_fetch_all_module_skills(safety_module_data, function (allSkills) {
+        // The background fetch is the only place that sees every assigned
+        // lesson at once. Ingest its saved Watch_Video_Time values before
+        // calculating Dashboard totals; opening a module must not be required.
+        if (typeof LmsBackend !== 'undefined') LmsBackend.ingestSkillRows(allSkills);
         lms_sum_video_durations('lms_video_durations_modules', allSkills, 'Skill_Id', 'Video_Link', function () {
             var cached = {};
             try { cached = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { cached = {}; }
@@ -409,6 +473,9 @@ function lms_compute_module_total_video_time() {
             lms_module_video_totals = totals;
             if (typeof lms_reconcile_all_module_watch === 'function') lms_reconcile_all_module_watch();
             update_module_kpi();
+            // The Dashboard may have rendered before these asynchronous skill
+            // rows arrived, so refresh its existing cards with API totals now.
+            if (typeof update_lms_kpi === 'function') update_lms_kpi();
             // per-card watched/total row now has real totals to show
             if (typeof render_safety_module_cards === 'function') render_safety_module_cards();
         });
@@ -565,6 +632,8 @@ function get_safety_module_listing(force_refresh) {
         else {
             safety_module_listing_requested = false;
             safety_module_data = [];
+            selected_safety_tag = "All";
+            render_safety_module_tags();
             update_module_kpi();
             render_safety_module_cards();
             // myApp.popup.close('.popup-level-2'); // Optional: Do we really want to close the popup if it was open? Actually the modules are on the main tab now, not a popup.
@@ -693,14 +762,26 @@ function get_progess_by_module(Module_Id, Skill_Id) {
 }
 
 
+// Monotonic preview request id. A response may only paint the popup when it
+// still belongs to the most recently selected module.
+var lms_module_preview_request_id = 0;
+
 // get modulewise videos (level 2)
 function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Module_Schedule_Id) {
 
+    var previewRequestId = ++lms_module_preview_request_id;
     glob_Module_Schedule_Id = Module_Schedule_Id;
+
+    // Clear every module-bound field before opening/calling the API. The popup
+    // must show the existing preloader over a blank state, never the last
+    // module's title, artwork, progress, description, or lesson/watch data.
+    $('.module-preview-header').css('background-image', 'none');
+    $('.module-preview-tag, .module-preview-title, .module-preview-desc, .lession-count, .module-preview-percent').empty();
+    $('.module-preview-progress').find('span').css('width', '0%');
+    $('.lesson-preview-list').empty();
 
     safetyModulePreviewActive = true;
     myApp.popup.open('.lms-module-preview-popup');
-    $(".lesson-preview-list").empty();
 
     var Param_obj = [];
     Param_obj.push({
@@ -709,6 +790,9 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
     loading();
 
     var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Skill_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
+        // Ignore stale responses when another module was selected (or this
+        // preview was closed) while the request was in flight.
+        if (previewRequestId !== lms_module_preview_request_id || !safetyModulePreviewActive) return;
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
@@ -750,6 +834,51 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 let Skill_Name = data[m].Skill_Name;
                 let Skill_Description = data[m].Skill_Description;
                 let Video_Link = data[m].Video_Link;
+
+                try {
+                    if (user_language != 'en') {
+                        var language = data[m].Skill_Title_Language;
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                Skill_Name = language[user_language];
+                            }
+                        }
+
+                        var language = data[m].Skill_Description_Language;
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                Skill_Description = language[user_language];
+                            }
+                        }
+
+                        var language = data[m].Video_Id_Array;
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            for (let v = 0; v < language.length; v++) {
+                                let lan_t = language[v].Language;
+                                if (lan_t == user_language) {
+                                    Video_Link = language[v].Video_Link;
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+                }
+                catch (e) {
+                    console.log(e);
+                }
+
+
                 // The server's own Video_Time field is present in the schema but
                 // empty in practice (see lms_sum_video_durations's own comment) —
                 // prefer the real fetched duration this module's card total
@@ -765,6 +894,15 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 }
                 else if (Video_Time == "" || Video_Time == null || Video_Time == undefined) {
                     Video_Time = "00:00";
+                }
+                // Bind each card to the watched time returned for that skill by
+                // LMS_Select_Skill_Master_RoleWise; blank values retain 00:00.
+                let Watch_Video_Time = data[m].Watch_Video_Time;
+                if (Watch_Video_Time == null || String(Watch_Video_Time).trim() === "") {
+                    Watch_Video_Time = "00:00";
+                }
+                else {
+                    Watch_Video_Time = String(Watch_Video_Time).trim();
                 }
                 lessonMeta.push({
                     skillId: Skill_Id,
@@ -793,16 +931,12 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 // Server Progress is only ever 0 or 100 here, so fold in local
                 // playback progress to tell "part-watched" apart from "untouched".
                 let eff_progress = (typeof lms_get_lesson_effective_progress === 'function')
-                    ? lms_get_lesson_effective_progress(Skill_Id, Progress)
+                    ? lms_get_lesson_effective_progress(Skill_Id, Progress, Watch_Video_Time)
                     : Number(Progress) || 0;
 
-                // Watched / total, e.g. "01:12/06:19". Elapsed comes from the saved
-                // resume position for this skill, so it matches where the video will
-                // actually pick up; a finished lesson always reads as its full length
-                // rather than wherever the last save happened to land.
-                let elapsed_str = (typeof lms_format_lesson_elapsed_display === 'function')
-                    ? lms_format_lesson_elapsed_display(Skill_Id, real_duration_sec > 0 ? real_duration_sec : Video_Time)
-                    : "00:00";
+                // Watched / total, e.g. "01:12/06:19". Watched time is supplied
+                // per skill by the listing API rather than inferred locally.
+                let elapsed_str = Watch_Video_Time;
 
                 // Thumbnail opens the lesson directly; tapping the body toggles the
                 // full description. Duration now sits under the thumbnail (it was an
@@ -810,7 +944,7 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
                 // skill/module ids + video length live on the element so the row can
                 // be refreshed in place (see refresh_lesson_preview_rows) without
                 // re-fetching the whole lesson list.
-                let str = '<div class="lesson-preview-card" data-skill-id="' + Skill_Id + '" data-module-id="' + Module_Id + '" data-video-time="' + Video_Time + '" data-server-progress="' + Progress + '">';
+                let str = '<div class="lesson-preview-card" data-skill-id="' + Skill_Id + '" data-module-id="' + Module_Id + '" data-module-schedule-id="' + glob_Module_Schedule_Id + '" data-video-time="' + Video_Time + '" data-watch-video-time="' + Watch_Video_Time + '" data-server-progress="' + Progress + '">';
                 str += '<div class="lesson-preview-media">';
                 str += '<div class="lesson-preview-thumb" onclick="' + onclick_str + '">';
 
@@ -890,6 +1024,7 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
             // is stuck showing "00:00" for its lessons' total time forever.
             if (typeof lms_sum_video_durations === 'function') {
                 lms_sum_video_durations('lms_video_durations_modules', data, 'Skill_Id', 'Video_Link', function () {
+                    if (previewRequestId !== lms_module_preview_request_id || !safetyModulePreviewActive) return;
                     var fresh_cache = {};
                     try { fresh_cache = JSON.parse(localStorage.getItem('lms_video_durations_modules')) || {}; } catch (e) { }
                     $(".lesson-preview-list .lesson-preview-card").each(function () {
@@ -918,7 +1053,12 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
 
         loading_hide();
 
-    }, onfail);
+    }, function (error) {
+        // A superseded request must not hide the current module's loader or
+        // display an error belonging to the previous selection.
+        if (previewRequestId !== lms_module_preview_request_id || !safetyModulePreviewActive) return;
+        onfail(error);
+    });
     getdata.callOtherDomain();
 }
 
@@ -955,7 +1095,7 @@ function load_lesson_scores(Module_Id) {
                 if (!row || Number(row.Total_Score) <= 0) return;
 
                 scoreEl.innerHTML = '<span class="lesson-preview-score-label">Score</span>' +
-                                    '<span class="lesson-preview-score-value"></span>';
+                    '<span class="lesson-preview-score-value"></span>';
                 scoreEl.querySelector('.lesson-preview-score-value').textContent = row.Score + '/' + row.Total_Score;
                 scoreEl.style.display = '';
             } catch (err) { /* leave hidden */ }
@@ -976,8 +1116,9 @@ function refresh_lesson_preview_rows() {
 
         var serverProgress = card.getAttribute('data-server-progress');
         var Video_Time = card.getAttribute('data-video-time') || '00:00';
+        var Watch_Video_Time = card.getAttribute('data-watch-video-time') || '00:00';
         var eff = (typeof lms_get_lesson_effective_progress === 'function')
-            ? lms_get_lesson_effective_progress(Skill_Id, serverProgress)
+            ? lms_get_lesson_effective_progress(Skill_Id, serverProgress, Watch_Video_Time)
             : Number(serverProgress) || 0;
 
         // data-video-time is the source of truth for the displayed total — a
@@ -988,11 +1129,7 @@ function refresh_lesson_preview_rows() {
         if (totalEl) totalEl.textContent = Video_Time;
 
         var elapsedEl = card.querySelector('.lesson-preview-elapsed');
-        if (elapsedEl && typeof lms_format_lesson_elapsed_display === 'function') {
-            var totalSec = (typeof lms_parse_clock_to_seconds === 'function')
-                ? lms_parse_clock_to_seconds(Video_Time) : 0;
-            elapsedEl.textContent = lms_format_lesson_elapsed_display(Skill_Id, totalSec > 0 ? totalSec : Video_Time);
-        }
+        if (elapsedEl) elapsedEl.textContent = Watch_Video_Time;
 
         var statusEl = card.querySelector('.lesson-preview-status');
         if (statusEl) {
@@ -1029,8 +1166,16 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
         try { prevVideo.pause(); } catch (e) { }
     }
 
+    // Keep resume state on the shared video element, scoped to the exact card
+    // selected from the current module/schedule listing response.
+    var selectedCard = findSafetyVideoCard(Skill_Id, Module_Id, glob_Module_Schedule_Id);
+    var apiWatchTime = selectedCard ? selectedCard.getAttribute('data-watch-video-time') : '';
+
     safetyVideoPopupActive = true;
     safetyVideoReturnedFromFullscreen = false;
+    // Playback gating resets per lesson; confirmed watch snapshots remain deduplicated.
+    safetyVideoWatchLogInProgress = false;
+    safety_video_played = false;
     myApp.popup.open('.popup-level-4');
     $("#dv_Question_List").empty();
 
@@ -1045,10 +1190,18 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
         lessonBtn.textContent = 'Submit';
     }
 
-    $("#vdo_Question").attr("src", Video_Link);
-    $("#vdo_Question").attr("skil_id", Skill_Id);
-    $("#vdo_Question").attr("module_id", Module_Id);
-    $("#vdo_Question").attr("Module_Id", Module_Id);
+    var safetyVideo = $("#vdo_Question")[0];
+    if (safetyVideo) {
+        $(safetyVideo).attr("skil_id", Skill_Id);
+        $(safetyVideo).attr("module_id", Module_Id);
+        // Capture the selected schedule on the player alongside its dynamic skill/module.
+        $(safetyVideo).attr("module_schedule_id", glob_Module_Schedule_Id);
+        $(safetyVideo).attr("Module_Id", Module_Id);
+        safetyVideo._safetyResumeTimeSeconds = videoClockToSeconds(apiWatchTime);
+        // Set src last so even a cached video's metadata cannot arrive before
+        // the selected lesson's resume position has been attached.
+        $(safetyVideo).attr("src", Video_Link);
+    }
     let vdo_Description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-desc").html();
     $("#vdo_Description").html(vdo_Description);
 
@@ -1087,6 +1240,148 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
     getdata.callOtherDomain();
 }
 
+// Convert a finite video time in seconds to the API's MM:SS format.
+function secondsToMMSS(seconds) {
+    var value = Number(seconds);
+    if (!isFinite(value) || value < 0) value = 0;
+    value = Math.floor(value);
+
+    var minutes = Math.floor(value / 60);
+    var secs = value % 60;
+    return (minutes < 10 ? '0' : '') + minutes + ':' +
+        (secs < 10 ? '0' : '') + secs;
+}
+
+// Parse API video clocks in HH:mm:ss (and tolerate MM:SS for compatibility).
+// Invalid/blank values deliberately resolve to the beginning of the video.
+function videoClockToSeconds(clockValue) {
+    if (clockValue == null || String(clockValue).trim() === '') return 0;
+    var parts = String(clockValue).trim().split(':');
+    if (parts.length !== 2 && parts.length !== 3) return 0;
+    for (var i = 0; i < parts.length; i++) {
+        if (!/^\d+$/.test(parts[i])) return 0;
+    }
+
+    var hours = parts.length === 3 ? Number(parts[0]) : 0;
+    var minutes = Number(parts[parts.length - 2]);
+    var seconds = Number(parts[parts.length - 1]);
+    if (seconds >= 60 || (parts.length === 3 && minutes >= 60)) return 0;
+    return (hours * 3600) + (minutes * 60) + seconds;
+}
+
+// Locate the selected lesson without relying on a global watch-time value.
+function findSafetyVideoCard(skillId, moduleId, moduleScheduleId) {
+    var cards = document.querySelectorAll('.lesson-preview-card');
+    for (var i = 0; i < cards.length; i++) {
+        if (String(cards[i].getAttribute('data-skill-id')) === String(skillId) &&
+            String(cards[i].getAttribute('data-module-id')) === String(moduleId) &&
+            String(cards[i].getAttribute('data-module-schedule-id')) === String(moduleScheduleId)) {
+            return cards[i];
+        }
+    }
+    return null;
+}
+
+// Back remains best-effort and keeps its existing five-second navigation fallback.
+function logSafetyVideoWatchOnBack(done) {
+    var completed = false;
+    var timer;
+    function finish() {
+        if (completed) return;
+        completed = true;
+        clearTimeout(timer);
+        if (typeof done === 'function') done();
+    }
+    timer = setTimeout(finish, 5000);
+    return logSafetyVideoWatch(finish, false);
+}
+
+// Save a snapshot of the current player. Final submission waits for confirmed success;
+// identical pending/successful snapshots are shared with the Back-button path.
+function logSafetyVideoWatch(done, requireSave) {
+    var finish = typeof done === 'function' ? done : function () { };
+    var video = document.getElementById('vdo_Question');
+    if (!video || (!requireSave && !safety_video_played)) {
+        finish(!requireSave);
+        return false;
+    }
+    var duration = Number(video.duration);
+    if (!isFinite(duration) || duration <= 0) duration = 0;
+    var currentTime = Number(video.currentTime);
+    if (!isFinite(currentTime) || currentTime < 0) currentTime = 0;
+    if (duration > 0) currentTime = Math.min(currentTime, duration);
+    try { video.pause(); } catch (e) { }
+    var moduleId = $(video).attr('module_id') || $(video).attr('Module_Id');
+    var skillId = $(video).attr('skil_id');
+    var scheduleId = $(video).attr('module_schedule_id');
+    if (scheduleId == null) scheduleId = glob_Module_Schedule_Id;
+    var payload = [{
+        Module_Id: String(moduleId == null ? '' : moduleId),
+        Module_Schedule_Id: String(scheduleId == null ? '' : scheduleId),
+        Skill_Id: String(skillId == null ? '' : skillId),
+        Total_Video_Time: secondsToMMSS(duration),
+        Watch_Video_Time: secondsToMMSS(currentTime)
+    }];
+    // Preserve local progress before final submission can close or repurpose the player.
+    if (typeof set_progress_local === 'function') set_progress_local(skillId, currentTime);
+    var identity = JSON.stringify([payload[0].Module_Id, payload[0].Module_Schedule_Id, payload[0].Skill_Id]);
+    var snapshot = JSON.stringify(payload);
+    if (safetyVideoWatchSaved[identity] === snapshot) {
+        finish(true);
+        return false;
+    }
+    if (safetyVideoWatchRequests[snapshot]) {
+        safetyVideoWatchRequests[snapshot].push(finish);
+        return false;
+    }
+    safetyVideoWatchRequests[snapshot] = [finish];
+    safetyVideoWatchLogInProgress = true;
+    function settle(saved) {
+        var callbacks = safetyVideoWatchRequests[snapshot];
+        if (!callbacks) return;
+        delete safetyVideoWatchRequests[snapshot];
+        safetyVideoWatchLogInProgress = Object.keys(safetyVideoWatchRequests).length > 0;
+        // Failed requests remain retryable; only server-confirmed values are deduplicated.
+        if (saved) safetyVideoWatchSaved[identity] = snapshot;
+        callbacks.forEach(function (callback) { callback(saved); });
+    }
+    try {
+        var request = new Webservicecall_REST(
+            global_wcf_url_lms + 'LMS_InsertUpdate_Video_Watch_Log', snapshot,
+            function (response) {
+                var saved = false;
+                try {
+                    var result = JSON.parse(response.responseText || '[]');
+                    saved = result.length > 0 && Number(result[0].status) === 1;
+                } catch (e) { console.error('Unable to parse Safety video watch log response.', e); }
+                if (saved) {
+                    // Update the exact submitted lesson, even if navigation already changed.
+                    try {
+                        if (typeof LmsBackend !== 'undefined') LmsBackend.ingestSkillRows(payload);
+                        if (typeof update_lms_kpi === 'function') update_lms_kpi();
+                        var card = findSafetyVideoCard(payload[0].Skill_Id, payload[0].Module_Id, payload[0].Module_Schedule_Id);
+                        if (card) {
+                            card.setAttribute('data-watch-video-time', payload[0].Watch_Video_Time);
+                            var elapsed = card.querySelector('.lesson-preview-elapsed');
+                            if (elapsed) elapsed.textContent = payload[0].Watch_Video_Time;
+                        }
+                    } catch (e) { console.error('Unable to refresh saved watch time.', e); }
+                }
+                settle(saved);
+            },
+            function (error) {
+                console.error('Unable to save Safety video watch log.', error);
+                settle(false);
+            }, null, 15000
+        );
+        request.callOtherDomain();
+    } catch (error) {
+        console.error('Unable to start Safety video watch log request.', error);
+        settle(false);
+    }
+    return true;
+}
+
 function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
 
     var Param_obj = [];
@@ -1117,11 +1412,41 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
                 if (weightage == "" || weightage == null || weightage == undefined) {
                     weightage = 1;
                 }
-                let Valid_Answer = merge_array[i].Valid_Answer[0];
+                let Valid_Answer = merge_array[i].Valid_Answer[0].trim();
                 let ans_label = merge_array[i].ans;
 
+                try {
+
+                    var Option_Language = [];
+
+                    if (user_language != 'en') {
+                        var language = merge_array[i].Question_Language;
+                        if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                        else {
+                            language = itemObj._checkStrObj(language);
+                            language = language[0];
+
+                            if (language[user_language]) {
+                                skill_que_name = language[user_language];
+                            }
+                        }
+
+                        Option_Language = merge_array[i].Option_Language;
+                        if (Option_Language == "" || Option_Language == null || Option_Language == undefined || Option_Language == "null" || Option_Language == "Unknown") { }
+                        else {
+                            Option_Language = itemObj._checkStrObj(Option_Language);
+                            Option_Language = Option_Language[0];
+                        }
+                    }
+                }
+                catch (e) {
+                    console.log(e);
+                }
+
+
+
                 let str = '<div class="question-card">';
-                str += '<div class="question-title" skill_que_id=' + skill_que_id + ' IsActive=' + IsActive + '>' + skill_que_name + '</div>';
+                str += '<div class="question-title" skill_que_id=' + skill_que_id + ' IsActive=' + IsActive + ' act_text="' + merge_array[i].Skill_Question_Name + '">' + skill_que_name + '</div>';
 
                 for (let j = 0; j < optionsArray.length; j++) {
                     let op_text = optionsArray[j].trim();
@@ -1151,7 +1476,22 @@ function get_question_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) {
                         str += '<input type="radio" name="skill_que_' + skill_que_id + '" alt="' + weightage + '" id="' + skill_que_id + '_' + j + '">';
                     }
 
-                    str += '<label for="' + skill_que_id + '_' + j + '">' + op_text + '</label>';
+                    if (user_language != 'en') {
+                        if (Option_Language) {
+                            var language = Option_Language[op_text];
+                            if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
+                            else {
+                                language = itemObj._checkStrObj(language);
+                                language = language[0];
+
+                                if (language[user_language]) {
+                                    op_text = language[user_language];
+                                }
+                            }
+                        }
+                    }
+
+                    str += '<label for="' + skill_que_id + '_' + j + '" act_text="' + optionsArray[j].trim() + '">' + op_text + '</label>';
                     str += '</div>';
                 }
 
@@ -1379,7 +1719,18 @@ function safety_quiz_finish() {
             alert(arr[0].message);
         }
     }, onfail);
-    g.callOtherDomain();
+    // Save the latest dynamic watch values before sending/completing the final quiz.
+    logSafetyVideoWatch(function (saved) {
+        if (saved) {
+            g.callOtherDomain();
+        } else {
+            // Keep the final question available for retry when its watch log fails.
+            loading_hide();
+            safety_quiz_index = Math.max(0, safety_quiz_data.length - 1);
+            safety_quiz_render();
+            alert('Unable to save video watch time. Please submit again.');
+        }
+    }, true);
 }
 
 function safety_quiz_close_modal() {
@@ -1440,14 +1791,17 @@ function submit_question_by_skill_id(flag) {
 
     for (let i = 0; i < questionCards.length; i++) {
         let questionCard = questionCards[i];
-        let questionName = questionCard.querySelector('.question-title').textContent.trim();
+        // let questionName = questionCard.querySelector('.question-title').textContent.trim();
+        let questionName = $(questionCard.querySelector('.question-title')).attr("act_text").trim();
         let options = questionCard.querySelectorAll('input[type="radio"]');
 
         let selectedAns = [];
 
         for (let j = 0; j < options.length; j++) {
             if (options[j].checked) {
-                selectedAns.push(options[j].nextElementSibling.textContent.trim());
+                // let op_text = options[j].nextElementSibling.textContent.trim();
+                let op_text = $(options[j].nextElementSibling).attr("act_text").trim();
+                selectedAns.push(op_text);
             }
         }
 
@@ -1510,7 +1864,18 @@ function submit_question_by_skill_id(flag) {
         loading_hide();
 
     }, onfail);
-    getdata.callOtherDomain();
+    // The legacy final-submit path shares the same confirmed watch-log prerequisite.
+    if (flag === 'submit') {
+        logSafetyVideoWatch(function (saved) {
+            if (saved) getdata.callOtherDomain();
+            else {
+                loading_hide();
+                alert('Unable to save video watch time. Please submit again.');
+            }
+        }, true);
+    } else {
+        getdata.callOtherDomain();
+    }
 }
 
 // video submit
