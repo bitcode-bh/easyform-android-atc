@@ -119,6 +119,7 @@ var TripListSheet = (function () {
     }
 
     function rowStatus(r, active) {
+        if (r._server) return r._status || 'Ended';
         if (String(r.issend) === '0') return 'Upload pending';
         return active ? 'Live' : 'Ended';
     }
@@ -139,8 +140,63 @@ var TripListSheet = (function () {
         var min = parseInt(trip.min_milli, 10);
         if (isNaN(min) || min <= 0) return;
         if (typeof TripSiteMap !== 'undefined' && TripSiteMap.openRoute) {
-            TripSiteMap.openRoute(min, tripMaxMs(trip, live), rowTitle(trip, live, trip._km));
+            // A downloaded trip has no rows in this phone's track_master, so its
+            // own points are handed to the map instead of a time window.
+            TripSiteMap.openRoute(min, tripMaxMs(trip, live), rowTitle(trip, live, trip._km),
+                trip._server ? trip._path : null);
         }
+    }
+
+    // A stored server trip -> the row shape the list already renders.
+    function serverRow(s) {
+        return {
+            _server: true,
+            _status: s.status,
+            _path: s.path || [],
+            _km: (s.m || 0) / 1000,
+            _id: '',
+            tid: '',
+            sid: s.id,
+            server_task_id: s.id,
+            trip_status: '1',
+            min_milli: String(s.start),
+            max_milli: String(s.end),
+            site_name: '',
+            issend: '1',
+            distance: String((s.m || 0) / 1000)
+        };
+    }
+
+    // Phone rows first; a downloaded trip is added only when the phone has no
+    // record of the same server task, so a trip still being recorded or not
+    // yet uploaded is never replaced by its server copy.
+    function mergeServerRows(localRows, bounds) {
+        localRows = localRows || [];
+        if (typeof TripServerHistory === 'undefined' || !TripServerHistory.getRows) return localRows;
+        var have = {};
+        for (var i = 0; i < localRows.length; i++) {
+            var a = localRows[i].server_task_id, c = localRows[i].sid;
+            if (a != null && String(a) !== '0' && String(a) !== '') have[String(a)] = true;
+            if (c != null && String(c) !== '0' && String(c) !== '') have[String(c)] = true;
+        }
+        var server = TripServerHistory.getRows(bounds.start, bounds.end);
+        var merged = localRows.slice();
+        for (var j = 0; j < server.length; j++) {
+            if (!have[String(server[j].id)]) merged.push(serverRow(server[j]));
+        }
+        merged.sort(function (x, y) {
+            return (parseInt(y.min_milli, 10) || 0) - (parseInt(x.min_milli, 10) || 0);
+        });
+        return merged;
+    }
+
+    function serverViolationRuns(path) {
+        var runs = 0, inRun = false;
+        for (var i = 0; i < (path || []).length; i++) {
+            if (path[i][3] === 3) { if (!inRun) { runs++; inRun = true; } }
+            else inRun = false;
+        }
+        return runs;
     }
 
     function setStats(kmText, timeText, violText) {
@@ -248,6 +304,7 @@ var TripListSheet = (function () {
         if (!box) return;
         for (var j = 0; j < rows.length; j++) {
             var row = rows[j];
+            if (row._server) continue;   // distance came with the download
             var live = String(row.trip_status) === '0';
             var km = tripPathKm(pts, row.min_milli, row.max_milli, live);
             row._km = km;
@@ -266,15 +323,24 @@ var TripListSheet = (function () {
             timeMs += tripDurationMs(rows[i], String(rows[i].trip_status) === '0');
         }
         var timeText = rows.length ? formatTotalDuration(timeMs) : '0m';
+        // Downloaded trips have no points in track_master; their distance and
+        // violations are added on top of what the phone's own path yields.
+        var serverKm = 0, serverViol = 0;
+        for (var s = 0; s < rows.length; s++) {
+            if (rows[s]._server) {
+                serverKm += rows[s]._km || 0;
+                serverViol += serverViolationRuns(rows[s]._path);
+            }
+        }
         setStats('…', timeText, '…');
         if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getTripPath) {
-            setStats('0 km', timeText, '0');
+            setStats(formatKm(serverKm), timeText, String(serverViol));
             return;
         }
         var b = boundsFor(range);
         HomeDashboardData.getTripPath(b.start, b.end, function (pathRows) {
             var pts = parsePts(pathRows);
-            setStats(formatKm(pathKm(pts)), timeText, String(violationRuns(pts)));
+            setStats(formatKm(pathKm(pts) + serverKm), timeText, String(violationRuns(pts) + serverViol));
             updateRowDistances(rows, pts);
         });
     }
@@ -320,14 +386,39 @@ var TripListSheet = (function () {
         });
     }
 
+    var loadSeq = 0;
+
     function load() {
         var ul = document.getElementById('trip_list_ul');
-        if (ul) ul.innerHTML = '<li class="trip-list-empty-li"><div class="trip-list-empty">Loading…</div></li>';
         var b = boundsFor(range);
-        if (typeof HomeDashboardData !== 'undefined' && HomeDashboardData.getTripList) {
-            HomeDashboardData.getTripList(b.start, b.end, renderRows);
+        var seq = ++loadSeq;
+
+        function paint() {
+            // A newer range was picked while this one was loading.
+            if (seq !== loadSeq) return;
+            if (typeof HomeDashboardData !== 'undefined' && HomeDashboardData.getTripList) {
+                HomeDashboardData.getTripList(b.start, b.end, function (rows) {
+                    if (seq !== loadSeq) return;
+                    renderRows(mergeServerRows(rows, b));
+                });
+            } else {
+                renderRows(mergeServerRows([], b));
+            }
+        }
+
+        // First Trips open after an install or login: fetch last month + this
+        // month from the server before painting. A failed fetch still paints
+        // the phone's own trips and is retried on the next open.
+        var needsDownload = typeof TripServerHistory !== 'undefined' && TripServerHistory.ensureDownloaded
+            && !TripServerHistory.hasDownload();
+        if (ul) {
+            ul.innerHTML = '<li class="trip-list-empty-li"><div class="trip-list-empty">'
+                + (needsDownload ? 'Downloading trip history…' : 'Loading…') + '</div></li>';
+        }
+        if (needsDownload) {
+            TripServerHistory.ensureDownloaded(function () { paint(); });
         } else {
-            renderRows([]);
+            paint();
         }
     }
 

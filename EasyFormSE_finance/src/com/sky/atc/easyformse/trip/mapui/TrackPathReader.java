@@ -108,6 +108,35 @@ public final class TrackPathReader {
         }
     }
 
+    // A path handed over by the caller: JSON array of [lat, lon, tripflag].
+    // Used for trips downloaded from the server; nothing is read from, or
+    // written to, the local tables.
+    public static List<TrackPoint> fromJson(String json) {
+        List<TrackPoint> points = new ArrayList<TrackPoint>();
+        if (json == null || json.length() == 0) {
+            return points;
+        }
+        try {
+            org.json.JSONArray arr = new org.json.JSONArray(json);
+            for (int i = 0; i < arr.length(); i++) {
+                org.json.JSONArray p = arr.optJSONArray(i);
+                if (p == null || p.length() < 2) {
+                    continue;
+                }
+                double lat = p.optDouble(0, Double.NaN);
+                double lon = p.optDouble(1, Double.NaN);
+                if (Double.isNaN(lat) || Double.isNaN(lon)) {
+                    continue;
+                }
+                points.add(new TrackPoint(new LatLng(lat, lon),
+                        MapConstants.TRIPFLAG_VIOLATION.equals(String.valueOf(p.optInt(2, 2)))));
+            }
+        } catch (Exception e) {
+            // A malformed payload draws no path rather than crashing the map.
+        }
+        return points;
+    }
+
     // Historical window for a lat_plug row. maxMilli <= 0 means until now
     // (live trip). Same tripflag filter as read(ActiveTrip).
     public static List<TrackPoint> readWindow(long minMilli, long maxMilli) {

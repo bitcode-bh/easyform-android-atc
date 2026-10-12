@@ -17,6 +17,9 @@ public final class MapConstants {
     public static final String EXTRA_PATH_MAX_MS = "trip_map_path_max_ms";
     public static final String EXTRA_ROUTE_OVERLAY = "trip_map_route_overlay";
     public static final String EXTRA_ROUTE_TITLE = "trip_map_route_title";
+    // Optional: the path itself, as a JSON array of [lat, lon, tripflag], for a
+    // trip downloaded from the server that has no rows in track_master.
+    public static final String EXTRA_PATH_POINTS = "trip_map_path_points";
 
     // Emitted by the existing engine (LocationOutageUtils); this module only listens.
     public static final String ACTION_TRIP_LOCATION = "trip-background-map";

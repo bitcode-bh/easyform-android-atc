@@ -46,6 +46,10 @@ public class TripTrackingMapPlugin extends CordovaPlugin {
             intent.putExtra(MapConstants.EXTRA_PATH_MAX_MS, payload.optLong("path_max_ms", 0));
             intent.putExtra(MapConstants.EXTRA_ROUTE_OVERLAY, overlay);
             intent.putExtra(MapConstants.EXTRA_ROUTE_TITLE, payload.optString("title", ""));
+            JSONArray pathPoints = payload.optJSONArray("path_points");
+            if (pathPoints != null && pathPoints.length() > 0) {
+                intent.putExtra(MapConstants.EXTRA_PATH_POINTS, pathPoints.toString());
+            }
             this.cordova.getActivity().startActivity(intent);
             if (overlay) {
                 this.cordova.getActivity().overridePendingTransition(0, 0);

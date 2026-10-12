@@ -89,7 +89,9 @@ var TripSiteMap = (function () {
 
     // Trip list row: native Google Map overlay (Maps SDK). maxMs <= 0 means
     // live / until now.
-    function openRoute(minMs, maxMs, title) {
+    // pathPoints (optional): [[lat, lon, ms, tripflag], ...] for a trip whose
+    // points are not in this phone's track_master (downloaded history).
+    function openRoute(minMs, maxMs, title, pathPoints) {
         try {
             var min = parseInt(minMs, 10);
             var max = parseInt(maxMs, 10);
@@ -105,6 +107,13 @@ var TripSiteMap = (function () {
                 path_min_ms: min,
                 path_max_ms: max
             };
+            if (pathPoints && pathPoints.length) {
+                var pts = [];
+                for (var i = 0; i < pathPoints.length; i++) {
+                    pts.push([pathPoints[i][0], pathPoints[i][1], pathPoints[i][3] === 3 ? 3 : 2]);
+                }
+                payload.path_points = pts;
+            }
             var profile = TripMapProfile.resolve();
             if (profile) {
                 payload.profile = profile;

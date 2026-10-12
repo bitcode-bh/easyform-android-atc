@@ -108,6 +108,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
     private long pathMaxMs;
     private boolean routeOverlay;
     private String routeTitle;
+    private String pathPointsJson;
     private final List<TrackPathReader.TrackPoint> lastPathPoints = new ArrayList<TrackPathReader.TrackPoint>();
 
     private MapBroadcastReceiver locationReceiver;
@@ -495,6 +496,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             pathMaxMs = intent.getLongExtra(MapConstants.EXTRA_PATH_MAX_MS, 0);
             routeOverlay = intent.getBooleanExtra(MapConstants.EXTRA_ROUTE_OVERLAY, false);
             routeTitle = intent.getStringExtra(MapConstants.EXTRA_ROUTE_TITLE);
+            pathPointsJson = intent.getStringExtra(MapConstants.EXTRA_PATH_POINTS);
         } catch (Exception e) {
             return false;
         }
@@ -831,7 +833,9 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             return;
         }
         List<TrackPathReader.TrackPoint> points;
-        if (pathMinMs > 0) {
+        if (pathPointsJson != null && pathPointsJson.length() > 0) {
+            points = TrackPathReader.fromJson(pathPointsJson);
+        } else if (pathMinMs > 0) {
             points = TrackPathReader.readWindow(pathMinMs, pathMaxMs);
         } else {
             TrackPathReader.ActiveTrip trip = TrackPathReader.activeTrip();
