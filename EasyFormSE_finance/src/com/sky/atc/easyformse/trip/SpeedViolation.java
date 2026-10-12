@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Location;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -62,8 +63,10 @@ public class SpeedViolation {
     private static  float lastMaxSpeed;
     private static  float lastMaxMilli;
     private static  long savedMilli;
+    private static double detectedStartLat = 0.0;
+    private static double detectedStartLon = 0.0;
     static MySharedPreferences pref;
-    public static void onSpeedViolationOccured(float speed, double lat, double lon, String provider, String tripflag, float acc,String timelocation) {
+    public static void onSpeedViolationOccured(float speed, double lat, double lon, String provider, String tripflag, float acc,String timelocation,String gps_speed) {
 
 
         //convert speed to m/s to km/h
@@ -163,6 +166,8 @@ public class SpeedViolation {
                     Log.d("##SPEED_DETECT", String.valueOf(ac_speed));
                     LogUtils.writeAttendanceLogToFile( String.valueOf(ac_speed),"##SPEED_DETECT");
                     detectedMilli = System.currentTimeMillis();
+                    detectedStartLat = lat;
+                    detectedStartLon = lon;
                     d.setspeed_time(ac_speed);
                     flag = 1;
                     lastMaxMilli=0;
@@ -209,15 +214,21 @@ public class SpeedViolation {
                         savedMilli = currentTime;
                         Log.d("##VIOLATION_1ST", String.valueOf(savedMilli));
                         //insert location again in track _master with tripflag=3 to indicate speed violation location
-                        insertIntoTrackMaster(lat, lon, provider, speed, currentTime, String.valueOf(acc));
+                        insertIntoTrackMaster(lat, lon, provider, speed, currentTime, String.valueOf(acc),gps_speed);
 
                         //logically it will not execute after 45 seconds logic it will be
                         //executed in upper if's else condition
                         //speed violation is detected with duration greater than set limit
-                        if (duration > speedDura && ac_speed > d.getSpeedLimit() && flag == 1) {
+                        float[] eventDistResults1 = new float[1];
+                        Location.distanceBetween(detectedStartLat, detectedStartLon, lat, lon, eventDistResults1);
+                        float eventDistMeters1 = eventDistResults1[0];
+                        float eventSeconds1 = duration / 1000.0f;
+                        float eventCalcSpeedKmh1 = (eventSeconds1 > 0) ? (eventDistMeters1 / eventSeconds1) * 3.6f : 0f;
+
+                        if (duration > speedDura && ac_speed > d.getSpeedLimit() && eventCalcSpeedKmh1 > d.getSpeedLimit() && flag == 1) {
 
                             try {
-                                LogUtils.writeAttendanceLogToFile(String.valueOf("duration:" + duration + ",speedDura:" +speedDura +",ac_speed:" + ac_speed + ",d.getSpeedLimit():"+d.getSpeedLimit()),"##if ");
+                              //  LogUtils.writeAttendanceLogToFile(String.valueOf("duration:" + duration + ",speedDura:" +speedDura +",ac_speed:" + ac_speed + ",eventCalcSpeedKmh:" + eventCalcSpeedKmh1 + ",d.getSpeedLimit():"+d.getSpeedLimit()),"##if ");
 
                                 new Handler(Looper.getMainLooper()).post(SpeedViolation::speedViolationAlert);
                                 ContentValues c = new ContentValues();
@@ -286,8 +297,14 @@ public class SpeedViolation {
 
                         }else {
 
-                            insertIntoTrackMaster(lat, lon, provider, speed, currentTime, String.valueOf(acc));
-                            if (duration > speedDura && ac_speed > d.getSpeedLimit() && flag == 1) {
+                            insertIntoTrackMaster(lat, lon, provider, speed, currentTime, String.valueOf(acc),gps_speed);
+                            float[] eventDistResults2 = new float[1];
+                            Location.distanceBetween(detectedStartLat, detectedStartLon, lat, lon, eventDistResults2);
+                            float eventDistMeters2 = eventDistResults2[0];
+                            float eventSeconds2 = duration / 1000.0f;
+                            float eventCalcSpeedKmh2 = (eventSeconds2 > 0) ? (eventDistMeters2 / eventSeconds2) * 3.6f : 0f;
+
+                            if (duration > speedDura && ac_speed > d.getSpeedLimit() && eventCalcSpeedKmh2 > d.getSpeedLimit() && flag == 1) {
 
                                 try {
                                     LogUtils.writeAttendanceLogToFile(String.valueOf("duration:" + duration + ",speedDura:" +speedDura +",ac_speed:" + ac_speed + ",d.getSpeedLimit():"+d.getSpeedLimit()),"##else ");
@@ -415,7 +432,7 @@ public class SpeedViolation {
     }
 
 
-    private static void insertIntoTrackMaster(double lat, double lon, String provider, float speed, long Milli, String acc) {
+    private static void insertIntoTrackMaster(double lat, double lon, String provider, float speed, long Milli, String acc,String gps_speed) {
 
 
         if (provider.equalsIgnoreCase("gps")) {
@@ -443,6 +460,7 @@ public class SpeedViolation {
         args.put("speed", speed);
         args.put("tripflag", "3");
         args.put("locationtime", String.valueOf(Milli));
+        args.put("gps_speed",gps_speed);
         long temp = database.insert("track_master", null, args);
         Log.d("SPEED_TRACKMASTER", String.valueOf(temp));
 

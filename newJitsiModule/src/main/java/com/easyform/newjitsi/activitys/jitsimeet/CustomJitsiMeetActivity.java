@@ -26,6 +26,11 @@ import android.graphics.Point;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaScannerConnection;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -155,6 +160,29 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
 
     private static CustomJitsiMeetActivity instance;
 
+
+// JITSI CONNECTION QUALITY
+    private Handler connectionQualityHandler;
+
+    private Runnable connectionQualityRunnable;
+
+    private boolean connectionQualityMonitoring = false;
+
+    private long lastPoorConnectionToastTime = 0;
+
+    private static final long POOR_CONNECTION_TOAST_INTERVAL = 10_000;
+
+    // Number of consecutive poor checks before Toast.
+// This prevents Toast because of one temporary bad packet.
+    private int poorConnectionCount = 0;
+
+    private static final int REQUIRED_POOR_COUNT = 2;
+
+    private String currentConnectionQuality = "unknown";
+    public static final String ACTION_CONNECTION_QUALITY = "org.jitsi.meet.CONNECTION_QUALITY";
+
+    public static final String EXTRA_CONNECTION_QUALITY = "quality";
+
     public static CustomJitsiMeetActivity getInstance() {
         return instance;
     }
@@ -170,6 +198,30 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
             JitsiMeetActivityDelegate.onNewIntent(intent);
         }
     }
+    private final BroadcastReceiver connectionQualityReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(
+                Context context,
+                Intent intent) {
+
+            if (!ACTION_CONNECTION_QUALITY.equals(intent.getAction())) {
+                return;
+            }
+
+            String quality = intent.getStringExtra(EXTRA_CONNECTION_QUALITY);
+
+//            Log.d(
+//                    "JitsiConnectionQuality",
+//                    "Quality = " + quality
+//            );
+
+            if ("poor".equalsIgnoreCase(quality)) {
+
+                showPoorConnectionToast();
+            }
+        }
+    };
+
 
     private final BroadcastReceiver commentReceiver = new BroadcastReceiver() {
         @Override
@@ -718,6 +770,19 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         IntentFilter intentScreenShearRemoteSizeFilter = new IntentFilter();
         intentScreenShearRemoteSizeFilter.addAction(Utils.BroadcastAction.JITSI_SCREEN_SIZE_REMOTE_ACTIVITY);
         LocalBroadcastManager.getInstance(this).registerReceiver(this.broadcastScreenShearRemoteSizeReceiver, intentScreenShearRemoteSizeFilter);
+
+// JITSI CONNECTION QUALITY
+        IntentFilter connectionQualityFilter =
+                new IntentFilter(
+                        ACTION_CONNECTION_QUALITY
+                );
+
+        LocalBroadcastManager
+                .getInstance(this)
+                .registerReceiver(
+                        connectionQualityReceiver,
+                        connectionQualityFilter
+                );
     }
 
 
@@ -729,6 +794,7 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastScreenShearReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastScreenShearRemoteSizeReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(connectionQualityReceiver);
         unregisterReceiver(commentReceiver);
         NotificationUtils.stopOutgoingRing();
         // JitsiMeetBroadcastUtils.endMeeting(this);
@@ -762,6 +828,12 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                         mActivityCustomJitsiMeetBinding.llUserActions.setVisibility(View.VISIBLE);
                         this.onConferenceJoined(event.getData());
                         isCallRunning = true;
+
+                        // ==========================================
+                        // START CONNECTION QUALITY MONITORING
+                        // ==========================================
+                        startConnectionQualityMonitoring();
+
                         sharedPreferences = getApplicationContext().getSharedPreferences("Jitsiuser", MODE_PRIVATE);
                         String IspluginClick = sharedPreferences.getString("IsPluginClick","false");
                         if(!IspluginClick.equalsIgnoreCase("true"))
@@ -778,6 +850,13 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
                     break;
                 }
                 case CONFERENCE_TERMINATED: {
+
+                    // ==========================================
+                    // STOP CONNECTION QUALITY MONITORING
+                    // ==========================================
+                    stopConnectionQualityMonitoring();
+
+
                     isCallRunning = false;
                     mActivityCustomJitsiMeetBinding.llUserActions.setVisibility(View.GONE);
                     JitsiMeetBroadcastUtils.endMeeting(this);
@@ -2312,4 +2391,177 @@ public class CustomJitsiMeetActivity extends JitsiMeetActivity implements Drawin
             e.printStackTrace();
         }
     }
+
+    private void showPoorConnectionToast() {
+
+        long currentTime = System.currentTimeMillis();
+
+        // Don't continuously show Toast
+        if (currentTime - lastPoorConnectionToastTime < POOR_CONNECTION_TOAST_INTERVAL) {
+            return;
+        }
+
+        lastPoorConnectionToastTime = currentTime;
+
+        runOnUiThread(() -> {
+
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
+            Toast.makeText(
+                    CustomJitsiMeetActivity.this,
+                    "Your internet connection is poor",
+                    Toast.LENGTH_LONG
+            ).show();
+        });
+    }
+
+    private void startConnectionQualityMonitoring() {
+
+        if (connectionQualityMonitoring) {
+            Log.d(
+                    "JitsiConnectionQuality",
+                    "Already monitoring"
+            );
+            return;
+        }
+
+        connectionQualityMonitoring = true;
+
+        connectionQualityHandler = new Handler(Looper.getMainLooper());
+
+        connectionQualityRunnable = new Runnable() {
+
+            @Override
+            public void run() {
+
+                if (!connectionQualityMonitoring) {
+                    return;
+                }
+
+                checkConnectionQuality();
+
+                connectionQualityHandler.postDelayed(this, 3000);
+            }
+        };
+
+        connectionQualityHandler.postDelayed(connectionQualityRunnable, 5000);
+
+//        Log.d(
+//                "JitsiConnectionQuality",
+//                "Connection quality monitoring started"
+//        );
+    }
+    private void stopConnectionQualityMonitoring() {
+
+        connectionQualityMonitoring = false;
+
+        if (connectionQualityHandler != null && connectionQualityRunnable != null) {
+
+            connectionQualityHandler.removeCallbacks(connectionQualityRunnable);
+        }
+
+        connectionQualityHandler = null;
+        connectionQualityRunnable = null;
+
+        poorConnectionCount = 0;
+        currentConnectionQuality = "unknown";
+
+//        Log.d(
+//                "JitsiConnectionQuality",
+//                "Connection quality monitoring stopped"
+//        );
+    }
+    private void checkConnectionQuality() {
+        try {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return;
+
+            boolean isPoor = false;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Network activeNetwork = cm.getActiveNetwork();
+                if (activeNetwork == null) {
+                    isPoor = true; // No network available
+                } else {
+                    NetworkCapabilities nc = cm.getNetworkCapabilities(activeNetwork);
+                    if (nc == null || !nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                            || !nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
+                        isPoor = true; // Internet connection is invalid or limited
+                    } else {
+                        // Check downstream bandwidth (less than 500 Kbps is considered poor for video calls)
+                        int downstreamKbps = nc.getLinkDownstreamBandwidthKbps();
+                        if (downstreamKbps > 0 && downstreamKbps < 500) {
+                            isPoor = true;
+                        }
+                    }
+                }
+            } else {
+                NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
+                if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()) {
+                    isPoor = true;
+                }
+            }
+
+            if (isPoor) {
+                poorConnectionCount++;
+                if (poorConnectionCount >= REQUIRED_POOR_COUNT) {
+                    currentConnectionQuality = "poor";
+                    setVideoQuality(180);
+                    showPoorConnectionToast(); // Lowers quality to 180p & shows alert
+
+                }
+            } else {
+                // Connection recovered to good quality
+                if ("poor".equals(currentConnectionQuality)) {
+                    setVideoQuality(360); // Restore back to standard quality
+                   // Toast.makeText(this, "Network restored: Video quality restored to standard", Toast.LENGTH_SHORT).show();
+                }
+                poorConnectionCount = 0;
+                currentConnectionQuality = "good";
+            }
+        } catch (Exception e) {
+            Log.e("JitsiConnectionQuality", "Error checking connection quality", e);
+        }
+    }
+
+    private void setVideoQuality(int quality) {
+        Intent intent = new Intent("org.jitsi.meet.SET_VIDEO_QUALITY");
+        intent.putExtra("videoQuality", quality);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        Log.d("JitsiConnectionQuality", "Video quality changed to: " + quality + "p");
+    }
+
+//    private AlertDialog poorConnectionDialog;
+//    private boolean hasShownPoorConnectionAlert = false;
+
+
+//    private void showPoorConnectionAlertDialog() {
+//        // Show only 1 time during the entire call
+//        if (hasShownPoorConnectionAlert) {
+//            return;
+//        }
+//
+//        runOnUiThread(() -> {
+//            if (isFinishing() || isDestroyed()) return;
+//
+//            if (poorConnectionDialog != null && poorConnectionDialog.isShowing()) {
+//                return;
+//            }
+//
+//            hasShownPoorConnectionAlert = true; // Mark as shown
+//
+//            // Automatically lower video quality to 180p
+//            setVideoQuality(180);
+//
+//            poorConnectionDialog = new AlertDialog.Builder(CustomJitsiMeetActivity.this)
+//                    .setTitle("Poor Internet Connection")
+//                    .setMessage("Your network signal is weak.Video resolution has been automatically lowered so participant voice stays clear.")
+//                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+//                    .setCancelable(false)
+//                    .create();
+//
+//            poorConnectionDialog.show();
+//        });
+//    }
 }

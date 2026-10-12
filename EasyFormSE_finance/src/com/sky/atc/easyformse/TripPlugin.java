@@ -122,12 +122,6 @@ public class TripPlugin extends CordovaPlugin {
                             long temp = database.update("lat_plug", latc, t, null);
                             Log.d("##TripUpdate", String.valueOf(temp));
 
-                            try {
-                                Intent i_ch2 = new Intent(sqlitewraper.context, f_upload_new_structure.class);
-                                com.commonsware.cwac.wakeful.WakefulIntentService.sendWakefulWork(sqlitewraper.context, i_ch2);
-                            } catch (Exception e) {
-                                Log.e("##TripPlugin", "Error starting upload: " + e.getMessage());
-                            }
                         }
 
                         pref = sqlitewraper.getSecureShared("MyPref");
@@ -266,9 +260,6 @@ public class TripPlugin extends CordovaPlugin {
                         i2.putExtra("odometer_point", odometerpoint);
                         i2.putExtra("ETA", eta);
                         this.cordova.startActivityForResult(this, i2, 104);
-                        if (this.cordova.getActivity() != null) {
-                            this.cordova.getActivity().overridePendingTransition(0, 0);
-                        }
                     }
 
 

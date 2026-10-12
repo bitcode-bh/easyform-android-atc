@@ -13,10 +13,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.GradientDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -28,10 +28,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Gravity;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,6 +41,7 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -75,7 +72,7 @@ import com.sky.atc.easyformse.attendance.newattendanceutils.models.AttendanceDat
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 
 import com.sky.atc.easyformse.geofencenew.GeofenceTrasitionServicenew;
-import com.sky.atc.easyformse.sensordetection.SafetyDetectionService;
+
 import com.sky.atc.easyformse.trip.ServiceOutage;
 import com.sky.atc.easyformse.trip.TripMapUtils;
 
@@ -143,158 +140,72 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     private PendingIntent geoFencePendingIntent;
     boolean ischeckfirst = false;
     ArrayList<String> permissionList = new ArrayList<>();
-    private int mapContainerId;
-
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
-    }
-
-    private static GradientDrawable roundedBackground(int color, float radiusPx) {
-        GradientDrawable d = new GradientDrawable();
-        d.setColor(color);
-        d.setCornerRadius(radiusPx);
-        return d;
-    }
-
-    private void cancelAndFinish() {
-        Bundle b = new Bundle();
-        b.putString("result", "outside");
-        Intent intent = new Intent();
-        intent.putExtras(b);
-        setResult(RESULT_CANCELED, intent);
-        finish();
-    }
-
-    private View buildPopupLayout() {
-        FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(Color.parseColor("#99000000"));
-        root.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cancelAndFinish();
-            }
-        });
-
-        LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackground(roundedBackground(Color.parseColor("#fcfcfb"), dp(12)));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            card.setClipToOutline(true);
-        }
-        card.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Swallow clicks so tapping inside card does not dismiss
-            }
-        });
-
-        // Top bar
-        LinearLayout bar = new LinearLayout(this);
-        bar.setOrientation(LinearLayout.HORIZONTAL);
-        bar.setGravity(Gravity.CENTER_VERTICAL);
-        bar.setBackgroundColor(Color.parseColor("#ecedef"));
-        bar.setPadding(dp(4), 0, dp(12), 0);
-        bar.setMinimumHeight(dp(48));
-
-        btnBack = new Button(this);
-        btnBack.setText("←");
-        btnBack.setTextColor(Color.parseColor("#0D1829"));
-        btnBack.setTextSize(20f);
-        btnBack.setBackground(null);
-        btnBack.setPadding(dp(12), dp(8), dp(12), dp(8));
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                cancelAndFinish();
-            }
-        });
-        bar.addView(btnBack, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-
-        TextView title = new TextView(this);
-        String label = (tripstatus != null && tripstatus.equalsIgnoreCase("1")) ? "Ending Trip..." : "Starting Trip...";
-        title.setText(label);
-        title.setTextColor(Color.parseColor("#0D1829"));
-        title.setTextSize(14f);
-        title.setTypeface(Typeface.DEFAULT_BOLD);
-        title.setMaxLines(1);
-        title.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        bar.addView(title, titleLp);
-
-        card.addView(bar, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(48)));
-
-        // Map container
-        FrameLayout mapContainer = new FrameLayout(this);
-        mapContainerId = View.generateViewId();
-        mapContainer.setId(mapContainerId);
-        card.addView(mapContainer, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
-
-        // Bottom status strip
-        LinearLayout bottomBar = new LinearLayout(this);
-        bottomBar.setOrientation(LinearLayout.HORIZONTAL);
-        bottomBar.setGravity(Gravity.CENTER_VERTICAL);
-        bottomBar.setBackgroundColor(Color.parseColor("#ecedef"));
-        bottomBar.setPadding(dp(16), dp(8), dp(16), dp(8));
-        bottomBar.setMinimumHeight(dp(44));
-
-        progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleSmall);
-        progressBar.setIndeterminate(true);
-        progressBar.setVisibility(View.VISIBLE);
-        LinearLayout.LayoutParams pbLp = new LinearLayout.LayoutParams(
-                dp(24), dp(24));
-        pbLp.rightMargin = dp(12);
-        bottomBar.addView(progressBar, pbLp);
-
-        refreshLat = new Button(this);
-        refreshLat.setText("Locking GPS location...");
-        refreshLat.setTextColor(Color.parseColor("#374151"));
-        refreshLat.setTextSize(13f);
-        refreshLat.setGravity(Gravity.CENTER_VERTICAL);
-        refreshLat.setBackground(null);
-        refreshLat.setClickable(false);
-        refreshLat.setEnabled(false);
-        refreshLat.setPadding(0, 0, 0, 0);
-        LinearLayout.LayoutParams rfLp = new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        bottomBar.addView(refreshLat, rfLp);
-
-        card.addView(bottomBar, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(44)));
-
-        int w = Math.round(getResources().getDisplayMetrics().widthPixels * 0.94f);
-        int h = Math.round(getResources().getDisplayMetrics().heightPixels * 0.78f);
-        FrameLayout.LayoutParams cardLp = new FrameLayout.LayoutParams(w, h, Gravity.CENTER);
-        root.addView(card, cardLp);
-
-        return root;
-    }
-
+    boolean isnotificationDialog = false;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        overridePendingTransition(0, 0);
+        setContentView(R.layout.tripmap_layout);
 
-        if (getIntent() != null && getIntent().getExtras() != null) {
-            tid = getIntent().getExtras().getString("tid");
-            tripstatus = getIntent().getExtras().getString("tripstatus");
-            odometerpoint = getIntent().getExtras().getString("odometer_point");
-            etaFlag = getIntent().getExtras().getString("ETA");
-        }
-
-        setContentView(buildPopupLayout());
-
-        SupportMapFragment mapFragment = SupportMapFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(mapContainerId, mapFragment).commitNow();
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        btnBack = (Button) findViewById(R.id.btn_back);
+        refreshLat = (Button) findViewById(R.id.btn_refresh);
+
 
         database = sqlitewraper.getDatabase();
+        refreshLat.setClickable(false);
+        refreshLat.setEnabled(false);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+//        locationProvider();
+//        locationManagerGPS();
+        progressBar.setVisibility(View.VISIBLE);
+
+
+        tid = getIntent().getExtras().getString("tid");
+        tripstatus = getIntent().getExtras().getString("tripstatus");
+        odometerpoint = getIntent().getExtras().getString("odometer_point");
+        etaFlag = getIntent().getExtras().getString("ETA");
+
         updateTripflagTaskMaster(tid, "1");
+
+        //Cancle the trip(NOT IN USE)
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                btnBack.setBackgroundDrawable(getResources().getDrawable(R.drawable.button_selected));
+                Bundle b = new Bundle();
+                b.putString("result", "outside");
+                Intent intent = new Intent();
+                intent.putExtras(b);
+                setResult(RESULT_CANCELED, intent);
+                finish();
+            }
+        });
+        //click on refresh lat (Not in use)
+        refreshLat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refreshLat.setBackgroundDrawable(getResources().getDrawable(R.drawable.button_selected));
+//                tripStart(pointOneLat,pointOneLang,uniqtripid);
+
+                if (isClickable) {
+
+//                  latPlugUpdate(tid, tripstatus, odometerpoint);
+                    Bundle b = new Bundle();
+                    Intent intent = new Intent();
+                    intent.putExtras(b);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                    isClickable = false;
+
+                }
+            }
+
+        });
+
+
+
     }
 
     //Load map
@@ -640,9 +551,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         if (trip_status.equalsIgnoreCase("0")) {
 
 
-
-
-
             Cursor c4 = database
                     .rawQuery(
                             "select s_lat,s_lon,llat,llon from lat_plug where trip_shflag=0 and tid='" + tid + "'", null);
@@ -705,6 +613,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                     pref1.commit();
                     startgeofence(new LatLng(Double.parseDouble(s_lat), Double.parseDouble(s_lon)),200,tid,1);
                 }
+                else {
+                    MySharedPreferences pref1 = sqlitewraper.getSecureShared("MyPref");
+                    pref1.putBoolean("ISTripStartAfter6PM",false);
+                    pref1.commit();
+                }
             }
 
 
@@ -716,27 +629,38 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             Intent intent = new Intent(sqlitewraper.context, AutoTripStopService.class);
             WakefulIntentService.sendWakefulWork(sqlitewraper.context, intent);
 
-            if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true")) {
-                try {
-
-                    // crash detection like accident detection
-                    Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        sqlitewraper.context.startForegroundService(mIntent1);
-                    } else {
-                        sqlitewraper.context.startService(mIntent1);
-                    }
-
-                } catch (Exception e) {
-
-                }
-            }
+//            if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true")) {
+//                try {
+//
+//                    // crash detection like accident detection
+//                    Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
+//
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                        sqlitewraper.context.startForegroundService(mIntent1);
+//                    } else {
+//                        sqlitewraper.context.startService(mIntent1);
+//                    }
+//
+//                } catch (Exception e) {
+//
+//                }
+//            }
           //  }
             c4.close();
 
         } else {
+            Location finalEndLocation = getFinalEndLocation();
+            if (finalEndLocation == null) {
 
+                Log.e("TRIP_END",
+                        "Unable to get valid END location.");
+
+                return;
+            }
+            s_lat = String.valueOf(finalEndLocation.getLatitude());
+            s_lon = String.valueOf(finalEndLocation.getLongitude());
+
+            accuracy1 = finalEndLocation.getAccuracy();
             //For Ending the trip
             editor.putString("llat", s_lat);
             editor.putString("llon", s_lon);
@@ -798,15 +722,15 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             Intent i = new Intent(sqlitewraper.context, f_upload_new_structure.class);
             WakefulIntentService.sendWakefulWork(sqlitewraper.context, i);
 
-            if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
-            {
-                boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                        SafetyDetectionService.class.getName());
-                if (check12) {
-                    Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
-                    sqlitewraper.context.stopService(mIntent1);
-                }
-            }
+//            if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
+//            {
+//                boolean check12 = isMyServiceRunning(sqlitewraper.context,
+//                        SafetyDetectionService.class.getName());
+//                if (check12) {
+//                    Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
+//                    sqlitewraper.context.stopService(mIntent1);
+//                }
+//            }
         }
     }
 
@@ -984,7 +908,7 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     @Override
     protected void onPause() {
         super.onPause();
-        stopLocationUpdates();
+        //stopLocationUpdates();
     }
 
 
@@ -1146,7 +1070,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
     private void startEndLocationInsert(Location location) {
 
-
+        if ("0".equalsIgnoreCase(tripstatus)) {
+            if (!isValidLocation(location)) {
+                return;
+            }
+        }
         location.setSpeed(0.0f);
 
         pointOneLat = location.getLatitude();
@@ -1275,9 +1203,22 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     }
 
     void createPermissionList() {
+        permissionList.clear();
+        if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                permissionList.add(Manifest.permission.ACTIVITY_RECOGNITION);
+                permissionList.add(Manifest.permission.SEND_SMS);
+            }
 
-            permissionList.add(Manifest.permission.ACTIVITY_RECOGNITION);
-            permissionList.add(Manifest.permission.SEND_SMS);
+        }
+        else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                permissionList.add(Manifest.permission.ACTIVITY_RECOGNITION);
+            }
+
+        }
+
 
     }
 
@@ -1292,8 +1233,7 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 checkLocationPermissions();
             }
         } else {
-            createPermissionList();
-            permissionCheck();
+            BatteryOptimizationCheck();
         }
     }
 
@@ -1355,24 +1295,47 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 checkLocationPermissions();
             } else {
                 //Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) +
-                            ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
-                        != PackageManager.PERMISSION_GRANTED) {
+                if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
+                {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) +
+                                ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+                                != PackageManager.PERMISSION_GRANTED) {
 
-                    showMessageOKCancel("You need to allow access Physical activity permissions",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
-                                    mainactivity.startActivity(intent);
-                                    finish();
-                                }
-                            });
+                            showMessageOKCancel("You need to allow access Physical activity permissions",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent();
+                                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                            intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
+                                            mainactivity.startActivity(intent);
+                                            finish();
+                                        }
+                                    });
+                        }
                     }
                 }
+                else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                                != PackageManager.PERMISSION_GRANTED) {
+
+                            showMessageOKCancel("You need to allow access Physical activity permissions",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent();
+                                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                            intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
+                                            mainactivity.startActivity(intent);
+                                            finish();
+                                        }
+                                    });
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -1403,63 +1366,192 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         }
     }
     private void checkLocationPermissions() {
+
         if (!hasLocationPermissions()) {
-//            ActivityCompat.requestPermissions(this, locationPermissions, REQUEST_CODE_LOCATION);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                Locationpermissioncheck();
-            }
-            else {
-                manageHandler(30000);
-                //start the fused location update
-                manageHandlerFused(200);
-            }
-        } else {
-            manageHandler(30000);
-            //start the fused location update
-            manageHandlerFused(200);
-        }
-
-        String checkfirstattempt = null;
-        try {
-            pref = sqlitewraper.getSecureShared("FIRSTTIME");
-            checkfirstattempt = pref.getString("FIRSTTIME", "0");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (!checkfirstattempt.equalsIgnoreCase("1")) {
-
-            showAlertDialogAutostartalldevices();
+            Locationpermissioncheck();
 
         } else {
+            BatteryOptimizationCheck();
+        }
 
-            //Check if trip has outage is more than 15 minutes of total trip time than
-            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
+//        if (!hasLocationPermissions()) {
+////            ActivityCompat.requestPermissions(this, locationPermissions, REQUEST_CODE_LOCATION);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                Locationpermissioncheck();
+//                return;
+//            }
+//
+//            else {
+//                manageHandler(30000);
+//                //start the fused location update
+//                manageHandlerFused(200);
+//            }
+//        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+//        {
+//            boolean isEnabled = isNotificationServiceEnabled(this);
+//            if (isEnabled)
+//            {
+//                Intent mServiceIntent = new Intent(this, VoipNotificationService.class);
+//                startService(mServiceIntent);
+//
+//                manageHandler(30000);
+//                //start the fused location update
+//                manageHandlerFused(200);
+//            } else {
+//                //service is not enabled try to enable by calling...
+//
+//                requestNotificationaccess();
+//                return;
+//            }
+//        }
+//        else {
+//
+//
+//            checkBatteryOptimizationWithDialog();
+//
+//            manageHandler(30000);
+//            //start the fused location update
+//            manageHandlerFused(200);
+//        }
+//
+//        String checkfirstattempt = null;
+//        try {
+//            pref = sqlitewraper.getSecureShared("FIRSTTIME");
+//            checkfirstattempt = pref.getString("FIRSTTIME", "0");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        if (!checkfirstattempt.equalsIgnoreCase("1")) {
+//
+//            showAlertDialogAutostartalldevices();
+//
+//        } else {
+//
+//            //Check if trip has outage is more than 15 minutes of total trip time than
+//            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
+//
+//            String serviceoutage = ServiceOutage.getserviceoutage().get(0);
+//            String tid = ServiceOutage.getserviceoutage().get(1);
+//
+//            if (serviceoutage != null && tid != null) {
+//                if (!serviceoutage.equals("0") && !tid.equals("0")) {
+//                    if (Float.parseFloat(serviceoutage) > 900000) {
+//                        showAlertDialogAutostartalldevices();
+//                    }
+//                    String t4;
+//                    t4 = "tid =" + tid;
+//                    ContentValues cv4 = new ContentValues();
+//                    cv4.put("serviceoutage_flag", "1");
+//                    long temp4 = database.update("lat_plug", cv4, t4, null);
+//                }
+//            }
+//        }
+    }
 
-            String serviceoutage = ServiceOutage.getserviceoutage().get(0);
-            String tid = ServiceOutage.getserviceoutage().get(1);
-
-            if (serviceoutage != null && tid != null) {
-                if (!serviceoutage.equals("0") && !tid.equals("0")) {
-                    if (Float.parseFloat(serviceoutage) > 900000) {
-                        showAlertDialogAutostartalldevices();
-                    }
-                    String t4;
-                    t4 = "tid =" + tid;
-                    ContentValues cv4 = new ContentValues();
-                    cv4.put("serviceoutage_flag", "1");
-                    long temp4 = database.update("lat_plug", cv4, t4, null);
-                }
-            }
+    private void BatteryOptimizationCheck() {
+        if (!isBatteryOptimizationDisabled()) {
+            showBatteryOptimizationDialog();
+        } else {
+            AutoStartCheck();
         }
     }
-    private boolean hasLocationPermissions() {
-        for (String permission : locationPermissions) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED)
-                return false;
+
+    private void AutoStartCheck() {
+        MySharedPreferences autoStartPref = sqlitewraper.getSecureShared("AUTO_START_PREF");
+        boolean isAutoStartConfigured = autoStartPref.getBoolean("IS_AUTOSTART_CONFIGURED", false);
+        if (!isAutoStartConfigured && isOEMDevice()) {
+            AutoStartDialog();
+        } else {
+            startTripLocationTracking();
+        }
+    }
+    private void startTripLocationTracking() {
+        locationManagerGPS();
+        manageHandler(30000);
+        manageHandlerFused(200);
+    }
+
+    private boolean isOEMDevice() {
+        String brand = Build.MANUFACTURER.toLowerCase(Locale.ROOT);
+        return brand.contains("xiaomi") || brand.contains("oppo") || brand.contains("vivo")
+                || brand.contains("huawei") || brand.contains("oneplus") || brand.contains("zte") || brand.contains("htc");
+    }
+    private void AutoStartDialog() {
+        String brand = Build.MANUFACTURER;
+        String message = "Please enable Auto-Start in settings for background trip tracking.";
+        if (brand.equalsIgnoreCase("xiaomi")) {
+            message = "- Go to Phone Settings > Manage Apps > Select App\n- Enable 'Autostart'\n- Under Battery Saver, select 'No Restrictions'";
+        } else if (brand.equalsIgnoreCase("vivo")) {
+            message = "- Go to Settings > Battery > Autostart\n- Allow app to run in background";
+        } else if (brand.equalsIgnoreCase("oppo")) {
+            message = "- Go to Settings > Security / App Management > Auto-launch\n- Turn ON Auto-launch for this app";
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Auto-Start Permission Required")
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("Open Settings", (dialog, which) -> {
+                    dialog.dismiss();
+                    MySharedPreferences autoStartPref = sqlitewraper.getSecureShared("AUTO_START_PREF");
+                    autoStartPref.putBoolean("IS_AUTOSTART_CONFIGURED", true);
+                    autoStartPref.commit();
+                    showAlertDialogAutostartalldevices();
+                })
+//                .setNegativeButton("Cancel", (dialog, which) -> {
+//                    Toast.makeText(this, "Trip cannot start without Auto-Start permission.", Toast.LENGTH_LONG).show();
+//                    finish(); // BLOCK TRIP START
+//                })
+                .show();
+    }
+    private void showBatteryOptimizationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Disable Battery Optimization")
+                .setMessage("Battery optimization must be disabled for this app to ensure location tracking works continuously during your trip.")
+                .setCancelable(false)
+                .setPositiveButton("Open Settings", (dialog, which) -> {
+                    dialog.dismiss();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                        intent.setData(Uri.parse("package:" + getPackageName()));
+                        startActivity(intent);
+                    }
+                })
+//                .setNegativeButton("Cancel", (dialog, which) -> {
+//                    Toast.makeText(this, "Trip cannot start with battery optimization enabled.", Toast.LENGTH_LONG).show();
+//                    finish(); // BLOCK TRIP START
+//                })
+                .show();
+    }
+    private boolean isBatteryOptimizationDisabled() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                return pm.isIgnoringBatteryOptimizations(getPackageName());
+            }
         }
         return true;
     }
-    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private boolean hasLocationPermissions() {
+//        for (String permission : locationPermissions) {
+//            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED)
+//                return false;
+//        }
+//        return true;
+
+        // 1. Check Fine Location (Android 9 / API 28+)
+        boolean hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+        if (!hasFine) return false;
+        // 2. Check Background Location (Android 10+ / API 29+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            boolean hasBackground = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED;
+            if (!hasBackground) return false;
+        }
+        return true;
+    }
+
     public void Locationpermissioncheck()
     {
 //        int bgLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
@@ -1722,6 +1814,42 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
 
     }
+    public boolean isNotificationServiceEnabled(Context context) {
+        String enabledServices = Settings.Secure.getString(context.getContentResolver(), "enabled_notification_listeners");
+        String packageName = context.getPackageName();
+        return enabledServices != null && enabledServices.contains(packageName);
+    }
+    public void requestNotificationaccess() {
+        int NotificationListner = ContextCompat.checkSelfPermission(TripMapUi.this, Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE);
+        boolean NotificationListnerGranted =(NotificationListner == PackageManager.PERMISSION_GRANTED);
+
+        if(!NotificationListnerGranted)
+        {
+            AlertDialog dialog;
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(false);
+            builder.setTitle("Notification access");
+            builder.setMessage("This app requires 'Notification access' permission from System Settings.");
+            builder.setPositiveButton("Allow in Settings", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
+                    startActivity(intent);
+                    // finish();
+                    isnotificationDialog = false;
+                }
+            });
+            if(!isnotificationDialog)
+            {
+                dialog = builder.create();
+                dialog.show();
+                isnotificationDialog = true;
+            }
+
+        }
+
+
+    }
 
     private boolean isMyServiceRunning(Context context, String Myservice) {
         ActivityManager manager = (ActivityManager) context
@@ -1736,9 +1864,125 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         return false;
     }
 
-    @Override
-    public void finish() {
-        super.finish();
-        overridePendingTransition(0, 0);
+    private Location getFinalEndLocation() {
+
+        // First priority: latest accepted location from newfused.java
+        Location newFusedLocation =
+                newfused.getLatestValidLocation();
+
+        if (isValidEndLocation(newFusedLocation)) {
+
+//            Log.d("TRIP_END",
+//                    "Using NEWFUSED latest valid location: " +
+//                            newFusedLocation.getLatitude() + "," +
+//                            newFusedLocation.getLongitude() +
+//                            " accuracy=" +
+//                            newFusedLocation.getAccuracy());
+
+            return newFusedLocation;
+        }
+
+        Location trackMasterLocation =
+                getLastTrackMasterLocation();
+
+        if (trackMasterLocation != null) {
+
+            return trackMasterLocation;
+        }
+
+        return null;
+    }
+    private boolean isValidEndLocation(Location location) {
+
+        if (location == null) {
+            return false;
+        }
+
+        double lat = location.getLatitude();
+        double lon = location.getLongitude();
+        float accuracy = location.getAccuracy();
+
+        if (lat == 0.0 || lon == 0.0) {
+            return false;
+        }
+
+        if (Math.abs(lat) < 0.0001 || Math.abs(lon) < 0.0001) {
+            return false;
+        }
+
+        if (lat < -90.0 || lat > 90.0 ||
+                lon < -180.0 || lon > 180.0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private Location getLastTrackMasterLocation() {
+
+        Cursor cursor = null;
+
+        try {
+
+            cursor = database.rawQuery("SELECT lat, lon, accuracy " + "FROM track_master " + "WHERE lat IS NOT NULL " + "AND lon IS NOT NULL " + "ORDER BY date DESC LIMIT 1", null);
+
+            if (cursor.moveToFirst()) {
+
+                double lat = Double.parseDouble(cursor.getString(0));
+                double lon = Double.parseDouble(cursor.getString(1));
+
+                if (Double.isFinite(lat) &&
+                        Double.isFinite(lon) &&
+                        !(lat == 0.0 && lon == 0.0)) {
+
+                    Location fallback = new Location("track_master");
+
+                    fallback.setLatitude(lat);
+                    fallback.setLongitude(lon);
+
+
+//                    Log.d("TRIP_END_LOCATION",
+//                            "Using TRACK_MASTER fallback: " +
+//                                    lat + "," + lon +
+//                                    " accuracy=" + accuracy);
+
+                    return fallback;
+                }
+            }
+
+        } catch (Exception e) {
+
+            Log.e("TRIP_END_LOCATION",
+                    "Error getting track_master location", e);
+
+        } finally {
+
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isValidLocation(Location location) {
+        if (location == null) {
+            return false;
+        }
+
+        double lat = location.getLatitude();
+        double lon = location.getLongitude();
+        float accuracy = location.getAccuracy();
+
+
+        if (lat == 0.0 && lon == 0.0) {
+            return false;
+        }
+        if (lat < -90.0 || lat > 90.0 || lon < -180.0 || lon > 180.0) {
+            return false;
+        }
+
+
+        return true;
     }
 }

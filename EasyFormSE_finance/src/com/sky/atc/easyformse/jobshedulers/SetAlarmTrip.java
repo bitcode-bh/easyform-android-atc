@@ -106,26 +106,27 @@ public class SetAlarmTrip extends BroadcastReceiver
             }
 
             //hide newfused and activity_recognition code  23-07-2025
-//            boolean checkfused2 = isMyServiceRunning(sqlitewraper.context,
-//                    Activity_recognition.class.getName());
-//            if (!checkfused2) {
-//
-//                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//
-////                Toast.makeText(sqlitewraper.context,"Give Required Location Permission!!",Toast.LENGTH_SHORT).show();
-//
-//                } else {
-//
-//                    if (tripStatus() > 0) {
-//                        Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                            sqlitewraper.context.startForegroundService(i);
-//                        }else {
-//                            sqlitewraper.context.startService(i);
-//                        }
-//                    }
-//                }
-//            }
+            // enbale activity_recognition code  07082026
+            boolean checkfused2 = isMyServiceRunning(sqlitewraper.context,
+                    Activity_recognition.class.getName());
+            if (!checkfused2) {
+
+                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+//                Toast.makeText(sqlitewraper.context,"Give Required Location Permission!!",Toast.LENGTH_SHORT).show();
+
+                } else {
+
+                    if (tripStatus() > 0) {
+                        Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            sqlitewraper.context.startForegroundService(i);
+                        }else {
+                            sqlitewraper.context.startService(i);
+                        }
+                    }
+                }
+            }
 
             Log.d("##SETALARM", "1");
             wl.release();

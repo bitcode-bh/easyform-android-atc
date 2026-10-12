@@ -5,12 +5,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.KeyEvent;
 
+import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
-
-import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 @StringFogIgnore
 public class SafetyVideoOrientationPlugin extends CordovaPlugin {

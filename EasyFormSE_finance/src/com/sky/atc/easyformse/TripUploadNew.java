@@ -615,7 +615,7 @@ public class TripUploadNew {
         Cursor check = database.rawQuery(
                 "select _id,Event_strt,Event_end,Event_type,lat,lon,th_s from Events where Event_strt>="
                         + min_milli + " and Event_strt <=" + max_milli
-                        + " and Event_type IN ('Still','vehicle','ACC','DEACC','speed')", null);
+                        + " and Event_type IN ('Still','vehicle','ACC','DEACC','speed','Call','continuous_driving')", null);
         //'Normal_Deacc','NormalAcc' remove event type as per discuss with sir 03-12-2024
         JSONArray di_n = new JSONArray();
         check.moveToFirst();
@@ -689,7 +689,7 @@ public class TripUploadNew {
         Cursor check = database.rawQuery(
                 "select _id,Event_strt,Event_end,Event_type,lat,lon,th_s,duration,battery from Events where Event_strt>="
                         + min_milli + " and Event_strt <=" + max_milli
-                        + " and Event_type IN ('Gps_outage','Gprs_outage','Phone_outage','App_outage','Service_outage','screen','background','PowerSavingMode')", null);
+                        + " and Event_type IN ('Gps_outage','Gprs_outage','Phone_outage','App_outage','Service_outage','screen','background','PowerSavingMode','Call')", null);
 
         JSONArray di_n = new JSONArray();
         check.moveToFirst();
@@ -858,26 +858,22 @@ public class TripUploadNew {
 //                            SOAP_ACTION_site2);
                     String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, WCFURL, METHOD_NAME_corner2, matchKeyID,null);
 
-                    if (restext != null) {
-                        Log.d("##EndTripSeWebserice", restext);
-                        String trimmed = restext.trim();
-                        String status1 = null;
-                        String message = "";
+                    Log.d("##EndTripSeWebserice", restext);
+                    Log.d("##EndTripSeWebserice", restext);
 
-                        if (trimmed.startsWith("[")) {
-                            JSONArray jsonArray = new JSONArray(trimmed);
-                            if (jsonArray.length() > 0) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                status1 = jsonObject.optString("status", "");
-                                message = jsonObject.optString("message", "");
-                            }
-                        } else if (trimmed.startsWith("{")) {
-                            JSONObject jsonObject = new JSONObject(trimmed);
-                            status1 = jsonObject.optString("status", "");
-                            message = jsonObject.optString("message", "");
+                    JSONArray jsonArray = new JSONArray(restext);
+                    String status1 = null;
+                    String message = "";
+
+                    for (int k1 = 0; k1 < jsonArray.length(); k1++) {
+                        JSONObject jsonObject = jsonArray
+                                .getJSONObject(0);
+
+                        status1 = jsonObject.getString("status");
+                        if (jsonObject.has("message")) {
+                            message = jsonObject.getString("message");
                         }
-
-                        if ("1".equalsIgnoreCase(status1)) {
+                        if (status1.equalsIgnoreCase("1")) {
                             String cnd;
                             cnd = "_id=" + id;
                             ContentValues c_path = new ContentValues();
@@ -885,15 +881,12 @@ public class TripUploadNew {
                             long temp = database.update("lat_plug",
                                     c_path, cnd, null);
                             Log.d("##TripCompleted", String.valueOf(temp));
-                        } else if ("4".equalsIgnoreCase(status1)) {
+                        } else if (status1.equalsIgnoreCase("4")) {
                             Utils.logoutUser(message);
                         } else {
                             k++;
-                            writeLogToFile("Status: " + status1 + " ( " + message + " ) ", METHOD_NAME_corner2, "uploadTrip");
+                            writeLogToFile("Status: " + status1 + " ( " + message + " ) ",METHOD_NAME_corner2,"uploadTrip");
                         }
-                    } else {
-                        k++;
-                        writeLogToFile("Null response from server", METHOD_NAME_corner2, "uploadTrip");
                     }
                 } catch (Exception e) {
                     k++;
@@ -997,35 +990,26 @@ public class TripUploadNew {
                     String data12=data1.toString();
 
                     String restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload(data1, WCFURL, METHOD_NAME_corner13, matchKeyID,null);
-                    if (restext != null) {
-                        String trimmed = restext.trim();
-                        String status1 = null;
-                        String message = "";
+                    JSONArray jsonArray = new JSONArray(restext);
+                    String status1 = null;
+                    String message="";
+                    for (int k1 = 0; k1 < jsonArray.length(); k1++) {
+                        JSONObject jsonObject = jsonArray
+                                .getJSONObject(0);
 
-                        if (trimmed.startsWith("[")) {
-                            JSONArray jsonArray = new JSONArray(trimmed);
-                            if (jsonArray.length() > 0) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                status1 = jsonObject.optString("status", "");
-                                message = jsonObject.optString("message", "");
-                            }
-                        } else if (trimmed.startsWith("{")) {
-                            JSONObject jsonObject = new JSONObject(trimmed);
-                            status1 = jsonObject.optString("status", "");
-                            message = jsonObject.optString("message", "");
+                        status1 = jsonObject.getString("status");
+                        if (jsonObject.has("message")) {
+                            message = jsonObject.getString("message");
                         }
 
-                        if ("1".equalsIgnoreCase(status1)) {
+                        if (status1.equalsIgnoreCase("1")) {
                             Log.d("##milliUpdate", "Pulling Ruuning");
-                        } else if ("4".equalsIgnoreCase(status1)) {
+                        }else if (status1.equalsIgnoreCase("4")) {
                             Utils.logoutUser(message);
-                        } else {
+                        }else {
                             k++;
-                            writeLogToFile("Status: " + status1 + " ( " + message + " ) ", METHOD_NAME_corner13, "uploadTripContinues");
+                            writeLogToFile("Status: "+ status1 + " ( " + message + " ) ",METHOD_NAME_corner13,"uploadTripContinues");
                         }
-                    } else {
-                        k++;
-                        writeLogToFile("Null response from server", METHOD_NAME_corner13, "uploadTripContinues");
                     }
                 } catch (Exception e) {
                     k++;

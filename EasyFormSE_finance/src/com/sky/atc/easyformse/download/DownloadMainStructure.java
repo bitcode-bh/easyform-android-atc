@@ -2983,8 +2983,9 @@ class DownloadMainStructure {
                                 generateNotification(5, null);
                                 d = 2;
                             }
+                            Cursor c4 = null;
+                            Cursor c5 = null;
 
-                            // ===== STATUS 1 =====
                             if (status1.equalsIgnoreCase("1")) {
 
                                 JSONArray innerdata = new JSONArray(message);
@@ -3005,10 +3006,38 @@ class DownloadMainStructure {
                                     String territory = innerdatobj.getString("territory");
                                     String vehicle_type = innerdatobj.getString("vehicle_type");
 
+                                    String call_event_speed_limit = "";
+                                    String fall_detection="";
+                                    String continuous_driving_alert_time="";
+                                    String continuous_driving_reset_alert_time="";
+                                    String threshold_id="";
+                                    if(innerdatobj.has("Threshold_Id"))
+                                    {
+                                        threshold_id = innerdatobj.getString("Threshold_Id");
+                                    }
+                                    if(innerdatobj.has("call_event_speed_limit"))
+                                    {
+                                         call_event_speed_limit = innerdatobj.getString("call_event_speed_limit");
+                                    }
+                                    if(innerdatobj.has("fall_detection"))
+                                    {
+                                         fall_detection = innerdatobj.getString("fall_detection");
+                                    }
+                                    if(innerdatobj.has("continuous_driving_alert_time"))
+                                    {
+                                         continuous_driving_alert_time = innerdatobj.getString("continuous_driving_alert_time");
+                                    }
+                                    if(innerdatobj.has("continuous_driving_reset_alert_time"))
+                                    {
+                                         continuous_driving_reset_alert_time = innerdatobj.getString("continuous_driving_reset_alert_time");
+                                    }
+
+
                                     generateNotification(5, null);
 
                                     ContentValues cv1 = new ContentValues();
                                     cv1.put("speed", speed);
+                                    cv1.put("threshold_id", threshold_id);
                                     cv1.put("millisecond", millisecond);
                                     cv1.put("normal_acc", normal_acc);
                                     cv1.put("normal_deacc", normal_deacc);
@@ -3018,14 +3047,59 @@ class DownloadMainStructure {
                                     cv1.put("speed_violation_time", speed_violation_time);
                                     cv1.put("territory", territory);
                                     cv1.put("vehicle_type", vehicle_type);
+                                    cv1.put("call_event_speed_limit", call_event_speed_limit);
+                                    cv1.put("fall_detection", fall_detection);
+                                    cv1.put("continuous_driving_alert_time", continuous_driving_alert_time);
+                                    cv1.put("continuous_driving_reset_alert_time", continuous_driving_reset_alert_time);
 
-                                    long temp = database.insert("Thresold_New", null, cv1);
-                                    counterThreshold++;
+                                    int thresholdount =0;
+                                    if(!threshold_id.equalsIgnoreCase("")) {
+                                        c4 = database.rawQuery(
+                                                "SELECT threshold_id FROM Thresold_New WHERE threshold_id = " + threshold_id,
+                                                null
+                                        );
+                                        c4.moveToFirst();
+                                        thresholdount = c4.getCount();
+                                    }
+                                    c5 = database.rawQuery(
+                                            "SELECT vehicle_type FROM Thresold_New WHERE vehicle_type = " + "'" + vehicle_type + "'",
+                                            null
+                                    );
+                                    c5.moveToFirst();
+
+                                    // threshold_id is get - recoder update 21-08-2026
+                                    // threshold_id is null = check vehicle_type
+                                    if (thresholdount > 0 )
+                                    {
+                                        database.update(
+                                                "Thresold_New",
+                                                cv1,
+                                                "threshold_id  = " + threshold_id  ,
+                                                null
+                                        );
+
+                                    }
+                                    // vehicle_type is get = recoder update
+                                    // vehicle_type is null = insert new entry
+                                    else if (c5.getCount() > 0) {
+                                        database.update(
+                                                "Thresold_New",
+                                                cv1,
+                                                "vehicle_type  = " + "'" + vehicle_type + "'" ,
+                                                null
+                                        );
+                                    } else {
+                                        long temp = database.insert("Thresold_New", null, cv1);
+                                        counterThreshold++;
+                                    }
+
 
                                     d = 1;
                                 }
 
                                 flagThreshold = 0;
+                                c4.close();
+                                c5.close();
                             }
 
                             // ===== STATUS 5 =====

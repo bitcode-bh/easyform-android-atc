@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+import com.sky.atc.easyformse.trip.TripMapUtils;
 
 //to handle gps status
 @StringFogIgnore
@@ -238,7 +239,7 @@ public class GpsReceiverService extends WakefulIntentService {
                         insert_t(g_ontime, g_offtime, gp_ontime, gp_offtime,
                                 phone_on1, phone_off2, gp_duration, gprs_duration, phone_duration, date);
 
-                            if (!sqlitewraper.isMockAvailable) {
+                            if (TripMapUtils.MOCKLOCATION.equalsIgnoreCase("false")) {
                                 boolean isInserted = DeviceEventsUtils.insertIntoEvents(g_offtime, g_ontime, String.valueOf(gp_duration), "Gps_outage");
 
                                 if (isInserted) {
@@ -435,21 +436,22 @@ public class GpsReceiverService extends WakefulIntentService {
 
             if (isact_track.equalsIgnoreCase("1")) {
                 //hide newfused and activity_recognition code  23-07-2025
-//                boolean check4 = isMyServiceRunning(sqlitewraper.context,
-//                        Activity_recognition.class.getName());
-//                if (check4) {
-//                } else {
-//
-//                    Intent i = new Intent(sqlitewraper.context,
-//                            Activity_recognition.class);
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                        sqlitewraper.context.startForegroundService(i);
-//                    }else {
-//                        sqlitewraper.context.startService(i);
-//                    }
-//
-//
-//                }
+                // enbale activity_recognition code  07082026
+                boolean check4 = isMyServiceRunning(sqlitewraper.context,
+                        Activity_recognition.class.getName());
+                if (check4) {
+                } else {
+
+                    Intent i = new Intent(sqlitewraper.context,
+                            Activity_recognition.class);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        sqlitewraper.context.startForegroundService(i);
+                    }else {
+                        sqlitewraper.context.startService(i);
+                    }
+
+
+                }
             }
 
 

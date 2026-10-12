@@ -410,7 +410,7 @@ public class login_plug implements Runnable {
                                     String user_id = "";
                                     String imageUrl = null;
                                     String filename = null;
-                                    String Emergency_Contact_No;
+                                    //String Emergency_Contact_No;
 
                                     try {
                                         uniqcode = jsonObject.getString("Uniq_Code");
@@ -449,18 +449,18 @@ public class login_plug implements Runnable {
                                                     }
                                                 }
 
-                                                if (questionId.equalsIgnoreCase("4010")) {
-
-                                                    if (jsonObject1.has("ans")) {
+//                                                if (questionId.equalsIgnoreCase("4010")) {
 //
-                                                        JSONArray array = jsonObject1.getJSONArray("ans");
-                                                        Emergency_Contact_No = array.get(0).toString();
-                                                        pref = sqlitewraper.getSecureShared("MyPref");
-                                                        pref.putString("Emergency_Contact_No", Emergency_Contact_No); // Saving string
-                                                        pref.commit();
-
-                                                    }
-                                                }
+//                                                    if (jsonObject1.has("ans")) {
+////
+//                                                        JSONArray array = jsonObject1.getJSONArray("ans");
+//                                                        Emergency_Contact_No = array.get(0).toString();
+//                                                        pref = sqlitewraper.getSecureShared("MyPref");
+//                                                        pref.putString("Emergency_Contact_No", Emergency_Contact_No); // Saving string
+//                                                        pref.commit();
+//
+//                                                    }
+//                                                }
                                             }
 
 
@@ -588,7 +588,7 @@ public class login_plug implements Runnable {
                         lHashMap.put("url", context.getResources().getString(R.string.App_URL) + "/services/");
 
                         lHashMap.put("gps", i); // respond value in key
-
+                        lHashMap.put("Istripruning",DeviceEventsUtils.tripStatus());
                         lHashMap.put("deviceinfo",deviceinfo);
                         ArrayList<JSONObject> list = new ArrayList<JSONObject>();
                         JSONObject json = null;

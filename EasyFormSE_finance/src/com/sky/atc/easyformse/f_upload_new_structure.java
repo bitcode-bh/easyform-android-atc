@@ -191,9 +191,6 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                 b = new B_new();
 
-                // Ensure all pending tasks, logs, videos, and trips are enqueued
-                check_f_and_p_master();
-
                 //task create upload
                 int ser_data = upload_task();
 
@@ -295,8 +292,6 @@ public class f_upload_new_structure extends WakefulIntentService {
                     }
                 }
                 cursorClose(c);
-                // Upload all remaining pending stopped trips in lat_plug
-                uploadAllPendingTrips();
                 //CHECK IF THERE ANY PENDING TASK
                 check_f_and_p_master();
                 generateNotification(7, null, 0, 0);
@@ -487,33 +482,31 @@ public class f_upload_new_structure extends WakefulIntentService {
                 .rawQuery(
                         "select _id,tid from lat_plug where sid=0 and tid=" + tid,
                         null);
-        if (checksid != null) {
-            checksid.moveToFirst();
-            if (checksid.getCount() > 0)
-            {
-                Cursor check_taskmaster = database
-                        .rawQuery(
-                                "SELECT server_task_id FROM task_master WHERE tid=" + tid,
-                                null);
-                if (check_taskmaster != null) {
-                    check_taskmaster.moveToFirst();
-
-                    int server_task_id = 0 ;
-                    if (check_taskmaster.getCount() > 0) {
-                        server_task_id = check_taskmaster.getInt(0);
-                    }
-                    check_taskmaster.close();
-
-                    String t;
-                    t = "tid='" + tid + "'";
-                    ContentValues t_i2 = new ContentValues();
-                    t_i2.put("sid", server_task_id);
-                    long task2 = database.update("lat_plug", t_i2, t,
+        checksid.moveToFirst();
+        if (checksid.getCount() > 0)
+        {
+            Cursor check_taskmaster = database
+                    .rawQuery(
+                            "SELECT server_task_id FROM task_master WHERE tid=" + tid,
                             null);
-                    Log.d("##LatplugUpdateF", String.valueOf(task2) + " SID: " + server_task_id);
-                }
+            check_taskmaster.moveToFirst();
+
+            int server_task_id = 0 ;
+            if (check_taskmaster.getCount() > 0) {
+                server_task_id = check_taskmaster.getInt(0);
             }
-            checksid.close();
+            check_taskmaster.close();
+
+
+            String t;
+            t = "tid='" + tid + "'";
+            ContentValues t_i2 = new ContentValues();
+            t_i2.put("sid", server_task_id);
+            long task2 = database.update("lat_plug", t_i2, t,
+                    null);
+            Log.d("##LatplugUpdateF", String.valueOf(task2) + " SID: " + server_task_id);
+
+
         }
 
         int k = 0;
@@ -586,47 +579,6 @@ public class f_upload_new_structure extends WakefulIntentService {
             k++;
         }
         c2.close();
-        return k;
-    }
-
-    private int uploadAllPendingTrips() {
-        int k = 0;
-        try {
-            // First update any sid from task_master where sid is 0
-            Cursor checksid = database.rawQuery("select distinct tid from lat_plug where sid=0 and issend=0 and trip_shflag=1", null);
-            if (checksid != null) {
-                while (checksid.moveToNext()) {
-                    int tidVal = checksid.getInt(0);
-                    Cursor check_taskmaster = database.rawQuery("SELECT server_task_id FROM task_master WHERE tid=" + tidVal, null);
-                    if (check_taskmaster != null) {
-                        if (check_taskmaster.moveToFirst()) {
-                            int server_task_id = check_taskmaster.getInt(0);
-                            if (server_task_id != 0) {
-                                ContentValues t_i2 = new ContentValues();
-                                t_i2.put("sid", server_task_id);
-                                database.update("lat_plug", t_i2, "tid='" + tidVal + "'", null);
-                                Log.d("##LatplugUpdateF", "Updated SID: " + server_task_id + " for tid: " + tidVal);
-                            }
-                        }
-                        check_taskmaster.close();
-                    }
-                }
-                checksid.close();
-            }
-
-            // Upload all pending stopped trips where sid!=0
-            Cursor c = database.rawQuery(
-                    "select distinct tid from lat_plug where issend=0 and sid!=0 and trip_shflag=1", null);
-            if (c != null) {
-                while (c.moveToNext()) {
-                    int tidVal = c.getInt(0);
-                    k += uploadTrip(tidVal);
-                }
-                c.close();
-            }
-        } catch (Exception e) {
-            LogUtils.writeUploadLogToFile(e.getMessage(), "", "UPLOAD_ALL_PENDING_TRIPS");
-        }
         return k;
     }
 

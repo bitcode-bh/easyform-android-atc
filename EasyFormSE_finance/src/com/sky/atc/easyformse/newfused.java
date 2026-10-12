@@ -14,8 +14,6 @@
 
 package com.sky.atc.easyformse;
 
-import static com.sky.atc.easyformse.DeviceEventsUtils.utcCalculationOffset;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -25,13 +23,12 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -48,11 +45,14 @@ import android.os.SystemClock;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyCallback;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
@@ -70,24 +70,20 @@ import com.sky.atc.easyformse.trip.TripMapUtils;
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
+
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Service providing the guts of the location polling engine. Uses a WakeLock to
@@ -113,7 +109,7 @@ public class newfused extends Service implements LocationListener {
     String lat_check;
     //Editor editor;
     int check = 0;
-
+    private BroadcastReceiver whatsappCallReceiver;
 
     NotificationChannel mChannel = null;
     String CHANNEL_ID = "my_channel_01";
@@ -124,14 +120,49 @@ public class newfused extends Service implements LocationListener {
 
     //New Location Method
     private FusedLocationProviderClient fusedLocationClient;
-    private LocationCallback locationCallback;
+    private static LocationCallback locationCallback;
     private LocationRequest locationRequest;
     /**
      * Lazy-initializes the WakeLock when we first use it. We use a partial
      * WakeLock since we only need the CPU on, not the screen.
      */
 
+    private TelephonyManager telephonyManager;
 
+    private PhoneStateListener phoneStateListener;
+    private TelephonyCallback telephonyCallback;
+
+//    private  boolean callActive = false;
+
+    private  long callStartTime = 0;
+    private  long callEndTime = 0;
+    private Location latestLocation;
+
+    private Location callStartLocation;
+    private Location callEndLocation;
+    private boolean isCallListenerRegistered = false;
+    private int lastCallState = -1;
+
+    private float callStartSpeed = 0f;
+    private float maxSpeedDuringCall = 0f;
+    private long maxSpeedMilli = 0L;
+    private boolean speedViolation ;
+    private boolean callEventInserted = false;
+    private static float CALL_SPEED_LIMIT = 15;
+    private boolean simCallActive = false;
+    private boolean whatsappCallActive = false;
+
+    // Sensor Fusion
+    private SensorManager sensorManager;
+    private Sensor accelerometer, gyroscope;
+    private SensorEventListener sensorListener;
+    private KalmanFilter2D kalmanFilter;
+    private Handler fusionHandler = new Handler(Looper.getMainLooper());
+    private Runnable fusionLoop;
+    private final Queue<IMUSample> imuQueue = new ConcurrentLinkedQueue<>();
+    private Location lastAcceptedLocation = null;
+    private static Location lastvalidfortripend = null;
+    private static final int MAX_IMU_QUEUE_SIZE = 500;
     @SuppressLint("InvalidWakeLockTag")
     synchronized private static PowerManager.WakeLock getLock(Context context) {
         if (lockStatic == null) {
@@ -170,7 +201,9 @@ public class newfused extends Service implements LocationListener {
         //new service updatemilli
         checkServicemilli();
         startServUpdateTask();
-
+        registerCallListener();
+       // registerWhatsAppCallReceiver();
+        initSensorFusion();
         boolean isuploadlastentry = pref.getBoolean("isuploadlastentry",false);
 //        check location and upload in server
         if(!isuploadlastentry) {
@@ -264,7 +297,16 @@ public class newfused extends Service implements LocationListener {
 
 
     private void stopLocationUpdates() {
-        fusedLocationClient.removeLocationUpdates(locationCallback);
+        if (fusedLocationClient != null && locationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
+        if (locationManager != null) {
+            try {
+                locationManager.removeUpdates(newfused.this);
+            } catch (Exception e) {
+                Log.e("NEW_FUSED", "Error removing GPS updates", e);
+            }
+        }
     }
 
     public boolean isMockAvailable(Location location) {
@@ -312,7 +354,94 @@ public class newfused extends Service implements LocationListener {
         // TODO Auto-generated method stub
         super.onDestroy();
         insert("new_fused_stop");
+        stopLocationUpdates();
+        if (timer != null) {
+            timer.cancel();
+        }
+        imuQueue.clear();
         quite();
+        unregisterphonestate();
+        if (whatsappCallReceiver != null) {
+
+            try {
+                unregisterReceiver(whatsappCallReceiver);
+            } catch (Exception e) {
+                Log.e("WHATSAPP_CALL", "Receiver unregister error", e);
+            }
+
+            whatsappCallReceiver = null;
+        }
+
+        if (fusionHandler != null && fusionLoop != null) {
+            fusionHandler.removeCallbacks(fusionLoop);
+        }
+        if (sensorManager != null && sensorListener != null) {
+            sensorManager.unregisterListener(sensorListener);
+        }
+    }
+
+    private void initSensorFusion() {
+        if (sensorManager != null && sensorListener != null) {
+            return; // Prevent duplicate registration on multiple onStartCommand calls
+        }
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        if (sensorManager == null) return;
+        // Use LINEAR_ACCELERATION (gravity removed) if available, otherwise fallback to ACCELEROMETER
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        if (accelerometer == null) {
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        }
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        sensorListener = new SensorEventListener() {
+            private float[] lastAccel = new float[3];
+            private float[] lastGyro = new float[3];
+
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER ||
+                        event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+                    System.arraycopy(event.values, 0, lastAccel, 0, 3);
+                } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+                    System.arraycopy(event.values, 0, lastGyro, 0, 3);
+                }
+                // Prevent memory leak if GPS is off: drop oldest if queue exceeds limit
+                while (imuQueue.size() >= MAX_IMU_QUEUE_SIZE) {
+                    imuQueue.poll();
+                }
+                imuQueue.offer(new IMUSample(lastAccel.clone(), lastGyro.clone(), event.timestamp));
+            }
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+        };
+        if (accelerometer != null) {
+            sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        }
+        if (gyroscope != null) {
+            sensorManager.registerListener(sensorListener, gyroscope, SensorManager.SENSOR_DELAY_FASTEST);
+        }
+    }
+
+    /**
+     * IMU data is used as the Kalman prediction input when a new GPS/Fused
+     * location arrives. We intentionally do NOT generate a synthetic
+     * location every second from the Kalman state. Doing that can create
+     * duplicate/artificial trip locations and incorrect speed calculations.
+     */
+    private void predictKalmanFromPendingImu() {
+        if (kalmanFilter == null || !kalmanFilter.isInitialized() || imuQueue.isEmpty()) {
+            return;
+        }
+        IMUSample sample;
+        while ((sample = imuQueue.poll()) != null) {
+            try {
+                float[] gyroData = (sample.gyro != null && sample.gyro.length == 3) ? sample.gyro : new float[3];
+                if (sample.accel != null && sample.accel.length == 3) {
+                    kalmanFilter.predict(sample.accel, gyroData, sample.timestamp);
+                }
+            } catch (Exception e) {
+                Log.e("KALMAN", "IMU prediction failed", e);
+            }
+        }
     }
 
 
@@ -328,88 +457,298 @@ public class newfused extends Service implements LocationListener {
         }
     }
 
-    //Location Update will get HEre
-    private void onLocationChanged() {
-
+    // Location callback used by the single active Fused Location pipeline.
+    public void onLocationChanged() {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
                     return;
                 }
+
                 for (Location location : locationResult.getLocations()) {
-                    Log.d("##LOCATIONSERVIE", String.valueOf(location.getAccuracy()));
-                    try {
-
-
-                        if (location.getLatitude() == 0.0 && location.getLongitude() == 0.0) {
-                            return;
-                        }
-
-                        if (Math.abs(location.getLatitude()) < 0.0001 &&
-                                Math.abs(location.getLongitude()) < 0.0001) {
-                            return;
-                        }
-
-                        //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
-                        if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
-
-                            //for manual speed calculation
-                            float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(location);
-                            if(manualSpeed != 10000) {
-                                onLocationUpdate(location, manualSpeed);
-                            }
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    processLocation(location);
                 }
             }
         };
     }
-    LocationManager locationManager;
 
-    private void startLocationUpdates() {
-        /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+    /**
+     * Single location processing pipeline:
+     * raw GPS/Fused -> validation -> IMU prediction -> GPS Kalman correction
+     * -> filtered location -> speed calculation -> trip processing.
+     */
+    void processLocation(Location location) {
+        if (location == null) {
             return;
         }
-        fusedLocationClient.requestLocationUpdates(locationRequest,
-                locationCallback,
-                Looper.getMainLooper());*/
 
-        locationManager = (LocationManager) this
-                .getSystemService(Context.LOCATION_SERVICE);
-        ConnectivityManager conMgr = (ConnectivityManager) sqlitewraper.context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        double rawLat = location.getLatitude();
+        double rawLon = location.getLongitude();
+        float accuracy = location.getAccuracy();
 
-        if ((locationManager
-                .isProviderEnabled(LocationManager.GPS_PROVIDER))
-        ) {
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+        try {
+            boolean isMock = isMockAvailable(location);
+            boolean mockLocationEnabled =
+                    TripMapUtils.MOCKLOCATION.equalsIgnoreCase("true");
+
+            if (!mockLocationEnabled && isMock) {
+                Log.d("LOCATION_FILTER", "Rejected mock location");
+                return;
             }
-            // distance between new location and old location > 80 then location entry will be placed in location_log
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 80, this);
+            if (kalmanFilter == null) {
+                kalmanFilter = new KalmanFilter2D();
+            }
 
-        } else {
+            if (isBadTripLocation(location)) {
 
+                return;
+            }
+
+            if (!kalmanFilter.isInitialized()) {
+                kalmanFilter.init(rawLat, rawLon, location.getBearing());
+                imuQueue.clear();
+            } else {
+                predictKalmanFromPendingImu();
+                kalmanFilter.update(location);
+            }
+            Location filteredLocation = new Location(location);
+
+            if (kalmanFilter != null && kalmanFilter.isInitialized()) {
+                double[] pos = kalmanFilter.getPosition();
+
+                if (pos != null && pos.length >= 2 &&
+                        Double.isFinite(pos[0]) &&
+                        Double.isFinite(pos[1]) &&
+                        pos[0] >= -90.0 && pos[0] <= 90.0 &&
+                        pos[1] >= -180.0 && pos[1] <= 180.0 &&
+                        !(pos[0] == 0.0 && pos[1] == 0.0)) {
+
+                    filteredLocation.setLatitude(pos[0]);
+                    filteredLocation.setLongitude(pos[1]);
+                }
+            }
+
+
+            float[] kalmanCorrection = new float[1];
+
+            Location.distanceBetween(
+                    rawLat,
+                    rawLon,
+                    filteredLocation.getLatitude(),
+                    filteredLocation.getLongitude(),
+                    kalmanCorrection
+            );
+
+            // Reject Kalman output if correction is implausibly large (> 100m)
+            // Indicates filter state corruption (e.g., from mock locations)
+            if (kalmanCorrection[0] > 100f) {
+                Log.w("LOCATION_FILTER", "Kalman diverged (" + kalmanCorrection[0] + "m). Resetting.");
+                filteredLocation.setLatitude(rawLat);
+                filteredLocation.setLongitude(rawLon);
+                // Re-initialize filter to clear corrupted state
+                if (kalmanFilter != null) {
+                    kalmanFilter.init(rawLat, rawLon, location.getBearing());
+                    imuQueue.clear();
+                }
+            }
+            // Initialize or update Kalman Filter
+
+
+            lastAcceptedLocation = new Location(filteredLocation);
+            lastvalidfortripend = new Location(filteredLocation); // use for trip end time
+            latestLocation = new Location(filteredLocation);
+            checkCallTimeSpeed(filteredLocation);
+
+
+            float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(filteredLocation);
+            if (manualSpeed != 10000) {
+
+                onLocationUpdate(filteredLocation, manualSpeed);
+            }
+
+
+        } catch (Exception e) {
+            Log.e("LOCATION_FILTER", "Location processing error", e);
+        }
+    }
+
+
+    private boolean isBadTripLocation(Location location) {
+
+        if (location == null) {
+            return true;
+        }
+
+        double lat = location.getLatitude();
+        double lng = location.getLongitude();
+
+        // ---------------------------------------------
+        // Invalid latitude / longitude
+        // ---------------------------------------------
+
+        if (lat == 0.0 || lng == 0.0 || lat < -90.0 || lat > 90.0 || lng < -180.0 ||
+                lng > 180.0) {
+            Log.d(
+                    "LOCATION_FILTER",
+                    "Reject invalid lat/lng"
+            );
+
+            return true;
         }
 
 
+
+        // First location is OK
+        if (lastAcceptedLocation == null) {
+            return false;
+        }
+
+
+        long currentTime = location.getTime();
+
+        long previousTime = lastAcceptedLocation.getTime();
+
+        if (currentTime <= previousTime) {
+            return true;
+        }
+
+        long timeDiff = currentTime - previousTime;
+
+        if (timeDiff <= 0) {
+            return true;
+        }
+
+
+        float[] distance =
+                new float[1];
+
+        Location.distanceBetween(
+                lastAcceptedLocation.getLatitude(),
+                lastAcceptedLocation.getLongitude(),
+                lat,
+                lng,
+                distance
+        );
+
+        float distanceMeters =
+                distance[0];
+
+
+        if (distanceMeters < 3f) {
+
+            Log.d("LOCATION_FILTER",
+                    "Reject duplicate location: " +
+                            distanceMeters +
+                            " m"
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public static Location getLatestValidLocation() {
+
+        if (lastvalidfortripend == null) {
+            return null;
+        }
+
+        return new Location(lastvalidfortripend);
+    }
+
+    LocationManager locationManager;
+
+    @SuppressLint("MissingPermission")
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(
+                        this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+            Log.e("LOCATION", "Location permission not granted");
+            return;
+        }
+
+        if (fusedLocationClient == null || locationCallback == null) {
+            Log.e("LOCATION", "Fused location client/callback is null");
+            return;
+        }
+
+
+        fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+        );
+
+        Log.d("LOCATION", "Fused location updates started");
     }
 
     protected LocationRequest createLocationRequestNew() {
         LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(5000);
+        locationRequest.setInterval(5000);
+        locationRequest.setFastestInterval(2000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setSmallestDisplacement(10);
 
-        locationRequest.setSmallestDisplacement(100);
         return locationRequest;
     }
 
+    private void checkCallTimeSpeed(Location location)
+    {
+        if (whatsappCallActive || simCallActive  )  {
 
+            float currentSpeed = location.getSpeed() ;
+//            Log.d("WHATSAPP_CALL",
+//                    "simCallActive =" + simCallActive +  " whatsappCallActive =" + whatsappCallActive +
+//                             " speedViolation=" + speedViolation +
+//                            " speed=" + currentSpeed);
+//            Log.d("WHATSAPP_CALL", "currentSpeed " + currentSpeed);
+            String vehicaletype = pref.getString("vehicle_type","Private-2W");
+            String call_event_speed_limit = "";
+            android.database.Cursor a_t2 = database
+                    .rawQuery(
+                            "select call_event_speed_limit from Thresold_New WHERE vehicle_type =" + "'" + vehicaletype + "'" , null);
+
+
+            if(a_t2.getCount() > 0)
+            {
+                a_t2.moveToFirst();
+                call_event_speed_limit = a_t2.getString(0);
+                a_t2.close();
+            }
+
+            if(call_event_speed_limit == null || call_event_speed_limit.equalsIgnoreCase("") || call_event_speed_limit.equalsIgnoreCase("null") || call_event_speed_limit.equalsIgnoreCase("0"))
+            {
+                CALL_SPEED_LIMIT = 15 ;  // call speed default is 15 km/h
+            }
+            else {
+                CALL_SPEED_LIMIT = Float.parseFloat(call_event_speed_limit) ;
+            }
+
+            float fact = (float) 18 / 5;
+            float ac_speed = currentSpeed * fact;
+
+            if (ac_speed > CALL_SPEED_LIMIT) {
+                Log.d("CALL", "speedViolation ");
+                speedViolation = true;
+
+            }
+            if (currentSpeed > maxSpeedDuringCall) {
+                maxSpeedDuringCall = currentSpeed;
+                maxSpeedMilli = System.currentTimeMillis();
+            }
+
+
+        }
+    }
     private void onLocationUpdate(Location location, float manualSpeed) {
+
+
 
 
         data d = new data();
@@ -443,6 +782,15 @@ public class newfused extends Service implements LocationListener {
         Double lon = location.getLongitude();
         float sd = (float) location.getAltitude();
 
+        // Gps Speed set //
+        String gps_speed = String.valueOf(location.getSpeed());
+
+        //if manual speed is accurate than use manual speed instead of location provided speed
+        if (manualSpeed != 10000) {
+            location.setSpeed(manualSpeed);
+            Log.d("##MY_SPEED_MANUAL :", String.valueOf(manualSpeed));
+        }
+
         //----- For Testing Purpose---------------//
         float ac_speed = location.getSpeed();
         float fact = (float) ((float) 18 / 5);
@@ -452,12 +800,6 @@ public class newfused extends Service implements LocationListener {
         String timemilli = String.valueOf(System.currentTimeMillis());
 
         Intent loc_change = new Intent(sqlitewraper.context, loc_change.class);
-
-        //if manual speed is accurate than use manual speed instead of location provided speed
-        if (manualSpeed != 10000) {
-            location.setSpeed(manualSpeed);
-            Log.d("##MY_SPEED_MANUAL :", String.valueOf(manualSpeed));
-        }
 
         //  when mock location provider true, trip flag added 1 because fused location pot map not draw properly 07-04-2025
 //        if(location.isFromMockProvider())
@@ -472,6 +814,7 @@ public class newfused extends Service implements LocationListener {
         loc_change.putExtra("address", "");
         loc_change.putExtra("speed", location.getSpeed());
         loc_change.putExtra("time", timemilli);
+        loc_change.putExtra("gps_speed",gps_speed);
 
         //if speed is less than 118 km/h than process the location for further clculations
         if (location.getSpeed() < 33) {
@@ -484,6 +827,7 @@ public class newfused extends Service implements LocationListener {
         i.putExtra("lon", lon);
         i.putExtra("accuracy", location.getAccuracy());
         i.putExtra("speed", location.getSpeed());
+        i.putExtra("gps_speed",gps_speed);
         if (lat_check.equalsIgnoreCase("2")) {
             sqlitewraper.context.sendBroadcast(i);
         }
@@ -499,32 +843,13 @@ public class newfused extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
-        Log.d("##LOCATIONSERVIE", String.valueOf(location.getAccuracy()));
-        try {
-            if (location.getLatitude() == 0.0 && location.getLongitude() == 0.0) {
-                return;
-            }
-
-            if (Math.abs(location.getLatitude()) < 0.0001 &&
-                    Math.abs(location.getLongitude()) < 0.0001) {
-                return;
-            }
-
-            //logic to avoid wrong location based on speed and accuracy(speed limit 118 km/h)
-            if (location.getSpeed() < 33 && location.getAccuracy() <= 45) {
-
-                //for manual speed calculation
-                float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(location);
-
-                if(manualSpeed != 10000) {
-                    onLocationUpdate(location, manualSpeed);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // Kept for LocationListener compatibility. The service now uses the
+        // Fused Location Provider as the single active location source.
+        // If a GPS_PROVIDER callback is delivered by legacy code, process it
+        // through the same single pipeline instead of duplicating logic.
+        processLocation(location);
     }
+
     @Override
     public void onProviderDisabled(String provider) {
     }
@@ -658,5 +983,548 @@ public class newfused extends Service implements LocationListener {
             }
         }
         return false;
+    }
+
+    @SuppressLint("MissingPermission")
+    private void registerCallListener() {
+
+        if (isCallListenerRegistered) {
+            Log.d("CALL", "Listener already registered");
+            return;
+        }
+
+
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+
+        if (telephonyManager == null)
+            return;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+            telephonyCallback = new MyTelephonyCallback();
+
+            telephonyManager.registerTelephonyCallback(getMainExecutor(), telephonyCallback);
+
+        } else {
+
+            phoneStateListener =
+                    new PhoneStateListener() {
+
+                        @Override
+                        public void onCallStateChanged(int state,
+                                                       String phoneNumber) {
+
+                            handleCallState(state);
+
+                        }
+                    };
+
+            telephonyManager.listen(
+                    phoneStateListener,
+                    PhoneStateListener.LISTEN_CALL_STATE);
+
+        }
+
+        isCallListenerRegistered = true;
+
+    }
+    private  boolean isTripRunning() {
+
+        try {
+
+            Cursor tripCursor = database.rawQuery(
+                    "select * from lat_plug where trip_status = 0",
+                    null);
+
+            boolean running = tripCursor.getCount() > 0;
+
+            tripCursor.close();
+
+            return running;
+
+        } catch (Exception e) {
+
+            return false;
+        }
+    }
+
+    public  void handleCallState(int state) {
+        Log.e("CALL_DEBUG", "State = " + state);
+        if (state == lastCallState) {
+            return;
+        }
+
+        lastCallState = state;
+
+        if (!isTripRunning())
+            return;
+
+        switch (state) {
+
+            case TelephonyManager.CALL_STATE_RINGING:
+
+                Log.d("CALL", "Incoming Call");
+
+                break;
+
+            case TelephonyManager.CALL_STATE_OFFHOOK:
+
+                if (!simCallActive) {
+
+                    simCallActive = true;
+
+                    callStartTime = System.currentTimeMillis();
+                    callEventInserted = false;
+                    speedViolation = false;
+                    maxSpeedDuringCall = 0f;
+                    maxSpeedMilli = 0L;
+
+                    if (latestLocation != null) {
+                        callStartLocation = new Location(latestLocation);
+                       // callStartSpeed = callStartLocation.getSpeed();
+//                        Log.d("CALL", "Start Time : " + callStartTime);
+//                        Log.d("CALL", "Start Lat : " + callStartLocation.getLatitude());
+//                        Log.d("CALL", "Start Lng : " + callStartLocation.getLongitude());
+//                        Log.d("CALL", "callStartSpeed : " + callStartSpeed);
+                    }
+
+                }
+
+                break;
+
+            case TelephonyManager.CALL_STATE_IDLE:
+
+                if (simCallActive) {
+
+                    simCallActive = false;
+
+                    callEndTime = System.currentTimeMillis();
+
+                    if (latestLocation != null) {
+                        callEndLocation = new Location(latestLocation);
+
+//                        Log.d("CALL", "End Time : " + callEndTime);
+//                        Log.d("CALL", "End Lat : " + callEndLocation.getLatitude());
+//                        Log.d("CALL", "End Lng : " + callEndLocation.getLongitude());
+                    }
+                   // Log.d("CALL_DEBUG", "speedViolation at IDLE = " + speedViolation);
+                    if (speedViolation && !callEventInserted)
+                    {
+                        long duration = (callEndTime - callStartTime) ;
+
+//                    Log.d("CALL", "Duration : " + duration + " sec");
+                        callEventInserted = true;
+                        if (callStartLocation != null &&
+                                callEndLocation != null) {
+
+                            float meters =
+                                    callStartLocation.distanceTo(callEndLocation);
+                            double  distanceKm  = meters / 1000.0;
+                        }
+
+                         calleventinsert(
+                                    callStartTime,
+                                    String.valueOf(callEndTime),
+                                    String.valueOf(duration),
+                                    callEndLocation);
+
+//                            Log.d("CALL","Start Speed : " + callStartSpeed);
+//                            Log.d("CALL","Max Speed : " + maxSpeedDuringCall);
+//                            Log.d("CALL","Max Speed Time : " + maxSpeedMilli);
+//
+//                            Log.d("CALL", "Distance : " + distanceKm  + " KM");
+
+
+                        resetcalldata();
+                        }
+                        else {
+
+                            Log.d("CALL","No speed violation during call.");
+                        }
+
+
+
+                }
+
+                break;
+        }
+
+    }
+
+ private void resetcalldata()
+ {
+     simCallActive = false;
+     speedViolation = false;
+
+     callStartLocation = null;
+     callEndLocation = null;
+
+     callStartTime = 0;
+     callEndTime = 0;
+
+     maxSpeedDuringCall = 0;
+     maxSpeedMilli = 0;
+
+     lastCallState = -1;
+ }
+
+    private boolean calleventinsert(long callstarttime, String callendtime, String duration,Location callEndLocation)
+    {
+        try{
+            long currentTime = System.currentTimeMillis();
+            ContentValues c = new ContentValues();
+            c.put("username", d.getusername());
+            c.put("Event_type", "Call");
+            c.put("is_send", "0");
+            c.put("lat", callEndLocation.getLatitude());
+            c.put("lon", callEndLocation.getLongitude());
+            //New added Code
+            c.put("th_s", "Call");
+            c.put("battery", DeviceEventsUtils.getBatteryInfo());
+            c.put("timezone", DeviceEventsUtils.getTimeZone());
+            c.put("utcstart", DeviceEventsUtils.utcCalculationOffset(callstarttime));
+            c.put("utcend", DeviceEventsUtils.utcCalculationOffset(currentTime));
+            c.put("imei", DeviceEventsUtils.getLoginDetails().get(1));
+            c.put("appid", DeviceEventsUtils.getLoginDetails().get(2));
+            c.put("userid", DeviceEventsUtils.getLoginDetails().get(0));
+            c.put("Event_strt", callstarttime);
+            c.put("Event_end", currentTime);
+            c.put("duration", duration);
+
+            JSONObject maxViolation = new JSONObject();
+//            maxViolation.put("callStartSpeed", callStartSpeed);
+            maxViolation.put("maxSpeedDuringCall", maxSpeedDuringCall);
+            maxViolation.put("maxSpeedTime", maxSpeedMilli);
+
+            c.put("maxviolation",maxViolation.toString());
+
+            String tid = gettid();
+
+            c.put("tid",tid);
+
+//        Log.d("##SPEED_FINALDETECT", String.valueOf(ac_speed));
+            long temp = database.insert("Events", null, c);
+            if (temp > 0) {
+                Intent z_n12 = new Intent(sqlitewraper.context, Event.class);
+                WakefulIntentService.sendWakefulWork(sqlitewraper.context, z_n12);
+                return true;
+
+            }
+            else {
+                return false;
+            }
+
+        }
+        catch (Exception e)
+        {
+            Log.d("Exception",e.toString());
+        }
+        return false;
+    }
+
+    public  String gettid(){
+
+        android.database.Cursor tripflag = database.rawQuery("select tid from lat_plug where trip_status = 0", null);
+        tripflag.moveToLast();
+        int tripflagCount = tripflag.getCount();
+
+        String tid = "0";
+
+        if (tripflagCount>0){
+            tid = tripflag.getString(0);
+        }
+
+        tripflag.close();
+        return tid;
+    }
+    private void unregisterphonestate()
+    {
+        if (telephonyManager != null) {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+                if (telephonyCallback != null) {
+                    telephonyManager.unregisterTelephonyCallback(telephonyCallback);
+                }
+
+            } else {
+
+                if (phoneStateListener != null) {
+                    telephonyManager.listen(phoneStateListener,
+                            PhoneStateListener.LISTEN_NONE);
+                }
+            }
+        }
+
+        isCallListenerRegistered = false;
+        lastCallState = -1;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private  class MyTelephonyCallback
+            extends TelephonyCallback
+            implements TelephonyCallback.CallStateListener {
+
+        @Override
+        public void onCallStateChanged(int state) {
+            Log.e("CALL_STATE", "TelephonyCallback state = " + state);
+            handleCallState(state);
+
+        }
+    }
+
+    @SuppressLint("WrongConstant")
+    private void registerWhatsAppCallReceiver() {
+
+        if (whatsappCallReceiver != null) {
+            return;
+        }
+
+        whatsappCallReceiver =
+                new BroadcastReceiver() {
+
+                    @Override
+                    public void onReceive(
+                            Context context,
+                            Intent intent) {
+
+                        if (intent == null) {
+                            return;
+                        }
+
+                        String action = intent.getAction();
+                        Log.d("WHATSAPP_CALL",
+                                "action = "
+                                        + action);
+                        if (VoipNotificationService.ACTION_WHATSAPP_CALL.equals(action)) {
+                            String state = intent.getStringExtra(VoipNotificationService.EXTRA_CALL_STATE);
+
+                            Log.d("WHATSAPP_CALL",
+                                    "newfused received = "
+                                            + state);
+
+                            if (VoipNotificationService.CALL_STARTED.equals(state)) {
+
+                                handleWhatsAppCallStart();
+
+                            } else if (VoipNotificationService.CALL_ENDED.equals(state)) {
+
+                                handleWhatsAppCallEnd();
+                            }
+                        }
+
+                        if (VoipNotificationService.ACTION_Teams_CALL.equals(action)) {
+                            String state = intent.getStringExtra(VoipNotificationService.EXTRA_CALL_STATE);
+
+                            Log.d("WHATSAPP_CALL",
+                                    "newfused received = "
+                                            + state);
+
+                            if (VoipNotificationService
+                                    .CALL_STARTED
+                                    .equals(state)) {
+
+                                handleWhatsAppCallStart();
+
+                            } else if (VoipNotificationService
+                                    .CALL_ENDED
+                                    .equals(state)) {
+
+                                handleWhatsAppCallEnd();
+                            }
+                        }
+
+
+
+
+                    }
+                };
+
+        IntentFilter filter = new IntentFilter(VoipNotificationService.ACTION_WHATSAPP_CALL);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            registerReceiver(whatsappCallReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+
+        } else {
+
+            registerReceiver(whatsappCallReceiver, filter);
+        }
+
+//        Log.d("WHATSAPP_CALL",
+//                "Receiver registered");
+    }
+
+    private void handleWhatsAppCallStart() {
+
+        if (!isTripRunning()) {
+
+            Log.d("WHATSAPP_CALL", "Trip not running - ignore START");
+
+            return;
+        }
+
+        if (whatsappCallActive) {
+
+            Log.d("WHATSAPP_CALL", "Call already active - ignore START");
+
+            return;
+        }
+
+        whatsappCallActive = true;
+
+        callStartTime = System.currentTimeMillis();
+
+        callEndTime = 0;
+
+        speedViolation = false;
+
+        maxSpeedDuringCall = 0f;
+
+        maxSpeedMilli = 0L;
+
+        callStartLocation = null;
+
+        callEndLocation = null;
+
+        if (latestLocation != null) {
+
+            callStartLocation =
+                    new Location(latestLocation);
+        }
+
+        Log.d("WHATSAPP_CALL", "START");
+
+        Log.d("WHATSAPP_CALL", "Start Time = " + callStartTime);
+
+        if (callStartLocation != null) {
+
+            Log.d("WHATSAPP_CALL", "Start Lat = " + callStartLocation.getLatitude());
+
+            Log.d("WHATSAPP_CALL", "Start Lng = " + callStartLocation.getLongitude());
+
+            Log.d("WHATSAPP_CALL", "Start Speed = " + callStartLocation.getSpeed());
+        }
+    }
+
+    private void handleWhatsAppCallEnd() {
+
+        if (!whatsappCallActive) {
+
+            Log.d("WHATSAPP_CALL", "No active call - ignore END");
+
+            return;
+        }
+
+        callEndTime = System.currentTimeMillis();
+
+        if (latestLocation != null) {
+
+            callEndLocation = new Location(latestLocation);
+        }
+
+        Log.d("WHATSAPP_CALL", "END");
+
+        Log.d("WHATSAPP_CALL", "End Time = " + callEndTime);
+
+        Log.d("WHATSAPP_CALL", "speedViolation = " + speedViolation);
+
+        /*
+         * Insert ONLY if speed exceeded
+         * the configured call speed limit.
+         */
+        if (speedViolation
+                && callStartLocation != null
+                && callEndLocation != null) {
+
+            long duration = callEndTime - callStartTime;
+
+            float meters = callStartLocation.distanceTo(callEndLocation);
+
+            double distanceKm = meters / 1000.0;
+
+            Log.d("WHATSAPP_CALL", "Duration = " + duration);
+
+            //Log.d("WHATSAPP_CALL", "Distance = " + distanceKm + " KM");
+
+            boolean inserted = calleventinsert(callStartTime, String.valueOf(callEndTime), String.valueOf(duration), callEndLocation);
+
+            Log.d("WHATSAPP_CALL", "Event inserted = " + inserted);
+        } else {
+
+            Log.d("WHATSAPP_CALL", "No speed violation - no event");
+        }
+
+        resetWhatsAppCallData();
+    }
+
+    private void resetWhatsAppCallData() {
+
+        whatsappCallActive = false;
+
+        speedViolation = false;
+
+        callStartTime = 0L;
+
+        callEndTime = 0L;
+
+        callStartLocation = null;
+
+        callEndLocation = null;
+
+        maxSpeedDuringCall = 0f;
+
+        maxSpeedMilli = 0L;
+    }
+
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+
+        try {
+            boolean isTripRunning = isTripRunning();
+
+            if (isTripRunning ) {
+                scheduleServiceRestart();
+            }
+        } catch (Exception e) {
+            Log.e("NEWFUSED", "Error in onTaskRemoved auto-restart: " + e.getMessage());
+        }
+    }
+
+    private void scheduleServiceRestart() {
+        Intent restartServiceIntent = new Intent(getApplicationContext(), ServiceRestarter.class);
+
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+
+        PendingIntent restartServicePendingIntent = PendingIntent.getBroadcast(
+                getApplicationContext(),
+                1,
+                restartServiceIntent,
+                flags
+        );
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager != null) {
+            long triggerAtMillis = SystemClock.elapsedRealtime() + (15 * 60 * 1000);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        triggerAtMillis,
+                        restartServicePendingIntent
+                );
+            } else {
+                alarmManager.setExact(
+                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        triggerAtMillis,
+                        restartServicePendingIntent
+                );
+            }
+        }
     }
 }

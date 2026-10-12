@@ -25,7 +25,7 @@ import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 public class MySQLiteHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "location.db";
-    private static final int DATABASE_VERSION = 76;
+    private static final int DATABASE_VERSION = 78;
     private static final String DATABASE_CREATE0 = " CREATE TABLE Login_Master (username TEXT,password TEXT, u_c TEXT, imei TEXT, company_id INTEGER,user_id INTEGER,appid TEXT,servermilli TEXT,devicetype TEXT,appversion TEXT,main_milli,sub_milli,main_id,sub_id) ;";
 
     // Database creation sql statement
@@ -40,7 +40,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_CREATE42 = " CREATE TABLE User_Define_Flow_Master(f_id INTEGER PRIMARY KEY AUTOINCREMENT,id INTEGER,rollid INTEGER,flow_name TEXT,flow_name1 TEXT,type TEXT,flow_id INTEGER,p_id INTEGER,level_position INTEGER,data TEXT,company_id INTEGER,millisecond LONG,isflag INTEGER,main_sid TEXT,task_millisecond LONG,sub_sid TEXT,sub_task_millisecond LONG,main_que_id TEXT,main_que_millisecond LONG,sub_que_id TEXT,sub_que_millisecond LONG,matchcondition TEXT,is_delete TEXT, language TEXT);";
     private static final String DATABASE_CREATE29 = " CREATE TABLE p_master(pid INTEGER PRIMARY KEY AUTOINCREMENT,tid INTEGER, que_id INTEGER, checksheetid INTEGER, p_name TEXT,p_url TEXT,p_key TEXT,p_value TEXT,p_type TEXT,flag TEXT,Ph_id TEXT,it_id TEXT,millisecond TEXT,match_temp_id TEXT DEFAULT 0,que_name TEXT,ai_photo_response TEXT);";
     private static final String DATABASE_CREATE30 = " CREATE TABLE f_master(fid INTEGER PRIMARY KEY AUTOINCREMENT,c_id INTEGER,c_type INTEGER,tid INTEGER,f_name TEXT,f_data TEXT,f_key TEXT,f_value TEXT,f_type TEXT,flag TEXT,step TEXT, lat TEXT, long TEXT, millisecond TEXT,match_temp_id TEXT DEFAULT 0);";
-    private static final String DATABASE_CREATE31 = " CREATE TABLE track_master(_id INTEGER PRIMARY KEY,cellid TEXT,lac TEXT,c_lat TEXT,c_lon TEXT,date TEXT,date_s TEXT,c_accuracy TEXT,provider Text,IS_SEND NUMERIC,IS_LOC NUMERIC,filename TEXT,address TEXT,lat TEXT,lon TEXT,accuracy  TEXT,username TEXT,speed TEXT,tripflag TEXT,locationtime TEXT,waypoint TEXT,waypoint_type TEXT);";
+    private static final String DATABASE_CREATE31 = " CREATE TABLE track_master(_id INTEGER PRIMARY KEY,cellid TEXT,lac TEXT,c_lat TEXT,c_lon TEXT,date TEXT,date_s TEXT,c_accuracy TEXT,provider Text,IS_SEND NUMERIC,IS_LOC NUMERIC,filename TEXT,address TEXT,lat TEXT,lon TEXT,accuracy  TEXT,username TEXT,speed TEXT,tripflag TEXT,locationtime TEXT,waypoint TEXT,waypoint_type TEXT,gps_speed TEXT);";
     private static final String DATABASE_CREATE34 = " CREATE TABLE track_master_new(_id INTEGER PRIMARY KEY,cellid TEXT,lac TEXT,c_lat TEXT,c_lon TEXT,date TEXT,date_s TEXT,c_accuracy TEXT,provider Text,IS_SEND NUMERIC,IS_LOC NUMERIC,filename TEXT,address TEXT,lat TEXT,lon TEXT,accuracy TEXT,username TEXT,speed TEXT);";
     private static final String DATABASE_CREATE33 = " CREATE TABLE task_master_history(tid_n INTEGER PRIMARY KEY AUTOINCREMENT,tid INTEGER,p_tid INTEGER,p_server_task_id INTEGER,task_id TEXT,server_task_id INTEGER,flag TEXT,user_id INTEGER,username TEXT,rate FLOAT,siteid TEXT,site_flag TEXT,server_task_flag TEXT,site_name TEXT,site_address TEXT,percentage FLOAT,survey_date TEXT,lat FLOAT,long FLOAT,inspect_count INTEGER,checksheetid INTEGER,height FLOAT,display_siteid TEXT,step INTEGER,status INTEGER,upload_date TEXT,updateddate TEXT,millisecond TEXT, end_of_date TEXT, data TEXT,tower_type TEXT,moduleid TEXT,module_name TEXT,moduledef TEXT,srnumber TEXT, global_var TEXT,Dynamic_Globalvar TEXT,punch_flag TEXT, in_ms TEXT,out_ms TEXT,duration TEXT,is_delete_photo TEXT,survey_ms TEXT,is_delete_log TEXT,initialstatus TEXT,edit_global_var TEXT,is_delete_sub TEXT,list_html TEXT,islogdown TEXT DEFAULT 0,que_milli TEXT DEFAULT 0,que_id TEXT DEFAULT 0,edit_flag TEXT DEFAULT 0,p_udf_id TEXT DEFAULT 0,match_temp_id TEXT DEFAULT 0,entry_type TEXT DEFAULT 0,local_milli TEXT DEFAULT 0,role_id TEXT DEFAULT 0,old_status INTEGER);";
     private static final String DATABASE_CREATE32 = " CREATE TABLE refrence_master(n_lat TEXT,n_lon TEXT,accuracy  TEXT);";
@@ -71,7 +71,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_CREATE49 = " CREATE TABLE delete_old_task (id INTEGER PRIMARY KEY AUTOINCREMENT,udf_id INTEGER,role_id INTEGER,flow_id INTEGER,allowstatus TEXT,isoffline TEXT);";
     private static final String DATABASE_CREATE50 = " CREATE TABLE meterreading (id INTEGER PRIMARY KEY AUTOINCREMENT,detectedtext TEXT,sid TEXT,checksheetid TEXT,queid TEXT,detectiontype TEXT,imgpath TEXT,orpath TEXT,Unique_id TEXT,hasResponse INTEGER);";
     private static final String DATABASE_CREATE51 = "CREATE TABLE deleted_task (id INTEGER PRIMARY KEY AUTOINCREMENT,tid INTEGER,server_task_id INTEGER,dataTime TEXT);";
-    private static final String DATABASE_CREATE52 = " CREATE TABLE Thresold_New(_id INTEGER PRIMARY KEY AUTOINCREMENT,threshold_id INTEGER,speed text,normal_acc text,normal_deacc TEXT,hard_acc TEXT,hard_deacc TEXT,gap_milli TEXT,speed_violation_time TEXT ,territory TEXT ,vehicle_type TEXT ,millisecond TEXT);"; // p_id,s_id,path,o_name,name
+    private static final String DATABASE_CREATE52 = " CREATE TABLE Thresold_New(_id INTEGER PRIMARY KEY AUTOINCREMENT,threshold_id INTEGER,speed text,normal_acc text,normal_deacc TEXT,hard_acc TEXT,hard_deacc TEXT,gap_milli TEXT,speed_violation_time TEXT ,territory TEXT ,vehicle_type TEXT ,millisecond TEXT,call_event_speed_limit TEXT,fall_detection TEXT,continuous_driving_alert_time TEXT, continuous_driving_reset_alert_time TEXT);"; // p_id,s_id,path,o_name,name
 
     private static final String DATABASE_CREATE53 = " CREATE TABLE download_live_url(_id INTEGER PRIMARY KEY AUTOINCREMENT,video_url_id INTEGER,live_url text,download_url_path text);";
 
@@ -732,6 +732,34 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
         }
 
+        if (oldVersion < 77) {
+
+            if (!isColumnExists(database, "Thresold_New", "call_event_speed_limit")) {
+                database.execSQL("ALTER TABLE Thresold_New ADD COLUMN call_event_speed_limit TEXT");
+            }
+
+            if (!isColumnExists(database, "Thresold_New", "fall_detection")) {
+                database.execSQL("ALTER TABLE Thresold_New ADD COLUMN fall_detection TEXT");
+            }
+
+            if (!isColumnExists(database, "Thresold_New", "continuous_driving_alert_time")) {
+                database.execSQL("ALTER TABLE Thresold_New ADD COLUMN continuous_driving_alert_time TEXT");
+            }
+
+            if (!isColumnExists(database, "Thresold_New", "continuous_driving_reset_alert_time")) {
+                database.execSQL("ALTER TABLE Thresold_New ADD COLUMN continuous_driving_reset_alert_time TEXT");
+            }
+        }
+        if(oldVersion < 78)
+        {
+            boolean columnExists = isColumnExists(database, "track_master", "gps_speed");
+            if (columnExists) {
+                Log.d("columnExists", String.valueOf(columnExists));
+            } else {
+                database.execSQL("ALTER TABLE track_master ADD COLUMN gps_speed TEXT");
+            }
+
+        }
     }
 
 

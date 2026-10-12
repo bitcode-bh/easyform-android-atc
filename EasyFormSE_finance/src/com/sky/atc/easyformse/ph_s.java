@@ -75,7 +75,7 @@ import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.datautils.OnHomePressedListener;
 import com.sky.atc.easyformse.geofencenew.GeoFenceDraw;
 import com.sky.atc.easyformse.location.FakeLocationUtils;
-import com.sky.atc.easyformse.sensordetection.SafetyDetectionService;
+
 import com.sky.atc.easyformse.trip.FloatingBubbleService;
 import com.sky.atc.easyformse.trip.LocationOutageUtils;
 import com.sky.atc.easyformse.trip.ServiceOutage;
@@ -396,15 +396,15 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         stopService(i);
                     }
 
-                    if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
-                    {
-                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                                SafetyDetectionService.class.getName());
-                        if (check12) {
-                            Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
-                            sqlitewraper.context.stopService(mIntent1);
-                        }
-                    }
+//                    if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
+//                    {
+//                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
+//                                SafetyDetectionService.class.getName());
+//                        if (check12) {
+//                            Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
+//                            sqlitewraper.context.stopService(mIntent1);
+//                        }
+//                    }
 //                    hide newfused and activity_recognition code  23-07-2025
 
 //                    boolean check = isMyServiceRunning(sqlitewraper.context,
@@ -413,12 +413,13 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 //                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
 //                        stopService(i);
 //                    }
-//                    boolean checkActivity_recognition = isMyServiceRunning(sqlitewraper.context,
-//                            Activity_recognition.class.getName());
-//                    if (checkActivity_recognition) {
-//                        Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
-//                        stopService(i);
-//                    }
+                    // enable activity_recognition code  07082026
+                    boolean checkActivity_recognition = isMyServiceRunning(sqlitewraper.context,
+                            Activity_recognition.class.getName());
+                    if (checkActivity_recognition) {
+                        Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
+                        stopService(i);
+                    }
 
                     pref = sqlitewraper.getSecureShared("MyPref");
                     pref.putBoolean("isuploadlastentry", false); // Saving string
@@ -828,13 +829,13 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                 Intent i = new Intent(sqlitewraper.context, newfused.class);
                 sqlitewraper.context.startService(i);
             }
-
-//            boolean check3 = isMyServiceRunning(sqlitewraper.context,
-//                    Activity_recognition.class.getName());
-//            if (!check3) {
-//                Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
-//                sqlitewraper.context.startService(i);
-//            }
+            // enbale activity_recognition code  07082026
+            boolean check3 = isMyServiceRunning(sqlitewraper.context,
+                    Activity_recognition.class.getName());
+            if (!check3) {
+                Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
+                sqlitewraper.context.startService(i);
+            }
         }
     }
 
