@@ -156,31 +156,40 @@ function lms_dashboard_module_key(rec) {
     return null;
 }
 
-// A module is a completion only once the module itself reads 100%; a module
-// with some lesson quizzes submitted is still in progress. The module listing
-// carries no completion date, so the day of its latest quiz submission (the
-// one that finished it) stands in for one. Returns {modKey: Date}.
-function lms_dashboard_completed_modules() {
+// The Modules chart is an activity trend: one tick per lesson on the day its
+// quiz was submitted. A lesson resubmitted later counts once, on its latest
+// day. (Whole modules finish too rarely to make a daily trend, and a module
+// with some lessons done is not a completed module, so neither is used here.)
+// Returns {"<module>/<skill>": Date}.
+function lms_dashboard_lesson_days() {
     var latest = {};
     (dashboard_kpi_data || []).forEach(function (rec) {
         var d = lms_parse_submitted_date(rec.SubmittedDate);
         if (!d) return;
         var modKey = lms_dashboard_module_key(rec);
         if (!modKey || !lms_is_active_dashboard_module(modKey)) return;
-        if (!latest[modKey] || d > latest[modKey]) latest[modKey] = d;
+        if (rec.Skill_Id == null || rec.Skill_Id === '') return;
+        var key = modKey + '/' + rec.Skill_Id;
+        if (!latest[key] || d > latest[key]) latest[key] = d;
     });
-    var done = {};
-    Object.keys(latest).forEach(function (modKey) {
-        var mod = (typeof lms_get_module_record_by_id === 'function') ? lms_get_module_record_by_id(modKey) : null;
-        if (mod && Number(mod.Progress) >= 100) done[modKey] = latest[modKey];
+    return latest;
+}
+
+// Lessons done / lessons assigned across the active modules, straight from the
+// module listing (the same SubmitedSkill / TotalSkill the module cards show).
+function lms_dashboard_lesson_totals() {
+    var done = 0, total = 0;
+    ((typeof safety_module_data !== 'undefined' && safety_module_data) ? safety_module_data : []).forEach(function (m) {
+        done += Number(m.SubmitedSkill) || 0;
+        total += Number(m.TotalSkill) || 0;
     });
-    return done;
+    return { done: done, total: total };
 }
 
 // Shared by the Modules chart AND its KPI cards so the two can never disagree —
 // both read the same day-bucketed dashboard_kpi_data over the same range.
-// Completions count each finished module once, on its completion day (see
-// lms_dashboard_completed_modules); scores still bucket by submission day.
+// The count is lessons completed that day (see lms_dashboard_lesson_days);
+// scores still bucket by submission day.
 function lms_build_module_buckets(range) {
     var buckets = {};
     var cursor = new Date(range.start);
@@ -212,41 +221,33 @@ function lms_build_module_buckets(range) {
             b.scoreCount++;
         });
     });
-    var completed = lms_dashboard_completed_modules();
-    Object.keys(completed).forEach(function (modKey) {
-        var b = buckets[lms_date_key(completed[modKey])];
+    var lessonDays = lms_dashboard_lesson_days();
+    Object.keys(lessonDays).forEach(function (key) {
+        var b = buckets[lms_date_key(lessonDays[key])];
         if (b) b.count++;
     });
     return buckets;
 }
 
-// Totals for the CURRENT Week/Month/Custom range — same numbers the
-// Completed/Avg score/Watch time cards show, so they always match whatever
-// the chart is plotting for that same period.
+// The four cards under the chart are the segment's totals: they do not follow
+// the Week/Month/Custom range. The chart above them is the part that shows
+// activity by day.
 function lms_compute_module_range_totals() {
-    var range = lms_trend_range_dates();
-    var completed = lms_dashboard_completed_modules();
-    var completions = 0;
-    Object.keys(completed).forEach(function (modKey) {
-        var d = completed[modKey];
-        if (d >= range.start && d <= range.end) completions++;
-    });
+    var lessons = lms_dashboard_lesson_totals();
 
-    // Same Score/TotalQuestion average as the Modules tab header — not a
-    // range-filtered lesson Achieve_Percentage rollup from dashboard rows.
+    // Same Score/TotalQuestion average as the Modules tab header.
     var moduleKpi = (typeof lms_compute_completion_kpi === 'function' && typeof safety_module_data !== 'undefined')
         ? lms_compute_completion_kpi(safety_module_data)
         : { avgScorePct: 0 };
 
-    // Seconds actually played inside the selected range, as measured on this
-    // device. The server's Watch_Video_Time is a playback position with no
-    // date, so it cannot say how long was watched or when.
-    var watchSeconds = (typeof lms_sum_active_modules_watch_seconds_in_range === 'function')
-        ? lms_sum_active_modules_watch_seconds_in_range(range)
+    // Same watched total as the Modules tab header and the module cards.
+    var watchSeconds = (typeof lms_sum_active_modules_watch_seconds === 'function')
+        ? lms_sum_active_modules_watch_seconds()
         : 0;
 
     return {
-        completions: completions,
+        lessonsDone: lessons.done,
+        lessonsTotal: lessons.total,
         avgScorePct: moduleKpi.avgScorePct,
         watchSeconds: watchSeconds
     };
@@ -372,7 +373,7 @@ function render_lms_trend_chart() {
     var yMax;
     if (lms_module_chart_metric === 'score') { seriesName = 'Score'; tooltipSuffix = '%'; yMax = 100; }
     else if (lms_module_chart_metric === 'watchtime') { seriesName = 'Watch time (min)'; tooltipSuffix = ' min'; }
-    else { seriesName = 'Completions'; }
+    else { seriesName = 'Lessons completed'; }
 
     var rangeLabelEl = document.getElementById('lms_trend_range_label');
     if (rangeLabelEl) { rangeLabelEl.textContent = lms_trend_label_fmt(range.start) + ' – ' + lms_trend_label_fmt(range.end); }
@@ -383,7 +384,7 @@ function render_lms_trend_chart() {
         chart: { type: 'area', height: 260, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'inherit', animations: { speed: 300 } },
         series: [{ name: seriesName, data: data }],
         xaxis: { categories: categories, labels: { rotate: 0, style: { fontSize: '11px' } }, tooltip: { enabled: false }, axisBorder: { show: false }, axisTicks: { show: false } },
-        yaxis: { min: 0, max: yMax, forceNiceScale: !yMax, labels: { style: { fontSize: '11px' } } },
+        yaxis: { min: 0, max: yMax, forceNiceScale: !yMax, labels: { style: { fontSize: '11px' }, formatter: function (v) { return lms_module_chart_metric === 'completions' ? String(Math.round(v)) : String(Math.round(v * 10) / 10); } } },
         colors: ['#2a3086'],
         stroke: { curve: 'smooth', width: 2.5 },
         fill: { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.02, shadeIntensity: 1 } },
@@ -915,9 +916,8 @@ function render_lms_dashboard_context_kpi() {
     }
 
     if (lms_dashboard_selected_category === 'Modules') {
-        // Completions and watch time both follow the selected range.
-        var mt = (typeof lms_compute_module_range_totals === 'function') ? lms_compute_module_range_totals() : { completions: 0, avgScorePct: 0, watchSeconds: 0 };
-        l1.textContent = 'Completions'; v1.textContent = String(mt.completions);
+        var mt = (typeof lms_compute_module_range_totals === 'function') ? lms_compute_module_range_totals() : { lessonsDone: 0, lessonsTotal: 0, avgScorePct: 0, watchSeconds: 0 };
+        l1.textContent = 'Lessons done'; v1.textContent = mt.lessonsDone + '/' + mt.lessonsTotal;
         l2.textContent = 'Avg score'; v2.textContent = mt.avgScorePct + '%';
         if (card3) card3.style.display = '';
         if (div3) div3.style.display = '';
