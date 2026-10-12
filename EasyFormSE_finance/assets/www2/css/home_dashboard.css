@@ -934,3 +934,29 @@
 #div_home_hero .hh-bar i { height: 7px; }
 #div_home_hero .hh-link { margin-top: auto; padding-top: 14px; font-size: 15px; }
 #div_home_hero .hh-dots { padding-top: 12px; }
+
+/* About 10% shorter than the first enlarged size. */
+#div_home_hero .hh-slide { min-height: 222px; }
+#div_home_hero .hh-head { font-size: 19px; }
+#div_home_hero .hd-trip-metric { padding: 11px 4px; }
+#div_home_hero .hd-trip-metric-val { font-size: 19px; }
+#div_home_hero .hh-select { height: 46px; }
+/* Keeps the list's top corners rounded as it slides under the pinned card:
+   a transparent rounded cap just below the card whose shadow paints the page
+   colour into the two corner wedges, so whatever part of the list is at the
+   top always shows a curved edge. */
+#div_home_hero::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -10px;
+    height: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    box-shadow: 0 -10px 0 0 #fcfcfc;
+    pointer-events: none;
+}
+
+/* The pinned card sits on the page colour, not the body colour. */
+#div_home_hero { background: #fcfcfc; }

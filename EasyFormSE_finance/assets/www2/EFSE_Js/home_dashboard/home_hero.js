@@ -14,6 +14,9 @@ var HomeHero = (function () {
 
     var ROOT_ID = 'div_home_hero';
     var REASON_KEY = 'home_hero_site_visit_reason';
+    // Last trip figures shown, so the card paints at once on the next visit to
+    // Home instead of sitting on placeholders while the database is read.
+    var TRIPS_CACHE_KEY = 'home_hero_trips_last';
     var REFRESH_MS = 60000;
 
     // Where "is this technician on a site right now" comes from. It is asked
@@ -157,21 +160,39 @@ var HomeHero = (function () {
 
     // ---- driver trips ------------------------------------------------------
 
+    function showTrips($slide, t) {
+        var $status = $slide.find('.hh-trip-status');
+        if (t.live) $status.addClass('is-on').find('.hh-status-text').text('Trip in progress · ' + t.liveText);
+        else $status.removeClass('is-on').find('.hh-status-text').text('No trip in progress');
+        $slide.find('.hh-trip-km').text(t.kmText);
+        $slide.find('.hh-trip-time').text(t.timeText);
+        $slide.find('.hh-trip-viol').text(String(t.violations));
+        $slide.find('.hh-trip-sub').text(t.trips + (t.trips === 1 ? ' trip' : ' trips')
+            + ' · ' + t.speed + ' overspeed · ' + t.call + ' on call');
+    }
+
+    function cachedTrips() {
+        var c = null;
+        try { c = JSON.parse(localStorage.getItem(TRIPS_CACHE_KEY)); } catch (e) { c = null; }
+        return (c && String(c.uid) === String(readSession('user_id'))) ? c.t : null;
+    }
+
     function paintTrips($slide) {
+        if (!$slide.length) return;
         if (typeof TripListSheet === 'undefined' || !TripListSheet.summary) return;
         TripListSheet.summary('month', function (t) {
-            var $status = $slide.find('.hh-trip-status');
             if (!t) {
-                $status.removeClass('is-on').find('.hh-status-text').text('No trip data');
+                $slide.find('.hh-trip-status').removeClass('is-on').find('.hh-status-text').text('No trip data');
                 return;
             }
-            if (t.live) $status.addClass('is-on').find('.hh-status-text').text('Trip in progress · ' + t.liveText);
-            else $status.removeClass('is-on').find('.hh-status-text').text('No trip in progress');
-            $slide.find('.hh-trip-km').text(t.kmText);
-            $slide.find('.hh-trip-time').text(t.timeText);
-            $slide.find('.hh-trip-viol').text(String(t.violations));
-            $slide.find('.hh-trip-sub').text(t.trips + (t.trips === 1 ? ' trip' : ' trips')
-                + ' · ' + t.speed + ' overspeed · ' + t.call + ' on call');
+            showTrips($slide, t);
+            try {
+                localStorage.setItem(TRIPS_CACHE_KEY, JSON.stringify({
+                    uid: readSession('user_id'),
+                    t: { live: t.live, liveText: t.liveText, kmText: t.kmText, timeText: t.timeText,
+                        violations: t.violations, trips: t.trips, speed: t.speed, call: t.call }
+                }));
+            } catch (e) { }
         });
     }
 
@@ -279,7 +300,14 @@ var HomeHero = (function () {
             return false;
         });
 
-        refresh();
+        // Everything that needs no database is on screen before the first read
+        // returns: learning comes from localStorage, trips from the last figures.
+        paintLms($root.find('[data-slide="lms"]'));
+        var last = cachedTrips();
+        if (last) showTrips($root.find('[data-slide="trips"]'), last);
+        var $site = $root.find('[data-slide="site"]');
+        if ($site.length) paintSite($site, null);
+
         if (timer) clearInterval(timer);
         timer = setInterval(refresh, REFRESH_MS);
     }
@@ -289,12 +317,20 @@ var HomeHero = (function () {
         refresh();
     }
 
+    // Draw as soon as the page's markup exists; the database-backed figures
+    // follow when Cordova is ready. The card used to wait on deviceready plus a
+    // timer, which left a gap at the top of Home on every return to it.
+    var deviceIsReady = false;
     try {
-        document.addEventListener('deviceready', function () { setTimeout(render, 600); }, false);
         $(document).ready(function () {
-            // deviceready may already have fired by the time this script runs.
-            setTimeout(function () { if (!$('#' + ROOT_ID + ' .hh-track').length) render(); }, 1500);
+            render();
+            if (deviceIsReady || (typeof cordova !== 'undefined' && cordova.exec && window.device)) refresh();
         });
+        document.addEventListener('deviceready', function () {
+            deviceIsReady = true;
+            if (!$('#' + ROOT_ID + ' .hh-track').length) render();
+            refresh();
+        }, false);
     } catch (e) { }
 
     return { render: render, refresh: refresh, setSiteProvider: setSiteProvider, isVendorTechnician: isVendorTechnician };
