@@ -18,6 +18,12 @@ var HomeHero = (function () {
     // Home instead of sitting on placeholders while the database is read.
     var TRIPS_CACHE_KEY = 'home_hero_trips_last';
     var REFRESH_MS = 60000;
+    // The reason chosen while no site is detected is kept under this id.
+    var TEST_SITE_ID = 'no-site';
+    // Below this screen height the card scrolls with the list instead of
+    // staying fixed (same rule as BillBaant K's PinnedHeaderList).
+    var FIXED_MIN_HEIGHT = 600;
+    var REST_AFTER_MS = 140;
 
     // Where "is this technician on a site right now" comes from. It is asked
     // for {onSite, siteId, siteName, arrivedMs, nearest}. Until a real source
@@ -64,7 +70,7 @@ var HomeHero = (function () {
             + '<div class="hh-sub hh-site-sub"></div>'
             + '<div class="hh-field-lab">Reason for site visit</div>'
             + '<select class="hh-select hh-site-reason" disabled aria-label="Reason for site visit">'
-            + '<option value="">Available once you arrive</option></select>'
+            + '<option value="">Loading modules…</option></select>'
             + '</div>';
     }
 
@@ -117,25 +123,21 @@ var HomeHero = (function () {
         return (r && String(r.siteId) === String(siteId)) ? r : null;
     }
 
-    function paintSite($slide, site) {
-        var $status = $slide.find('.hh-site-status');
-        var $select = $slide.find('.hh-site-reason');
-        if (!site || !site.onSite) {
-            $status.removeClass('is-on').find('.hh-status-text').text('Not on a site');
-            $slide.find('.hh-site-name').text('No site nearby');
-            $slide.find('.hh-site-sub').text(site && site.nearest ? ('Nearest: ' + site.nearest) : '');
-            $select.prop('disabled', true).html('<option value="">Available once you arrive</option>');
-            return;
-        }
-        $status.addClass('is-on').find('.hh-status-text').text('You are on-site');
-        $slide.find('.hh-site-name').text(site.siteName || '');
-        var sub = 'Site ID ' + (site.siteId == null ? '—' : site.siteId);
-        if (site.arrivedMs) sub += ' · arrived ' + clock(site.arrivedMs);
-        $slide.find('.hh-site-sub').text(sub);
-
+    // Fills the reason dropdown with the phone's modules. It is open whether or
+    // not a site was detected, so the choice can be tried out before on-site
+    // detection is connected; a choice made off-site is kept under TEST_SITE_ID.
+    function fillReasons($select, site) {
+        var onSite = !!(site && site.onSite);
+        var siteId = onSite ? site.siteId : TEST_SITE_ID;
+        var siteName = onSite ? site.siteName : '';
         loadModules(function (modules) {
-            var chosen = savedReason(site.siteId);
-            var html = '<option value="">Select a module</option>';
+            // Leave an open dropdown alone: the card repaints every minute.
+            var stamp = String(siteId) + '|' + modules.length;
+            if ($select.data('hhStamp') === stamp && modules.length) return;
+            $select.data('hhStamp', stamp);
+
+            var chosen = savedReason(siteId);
+            var html = '<option value="">' + (modules.length ? 'Select a module' : 'No modules on this phone yet') + '</option>';
             for (var i = 0; i < modules.length; i++) {
                 var id = String(modules[i].moduleid);
                 html += '<option value="' + esc(id) + '"' + (chosen && String(chosen.moduleId) === id ? ' selected' : '') + '>'
@@ -147,8 +149,8 @@ var HomeHero = (function () {
                 if (!moduleId) { localStorage.removeItem(REASON_KEY); return; }
                 try {
                     localStorage.setItem(REASON_KEY, JSON.stringify({
-                        siteId: site.siteId,
-                        siteName: site.siteName,
+                        siteId: siteId,
+                        siteName: siteName,
                         moduleId: moduleId,
                         moduleName: $(this).find('option:selected').text(),
                         at: Date.now()
@@ -156,6 +158,22 @@ var HomeHero = (function () {
                 } catch (e) { }
             });
         });
+    }
+
+    function paintSite($slide, site) {
+        var $status = $slide.find('.hh-site-status');
+        if (!site || !site.onSite) {
+            $status.removeClass('is-on').find('.hh-status-text').text('Not on a site');
+            $slide.find('.hh-site-name').text('No site nearby');
+            $slide.find('.hh-site-sub').text(site && site.nearest ? ('Nearest: ' + site.nearest) : '');
+        } else {
+            $status.addClass('is-on').find('.hh-status-text').text('You are on-site');
+            $slide.find('.hh-site-name').text(site.siteName || '');
+            var sub = 'Site ID ' + (site.siteId == null ? '—' : site.siteId);
+            if (site.arrivedMs) sub += ' · arrived ' + clock(site.arrivedMs);
+            $slide.find('.hh-site-sub').text(sub);
+        }
+        fillReasons($slide.find('.hh-site-reason'), site);
     }
 
     // ---- driver trips ------------------------------------------------------
@@ -251,6 +269,62 @@ var HomeHero = (function () {
         $slide.find('.hh-lms-assess').text(assessments ? String(assessments.length) : '—');
     }
 
+    // ---- list under the pinned card -----------------------------------------
+    //
+    // The same list design as BillBaant K's PinnedHeaderList: the card stays
+    // fixed, the Home cards scroll away under it inside a rounded window (the
+    // corner caps in home_dashboard.css), and when scrolling stops with a card
+    // cut by the card's foot the list eases on to the nearer end of that card,
+    // so the top card always shows whole. Anything that is not a Home card (a
+    // gap, the module list) is left where it stopped, and so is the end of the
+    // list. On a short screen the card is not fixed and none of this applies.
+
+    // How far to scroll on so the cut row is whole or gone, whichever is
+    // nearer. top: where the row starts from the edge (negative: that much is
+    // hidden); size: its height.
+    function toRowEdge(top, size, canGoOn) {
+        if (!canGoOn) return 0;
+        return (-top <= top + size) ? top : top + size;
+    }
+
+    function restOnRow(root, scroller) {
+        if (window.innerHeight < FIXED_MIN_HEIGHT) return;
+        if (!root.offsetHeight) return;
+        var edge = root.getBoundingClientRect().bottom;
+        var windowHeight = scroller.getBoundingClientRect().bottom - edge;
+        var rows = document.querySelectorAll('#div_home_dashboard .hd-widget');
+        for (var i = 0; i < rows.length; i++) {
+            var r = rows[i].getBoundingClientRect();
+            if (!r.height || r.top >= edge - 1 || r.bottom <= edge + 1) continue;
+            // A card taller than the window could never show whole.
+            if (r.height > windowHeight) return;
+            var canGoOn = scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 1;
+            var by = Math.round(toRowEdge(r.top - edge, r.height, canGoOn));
+            if (!by) return;
+            try { scroller.scrollBy({ top: by, behavior: 'smooth' }); }
+            catch (e) { scroller.scrollTop += by; }
+            return;
+        }
+    }
+
+    function bindRestOnRow($root) {
+        var root = $root[0];
+        var scroller = $root.closest('.page-content')[0];
+        if (!root || !scroller) return;
+        var touching = false, wait = null;
+        function later() {
+            if (wait) clearTimeout(wait);
+            wait = setTimeout(function () {
+                wait = null;
+                if (!touching) restOnRow(root, scroller);
+            }, REST_AFTER_MS);
+        }
+        $(scroller).off('.homeHeroRest')
+            .on('touchstart.homeHeroRest', function () { touching = true; if (wait) { clearTimeout(wait); wait = null; } })
+            .on('touchend.homeHeroRest touchcancel.homeHeroRest', function () { touching = false; later(); })
+            .on('scroll.homeHeroRest', later);
+    }
+
     // ---- shell -------------------------------------------------------------
 
     function setDots($root) {
@@ -308,6 +382,8 @@ var HomeHero = (function () {
         var $site = $root.find('[data-slide="site"]');
         if ($site.length) paintSite($site, null);
 
+        bindRestOnRow($root);
+
         if (timer) clearInterval(timer);
         timer = setInterval(refresh, REFRESH_MS);
     }
@@ -333,5 +409,7 @@ var HomeHero = (function () {
         }, false);
     } catch (e) { }
 
-    return { render: render, refresh: refresh, setSiteProvider: setSiteProvider, isVendorTechnician: isVendorTechnician };
+    return { render: render, refresh: refresh, setSiteProvider: setSiteProvider, isVendorTechnician: isVendorTechnician,
+        // exposed for tests
+        _toRowEdge: toRowEdge };
 })();

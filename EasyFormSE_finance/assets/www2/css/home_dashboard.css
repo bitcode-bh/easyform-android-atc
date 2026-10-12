@@ -961,3 +961,10 @@
 
 /* The pinned card sits on the page colour, not the body colour. */
 #div_home_hero { background: #fcfcfc; }
+
+/* Short screen (landscape, split screen): the card scrolls with the list
+   instead of staying fixed, as BillBaant K's PinnedHeaderList does. */
+@media (max-height: 599px) {
+    #div_home_hero { position: static; }
+    #div_home_hero::after { display: none; }
+}
