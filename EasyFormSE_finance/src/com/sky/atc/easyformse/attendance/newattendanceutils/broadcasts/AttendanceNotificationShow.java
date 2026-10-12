@@ -40,7 +40,7 @@ public class AttendanceNotificationShow extends BroadcastReceiver {
 //                contentText = "Mark your attendance by CHECK IN for today";  // change notification msg and remove click action 30062025
 //                actionString = "Check In";
                 contentText = "Once you start, your trip will be tracked for accurate reporting.";
-                actionString = "";
+                actionString = "Check In";
                 MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
                 pref.putString("LastCheckinNoti", "true");
                 pref.commit();

@@ -44,11 +44,9 @@ public class NotificationUtil {
                 .setContentText(contentText)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setContentIntent(actionPendingIntent)
+                .addAction(android.R.drawable.arrow_down_float, actionString, actionPendingIntent)
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(contentText));
-        if (actionString != null && actionString.length() > 0) {
-            notificationBuilder.addAction(android.R.drawable.arrow_down_float, actionString, actionPendingIntent);
-        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationManager.createNotificationChannel(createNotificationChannel());
         }

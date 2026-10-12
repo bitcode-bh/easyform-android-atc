@@ -4313,7 +4313,6 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                             var AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
                             var auto_trip = AttendanceJson[0].auto_trip;
                             if (auto_trip == "true") {
-                                mk_notify('Task created. Starting trip...');
                                 var myArray = JSON.parse(e);
                                 var t_tid = myArray[0].tid;
 
@@ -4337,7 +4336,6 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                 auto_start_trip_on_attendane_task_create(t_tid);
                             }
                             else {
-                                mk_notify('Task created successfully');
                                 var uniqcode = storage.getItem('uniqcode');
                                 if (uniqcode == "" || uniqcode == null || uniqcode == undefined) {
                                     changeurl("login.html");
