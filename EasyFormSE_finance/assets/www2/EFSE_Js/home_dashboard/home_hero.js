@@ -37,7 +37,8 @@ var HomeHero = (function () {
         var name = readSession('role_name');
         if (name == null) return false;
         var n = String(name).trim().toLowerCase();
-        return n === 'vt' || /vendor\s*technician/.test(n) || /(^|[^a-z])vt([^a-z]|$)/.test(n);
+        // The role is stored as "Vender Technician" (sic) on the live server.
+        return n === 'vt' || /vend[eo]r\s*technician/.test(n) || /(^|[^a-z])vt([^a-z]|$)/.test(n);
     }
 
     function pad(n) { return n < 10 ? '0' + n : String(n); }
