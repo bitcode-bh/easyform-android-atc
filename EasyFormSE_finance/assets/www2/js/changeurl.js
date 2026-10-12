@@ -51,7 +51,10 @@ $(document).ready(function() {
             }
         `;
         document.head.appendChild(style);
-        $(".page-content, swiper-container.tabs").addClass("premium-fade-in");
+        // Top-level page only. On pages inside a popup the animation restarted
+        // every time the popup was shown, on top of the popup's own slide-in,
+        // and on tab slides it left a transform on every slide.
+        $(".page-content, swiper-container.tabs").not(".popup .page-content, swiper-slide").addClass("premium-fade-in");
     }
 });
 

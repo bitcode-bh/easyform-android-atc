@@ -230,14 +230,27 @@ function render_safety_module_cards() {
         str += '<div class="sample-module-desc">' + Module_Description + '</div>';
         str += '<div class="sample-module-meta"><div class="sample-module-lessons">';
         str += '<span class="sample-module-help"><i class="fa fa-book-open"></i></span>';
-        str += '<span class="sample-lession-count">' + TotalSkill + ' lessons</span></div>';
+        str += '<span class="sample-lession-count">' + (Number(SubmitedSkill) || 0) + '/' + TotalSkill + ' lessons</span></div>';
         str += '<div class="sample-module-percent">' + Progress + '%</div></div>';
         str += '</div>';
         str += '<div class="sample-module-progress"><span style="width:' + Progress + '%"></span></div>';
         str += '</div>';
     });
 
+    // Every tab visit refetches the listing and lands here, usually with
+    // identical markup. Rewriting it anyway replayed the reveal animation and
+    // reloaded every thumbnail, which read as the screen flickering. Skip the
+    // write when the list on screen is already this exact render.
+    var listEl = document.getElementById('dv_Module_List');
+    if (listEl && listEl._lmsRenderedHtml === str && listEl._lmsRenderedNode &&
+        listEl.firstElementChild === listEl._lmsRenderedNode) {
+        return;
+    }
     $("#dv_Module_List").html(str);
+    if (listEl) {
+        listEl._lmsRenderedHtml = str;
+        listEl._lmsRenderedNode = listEl.firstElementChild;
+    }
 
     // Subtle staggered reveal (no overshoot on data-dense lists).
     document.querySelectorAll('#dv_Module_List .sample-module-card').forEach(function (c, i) {
@@ -312,6 +325,11 @@ function apply_safety_modules(responseText, isRefresh) {
             lms_module_total_time_started = false;
         }
         lms_compute_module_total_video_time();
+        if (lms_pending_module_reopen != null) {
+            var reopenModuleId = lms_pending_module_reopen;
+            lms_pending_module_reopen = null;
+            lms_reopen_module_preview(reopenModuleId);
+        }
     }
     else if (status == 2 || !isRefresh) {
         safety_module_listing_requested = false;
@@ -455,6 +473,7 @@ function lms_compute_module_total_video_time() {
             allSkills.forEach(function (s) {
                 var modId = String(s._lms_module_id);
                 var sid = String(s.Skill_Id);
+                lms_skill_completed[sid] = Number(s.Progress) >= 100;
                 var dur = cached[sid];
                 if (s._lms_module_id != null) {
                     if (!lms_module_skill_index[modId]) lms_module_skill_index[modId] = [];
@@ -1172,6 +1191,7 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
     var apiWatchTime = selectedCard ? selectedCard.getAttribute('data-watch-video-time') : '';
 
     safetyVideoPopupActive = true;
+    safetyLessonReviewAfterSubmit = false;
     safetyVideoReturnedFromFullscreen = false;
     // Playback gating resets per lesson; confirmed watch snapshots remain deduplicated.
     safetyVideoWatchLogInProgress = false;
@@ -1783,6 +1803,69 @@ function lms_sync_lesson_submit_footer() {
     $("#lesson_submit_footer").toggle(visible);
 }
 
+// True while the lesson popup is showing its just-submitted answers.
+var safetyLessonReviewAfterSubmit = false;
+
+// Turn the inline question list into review mode after a successful submit:
+// correct option highlighted exactly as a completed lesson renders it on
+// reopen (.correct-answer), a wrong pick marked, inputs locked, footer gone.
+function lms_lesson_show_review() {
+    var byId = {};
+    (safety_quiz_data || []).forEach(function (q) {
+        byId[String(q.Skill_Que_Id)] = (q.Valid_Answer && q.Valid_Answer[0]) ? String(q.Valid_Answer[0]).trim() : '';
+    });
+    document.querySelectorAll('#dv_Question_List .question-card').forEach(function (card) {
+        var title = card.querySelector('.question-title');
+        var valid = title ? byId[String(title.getAttribute('skill_que_id'))] : '';
+        card.querySelectorAll('.option').forEach(function (opt) {
+            var label = opt.querySelector('label');
+            var input = opt.querySelector('input[type="radio"]');
+            var text = label ? String(label.getAttribute('act_text') || '').trim() : '';
+            if (valid && text === valid) opt.classList.add('correct-answer');
+            else if (input && input.checked) opt.classList.add('incorrect-answer');
+            if (input) input.disabled = true;
+        });
+    });
+    safety_quiz_progress = "100";
+    safetyLessonReviewAfterSubmit = true;
+    $("#dv_Question_List").show();
+    lms_sync_lesson_submit_footer();
+}
+
+// After a lesson quiz is saved the learner stays inside the module. The lesson
+// row flips to Completed at once; the module's own header (count, percent) and
+// scores come from the module listing, so that is refetched and the module
+// page is rebuilt from it, in place.
+var lms_pending_module_reopen = null;
+var lms_deferred_module_reopen = null;
+
+function lms_refresh_module_after_submit(moduleId, skillId) {
+    var card = (typeof findSafetyVideoCard === 'function')
+        ? findSafetyVideoCard(skillId, moduleId, glob_Module_Schedule_Id) : null;
+    if (card) card.setAttribute('data-server-progress', '100');
+    lms_skill_completed[String(skillId)] = true;
+    if (typeof refresh_lesson_preview_rows === 'function') refresh_lesson_preview_rows();
+    lms_pending_module_reopen = String(moduleId);
+    get_safety_module_listing(true);
+}
+
+function lms_reopen_module_preview(moduleId) {
+    if (!safetyModulePreviewActive) return;
+    // Rebuilding the module page under an open lesson would empty the list it
+    // was opened from; wait until the lesson is closed.
+    if ($('.popup-level-4').hasClass('modal-in')) { lms_deferred_module_reopen = moduleId; return; }
+    var opener = document.querySelector('#dv_Module_List [onclick*="get_target_skill_by_module_id(\'' + moduleId + '\'"]');
+    if (opener && typeof opener.onclick === 'function') opener.onclick();
+}
+
+$(document).on('popup:closed', '.popup-level-4', function () {
+    safetyLessonReviewAfterSubmit = false;
+    if (lms_deferred_module_reopen == null) return;
+    var moduleId = lms_deferred_module_reopen;
+    lms_deferred_module_reopen = null;
+    lms_reopen_module_preview(moduleId);
+});
+
 function submit_question_by_skill_id(flag) {
     // Defensive fallback: the button is disabled until every question is
     // answered, so a real tap can't reach here while incomplete. Only guards
@@ -1854,8 +1937,11 @@ function submit_question_by_skill_id(flag) {
         if (status == 1) {
             if (flag == "submit") {
                 // submit button call
+                // Same feedback the full-screen quiz gives per question: mark the
+                // correct option (and a wrong pick) and leave the lesson open so
+                // it can be read. It used to close the instant the save returned.
+                lms_lesson_show_review();
                 get_video_skill_by_module_id(flag);
-                myApp.popup.close('.popup-level-4')
             }
             else {
                 // save button call 
@@ -2048,9 +2134,12 @@ function call_by_videolog(flag) {
                 myApp.popup.close('.popup-level-4');
             }
             else if (flag == 'submit') {
-                myApp.popup.close('.popup-level-4');
-                myApp.popup.close('.lms-module-preview-popup');
-                get_safety_module_listing(true);
+                // Stay inside the module in both modes; this used to close the
+                // module page as well and drop the learner on Modules home.
+                // Full-screen has already shown each answer and closed the
+                // lesson; inline keeps it open on the highlighted answers.
+                if (!safetyLessonReviewAfterSubmit) myApp.popup.close('.popup-level-4');
+                lms_refresh_module_after_submit(Module_Id, Skill_Id);
             }
         }
         if (showPreloader) loading_hide();

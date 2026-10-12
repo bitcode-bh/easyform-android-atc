@@ -74,6 +74,20 @@
         font-weight: 700;
     }
 
+/* A wrong pick, shown beside the correct answer after a lesson quiz is
+   submitted. Same text-only treatment, in the full-screen quiz's red. */
+.question-card .option.incorrect-answer {
+    background: transparent;
+    border: 0 !important;
+    margin-bottom: 0;
+    animation: none;
+}
+
+    .question-card .option.incorrect-answer label {
+        color: #c0392b;
+        font-weight: 700;
+    }
+
 /* Sticky quiz header: question stepper + timer */
 .quiz-header {
     position: sticky;

@@ -199,6 +199,28 @@ function lms_get_lesson_elapsed_seconds(skillId) {
     return best;
 }
 
+// Skill_Id -> true once the server reports the lesson's quiz as submitted.
+var lms_skill_completed = {};
+
+// Seconds of a lesson that have really been watched, for the "watched / total"
+// figures on the module cards and the Modules/Dashboard totals.
+//
+// lms_get_lesson_elapsed_seconds above answers a different question (how far
+// into the lesson to resume) and leans on the server's Watch_Video_Time, a
+// playback position. Summing positions reported whole modules as watched that
+// had barely been opened. Here a lesson counts in full once its quiz is
+// submitted (the quiz only unlocks when the video ends, and seeking is
+// blocked), and otherwise for the seconds this device actually played it.
+function lms_get_lesson_watched_seconds(skillId) {
+    var sid = String(skillId);
+    var total = Number(lms_skill_total_seconds[sid]) || 0;
+    if (lms_skill_completed[sid] && total > 0) return total;
+    var played = (typeof lms_get_watch_seconds_by_item === 'function')
+        ? (lms_get_watch_seconds_by_item('lms_watch_seconds_skills', sid) || 0) : 0;
+    if (total > 0 && played > total) played = total;
+    return played;
+}
+
 function lms_sum_module_lesson_watched(moduleId) {
     var mid = String(moduleId);
     var skills = lms_module_skill_index[mid] || [];
@@ -207,7 +229,7 @@ function lms_sum_module_lesson_watched(moduleId) {
     }
     var sum = 0;
     skills.forEach(function (sid) {
-        sum += lms_get_lesson_elapsed_seconds(sid);
+        sum += lms_get_lesson_watched_seconds(sid);
     });
     return sum;
 }
@@ -612,7 +634,7 @@ function lms_sum_active_modules_watch_seconds() {
                 sid = String(sid);
                 if (seenSkills[sid]) return;
                 seenSkills[sid] = true;
-                sum += lms_get_lesson_elapsed_seconds(sid);
+                sum += lms_get_lesson_watched_seconds(sid);
             });
         } else if (typeof lms_get_module_watched_seconds === 'function') {
             // Legacy fallback until this module's skill listing is available.
