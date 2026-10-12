@@ -666,7 +666,30 @@ var HomeDashboardData = (function () {
         );
     }
 
+    // Events the engine logged for one trip (Events table), counted by type.
+    // Matched on the trip's tid, or on the trip's time window for rows written
+    // without one. SELECT only.
+    function getTripEvents(tid, minMs, maxMs, onDone) {
+        var min = parseInt(minMs, 10);
+        var max = parseInt(maxMs, 10);
+        if (isNaN(min)) min = 0;
+        if (isNaN(max) || max <= 0) max = Date.now();
+        var where = "((Event_strt+0) >= " + min + " and (Event_strt+0) <= " + max + ")";
+        var t = parseInt(tid, 10);
+        if (!isNaN(t) && t > 0) where = "(tid = '" + t + "' or " + where + ")";
+        sql(
+            "select Event_type, count(*) as c from Events where " + where + " group by Event_type",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                onDone(rows);
+            },
+            function () { onDone([]); }
+        );
+    }
+
     return {
+        getTripEvents: getTripEvents,
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,
         getUploadCounts: getUploadCounts,

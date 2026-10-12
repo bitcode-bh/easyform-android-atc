@@ -509,6 +509,105 @@
     margin-right: 4px;
     font-weight: 400;
 }
+/* Trip row: tap to expand, icon on the right opens the map. The row itself
+   keeps the list's fixed 50px line; the <li> grows for the details panel. */
+#trip_list_ul > li.trip-li {
+    height: auto;
+    min-height: 50px;
+}
+#trip_list_ul .trip-row {
+    display: flex;
+    align-items: stretch;
+    height: 50px;
+}
+#trip_list_ul .trip-row > a.item-content {
+    display: flex !important;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    box-sizing: border-box;
+    height: 50px !important;
+    min-height: 50px !important;
+    padding: 6px 8px 6px 16px !important;
+    background: transparent;
+}
+#trip_list_ul .trip-map-btn {
+    flex: 0 0 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2a3086;
+    font-size: 18px;
+    border-left: 1px solid #dedfe0;
+}
+#trip_list_ul .trip-map-btn:active { background: #dfe1e6; }
+#trip_list_ul .trip-details {
+    padding: 4px 16px 12px;
+    border-top: 1px solid #dedfe0;
+    background: #f5f6f8;
+}
+#trip_list_ul .trip-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    padding: 8px 0;
+}
+#trip_list_ul .trip-detail { min-width: 0; }
+#trip_list_ul .trip-detail-lab {
+    display: block;
+    font-size: 11px;
+    color: #6A6C74;
+    line-height: 14px;
+}
+#trip_list_ul .trip-detail-val {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0D1829;
+    line-height: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#trip_list_ul .trip-event-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+#trip_list_ul .trip-event {
+    text-align: center;
+    padding: 6px 2px;
+    border-radius: 8px;
+    background: #ecedef;
+    color: #6A6C74;
+    min-width: 0;
+}
+#trip_list_ul .trip-event i { font-size: 13px; }
+#trip_list_ul .trip-event-count {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0D1829;
+    line-height: 20px;
+}
+#trip_list_ul .trip-event-lab {
+    display: block;
+    font-size: 10px;
+    line-height: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#trip_list_ul .trip-event.has-events { background: #fdecea; color: #b42318; }
+#trip_list_ul .trip-event.has-events .trip-event-count { color: #b42318; }
+#trip_list_ul .trip-event-extra {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6A6C74;
+}
+
 .trip-list-empty {
     text-align: center;
     color: #8b93a7;

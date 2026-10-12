@@ -171,12 +171,24 @@ var TripServerHistory = (function () {
         var meters = parseFloat(row.actual_distance);
         if (isNaN(meters) || meters < 0) meters = 0;
 
+        // Event_type: [{Event_type: "Still", ...}, ...] -> {"Still": n, ...}
+        var ev = {};
+        var events = row.Event_type;
+        if (typeof events === 'string') {
+            try { events = events ? JSON.parse(events) : []; } catch (e) { events = []; }
+        }
+        for (var k = 0; k < (events || []).length; k++) {
+            var type = events[k] && events[k].Event_type;
+            if (type) ev[String(type)] = (ev[String(type)] || 0) + 1;
+        }
+
         return {
             id: taskId,
             start: startMs,
             end: endMs,
             status: row.Status == null ? '' : String(row.Status),
             m: meters,
+            ev: ev,
             path: path
         };
     }

@@ -153,6 +153,9 @@ var TripListSheet = (function () {
             _server: true,
             _status: s.status,
             _path: s.path || [],
+            _events: s.ev || {},
+            _eventsLoaded: true,
+            _speedRuns: serverViolationRuns(s.path),
             _km: (s.m || 0) / 1000,
             _id: '',
             tid: '',
@@ -247,16 +250,21 @@ var TripListSheet = (function () {
         return km;
     }
 
-    function tripPathKm(pts, minMs, maxMs, live) {
+    // The points of one trip out of the range's points.
+    function tripPts(pts, minMs, maxMs, live) {
         var min = parseInt(minMs, 10);
-        if (isNaN(min) || min <= 0) return 0;
+        if (isNaN(min) || min <= 0) return [];
         var max = live ? Date.now() : parseInt(maxMs, 10);
         if (isNaN(max) || max < min) max = Date.now();
         var sub = [];
         for (var i = 0; i < pts.length; i++) {
             if (pts[i].ms >= min && pts[i].ms <= max) sub.push(pts[i]);
         }
-        return pathKm(sub);
+        return sub;
+    }
+
+    function tripPathKm(pts, minMs, maxMs, live) {
+        return pathKm(tripPts(pts, minMs, maxMs, live));
     }
 
     function violationRuns(pts) {
@@ -308,6 +316,7 @@ var TripListSheet = (function () {
             var live = String(row.trip_status) === '0';
             var km = tripPathKm(pts, row.min_milli, row.max_milli, live);
             row._km = km;
+            row._speedRuns = violationRuns(tripPts(pts, row.min_milli, row.max_milli, live));
             var title = rowTitle(row, live, km);
             var $item = $(box).find('.trip-list-item[data-idx="' + j + '"]');
             if ($item.length) {
@@ -364,7 +373,10 @@ var TripListSheet = (function () {
             var sub = rowSubtitle(row, live);
             var status = rowStatus(row, live);
             var tripId = rowTripId(row);
-            html += '<li><a href="#" class="item-content trip-list-item" data-idx="' + j + '">'
+            // Tapping the row expands it; the icon on the right opens the map.
+            html += '<li class="trip-li" data-idx="' + j + '">'
+                + '<div class="trip-row">'
+                + '<a href="#" class="item-content trip-list-item" data-idx="' + j + '" aria-expanded="false">'
                 + '<div class="item-inner">'
                 + '<div class="item-title">' + esc(title) + '</div>'
                 + '<div class="item-text">' + esc(sub) + '</div>'
@@ -372,17 +384,123 @@ var TripListSheet = (function () {
                 + (tripId ? '<span class="trip-id-tag">' + esc(tripId) + '</span>' : '')
                 + esc(status)
                 + '</div>'
-                + '</div></a></li>';
+                + '</div></a>'
+                + '<a href="#" class="trip-map-btn" data-idx="' + j + '" aria-label="Open trip on map" title="Open map">'
+                + '<i class="fa-solid fa-map-location-dot" aria-hidden="true"></i></a>'
+                + '</div>'
+                + '<div class="trip-details" style="display:none"></div>'
+                + '</li>';
         }
         box.innerHTML = html;
         $(box).find('.trip-list-item').off('click.tripList').on('click.tripList', function (ev) {
             ev.preventDefault();
             var idx = parseInt($(this).attr('data-idx'), 10);
-            var trip = rows[idx];
-            if (!trip) return false;
-            var live = String(trip.trip_status) === '0';
-            openNativeRoute(trip, live);
+            if (rows[idx]) toggleDetails(rows[idx], $(this).closest('.trip-li'));
             return false;
+        });
+        $(box).find('.trip-map-btn').off('click.tripMap').on('click.tripMap', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            var trip = rows[parseInt($(this).attr('data-idx'), 10)];
+            if (!trip) return false;
+            openNativeRoute(trip, String(trip.trip_status) === '0');
+            return false;
+        });
+    }
+
+    // Engine / server event names -> the buckets shown in a trip's details.
+    // Normal (non-harsh) acceleration events are not violations and are left out.
+    var EVENT_BUCKETS = {
+        'speed': 'speed',
+        'acc': 'accel',
+        'deacc': 'brake',
+        'harsh brake': 'brake',
+        'call': 'call',
+        'still': 'idle',
+        'powersavingmode': 'power'
+    };
+
+    function bucketEvents(counts) {
+        var out = { speed: 0, accel: 0, brake: 0, call: 0, idle: 0, power: 0 };
+        for (var key in counts) {
+            if (!counts.hasOwnProperty(key)) continue;
+            var bucket = EVENT_BUCKETS[String(key).trim().toLowerCase()];
+            if (bucket) out[bucket] += parseInt(counts[key], 10) || 0;
+        }
+        return out;
+    }
+
+    function detailCell(label, value) {
+        return '<div class="trip-detail"><span class="trip-detail-lab">' + esc(label) + '</span>'
+            + '<span class="trip-detail-val">' + esc(value) + '</span></div>';
+    }
+
+    function eventChip(icon, label, count) {
+        return '<div class="trip-event' + (count > 0 ? ' has-events' : '') + '">'
+            + '<i class="fa-solid ' + icon + '" aria-hidden="true"></i>'
+            + '<span class="trip-event-count">' + count + '</span>'
+            + '<span class="trip-event-lab">' + esc(label) + '</span></div>';
+    }
+
+    function detailsHtml(row) {
+        var live = String(row.trip_status) === '0';
+        var ev = bucketEvents(row._events || {});
+        // Overspeed is also visible in the path itself (tripflag 3 runs); a trip
+        // whose events were already uploaded and cleared still shows it.
+        var speed = Math.max(ev.speed, row._speedRuns || 0);
+        var end = live ? 'In progress' : (formatWhen(row.max_milli) || '—');
+        var html = '<div class="trip-detail-grid">'
+            + detailCell('Started', formatWhen(row.min_milli) || '—')
+            + detailCell('Ended', end)
+            + detailCell('Duration', formatDuration(row.min_milli, row.max_milli, live) || '—')
+            + detailCell('Distance', formatKm(row._km || 0))
+            + '</div>';
+        html += '<div class="trip-event-row">'
+            + eventChip('fa-gauge-high', 'Overspeed', speed)
+            + eventChip('fa-angles-up', 'Harsh accel.', ev.accel)
+            + eventChip('fa-angles-down', 'Harsh brake', ev.brake)
+            + eventChip('fa-phone', 'On call', ev.call)
+            + '</div>';
+        if (ev.idle > 0 || ev.power > 0) {
+            html += '<div class="trip-event-extra">'
+                + (ev.idle > 0 ? 'Idle stops: ' + ev.idle : '')
+                + (ev.idle > 0 && ev.power > 0 ? ' · ' : '')
+                + (ev.power > 0 ? 'Power saving: ' + ev.power : '')
+                + '</div>';
+        }
+        if (!row._eventsLoaded) html += '<div class="trip-event-extra">Loading events…</div>';
+        return html;
+    }
+
+    function toggleDetails(row, $li) {
+        var $panel = $li.find('.trip-details');
+        var open = $li.hasClass('is-open');
+        if (open) {
+            $li.removeClass('is-open');
+            $panel.hide();
+            $li.find('.trip-list-item').attr('aria-expanded', 'false');
+            return;
+        }
+        $li.addClass('is-open');
+        $li.find('.trip-list-item').attr('aria-expanded', 'true');
+        $panel.html(detailsHtml(row)).show();
+        if (row._eventsLoaded) return;
+        if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getTripEvents) {
+            row._events = {};
+            row._eventsLoaded = true;
+            $panel.html(detailsHtml(row));
+            return;
+        }
+        var live = String(row.trip_status) === '0';
+        HomeDashboardData.getTripEvents(row.tid, row.min_milli, live ? 0 : row.max_milli, function (eventRows) {
+            var counts = {};
+            for (var i = 0; i < (eventRows || []).length; i++) {
+                counts[eventRows[i].Event_type] = parseInt(eventRows[i].c, 10) || 0;
+            }
+            row._events = counts;
+            row._eventsLoaded = true;
+            // Only repaint if this row is still the open one on screen.
+            if ($li.hasClass('is-open')) $panel.html(detailsHtml(row));
         });
     }
 
