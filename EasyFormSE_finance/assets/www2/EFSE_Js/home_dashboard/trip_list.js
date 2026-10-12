@@ -307,9 +307,9 @@ var TripListSheet = (function () {
         return h > 0 ? (h + 'h ' + m + 'm') : (m + 'm');
     }
 
-    function updateRowDistances(rows, pts) {
-        var box = document.getElementById('trip_list_ul');
-        if (!box) return;
+    function updateRowDistances(rows, pts, dataOnly) {
+        var box = dataOnly ? null : document.getElementById('trip_list_ul');
+        if (!box && !dataOnly) return;
         for (var j = 0; j < rows.length; j++) {
             var row = rows[j];
             if (row._server) continue;   // distance came with the download
@@ -317,6 +317,7 @@ var TripListSheet = (function () {
             var km = tripPathKm(pts, row.min_milli, row.max_milli, live);
             row._km = km;
             row._speedRuns = violationRuns(tripPts(pts, row.min_milli, row.max_milli, live));
+            if (dataOnly) continue;
             var title = rowTitle(row, live, km);
             var $item = $(box).find('.trip-list-item[data-idx="' + j + '"]');
             if ($item.length) {
@@ -376,17 +377,50 @@ var TripListSheet = (function () {
         for (var d = 0; d < local.length; d++) local[d]._eventsLoaded = true;
     }
 
+    function totalsFor(rows) {
+        var t = { trips: rows.length, km: 0, speed: 0, accel: 0, brake: 0, call: 0, live: false, liveMs: 0 };
+        for (var i = 0; i < rows.length; i++) {
+            t.km += rows[i]._km || 0;
+            var v = rowViolations(rows[i]);
+            t.speed += v.speed; t.accel += v.accel; t.brake += v.brake; t.call += v.call;
+            if (String(rows[i].trip_status) === '0') { t.live = true; t.liveMs = tripDurationMs(rows[i], true); }
+        }
+        t.violations = t.speed + t.accel + t.brake + t.call;
+        return t;
+    }
+
+    // The same roll-up the Trips summary card shows, for another screen (the
+    // Home card). Reads only; does not open or repaint the Trips list, and does
+    // not trigger the history download.
+    function summary(kind, onDone) {
+        var b = boundsFor(kind === 'week' || kind === 'quarter' ? kind : 'month');
+        if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getTripList) { onDone(null); return; }
+        HomeDashboardData.getTripList(b.start, b.end, function (localRows) {
+            var rows = mergeServerRows(localRows, b);
+            var timeMs = 0;
+            for (var i = 0; i < rows.length; i++) timeMs += tripDurationMs(rows[i], String(rows[i].trip_status) === '0');
+            HomeDashboardData.getTripPath(b.start, b.end, function (pathRows) {
+                updateRowDistances(rows, parsePts(pathRows), true);
+                HomeDashboardData.getEventsInRange(b.start, Date.now(), function (eventRows) {
+                    assignEvents(rows, eventRows);
+                    var t = totalsFor(rows);
+                    t.timeMs = timeMs;
+                    t.kmText = formatKm(t.km);
+                    t.timeText = rows.length ? formatTotalDuration(timeMs) : '0m';
+                    t.liveText = t.live ? formatTotalDuration(t.liveMs) : '';
+                    onDone(t);
+                });
+            });
+        });
+    }
+
     // The summary card is the sum (or per-trip average) of the cards below it,
     // so it can never disagree with them.
     function paintSummary(rows, timeMs) {
         var n = rows.length;
-        var km = 0, speed = 0, accel = 0, brake = 0, call = 0;
-        for (var i = 0; i < n; i++) {
-            km += rows[i]._km || 0;
-            var v = rowViolations(rows[i]);
-            speed += v.speed; accel += v.accel; brake += v.brake; call += v.call;
-        }
-        var violations = speed + accel + brake + call;
+        var tot = totalsFor(rows);
+        var km = tot.km, speed = tot.speed, accel = tot.accel, brake = tot.brake, call = tot.call;
+        var violations = tot.violations;
         setStats(formatKm(km), n ? formatTotalDuration(timeMs) : '0m', String(violations));
         setText('trip_stat_avg_km', n ? formatKm(km / n) : '—');
         setText('trip_stat_avg_time', n ? formatTotalDuration(timeMs / n) : '—');
@@ -713,5 +747,5 @@ var TripListSheet = (function () {
         $(document).ready(bindOnce);
     } catch (e) { }
 
-    return { open: open, close: close, isOpen: isOpen };
+    return { open: open, close: close, isOpen: isOpen, summary: summary };
 })();

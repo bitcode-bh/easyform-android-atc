@@ -730,3 +730,178 @@
 #trip_route_empty.show {
     display: flex;
 }
+
+/* ==========================================================================
+   Home hero (home_hero.js): one swipeable card above the dashboard. Uses the
+   dashboard widgets' own card, title and stat-tile values so it reads as one
+   of them; scoped under #div_home_hero because those rules are scoped under
+   #div_home_dashboard and do not reach here.
+   ========================================================================== */
+#div_home_hero { padding: 10px 12px 0; }
+#div_home_hero:empty { display: none; }
+#div_home_hero .hh-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 4px 12px rgba(16, 24, 40, .04);
+    padding: 14px 0 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+#div_home_hero .hh-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+#div_home_hero .hh-track::-webkit-scrollbar { display: none; }
+#div_home_hero .hh-slide {
+    flex: 0 0 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 0 16px;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+}
+#div_home_hero .hd-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    margin-bottom: 6px;
+}
+#div_home_hero .hh-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#div_home_hero .hh-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+#div_home_hero .hh-status.is-on { color: var(--c-primary, #2a3086); }
+#div_home_hero .hh-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d0d5dd;
+    flex: 0 0 8px;
+}
+#div_home_hero .hh-status.is-on .hh-dot { background: #2dbb72; }
+#div_home_hero .hh-head {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f1729;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+#div_home_hero .hh-sub {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 2px;
+    min-height: 16px;
+}
+#div_home_hero .hh-field-lab {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 12px;
+}
+#div_home_hero .hh-select {
+    width: 100%;
+    height: 42px;
+    margin-top: 6px;
+    padding: 0 12px;
+    border: 1px solid #d0d5dd;
+    border-radius: 12px;
+    background: #fff;
+    color: #0f1729;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+#div_home_hero .hh-select:disabled {
+    background: #f9fafb;
+    border-color: #f2f4f7;
+    color: #98a2b3;
+}
+#div_home_hero .hd-trip-metrics { display: flex; gap: 8px; }
+#div_home_hero .hd-trip-metric {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 10px;
+    background: #f9fafb;
+}
+#div_home_hero .hd-trip-metric-val {
+    display: block;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f1729;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#div_home_hero .hd-trip-metric-label {
+    display: block;
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+#div_home_hero .hh-trip-sub { margin-top: 10px; }
+#div_home_hero .hh-lms-progress {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+#div_home_hero .hh-lms-pct { font-weight: 700; color: var(--c-primary, #2a3086); }
+#div_home_hero .hh-bar {
+    height: 5px;
+    border-radius: 3px;
+    background: #f2f4f7;
+    margin: 6px 0 10px;
+    overflow: hidden;
+}
+#div_home_hero .hh-bar i { display: block; height: 5px; width: 0; background: var(--c-primary, #2a3086); }
+#div_home_hero .hh-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0 0;
+    margin-top: 10px;
+    border-top: 1px solid #f2f4f7;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--c-primary, #2a3086);
+}
+#div_home_hero .hh-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding-top: 10px;
+}
+#div_home_hero .hh-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #d0d5dd;
+}
+#div_home_hero .hh-dots span.on {
+    width: 18px;
+    border-radius: 3px;
+    background: var(--c-primary, #2a3086);
+}
+/* The card belongs to Home only; the Trips tab hides the Home content. */
+.page.trips-open #div_home_hero { display: none; }
