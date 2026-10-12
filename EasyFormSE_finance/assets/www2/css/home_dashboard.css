@@ -905,3 +905,32 @@
 }
 /* The card belongs to Home only; the Trips tab hides the Home content. */
 .page.trips-open #div_home_hero { display: none; }
+
+/* Larger card (about half as tall again) that stays put while Home scrolls. */
+#div_home_hero {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #f4f4f4;
+    padding-bottom: 2px;
+}
+#div_home_hero .hh-card { padding: 18px 0 12px; }
+#div_home_hero .hh-slide { min-height: 250px; padding: 0 18px; }
+#div_home_hero .hd-card-title { font-size: 13px; margin-bottom: 10px; }
+#div_home_hero .hh-title i { font-size: 16px; }
+#div_home_hero .hh-status { font-size: 16px; margin-bottom: 12px; }
+#div_home_hero .hh-dot { width: 10px; height: 10px; flex-basis: 10px; }
+#div_home_hero .hh-head { font-size: 21px; }
+#div_home_hero .hh-sub { font-size: 14px; margin-top: 4px; min-height: 18px; }
+#div_home_hero .hh-field-lab { font-size: 13px; margin-top: auto; padding-top: 14px; }
+#div_home_hero .hh-select { height: 50px; font-size: 15px; margin-top: 8px; }
+#div_home_hero .hd-trip-metric { padding: 14px 4px; border-radius: 12px; }
+#div_home_hero .hd-trip-metric-val { font-size: 21px; }
+#div_home_hero .hd-trip-metric-label { font-size: 12px; margin-top: 4px; }
+#div_home_hero .hh-trip-sub { margin-top: 14px; }
+#div_home_hero .hh-lms-progress { font-size: 14px; margin-top: 8px; }
+#div_home_hero .hh-bar { height: 7px; border-radius: 4px; margin: 8px 0 14px; }
+#div_home_hero .hh-bar i { height: 7px; }
+#div_home_hero .hh-link { margin-top: auto; padding-top: 14px; font-size: 15px; }
+#div_home_hero .hh-dots { padding-top: 12px; }
