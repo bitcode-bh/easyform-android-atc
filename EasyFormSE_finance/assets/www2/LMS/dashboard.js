@@ -156,10 +156,31 @@ function lms_dashboard_module_key(rec) {
     return null;
 }
 
+// A module is a completion only once the module itself reads 100%; a module
+// with some lesson quizzes submitted is still in progress. The module listing
+// carries no completion date, so the day of its latest quiz submission (the
+// one that finished it) stands in for one. Returns {modKey: Date}.
+function lms_dashboard_completed_modules() {
+    var latest = {};
+    (dashboard_kpi_data || []).forEach(function (rec) {
+        var d = lms_parse_submitted_date(rec.SubmittedDate);
+        if (!d) return;
+        var modKey = lms_dashboard_module_key(rec);
+        if (!modKey || !lms_is_active_dashboard_module(modKey)) return;
+        if (!latest[modKey] || d > latest[modKey]) latest[modKey] = d;
+    });
+    var done = {};
+    Object.keys(latest).forEach(function (modKey) {
+        var mod = (typeof lms_get_module_record_by_id === 'function') ? lms_get_module_record_by_id(modKey) : null;
+        if (mod && Number(mod.Progress) >= 100) done[modKey] = latest[modKey];
+    });
+    return done;
+}
+
 // Shared by the Modules chart AND its KPI cards so the two can never disagree —
 // both read the same day-bucketed dashboard_kpi_data over the same range.
-// Completions count UNIQUE modules per day (rewatches / extra lesson submits for
-// the same module do not add another tick).
+// Completions count each finished module once, on its completion day (see
+// lms_dashboard_completed_modules); scores still bucket by submission day.
 function lms_build_module_buckets(range) {
     var buckets = {};
     var cursor = new Date(range.start);
@@ -183,13 +204,18 @@ function lms_build_module_buckets(range) {
     Object.keys(buckets).forEach(function (key) {
         var b = buckets[key];
         var mods = Object.keys(b.moduleScores);
-        b.count = mods.length;
+        b.count = 0;
         b.scoreSum = 0;
         b.scoreCount = 0;
         mods.forEach(function (mk) {
             b.scoreSum += b.moduleScores[mk];
             b.scoreCount++;
         });
+    });
+    var completed = lms_dashboard_completed_modules();
+    Object.keys(completed).forEach(function (modKey) {
+        var b = buckets[lms_date_key(completed[modKey])];
+        if (b) b.count++;
     });
     return buckets;
 }
@@ -199,19 +225,12 @@ function lms_build_module_buckets(range) {
 // the chart is plotting for that same period.
 function lms_compute_module_range_totals() {
     var range = lms_trend_range_dates();
-    var uniqueModules = {};
-    (dashboard_kpi_data || []).forEach(function (rec) {
-        var d = lms_parse_submitted_date(rec.SubmittedDate);
-        if (!d || d < range.start || d > range.end) return;
-        var modKey = lms_dashboard_module_key(rec);
-        if (!modKey || !lms_is_active_dashboard_module(modKey)) return;
-        var prev = uniqueModules[modKey];
-        if (!prev || d >= prev.date) {
-            uniqueModules[modKey] = { date: d };
-        }
+    var completed = lms_dashboard_completed_modules();
+    var completions = 0;
+    Object.keys(completed).forEach(function (modKey) {
+        var d = completed[modKey];
+        if (d >= range.start && d <= range.end) completions++;
     });
-
-    var modKeys = Object.keys(uniqueModules);
 
     // Same Score/TotalQuestion average as the Modules tab header — not a
     // range-filtered lesson Achieve_Percentage rollup from dashboard rows.
@@ -219,16 +238,15 @@ function lms_compute_module_range_totals() {
         ? lms_compute_completion_kpi(safety_module_data)
         : { avgScorePct: 0 };
 
-    // Watch_Video_Time is cumulative and has no per-day breakdown. The KPI
-    // therefore uses the all-time, deduplicated per-skill total; applying the
-    // chart's date filter would discard saved API history and show only this
-    // device's current-session daily buckets.
-    var watchSeconds = (typeof lms_sum_active_modules_watch_seconds === 'function')
-        ? lms_sum_active_modules_watch_seconds()
+    // Seconds actually played inside the selected range, as measured on this
+    // device. The server's Watch_Video_Time is a playback position with no
+    // date, so it cannot say how long was watched or when.
+    var watchSeconds = (typeof lms_sum_active_modules_watch_seconds_in_range === 'function')
+        ? lms_sum_active_modules_watch_seconds_in_range(range)
         : 0;
 
     return {
-        completions: modKeys.length,
+        completions: completions,
         avgScorePct: moduleKpi.avgScorePct,
         watchSeconds: watchSeconds
     };
@@ -897,8 +915,7 @@ function render_lms_dashboard_context_kpi() {
     }
 
     if (lms_dashboard_selected_category === 'Modules') {
-        // Completion remains range-scoped; watch time is intentionally the
-        // saved cumulative total because the API clock has no date dimension.
+        // Completions and watch time both follow the selected range.
         var mt = (typeof lms_compute_module_range_totals === 'function') ? lms_compute_module_range_totals() : { completions: 0, avgScorePct: 0, watchSeconds: 0 };
         l1.textContent = 'Completions'; v1.textContent = String(mt.completions);
         l2.textContent = 'Avg score'; v2.textContent = mt.avgScorePct + '%';

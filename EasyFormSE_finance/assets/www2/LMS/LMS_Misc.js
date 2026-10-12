@@ -192,6 +192,10 @@ function lms_get_lesson_elapsed_seconds(skillId) {
         if (serverWatch !== null) best = Math.max(best, serverWatch);
         if (serverResume !== null) best = Math.max(best, serverResume);
     }
+    // A lesson cannot have been watched for longer than it runs. Wall-clock
+    // time includes buffering and replays, so it can overshoot the length.
+    var total = Number(lms_skill_total_seconds[String(skillId)]) || 0;
+    if (total > 0 && best > total) best = total;
     return best;
 }
 
@@ -664,45 +668,29 @@ function lms_sum_daily_watch_in_range(dailyKey, range) {
     return sum;
 }
 
-// Range watch for the dashboard — same lesson-sum total the module cards use,
-// apportioned across days via per-skill daily buckets (falls back to legacy
-// module-level daily when skill buckets predate this fix).
-function lms_sum_active_modules_watch_seconds_in_range(range) {
-    if (!range) return lms_sum_active_modules_watch_seconds();
-
-    var activeWatch = lms_sum_active_modules_watch_seconds();
-    var skillsDaily = lms_sum_daily_watch_in_range('lms_watch_seconds_skills_daily', range);
-    var skillsGlobal = lms_get_watch_seconds('lms_watch_seconds_skills');
-
-    if (skillsGlobal > 0 && activeWatch > 0) {
-        return Math.round(activeWatch * (skillsDaily / skillsGlobal));
-    }
-    if (skillsDaily > 0) return skillsDaily;
-
-    var modulesDaily = lms_sum_daily_watch_in_range('lms_watch_seconds_modules_daily', range);
-    var modulesGlobal = lms_get_watch_seconds('lms_watch_seconds_modules');
-    if (modulesGlobal > 0 && activeWatch > 0) {
-        return Math.round(activeWatch * (modulesDaily / modulesGlobal));
-    }
-    return modulesDaily;
+// Watch time for the dashboard: seconds the lesson player was actually playing
+// on a given day, as measured by lms_track_watch_time. This used to scale the
+// sum of every lesson's saved playback POSITION by the day's share of local
+// watch time, which reported a library's whole length as "watched" after a
+// second of playback. Positions say how far a lesson got, not how long anyone
+// watched, and they carry no date, so they are not used here at all.
+// Falls back to the module-level daily bucket for days recorded before the
+// per-skill buckets existed.
+function lms_get_module_daily_watch_seconds(day) {
+    var daySec = lms_get_watch_seconds_daily('lms_watch_seconds_skills_daily', day);
+    if (daySec > 0) return daySec;
+    return lms_get_watch_seconds_daily('lms_watch_seconds_modules_daily', day);
 }
 
-function lms_get_module_daily_watch_seconds(day) {
-    var activeWatch = lms_sum_active_modules_watch_seconds();
-    var skillsGlobal = lms_get_watch_seconds('lms_watch_seconds_skills');
-    var daySec = lms_get_watch_seconds_daily('lms_watch_seconds_skills_daily', day);
-
-    if (skillsGlobal > 0 && activeWatch > 0) {
-        return Math.round(activeWatch * (daySec / skillsGlobal));
+function lms_sum_active_modules_watch_seconds_in_range(range) {
+    if (!range) return 0;
+    var sum = 0;
+    var cursor = new Date(range.start);
+    while (cursor <= range.end) {
+        sum += lms_get_module_daily_watch_seconds(cursor);
+        cursor.setDate(cursor.getDate() + 1);
     }
-    if (daySec > 0) return daySec;
-
-    var modulesGlobal = lms_get_watch_seconds('lms_watch_seconds_modules');
-    var modDaySec = lms_get_watch_seconds_daily('lms_watch_seconds_modules_daily', day);
-    if (modulesGlobal > 0 && activeWatch > 0) {
-        return Math.round(activeWatch * (modDaySec / modulesGlobal));
-    }
-    return modDaySec;
+    return sum;
 }
 
 function lms_module_score_pct(item) {
@@ -1145,6 +1133,8 @@ $(document).ready(function () {
     $(video).off("loadedmetadata.safetyResume").on("loadedmetadata.safetyResume", function () {
         var savedSeconds = Number(video._safetyResumeTimeSeconds);
         if (!isFinite(savedSeconds) || savedSeconds < 0) savedSeconds = 0;
+        // This lesson's media is in; position saves are its own from here on.
+        video._lmsSwitchingLesson = false;
 
         var duration = Number(video.duration);
         // The saved position is whole seconds (the watch log is sent as MM:SS,
@@ -1193,6 +1183,7 @@ $(document).ready(function () {
     // while this per-lesson resume position stayed stuck at 0 until this was
     // added, because only the former was actually listening for a bare pause.
     $(video).on("pause seeked", function () {
+        if (video._lmsSwitchingLesson) return;
         var skillId = video._lmsPlaySkillId || $(video).attr("skil_id");
         set_progress_local(skillId, video.currentTime);
     });
@@ -1202,6 +1193,7 @@ $(document).ready(function () {
     $(video).on("timeupdate", function () {
         var now = Date.now();
         if (now - lastProgressSaveAt < 2000) return;
+        if (video._lmsSwitchingLesson) return;
         lastProgressSaveAt = now;
         var skillId = video._lmsPlaySkillId || $(video).attr("skil_id");
         if (skillId && video.currentTime > 0) {

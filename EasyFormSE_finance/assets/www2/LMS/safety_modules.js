@@ -1198,6 +1198,12 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
         $(safetyVideo).attr("module_schedule_id", glob_Module_Schedule_Id);
         $(safetyVideo).attr("Module_Id", Module_Id);
         safetyVideo._safetyResumeTimeSeconds = videoClockToSeconds(apiWatchTime);
+        // The player is shared by every lesson. Forget the previous lesson's id
+        // and hold position saves until this lesson's own media has loaded:
+        // otherwise the resume seek below was saved under the lesson played
+        // before, and a late pause from the old media under this one.
+        safetyVideo._lmsPlaySkillId = null;
+        safetyVideo._lmsSwitchingLesson = true;
         // Set src last so even a cached video's metadata cannot arrive before
         // the selected lesson's resume position has been attached.
         $(safetyVideo).attr("src", Video_Link);
