@@ -8,8 +8,13 @@
         background: #f2f3f5;
     }
 
+/* .page is position:absolute, so "margin: 0 auto" alone never centred it and
+   the old 430px cap left a blank strip down the right on any phone wider than
+   that. Full width on phones; capped and genuinely centred on tablets. */
 .module-preview-page {
-    max-width: 430px;
+    max-width: 600px;
+    left: 0;
+    right: 0;
     margin: 0 auto;
     background: #f2f3f5;
 }

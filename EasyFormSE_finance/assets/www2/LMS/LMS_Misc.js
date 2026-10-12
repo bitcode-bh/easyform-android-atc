@@ -1147,7 +1147,11 @@ $(document).ready(function () {
         if (!isFinite(savedSeconds) || savedSeconds < 0) savedSeconds = 0;
 
         var duration = Number(video.duration);
-        if (!isFinite(duration) || duration <= 0 || savedSeconds >= duration) {
+        // The saved position is whole seconds (the watch log is sent as MM:SS,
+        // floored), so a video watched to the end comes back as floor(duration),
+        // a fraction short of the real length. Resuming there left under a
+        // second to play and the lesson appeared to skip straight to the end.
+        if (!isFinite(duration) || duration <= 0 || savedSeconds >= Math.floor(duration)) {
             savedSeconds = 0;
         }
 
