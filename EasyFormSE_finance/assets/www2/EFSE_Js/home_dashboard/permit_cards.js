@@ -63,6 +63,13 @@ var PermitCards = (function () {
     // The same placeholder details on every sample card.
     var SAMPLE = { site: 'Site 00000', from: '10:00 am', until: '2:00 pm', issuedTo: 'Technician name', approvedBy: 'Approver name' };
 
+    // The Altius logo, top right. The app ships no Altius logo file (the login
+    // page's comes from the server and is not kept), so this looks for
+    // images/altius_logo.png and falls back to the name in the brand navy
+    // until that file is added.
+    var ALTIUS_LOGO = '<span class="ps-altius"><img src="images/altius_logo.png" alt="Altius" '
+        + 'onerror="this.parentNode.textContent=\'ALTIUS\'" /></span>';
+
     function esc(s) {
         return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
@@ -98,21 +105,27 @@ var PermitCards = (function () {
 
     function cardHtml(type) {
         var who = holder();
+        // Front: who and what at the top with the Altius logo in the top right
+        // corner, the permit's details straight under them, and the 24x7
+        // SHIELD logo in the bottom right corner.
         var front = '<div class="ps-face ps-front">' + drawing(type, 'ps-art')
             + '<div class="ps-head"><div class="ps-who"><img class="ps-photo" src="' + esc(who.photo) + '" alt="" />'
             + '<span class="ps-name">' + esc(who.name) + '</span></div>'
             + '<div class="ps-title"><small>Permit to work</small><b>' + esc(type.name) + '</b></div>'
-            + '<span class="ps-tag">Sample</span></div>'
+            + ALTIUS_LOGO + '</div>'
             + '<div class="ps-fields">' + field('Permit no.', type.no) + field('Site', SAMPLE.site)
-            + '<div class="ps-qr"><i class="fa-solid fa-qrcode" aria-hidden="true"></i></div>'
             + field('Valid from', SAMPLE.from) + field('Valid until', SAMPLE.until)
             + field('Issued to', who.name || SAMPLE.issuedTo) + field('Approved by', SAMPLE.approvedBy) + '</div>'
-            + '<div class="ps-brand"><span><b>ALTIUS</b> · 24x7 SHIELD</span><span>Tap to turn over</span></div></div>';
+            + '<div class="ps-brand"><span class="ps-tag">Sample</span><span>Tap to turn over</span></div>'
+            + '<img class="ps-shield" src="images/lms_shield_logo.png" alt="24x7 SHIELD" /></div>';
+        // Back: the safety content, with the QR code in the corner it had on
+        // the front.
         var back = '<div class="ps-face ps-back">' + drawing(type, 'ps-art')
             + '<div class="ps-lists">' + list('Hazards', type.hazards, 'fa-triangle-exclamation', type.colour)
             + list('Mandatory PPE', type.ppe, 'fa-shield-halved', type.colour)
             + '<div class="ps-wide">' + list('Before you start', type.steps, 'fa-square-check', type.colour) + '</div></div>'
-            + '<div class="ps-foot">Sample wording. Stop work if conditions change.</div></div>';
+            + '<div class="ps-foot">Sample wording. Stop work if conditions change.</div>'
+            + '<div class="ps-qr"><i class="fa-solid fa-qrcode" aria-hidden="true"></i></div></div>';
         return '<div class="ps-slide"><div class="ps-card">' + front + back + '</div></div>';
     }
 
@@ -139,6 +152,9 @@ var PermitCards = (function () {
             + '<div class="ps-track">' + slides + '</div>'
             + '<div class="ps-dots" aria-hidden="true">' + dots + '</div>'
             + '<div class="ps-hint">Swipe to change permit type</div></div>';
+        // The cards are as tall as the Safety Passport card on Home.
+        var passport = document.querySelector('#div_home_hero .hh-passport');
+        if (passport && passport.offsetHeight) root.style.setProperty('--ps-h', passport.offsetHeight + 'px');
         document.body.appendChild(root);
 
         var track = root.querySelector('.ps-track');

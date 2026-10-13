@@ -909,7 +909,7 @@ var HomeHero = (function () {
         var $card = $slide.find('.hh-permit');
         if (!p) {
             $card.removeClass('is-active').addClass('is-empty');
-            $slide.find('.hh-permit-type').text('No active permit to work');
+            $slide.find('.hh-permit-type').text('No Active Permit to Work');
             $slide.find('.hh-permit-status .hh-status-text').text('');
             $slide.find('.hh-permit-no, .hh-permit-site, .hh-permit-from, .hh-permit-until').text('—');
             $slide.find('.hh-permit-by, .hh-permit-time').text('');
