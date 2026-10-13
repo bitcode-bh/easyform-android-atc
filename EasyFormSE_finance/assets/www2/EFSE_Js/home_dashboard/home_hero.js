@@ -175,14 +175,14 @@ var HomeHero = (function () {
             + '<span>' + label + '</span><span class="hh-lms-' + key + '-more"></span></a>';
     }
 
-    // Decoration only: a hard hat outline behind the top of the slide, since
-    // most of the learning is safety training.
+    // Decoration only: a hard hat outline, in faint safety yellow, behind the
+    // top of the slide, since most of the learning is safety training.
     var LEARNING_ART = '<svg class="hh-learn-art" viewBox="0 0 320 150" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">'
-        + '<g fill="none" stroke="#c9ccd3" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" transform="translate(150 18)">'
+        + '<g fill="none" stroke="#e0b63a" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" transform="translate(150 18)">'
         + '<path d="M20 86 C20 40 52 12 92 12 S164 40 164 86"/>'
         + '<path d="M4 88 H180 a6 6 0 0 1 0 14 H4 a6 6 0 0 1 0 -14 z"/>'
         + '<path d="M76 14 V52"/><path d="M108 14 V52"/></g>'
-        + '<path d="M242 30 V70" stroke="#2a3086" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/></svg>';
+        + '<path d="M242 30 V70" stroke="#e0b63a" stroke-opacity=".8" stroke-width="5" stroke-linecap="round"/></svg>';
 
     function lmsSlideHtml() {
         return '<div class="hh-slide" data-slide="lms">'
@@ -847,15 +847,16 @@ var HomeHero = (function () {
         return { name: t || 'Permit', icon: 'fa-clipboard-check' };
     }
 
-    // Decoration only: nested caution triangles in the foot of the slide.
+    // Decoration only: nested caution triangles, in faint safety yellow, in the
+    // foot of the slide.
     var PERMIT_ART = '<svg class="hh-permit-art" viewBox="0 0 320 250" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">'
-        + '<g fill="none" stroke="#c9ccd3" stroke-linecap="round" stroke-linejoin="round">'
+        + '<g fill="none" stroke="#e0b63a" stroke-opacity=".5" stroke-linecap="round" stroke-linejoin="round">'
         + '<path d="M236 118 L296 220 H176 Z" stroke-width="4"/>'
-        + '<path d="M236 92 L320 236 H152 Z" stroke-width="1.5" stroke-opacity=".7"/>'
-        + '<path d="M236 66 L344 252 H128 Z" stroke-width="1.5" stroke-opacity=".4"/>'
+        + '<path d="M236 92 L320 236 H152 Z" stroke-width="1.5"/>'
+        + '<path d="M236 66 L344 252 H128 Z" stroke-width="1.5"/>'
         + '<path d="M236 154 V188" stroke-width="5"/></g>'
-        + '<circle cx="236" cy="203" r="3.5" fill="#c9ccd3"/>'
-        + '<path d="M236 154 V188" stroke="#2a3086" stroke-opacity=".3" stroke-width="5" stroke-linecap="round"/></svg>';
+        + '<circle cx="236" cy="203" r="3.5" fill="#e0b63a" fill-opacity=".8"/>'
+        + '<path d="M236 154 V188" stroke="#e0b63a" stroke-opacity=".8" stroke-width="5" stroke-linecap="round"/></svg>';
 
     function permitSlideHtml() {
         function cell(label, cls) {
