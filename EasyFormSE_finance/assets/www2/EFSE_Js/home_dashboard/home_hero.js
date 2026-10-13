@@ -565,32 +565,33 @@ var HomeHero = (function () {
     // or expiry, so none is shown.
     var PASSPORT_FIELDS = { id: 10044, name: 20, circle: 42, partner: 10016, contact: 10036, blood: 10037 };
 
-    function passportSlideHtml() {
+    // Front and back of the passport card. The same markup is the Home slide
+    // and, at full size, the card PermitCards.openPassport() shows.
+    function passportFacesHtml() {
         function cell(label, key) {
-            return '<div class="col-50"><div class="label">' + label + '</div>'
-                + '<div class="value"><span class="hh-pass-' + key + '"></span></div></div>';
+            return '<div><small>' + label + '</small><b class="hh-pass-' + key + '"></b></div>';
         }
-        // The back of the card: the six panels the passport page shows under
-        // the front. Swiping up or down over the card turns it over.
-        function backRow(from) {
-            return '<div class="hh-pass-back-row"><img data-back="' + from + '" alt="" /><img data-back="' + (from + 1)
-                + '" alt="" /><img data-back="' + (from + 2) + '" alt="" /></div>';
-        }
+        var shieldArt = '<svg class="sp-art" viewBox="0 0 100 100" aria-hidden="true">'
+            + '<path d="M50 6 L86 18 V48 C86 72 70 88 50 96 C30 88 14 72 14 48 V18 Z" fill="none" stroke="#2a3086" stroke-width="4" stroke-linejoin="round"/>';
+        var altius = (typeof PermitCards !== 'undefined' && PermitCards.altiusLogo) ? PermitCards.altiusLogo : '<span class="ps-altius">ALTIUS</span>';
+        var back = '';
+        // The six safety icons, in their original order: narrow, wide, narrow.
+        for (var n = 1; n <= 6; n++) back += '<img src="images/safety_passport/sp_back_' + n + '.png" alt="" />';
+        return '<div class="sp-face sp-front">' + shieldArt
+            + '<path d="M34 50 l12 12 l22 -24" fill="none" stroke="#2a3086" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            + '<div class="sp-head"><img class="sp-photo hh-pass-photo" src="images/profile_pic.png" alt="" />'
+            + '<div class="sp-title"><small>Safety passport</small><b class="hh-pass-name"></b></div>' + altius + '</div>'
+            + '<div class="sp-fields">' + cell('Safety passport ID', 'id') + cell('Circle', 'circle')
+            + cell('Partner name', 'partner') + cell('Emergency contact', 'contact')
+            + cell('Role', 'role') + cell('Blood group', 'blood') + '</div>'
+            + '<div class="sp-foot"><a href="#" class="sp-share"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Share</a></div>'
+            + '<img class="sp-shield" src="images/lms_shield_logo.png" alt="24x7 SHIELD" /></div>'
+            + '<div class="sp-face sp-back">' + shieldArt + '</svg><div class="sp-rules">' + back + '</div></div>';
+    }
+
+    function passportSlideHtml() {
         return '<div class="hh-slide" data-slide="passport">'
-            + '<a href="#" class="hh-passport" aria-label="Open My Safety Passport">'
-            + '<div class="passport-header">'
-            + '<div class="passport-photo"><img class="hh-pass-photo" src="images/profile_pic.png" alt="" /></div>'
-            + '<div class="passport-title"><div class="country">SAFETY PASSPORT</div>'
-            + '<div class="doctype"><span class="hh-pass-name"></span></div></div>'
-            + '<div class="passport-badge"><img class="hh-pass-badge" alt="" /></div>'
-            + '</div>'
-            + '<div class="passport-body">'
-            + '<div class="row">' + cell('SAFETY PASSPORT ID', 'id') + cell('CIRCLE', 'circle') + '</div>'
-            + '<div class="row">' + cell('PARTNER NAME', 'partner') + cell('EMERGENCY CONTACT NO', 'contact') + '</div>'
-            + '<div class="row">' + cell('Role', 'role') + cell('BLOOD GROUP', 'blood') + '</div>'
-            + '</div>'
-            + '<div class="hh-pass-back" aria-hidden="true">' + backRow(1) + backRow(4) + '</div>'
-            + '</a></div>';
+            + '<a href="#" class="hh-passport sp-card" aria-label="Open Safety Passport">' + passportFacesHtml() + '</a></div>';
     }
 
     function passportData() {
@@ -625,18 +626,6 @@ var HomeHero = (function () {
         if (!d.id) $slide.find('.hh-pass-id').text('Not available');
         var photo = $('#menu_img_profile').attr('src');
         if (photo) $slide.find('.hh-pass-photo').attr('src', photo);
-        // Same shield as the profile's card, from whichever host the app is on.
-        var $badge = $slide.find('.hh-pass-badge');
-        if (!$badge.attr('src')) {
-            try {
-                var base = JSON.parse(storage.getItem('global_wcf_url')) || (typeof global_wcf_url !== 'undefined' ? global_wcf_url : '');
-                var art = new URL(base).origin + '/images/safety_passport/';
-                $badge.attr('src', art + 'sp_shield.png');
-                $slide.find('.hh-pass-back img').each(function () {
-                    $(this).attr('src', art + 'sp_back_' + $(this).attr('data-back') + '.png');
-                });
-            } catch (e) { }
-        }
     }
 
     // A vertical swipe over the passport turns it over; leaving the slide
@@ -1189,7 +1178,11 @@ var HomeHero = (function () {
         bindPassportFlip($root);
         $root.find('.hh-passport').off('click.homeHero').on('click.homeHero', function (ev) {
             ev.preventDefault();
-            if (typeof get_safety_passport === 'function') get_safety_passport();
+            var share = function () { if (typeof get_safety_passport === 'function') get_safety_passport(); };
+            // Share on the slide itself goes straight to the passport page.
+            if ($(ev.target).closest('.sp-share').length) { share(); return false; }
+            if (typeof PermitCards !== 'undefined' && PermitCards.openPassport) PermitCards.openPassport(this.innerHTML, share);
+            else share();
             return false;
         });
 

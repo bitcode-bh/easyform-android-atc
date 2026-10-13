@@ -138,20 +138,19 @@ var PermitCards = (function () {
         return !!document.getElementById(ROOT_ID);
     }
 
-    function open() {
-        if (isOpen()) return;
-        var slides = '', dots = '';
-        for (var i = 0; i < TYPES.length; i++) {
-            slides += cardHtml(TYPES[i]);
-            dots += '<span' + (i === 0 ? ' class="on"' : '') + '></span>';
-        }
+    // The sheet over Home that cards are shown in: a title, a sideways track
+    // of cards with pager dots when there is more than one, and a hint.
+    function show(title, slides, count, hint) {
+        close();
+        var dots = '';
+        for (var i = 0; i < count && count > 1; i++) dots += '<span' + (i === 0 ? ' class="on"' : '') + '></span>';
         var root = document.createElement('div');
         root.id = ROOT_ID;
         root.innerHTML = '<div class="ps-sheet">'
-            + '<div class="ps-bar"><span>Sample permits</span><button type="button" class="ps-close" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>'
+            + '<div class="ps-bar"><span>' + esc(title) + '</span><button type="button" class="ps-close" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>'
             + '<div class="ps-track">' + slides + '</div>'
-            + '<div class="ps-dots" aria-hidden="true">' + dots + '</div>'
-            + '<div class="ps-hint">Swipe to change permit type</div></div>';
+            + (dots ? '<div class="ps-dots" aria-hidden="true">' + dots + '</div>' : '')
+            + '<div class="ps-hint">' + esc(hint) + '</div></div>';
         document.body.appendChild(root);
 
         var track = root.querySelector('.ps-track');
@@ -169,6 +168,27 @@ var PermitCards = (function () {
         $(root).on('click', '.ps-close', function () { close(); return false; });
         // A tap on the dimmed area outside the sheet closes it.
         root.addEventListener('click', function (ev) { if (ev.target === root) close(); });
+        return root;
+    }
+
+    function open() {
+        var slides = '';
+        for (var i = 0; i < TYPES.length; i++) slides += cardHtml(TYPES[i]);
+        show('Sample permits', slides, TYPES.length, 'Swipe to change permit type');
+    }
+
+    // The Safety Passport at full size. faces is the card's own markup (front
+    // and back) as Home's passport slide draws it; onShare, when given, is
+    // run by the card's Share link.
+    function openPassport(faces, onShare) {
+        var root = show('Safety passport', '<div class="ps-slide"><div class="ps-card sp-card">' + faces + '</div></div>', 1, 'Tap the card to turn it over');
+        $(root).on('click', '.sp-share', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            close();
+            if (typeof onShare === 'function') onShare();
+            return false;
+        });
     }
 
     // Hardware Back closes the viewer before anything else handles it.
@@ -179,5 +199,5 @@ var PermitCards = (function () {
         ev.stopPropagation();
     }, false);
 
-    return { open: open, close: close, isOpen: isOpen, _types: TYPES, _cardHtml: cardHtml };
+    return { open: open, openPassport: openPassport, close: close, isOpen: isOpen, altiusLogo: ALTIUS_LOGO, _types: TYPES, _cardHtml: cardHtml };
 })();

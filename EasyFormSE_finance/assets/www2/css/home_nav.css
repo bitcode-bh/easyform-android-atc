@@ -348,3 +348,9 @@
     pointer-events: auto;
 }
 .navbar-inner.home-search-on .home-greet-text { visibility: hidden; }
+
+/* While search is open the keyboard is up and the tab bar is off screen, so
+   the room Home keeps for the bar and the strip above it would show as a
+   blank band over the keyboard. The list takes that room instead. */
+body.home-search-open #div_page_content { height: 100% !important; padding-bottom: 0 !important; }
+body.home-search-open #div_home_list_foot { display: none; }

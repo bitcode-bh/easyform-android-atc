@@ -74,6 +74,8 @@
         bar.classList.add('open');
         var inner = topBar();
         if (inner) inner.classList.add('home-search-on');
+        // The page under it runs to the keyboard while search is open (home_nav.css).
+        document.body.classList.add('home-search-open');
         if (input) {
             setTimeout(function () {
                 input.focus();
@@ -91,6 +93,7 @@
         if (bar) bar.classList.remove('open');
         var inner = topBar();
         if (inner) inner.classList.remove('home-search-on');
+        document.body.classList.remove('home-search-open');
         if (input) {
             input.value = '';
             input.blur();

@@ -1064,37 +1064,6 @@
 /* The spare line breaks under the Home list only add an uneven gap. */
 #div_page_content > br { display: none; }
 
-/* Safety Passport slide: the profile menu's passport card (styles_low.css
-   .passport-*), sized to the slide. */
-#div_home_hero .hh-passport {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    box-sizing: border-box;
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: gray;
-    color: #fff;
-    text-decoration: none;
-}
-#div_home_hero .hh-passport .passport-header { margin-bottom: 8px; }
-#div_home_hero .hh-passport .passport-photo img { object-fit: cover; }
-#div_home_hero .hh-passport .passport-title { flex: 1 1 auto; min-width: 0; margin: 0 58px 0 10px; }
-#div_home_hero .hh-passport .passport-title .doctype {
-    font-size: 16px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-#div_home_hero .hh-passport .passport-badge { top: 12px; right: 14px; }
-#div_home_hero .hh-passport .passport-body { margin-top: auto; }
-#div_home_hero .hh-passport .passport-body .value span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 /* The list's window. Rows slide under the pinned card and, at the foot,
    under a strip above the tab bar; both edges keep rounded corners. Each cap
    is a strip the height of the corner radius that paints the page colour
@@ -1178,18 +1147,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-/* Safety Passport back side: shown in place of the front after a vertical
-   swipe over the card. pan-x leaves sideways swipes to the slide pager and
-   hands vertical ones to the card instead of scrolling Home. */
-#div_home_hero .hh-passport { touch-action: pan-x; }
-#div_home_hero .hh-pass-back { display: none; flex: 1 1 auto; flex-direction: column; justify-content: center; gap: 10px; }
-#div_home_hero .hh-pass-back-row { display: flex; gap: 6px; }
-#div_home_hero .hh-pass-back-row img { flex: 1 1 0; min-width: 0; height: 72px; object-fit: contain; }
-#div_home_hero .hh-pass-back-row img:nth-child(2) { flex-grow: 2; }
-#div_home_hero .hh-passport.is-back .passport-header,
-#div_home_hero .hh-passport.is-back .passport-body { display: none; }
-#div_home_hero .hh-passport.is-back .hh-pass-back { display: flex; }
 
 /* Trips main card: per-trip averages are not shown; the second line is used
    only for a picked trip's own start, end and ID. */
@@ -1397,3 +1354,49 @@
 #permit_samples .ps-dots span { width: 5px; height: 5px; border-radius: 50%; background: #c5c9d1; }
 #permit_samples .ps-dots span.on { width: 16px; border-radius: 3px; background: #2a3086; }
 #permit_samples .ps-hint { padding-top: 8px; text-align: center; font-size: 12px; color: #98a2b3; }
+
+/* Safety Passport card, in the card language of the permit cards: grey face,
+   faint navy shield behind, picture and name top left, Altius top right, the
+   24x7 SHIELD logo bottom right; the back carries the six safety icons. The
+   same markup is Home's passport slide and the full-size card in the sheet. */
+.sp-card { position: relative; display: block; color: #0f1729; text-decoration: none; }
+.sp-face {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    background: #ecedef;
+    overflow: hidden;
+}
+.sp-back,
+.sp-card.is-back .sp-front { display: none; }
+.sp-card.is-back .sp-back { display: flex; }
+.sp-face > *:not(.sp-art) { position: relative; }
+.sp-art { position: absolute; top: -6%; right: -6%; height: 96%; width: auto; aspect-ratio: 1; opacity: .22; pointer-events: none; }
+.sp-head { display: flex; align-items: center; gap: 10px; }
+.sp-photo { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #d9dbe0; }
+.sp-title { min-width: 0; }
+.sp-title small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #6b7280; }
+.sp-title b { display: block; font-size: 18px; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-card .ps-altius { margin-left: auto; align-self: flex-start; font-size: 14px; font-weight: 700; letter-spacing: .08em; color: #2a3086; }
+.sp-card .ps-altius img { display: block; height: 26px; width: auto; max-width: 110px; object-fit: contain; }
+.sp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin: 8px 76px 0 0; padding-top: 8px; border-top: 1px solid #dedfe0; }
+.sp-fields small { display: block; font-size: 11px; line-height: 14px; color: #6b7280; }
+.sp-fields b { display: block; font-size: 13px; font-weight: 600; line-height: 17px; min-height: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-foot { margin-top: auto; padding-top: 6px; font-size: 12px; }
+.sp-share { color: #2a3086; font-weight: 600; text-decoration: none; }
+.sp-shield { position: absolute !important; right: 0; bottom: 0; height: 46px; width: auto; }
+.sp-rules { display: grid; grid-template-columns: 1fr 1.72fr 1fr; gap: 8px; flex: 1 1 auto; align-content: center; }
+.sp-rules img { display: block; width: 100%; height: 84px; object-fit: contain; }
+
+/* On Home the card is the slide itself. A vertical swipe turns it over:
+   pan-x leaves sideways swipes to the slide pager and hands vertical ones to
+   the card instead of scrolling Home. */
+#div_home_hero .hh-passport { flex: 1 1 auto; display: flex; touch-action: pan-x; }
+#div_home_hero .hh-passport .sp-face { flex: 1 1 auto; }
+
+/* In the sheet it is a full-width landscape card, like the permit cards. */
+#permit_samples .sp-face { width: 100%; aspect-ratio: 1.6; padding: 14px 16px; border-radius: 16px; }
+#permit_samples .sp-shield { right: 14px; bottom: 12px; }
+#permit_samples .sp-fields { gap: 6px 10px; margin-top: 10px; }
+#permit_samples .sp-rules img { height: 96px; }
