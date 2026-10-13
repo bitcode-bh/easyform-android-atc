@@ -177,12 +177,14 @@ var HomeHero = (function () {
 
     // The learning score sits inside a hard hat drawn in faint safety yellow
     // (most of the learning is safety training), with its label underneath.
-    var LEARNING_ART = '<div class="hh-learn-art"><svg viewBox="0 0 184 108" aria-hidden="true">'
-        + '<g fill="none" stroke="#e0b63a" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">'
+    // One drawing for both hats (Learning slide and Safety Passport), in a
+    // 184 x 108 box.
+    var HARD_HAT = '<g fill="none" stroke="#e0b63a" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">'
         + '<path d="M20 86 C20 40 52 12 92 12 S164 40 164 86"/>'
         + '<path d="M4 88 H180 a6 6 0 0 1 0 14 H4 a6 6 0 0 1 0 -14 z"/>'
         + '<path d="M76 14 V34"/><path d="M108 14 V34"/></g>'
-        + '<path d="M92 12 V32" stroke="#e0b63a" stroke-opacity=".8" stroke-width="5" stroke-linecap="round"/>'
+        + '<path d="M92 12 V32" stroke="#e0b63a" stroke-opacity=".8" stroke-width="5" stroke-linecap="round"/>';
+    var LEARNING_ART = '<div class="hh-learn-art"><svg viewBox="0 0 184 108" aria-hidden="true">' + HARD_HAT
         + '<text x="92" y="76" text-anchor="middle"><tspan class="hh-score-val"></tspan><tspan class="hh-score-of">/100</tspan></text></svg>'
         + '<div class="hh-score-lab">Learning score<small class="hh-score-tag"></small></div></div>';
 
@@ -584,7 +586,12 @@ var HomeHero = (function () {
             + '<div class="sp-fields">' + cell('Safety passport ID', 'id') + cell('Circle', 'circle')
             + cell('Partner name', 'partner') + cell('Emergency contact', 'contact')
             + cell('Role', 'role') + cell('Blood group', 'blood') + '</div>'
-            + '<div class="sp-foot"><a href="#" class="sp-share"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Share</a></div>'
+            // The learning score in a small hard hat, as on the Learning slide,
+            // then Share in the middle of the card.
+            + '<div class="sp-foot"><span class="sp-score"><svg viewBox="0 0 184 108" aria-hidden="true">'
+            + HARD_HAT + '<text x="92" y="78" text-anchor="middle" class="sp-score-val"></text></svg>'
+            + '<small>Learning score<i class="sp-score-tag"></i></small></span>'
+            + '<a href="#" class="sp-share"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Share</a></div>'
             + '<img class="sp-shield" src="images/lms_shield_logo.png" alt="24x7 SHIELD" /></div>'
             + '<div class="sp-face sp-back">' + shieldArt + '</svg><div class="sp-rules">' + back + '</div></div>';
     }
@@ -626,6 +633,9 @@ var HomeHero = (function () {
         var keys = ['id', 'name', 'circle', 'partner', 'contact', 'blood', 'role'];
         for (var i = 0; i < keys.length; i++) $slide.find('.hh-pass-' + keys[i]).text(d[keys[i]] || '');
         if (!d.id) $slide.find('.hh-pass-id').text('Not available');
+        var score = learningScore();
+        $slide.find('.sp-score-val').text(String(score.value));
+        $slide.find('.sp-score-tag').text(score.sample ? 'Sample' : '');
         var photo = $('#menu_img_profile').attr('src');
         if (photo) $slide.find('.hh-pass-photo').attr('src', photo);
     }
@@ -1068,9 +1078,18 @@ var HomeHero = (function () {
         var wait = null;
         listWatch = new MutationObserver(function () {
             if (wait) clearTimeout(wait);
-            wait = setTimeout(function () { wait = null; syncLevel(); }, 60);
+            wait = setTimeout(function () { wait = null; syncLevel(); showPage(); }, 60);
         });
         listWatch.observe(list, { childList: true });
+        showPage();
+
+        // selection.html keeps the page hidden until the list is drawn and the
+        // card is sized to it; two frames later that layout is on screen.
+        function showPage() {
+            if (!list.children.length || typeof window.homeReveal !== 'function') return;
+            var raf = window.requestAnimationFrame || function (fn) { setTimeout(fn, 16); };
+            raf(function () { raf(window.homeReveal); });
+        }
     }
 
     function bindRestOnRow($root) {

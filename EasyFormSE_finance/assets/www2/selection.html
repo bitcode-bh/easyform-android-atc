@@ -8,6 +8,42 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="theme-color" content="#2196f3">
 
+    <link href="css/app_loader.css" rel="stylesheet" />
+    <script src="EFSE_Js/app_loader.js"></script>
+    <!-- Home is held back until its card and module list are in place, then
+         shown once with a single short fade. Shown as it was built, it
+         flickered: the card appeared, vanished as the page's entrance
+         animation restarted, came back, and the list then popped in below. -->
+    <style>
+        html { background: #ecedef; }
+        html.home-wait .views { opacity: 0 !important; }
+        html.home-wait .page-content,
+        html.home-in .page-content { animation: none !important; }
+        @keyframes homeIn { from { opacity: 0; } to { opacity: 1; } }
+        html.home-in .views { animation: homeIn 320ms ease both; }
+    </style>
+    <script>
+        document.documentElement.className += ' home-wait';
+        var homeReveal = (function () {
+            var done = false;
+            return function () {
+                if (done) return;
+                done = true;
+                var html = document.documentElement;
+                var pc = document.querySelectorAll('.page-content');
+                for (var i = 0; i < pc.length; i++) pc[i].classList.remove('premium-fade-in');
+                html.classList.remove('home-wait');
+                html.classList.add('home-in');
+                try { AppLoader.hide(); } catch (e) { }
+                setTimeout(function () { html.classList.remove('home-in'); }, 700);
+            };
+        })();
+        // Normally shown by HomeHero once the module list is drawn; this is
+        // the fallback, so the page can never stay hidden.
+        window.addEventListener('load', function () { setTimeout(homeReveal, 1800); });
+        setTimeout(homeReveal, 6000);
+    </script>
+
     <!-- F7 start -->
     <link href="Framework7-1.4.2/dist/css/Css_f7.css" rel="stylesheet" />
     <!--<link href="font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" />-->
@@ -379,6 +415,8 @@
     <link href="css/home_nav.css" rel="stylesheet" />
 </head>
 <body>
+    <!-- Loading screen, drawn first and hidden by homeReveal() -->
+    <script>try { document.write(AppLoader.html); } catch (e) { }</script>
     <!-- Cross-page fade veil (shared look with LMS) so Home->LMS matches LMS->Home -->
     <div id="page-veil" aria-hidden="true"><img alt="" src="images/lms_shield_logo.png" /></div>
     <script>
@@ -790,7 +828,7 @@
                                 <div class="trip-stats-head">
                                     <span class="trip-stats-title" id="trip_stat_title">All trips</span>
                                     <span class="trip-stats-state" id="trip_stat_state"></span>
-                                    <a href="#" class="trip-stats-clear" id="trip_stat_clear" style="display:none">All trips</a>
+                                    <span class="trip-stats-when" id="trip_stat_when"></span>
                                 </div>
                                 <div class="trip-stats-line">
                                     <div class="trip-list-metric">
@@ -799,25 +837,11 @@
                                     </div>
                                     <div class="trip-list-metric">
                                         <span class="trip-list-metric-val" id="trip_stat_time">—</span>
-                                        <span class="trip-list-metric-lab" id="trip_stat_time_lab">Time</span>
+                                        <span class="trip-list-metric-lab">Duration</span>
                                     </div>
                                     <div class="trip-list-metric">
                                         <span class="trip-list-metric-val" id="trip_stat_violations">—</span>
                                         <span class="trip-list-metric-lab">Violations</span>
-                                    </div>
-                                </div>
-                                <div class="trip-stats-line trip-stats-avg">
-                                    <div class="trip-list-metric">
-                                        <span class="trip-list-metric-val" id="trip_stat_avg_km">—</span>
-                                        <span class="trip-list-metric-lab" id="trip_stat_avg_km_lab">Avg distance</span>
-                                    </div>
-                                    <div class="trip-list-metric">
-                                        <span class="trip-list-metric-val" id="trip_stat_avg_time">—</span>
-                                        <span class="trip-list-metric-lab" id="trip_stat_avg_time_lab">Avg duration</span>
-                                    </div>
-                                    <div class="trip-list-metric">
-                                        <span class="trip-list-metric-val" id="trip_stat_avg_viol">—</span>
-                                        <span class="trip-list-metric-lab" id="trip_stat_avg_viol_lab">Violations / trip</span>
                                     </div>
                                 </div>
                                 <div class="trip-stats-events">

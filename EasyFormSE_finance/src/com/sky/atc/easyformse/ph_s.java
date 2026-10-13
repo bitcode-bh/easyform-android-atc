@@ -286,6 +286,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             super.loadUrl("file:///android_asset/www2/download_status.html");
         }
         if (login_key.equals("False")) {
+            // The login page is white; the theme's grey bar is for Home.
+            getWindow().setNavigationBarColor(android.graphics.Color.WHITE);
             super.loadUrl("file:///android_asset/www2/Login.html");
 //            super.loadUrl("file:///android_asset/www2_muvr/index.html");
         }

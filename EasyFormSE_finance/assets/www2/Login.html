@@ -9,6 +9,41 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="theme-color" content="#2196f3">
 
+    <link href="css/app_loader.css" rel="stylesheet" />
+    <script src="EFSE_Js/app_loader.js"></script>
+    <!-- The login form is held back until the page is fully ready (styles
+         applied, saved username filled in), then shown once with a single
+         short fade. Shown piecemeal it flickered: the form popped in half-way
+         through its entrance animation and the saved login filled in after. -->
+    <style>
+        html.login-wait .page-content,
+        html.login-wait .floating-button { opacity: 0 !important; animation: none !important; }
+        @keyframes loginIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        @keyframes loginFade { from { opacity: 0; } to { opacity: 1; } }
+        html.login-in .page-content { animation: loginIn 360ms cubic-bezier(.2, 0, 0, 1) both !important; }
+        html.login-in .floating-button { animation: loginFade 300ms ease 160ms both; }
+    </style>
+    <script>
+        document.documentElement.className += ' login-wait';
+        var loginReveal = (function () {
+            var done = false;
+            return function () {
+                if (done) return;
+                done = true;
+                var html = document.documentElement;
+                var pc = document.querySelectorAll('.page-content');
+                for (var i = 0; i < pc.length; i++) pc[i].classList.remove('premium-fade-in');
+                html.classList.remove('login-wait');
+                html.classList.add('login-in');
+                // Back to plain styles afterwards, so the fade-out on leaving
+                // the page (changeurl) still runs.
+                setTimeout(function () { html.classList.remove('login-in'); }, 700);
+            };
+        })();
+        // Normally shown by check_remember_me (below); this is the fallback.
+        window.addEventListener('load', function () { setTimeout(loginReveal, 1200); });
+    </script>
+
     <!-- F7 start -->
     <link href="Framework7-1.4.2/dist/css/Css_f7.css" rel="stylesheet" />
     <link href="font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" />
@@ -148,7 +183,32 @@
         storage.setItem('F7_view', JSON.stringify(F7_view));
         storage.setItem('F7_device', JSON.stringify(F7_device));
 
+        // The saved login is filled in by check_remember_me; show the form
+        // straight after it, so it appears already complete.
+        if (typeof check_remember_me === 'function') {
+            var check_remember_me_base = check_remember_me;
+            check_remember_me = function (internet) {
+                try { return check_remember_me_base(internet); }
+                finally { setTimeout(loginReveal, 0); }
+            };
+        }
+
+        // Leaving for Home: cover the form with the loading screen (Home
+        // opens with the same one) instead of fading it out to a white page.
+        if (typeof changeurl === 'function') {
+            var changeurl_base = changeurl;
+            changeurl = function (url) {
+                if (!/^selection\.html/.test(String(url)) || typeof AppLoader === 'undefined') return changeurl_base(url);
+                AppLoader.show();
+                try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor', ['#ECEDEF', true]); } catch (e) { }
+                setTimeout(function () { window.location.href = url; }, 280);
+            };
+        }
+
         document.addEventListener('deviceready', function showValues() {
+            // White system bar under the white login page (Home sets its own).
+            try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor', ['#FFFFFF', true]); } catch (e) { }
+
             $("#test_support").css("white-space", "pre");
 
             localStorage.setItem('online_counter', 'false');

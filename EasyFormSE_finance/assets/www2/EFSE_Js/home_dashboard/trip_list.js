@@ -416,19 +416,13 @@ var TripListSheet = (function () {
 
     // The summary card is the sum (or per-trip average) of the cards below it,
     // so it can never disagree with them.
-    // The main card's second line: averages for the list, times for one trip.
-    function setCardLabels(forTrip) {
-        setText('trip_stat_time_lab', forTrip ? 'Duration' : 'Time');
-        setText('trip_stat_avg_km_lab', forTrip ? 'Started' : 'Avg distance');
-        setText('trip_stat_avg_time_lab', forTrip ? 'Ended' : 'Avg duration');
-        setText('trip_stat_avg_viol_lab', forTrip ? 'Trip ID' : 'Violations / trip');
-    }
-
-    function setCardHead(title, state, forTrip) {
+    // The card's head: for the list, "All trips" and how many; for a picked
+    // trip, its ID and state on the left and its start and end on the right.
+    // Tapping the picked trip again goes back to the list's summary.
+    function setCardHead(title, state, when, forTrip) {
         setText('trip_stat_title', title);
         setText('trip_stat_state', state);
-        var clear = document.getElementById('trip_stat_clear');
-        if (clear) clear.style.display = forTrip ? '' : 'none';
+        setText('trip_stat_when', when);
         var card = document.getElementById('trip_main_card');
         if (card) card.classList[forTrip ? 'add' : 'remove']('is-trip');
     }
@@ -438,15 +432,13 @@ var TripListSheet = (function () {
         var live = String(row.trip_status) === '0';
         var v = rowViolations(row);
         var id = rowTripId(row);
-        setCardHead(rowTitle(row, live, row._km), rowStatus(row, live), true);
-        setCardLabels(true);
+        var from = formatWhen(row.min_milli) || '—';
+        var to = live ? 'In progress' : (formatWhen(row.max_milli) || '—');
+        setCardHead(id || rowTitle(row, live, row._km), rowStatus(row, live), from + ' – ' + to, true);
         // Distance and events arrive after the list is drawn.
         var known = summaryReady;
         setStats(known || row._km != null ? formatKm(row._km || 0) : '…', formatDuration(row.min_milli, row.max_milli, live) || '—',
             known ? String(v.speed + v.accel + v.brake + v.call) : '…');
-        setText('trip_stat_avg_km', formatWhen(row.min_milli) || '—');
-        setText('trip_stat_avg_time', live ? 'In progress' : (formatWhen(row.max_milli) || '—'));
-        setText('trip_stat_avg_viol', id || '—');
         setEventStat('trip_stat_ev_speed', v.speed);
         setEventStat('trip_stat_ev_accel', v.accel);
         setEventStat('trip_stat_ev_brake', v.brake);
@@ -464,8 +456,7 @@ var TripListSheet = (function () {
     // summary of the list.
     function paintCard() {
         if (pickedIdx >= 0 && shownRows[pickedIdx]) { paintTrip(shownRows[pickedIdx]); return; }
-        setCardHead('All trips', shownRows.length + (shownRows.length === 1 ? ' trip' : ' trips'), false);
-        setCardLabels(false);
+        setCardHead('All trips', shownRows.length + (shownRows.length === 1 ? ' trip' : ' trips'), '', false);
         if (summaryReady) paintSummary(shownRows, shownTimeMs);
         else paintSummaryLoading(shownRows, shownTimeMs);
     }
@@ -488,9 +479,6 @@ var TripListSheet = (function () {
 
     function paintSummaryLoading(rows, timeMs) {
         setStats('…', rows.length ? formatTotalDuration(timeMs) : '0m', '…');
-        setText('trip_stat_avg_km', '…');
-        setText('trip_stat_avg_time', '…');
-        setText('trip_stat_avg_viol', '…');
         setEventStat('trip_stat_ev_speed', null);
         setEventStat('trip_stat_ev_accel', null);
         setEventStat('trip_stat_ev_brake', null);
@@ -503,9 +491,6 @@ var TripListSheet = (function () {
         var km = tot.km, speed = tot.speed, accel = tot.accel, brake = tot.brake, call = tot.call;
         var violations = tot.violations;
         setStats(formatKm(km), n ? formatTotalDuration(timeMs) : '0m', String(violations));
-        setText('trip_stat_avg_km', n ? formatKm(km / n) : '—');
-        setText('trip_stat_avg_time', n ? formatTotalDuration(timeMs / n) : '—');
-        setText('trip_stat_avg_viol', n ? String(Math.round(violations / n * 10) / 10) : '—');
         setEventStat('trip_stat_ev_speed', speed);
         setEventStat('trip_stat_ev_accel', accel);
         setEventStat('trip_stat_ev_brake', brake);
@@ -735,10 +720,6 @@ var TripListSheet = (function () {
     }
 
     function bindOnce() {
-        $(document).off('click.tripClear', '#trip_stat_clear').on('click.tripClear', '#trip_stat_clear', function () {
-            if (pickedIdx >= 0) pick(pickedIdx);
-            return false;
-        });
         $(document).off('click.tripFilter', '.trip-filter-chip').on('click.tripFilter', '.trip-filter-chip', function () {
             range = $(this).attr('data-range') || 'month';
             if (range === 'custom') fillCustomDefaults();

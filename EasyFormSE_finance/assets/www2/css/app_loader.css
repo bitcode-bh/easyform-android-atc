@@ -1,0 +1,42 @@
+/* Loading screen shown between Login and Home (and while Home builds), so the
+   gap between the two pages is never a blank white screen. Same grey as the
+   Home cards; the drawing cycles through the cards' own line art: site rings,
+   trip route, hard hat, permit triangle, passport shield. */
+#app_loader {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: 100000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: #ecedef;
+    opacity: 1;
+    transition: opacity 280ms ease;
+}
+#app_loader.al-in { animation: alIn 240ms ease both; }
+#app_loader.al-out { opacity: 0; pointer-events: none; }
+#app_loader svg { display: block; width: 132px; height: 100px; overflow: visible; }
+#app_loader b { font-size: 13px; font-weight: 600; letter-spacing: .08em; color: #2a3086; }
+#app_loader small { font-size: 12px; color: #6b7280; }
+
+/* The drawings switch every half second (a fifth of the 2.5 s loop), so a
+   normal wait shows all of them: each draws itself, holds, fades. */
+#app_loader .al-i { opacity: 0; animation: alShow 2.5s linear infinite; animation-delay: var(--d, 0s); }
+#app_loader .al-d {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: alDraw 2.5s ease-out infinite;
+    animation-delay: var(--d, 0s);
+}
+/* The site rings pulse outward instead of being drawn. */
+#app_loader .al-r {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: alRing .5s ease-out infinite;
+}
+@keyframes alIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes alShow { 0% { opacity: 0; } 2%, 17% { opacity: 1; } 20%, 100% { opacity: 0; } }
+@keyframes alDraw { 0% { stroke-dashoffset: 1; } 10%, 100% { stroke-dashoffset: 0; } }
+@keyframes alRing { from { transform: scale(.15); opacity: .7; } to { transform: scale(1); opacity: 0; } }
