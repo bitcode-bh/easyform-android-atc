@@ -227,6 +227,10 @@
         <param name="android-package" value="com.sky.atc.easyformse.plugins.AttendancePendingPlugin"/>
     </feature>
 
+    <feature name="SystemBarPlugin">
+        <param name="android-package" value="com.sky.atc.easyformse.plugins.SystemBarPlugin"/>
+    </feature>
+
     <feature name="GeofenceTrackingPlugin">
         <param name="android-package" value="com.sky.atc.easyformse.plugins.GeofenceTrackingPlugin"/>
     </feature>

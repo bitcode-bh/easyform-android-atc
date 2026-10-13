@@ -842,7 +842,8 @@
                 lms_active_tab = t;
                 document.querySelector('.sample-safety-titlebar').textContent = t;
                 var tabbar = document.querySelector('.toolbar.tabbar');
-                if (tabbar) tabbar.classList.remove('tabbar-dark');
+                if (tabbar) tabbar.classList.toggle('tabbar-dark', t === 'Micro Learning');
+                if (typeof lms_set_system_bar === 'function') lms_set_system_bar(t === 'Micro Learning');
                 // top bar matches the page background: dark on the (black) reels screen
                 var navbar = document.querySelector('.navbar');
                 if (navbar) navbar.classList.toggle('navbar-dark', t === 'Micro Learning');

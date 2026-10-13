@@ -1036,6 +1036,9 @@ var HomeHero = (function () {
 
         bindRestOnRow($root);
         addListFoot();
+        // Pulling down to reveal search belongs to the list. A touch that
+        // starts on the card never reaches the page's pull handler.
+        $root.off('touchstart.hhPull').on('touchstart.hhPull', function (ev) { ev.stopPropagation(); });
         watchModuleList();
         $root.find('.hh-permit').off('click.homeHero').on('click.homeHero', function () {
             var row = ptwModuleRow();
@@ -1057,6 +1060,14 @@ var HomeHero = (function () {
     // follow when Cordova is ready. The card used to wait on deviceready plus a
     // timer, which left a gap at the top of Home on every return to it.
     var deviceIsReady = false;
+    // Tab icon "pop": the tapped tab's icon swells and eases back.
+    $(document).on('click.hhTabPop', '#div_new_tabbar .tab-link', function () {
+        var ico = this.querySelector('.tab-ico');
+        if (!ico) return;
+        ico.classList.remove('tab-pop');
+        void ico.offsetWidth;   // restart the animation on a repeat tap
+        ico.classList.add('tab-pop');
+    });
     try {
         $(document).ready(function () {
             render();
@@ -1064,6 +1075,8 @@ var HomeHero = (function () {
         });
         document.addEventListener('deviceready', function () {
             deviceIsReady = true;
+            // Coming back from the LMS reels, the system bar is light again.
+            try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor', ['#ECEDEF', true]); } catch (e) { }
             if (!$('#' + ROOT_ID + ' .hh-track').length) render();
             refresh();
         }, false);

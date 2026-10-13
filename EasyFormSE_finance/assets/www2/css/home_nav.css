@@ -311,3 +311,40 @@
     color: inherit !important;
     font-weight: 400 !important;
 }
+
+/* Tab icon "pop" on tap: swells to 1.28x and eases back; a transform only,
+   so the bar's layout does not move. */
+.tab-ico.tab-pop { animation: tab-pop 0.5s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes tab-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+
+/* Home search in the top bar. pull_to_search.js moves #home_search_bar into
+   the navbar; open, it sits where the greeting and date were, between the
+   profile picture and the bell, and those two lines are hidden. */
+.navbar-inner > #home_search_bar {
+    display: block !important;
+    position: absolute;
+    left: 62px;
+    right: 56px;
+    top: 50%;
+    transform: translateY(-50%);
+    max-height: none;
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    box-shadow: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+}
+.navbar-inner > #home_search_bar.open {
+    max-height: none;
+    padding: 0;
+    box-shadow: none;
+    opacity: 1;
+    pointer-events: auto;
+}
+.navbar-inner.home-search-on .home-greet-text { visibility: hidden; }

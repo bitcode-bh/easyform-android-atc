@@ -1,6 +1,7 @@
 /**
  * Pull Down to Search Implementation
- * Shows a search bar when pulling down on the Home Screen.
+ * Pulling down on the Home list shows the search field in the top bar, in
+ * place of the greeting and date.
  * Filters both list view and card view locally.
  *
  * This script is loaded in selection.html AFTER framework7 + kitchen-sink.js.
@@ -48,7 +49,20 @@
         });
     }, 100);
 
+    // The search field lives in the top bar itself: it is moved there once,
+    // and while it is open it takes the place of the greeting and date.
+    function topBar() {
+        return document.querySelector('.view-main .navbar .navbar-inner');
+    }
+
+    function dockSearchBar() {
+        var bar = document.getElementById('home_search_bar');
+        var inner = topBar();
+        if (bar && inner && bar.parentNode !== inner) inner.appendChild(bar);
+    }
+
     function showSearchBar() {
+        dockSearchBar();
         var bar = document.getElementById('home_search_bar');
         var input = document.getElementById('home_search_input');
         if (!bar) return;
@@ -56,8 +70,10 @@
         if (searchVisible) return; // already open
         searchVisible = true;
 
-        // animate open: the top bar "expands" to reveal the field (see #home_search_bar.open)
+        // The greeting gives way to the field (see home_nav.css).
         bar.classList.add('open');
+        var inner = topBar();
+        if (inner) inner.classList.add('home-search-on');
         if (input) {
             setTimeout(function () {
                 input.focus();
@@ -72,7 +88,9 @@
 
         searchVisible = false;
 
-        if (bar) bar.classList.remove('open'); // animate closed
+        if (bar) bar.classList.remove('open');
+        var inner = topBar();
+        if (inner) inner.classList.remove('home-search-on');
         if (input) {
             input.value = '';
             input.blur();

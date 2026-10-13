@@ -23,6 +23,44 @@ function lms_count_distinct_ml(arr, field) {
 // accumulates real wall-clock seconds while a video element is actually
 // playing, stored in localStorage. It's genuine measured data, just kept
 // on-device rather than server-side, so it resets on reinstall/cache-clear.
+// The system navigation bar continues the tab bar above it: black on the
+// reels screen, the app's light grey everywhere else.
+function lms_set_system_bar(dark) {
+    try {
+        cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor',
+            dark ? ['#000000', false] : ['#ECEDEF', true]);
+    } catch (e) { }
+}
+// Leaving the LMS from the reels screen must not leave the bar black.
+window.addEventListener('pagehide', function () { lms_set_system_bar(false); });
+
+// Tab icon "pop": the tapped tab's icon swells and eases back.
+$(document).on('click', '.tabbar .tab-link', function () {
+    var ico = this.querySelector('.tab-ico');
+    if (!ico) return;
+    ico.classList.remove('tab-pop');
+    void ico.offsetWidth;   // restart the animation on a repeat tap
+    ico.classList.add('tab-pop');
+});
+
+// How much of a play session counts as watch time for one video. A video is
+// credited at most its own length in total, so playing past the end of the
+// count (buffering, a paused tab) or watching it again adds nothing.
+// ledgerKey holds seconds credited so far per video id.
+function lms_credit_watch_seconds(ledgerKey, videoId, seconds, duration) {
+    if (!seconds || seconds <= 0) return 0;
+    if (videoId == null || videoId === '' || !(duration > 0)) return seconds;   // length unknown: cannot cap
+    var map = {};
+    try { map = JSON.parse(localStorage.getItem(ledgerKey)) || {}; } catch (e) { map = {}; }
+    var done = Number(map[videoId]) || 0;
+    var credit = Math.max(0, Math.min(seconds, duration - done));
+    if (credit > 0) {
+        map[videoId] = done + credit;
+        localStorage.setItem(ledgerKey, JSON.stringify(map));
+    }
+    return credit;
+}
+
 function lms_add_watch_seconds(storageKey, seconds) {
     if (!seconds || seconds <= 0) return;
     var total = Number(localStorage.getItem(storageKey)) || 0;
@@ -876,15 +914,22 @@ function lms_track_watch_time(videoEl, storageKey, itemIdAttr, extraByItem) {
     var playStartedAt = null;
     var playStartedItemId = null;
     var playStartedExtraId = null;
+    var playStartedVideoId = null;
+    var playStartedDuration = 0;
 
     function flush() {
         if (playStartedAt === null) return;
         var elapsed = (Date.now() - playStartedAt) / 1000;
         var itemId = playStartedItemId;
         var extraId = playStartedExtraId;
+        // The video that was playing: the lesson when there is one, else the file.
+        var videoId = extraId || playStartedVideoId;
+        var duration = playStartedDuration || videoEl.duration;
         playStartedAt = null;
         playStartedItemId = null;
         playStartedExtraId = null;
+        elapsed = lms_credit_watch_seconds(storageKey + '_credited', videoId, elapsed, duration);
+        if (!elapsed) return;
         lms_add_watch_seconds(storageKey, elapsed);
         lms_add_watch_seconds_daily(storageKey + '_daily', elapsed);
         if (itemIdAttr && itemId) {
@@ -896,8 +941,13 @@ function lms_track_watch_time(videoEl, storageKey, itemIdAttr, extraByItem) {
         }
     }
 
+    $(videoEl).on('durationchange', function () {
+        if (playStartedAt !== null && videoEl.duration > 0 && isFinite(videoEl.duration)) playStartedDuration = videoEl.duration;
+    });
     $(videoEl).on('play', function () {
         playStartedAt = Date.now();
+        playStartedVideoId = videoEl.getAttribute('data-remote') || videoEl.currentSrc || videoEl.getAttribute('src');
+        playStartedDuration = (videoEl.duration > 0 && isFinite(videoEl.duration)) ? videoEl.duration : 0;
         playStartedItemId = itemIdAttr ? videoEl.getAttribute(itemIdAttr) : null;
         if (extraByItem && extraByItem.attr) {
             playStartedExtraId = videoEl.getAttribute(extraByItem.attr);
@@ -1053,10 +1103,12 @@ $(document).ready(function () {
         }
 
         // Keep the header theme and active tab in sync for taps, swipes and
-        // hardware Back. Bottom navigation stays light on every tab.
+        // hardware Back. On the (black) reels screen the bottom navigation
+        // and the system bar under it go black too.
         var _isML = (this.id == "tab-4");
         var _tabbar = document.querySelector('.toolbar.tabbar');
-        if (_tabbar) _tabbar.classList.remove('tabbar-dark');
+        if (_tabbar) _tabbar.classList.toggle('tabbar-dark', _isML);
+        lms_set_system_bar(_isML);
         var _navbar = document.querySelector('.navbar');
         if (_navbar) _navbar.classList.toggle('navbar-dark', _isML);
         try {
