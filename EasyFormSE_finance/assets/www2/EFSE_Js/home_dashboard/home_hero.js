@@ -147,7 +147,8 @@ var HomeHero = (function () {
             + '<div class="hh-top"><span class="hh-eyebrow">Learning</span><img class="hh-shield" alt="" /></div>'
             + '<div class="hh-head hh-lms-name"></div>'
             + '<div class="hh-sub hh-lms-lessons"></div>'
-            + '<div class="hh-bar"><i></i></div>'
+            + '<div class="hh-score"><span>Learning score</span>'
+            + '<b class="hh-score-val"></b><small class="hh-score-tag"></small></div>'
             + '<div class="hh-stats">' + lmsStatHtml('mod', 'Modules') + lmsStatHtml('ass', 'Assessments')
             + lmsStatHtml('ml', 'Micro learning') + '</div>'
             + '<a href="#" class="hh-foot hh-link hh-open-lms"><span>Continue learning</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>'
@@ -690,7 +691,20 @@ var HomeHero = (function () {
         return { done: Number(s.watched) || 0, total: Number(s.total) || 0, score: answered ? Math.round(correct / answered * 100) : null };
     }
 
+    // PLACEHOLDER. There is no overall learning score yet: nothing in the LMS
+    // or its API produces one. Until it exists the slide shows this fixed
+    // sample figure, marked "Sample" on screen. Replace learningScore() with
+    // the real source and drop the tag when it does.
+    var SAMPLE_LEARNING_SCORE = 82;
+
+    function learningScore() {
+        return { value: SAMPLE_LEARNING_SCORE, sample: true };
+    }
+
     function paintLms($slide) {
+        var score = learningScore();
+        $slide.find('.hh-score-val').text(score.value + '/100');
+        $slide.find('.hh-score-tag').text(score.sample ? 'Sample' : '');
         var $shield = $slide.find('.hh-shield');
         if ($shield.length && !$shield.attr('src')) {
             try {
@@ -707,7 +721,6 @@ var HomeHero = (function () {
         if (!modules) {
             $slide.find('.hh-lms-name').text('Open LMS to see your progress');
             $slide.find('.hh-lms-lessons').text('');
-            $slide.find('.hh-bar i').css('width', '0%');
             showLmsStat($slide, 'mod', 0, null);
             return;
         }
@@ -723,7 +736,6 @@ var HomeHero = (function () {
         var pct = total ? Math.round(done / total * 100) : 0;
         $slide.find('.hh-lms-name').text((current ? current.Module_Name : 'All modules complete') || '');
         $slide.find('.hh-lms-lessons').text(done + ' of ' + total + ' lessons · ' + pct + '%');
-        $slide.find('.hh-bar i').css('width', pct + '%');
         var mk = listingKpi(modules);
         showLmsStat($slide, 'mod', mk.done, mk.total, mk.score);
     }
@@ -1032,9 +1044,10 @@ var HomeHero = (function () {
         if (isVendorTechnician()) slides.push(siteSlideHtml());
         slides.push(tripSlideHtml());
         slides.push(lmsSlideHtml());
-        shownPermitSlide = !!(permitProvider || ptwModuleRow());
-        if (shownPermitSlide) slides.push(permitSlideHtml());
         slides.push(passportSlideHtml());
+        // Permit to work is always second; Learning stays second to last.
+        shownPermitSlide = !!(permitProvider || ptwModuleRow());
+        if (shownPermitSlide) slides.splice(1, 0, permitSlideHtml());
 
         var dots = '';
         for (var i = 0; i < slides.length; i++) dots += '<span' + (i === 0 ? ' class="on"' : '') + '></span>';

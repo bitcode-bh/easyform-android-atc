@@ -1195,9 +1195,25 @@
 
 /* Learning slide: the passport's shield at the top right, and a second line
    under each figure for what is pending and the score. */
-#div_home_hero .hh-shield { flex: 0 0 auto; width: 26px; height: 26px; margin: -6px 0; object-fit: contain; }
+/* Same 50px shield as the passport card's badge, in the same corner. */
+#div_home_hero [data-slide="lms"] { position: relative; }
+#div_home_hero .hh-shield { position: absolute; top: 0; right: 20px; width: 50px; height: 50px; object-fit: contain; }
 #div_home_hero .hh-shield:not([src]) { visibility: hidden; }
+#div_home_hero [data-slide="lms"] .hh-top { margin-bottom: 14px; min-height: 16px; }
+#div_home_hero [data-slide="lms"] .hh-head,
+#div_home_hero [data-slide="lms"] .hh-sub { padding-right: 62px; }
 #div_home_hero [data-slide="lms"] .hh-head { font-size: 18px; -webkit-line-clamp: 1; }
-#div_home_hero [data-slide="lms"] .hh-bar { margin-top: 8px; }
+/* Learning score, where the lesson progress bar was. */
+#div_home_hero .hh-score {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--hh-grey);
+}
+#div_home_hero .hh-score b { margin-left: auto; font-size: 18px; font-weight: 700; color: var(--hh-ink); }
+#div_home_hero .hh-score small { font-size: 11px; color: var(--hh-faint); }
+#div_home_hero .hh-score small:empty { display: none; }
 #div_home_hero [data-slide="lms"] .hh-stats { padding-top: 10px; }
 #div_home_hero [data-slide="lms"] .hh-stat span + span { margin-top: 1px; font-size: 11px; }
