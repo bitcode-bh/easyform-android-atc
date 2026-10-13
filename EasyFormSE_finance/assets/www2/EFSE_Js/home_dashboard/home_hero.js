@@ -139,6 +139,11 @@ var HomeHero = (function () {
         + '<circle cx="160" cy="118" r="5" fill="#fff" stroke="#2a3086" stroke-width="2"/>'
         + '<rect x="0" y="0" width="320" height="170" fill="url(#hh_map_fade)"/></svg>';
 
+    // A trip figure; tapping any of them opens the Trips page.
+    function tripStat(valueClass, label) {
+        return '<a href="#" class="hh-stat hh-open-trips"><b class="' + valueClass + '">…</b><span>' + label + '</span></a>';
+    }
+
     function tripSlideHtml() {
         var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         return '<div class="hh-slide" data-slide="trips">'
@@ -146,20 +151,9 @@ var HomeHero = (function () {
             + topHtml('Driver trips · ' + months[new Date().getMonth()], '', 'hh-trip-status')
             + '<div class="hh-head hh-figure hh-trip-km">…</div>'
             + '<div class="hh-sub hh-trip-sub"></div>'
-            + '<div class="hh-stats">' + statHtml('hh-trip-time', 'Drive time') + statHtml('hh-trip-viol', 'Violations')
-            + statHtml('hh-trip-call', 'On call') + '</div>'
-            + '<a href="#" class="hh-foot hh-link hh-open-trips"><span>View trips</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>'
+            + '<div class="hh-stats">' + tripStat('hh-trip-time', 'Drive time') + tripStat('hh-trip-viol', 'Violations')
+            + tripStat('hh-trip-call', 'On call') + '</div>'
             + '</div>';
-    }
-
-    // The LMS tab each learning area opens (LMS_Dashboard.html).
-    var LMS_TABS = { mod: 'tab-1', ass: 'tab-2', ml: 'tab-4' };
-
-    // One learning area: completed out of total, then what is pending and the
-    // score. Tapping it opens the LMS on that area's tab.
-    function lmsStatHtml(key, label) {
-        return '<a href="#" class="hh-stat hh-lms-open" data-tab="' + LMS_TABS[key] + '"><b class="hh-lms-' + key + '-done">—</b>'
-            + '<span>' + label + '</span><span class="hh-lms-' + key + '-more"></span></a>';
     }
 
     function lmsSlideHtml() {
