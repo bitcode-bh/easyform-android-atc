@@ -171,7 +171,12 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
             Executors.newFixedThreadPool(4);
 
     private void sendAndClearNotification(Context context, Bundle extras) {
+        // The "declined" push is sent on a worker thread after onReceive has
+        // returned; without this the system may stop the process first and
+        // the caller never hears that the call was declined.
+        final PendingResult pending = goAsync();
         mExecutorService.execute(() -> {
+          try {
 
             NotificationUtils.stopRingtone();
             String loginUserDataString = extras.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");
@@ -205,6 +210,11 @@ public class JitsiPluginBroadcast extends BroadcastReceiver {
                 fcmIds.add(mFirebaseRequestData.getRemotetoken());
             }
             callNotificationApi(context, data, false, fcmIds, fcmIosIds, notificationId);
+          } catch (Exception e) {
+            android.util.Log.e(TAG, "decline failed", e);
+          } finally {
+            try { pending.finish(); } catch (Exception ignored) { }
+          }
         });
     }
 

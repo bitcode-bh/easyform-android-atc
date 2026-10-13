@@ -417,24 +417,42 @@ div[id^='div_step_Col_'] .cntrl_main_div {
     }
 }
 
+/* While the AI is checking a photo (CapturePhoto.js adds .marching-ants to
+   the photo's field and takes it off when the answer is back): a band of
+   light sweeps across the photo over a faint navy tint. It replaces the old
+   blue dashed border that crawled round the field; the class name is kept so
+   the code that sets it is untouched. */
 .marching-ants {
-    /* Border width and color */
-    --bw: 3px;
-    --bc: blue;
-    background: linear-gradient(90deg, var(--bc) 50%, transparent 50%) repeat-x top, linear-gradient(90deg, var(--bc) 50%, transparent 50%) repeat-x bottom, linear-gradient(0deg, var(--bc) 50%, transparent 50%) repeat-y left, linear-gradient(0deg, var(--bc) 50%, transparent 50%) repeat-y right;
-    background-size: 16px var(--bw), 16px var(--bw), var(--bw) 16px, var(--bw) 16px;
-    animation: ants 0.4s linear infinite;
-    border-radius: 5px;
-    padding: 5px 5px 0px 5px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
 }
-
-
-@keyframes ants {
-    from {
-        background-position: 0 0, 0 100%, 0 0, 100% 0;
-    }
-
-    to {
-        background-position: 16px 0, -16px 100%, 0 -16px, 100% 16px;
-    }
+.marching-ants::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    /* stated outright: the form's own ::after on this field is a 0-height
+       underline, and its height would otherwise win */
+    width: 100% !important;
+    height: 100% !important;
+    transform: none !important;
+    opacity: 1 !important;
+    z-index: 5;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+        linear-gradient(110deg,
+            rgba(63, 182, 224, 0) 35%,
+            rgba(63, 182, 224, .40) 45%,
+            rgba(255, 255, 255, .65) 50%,
+            rgba(63, 182, 224, .40) 55%,
+            rgba(63, 182, 224, 0) 65%) no-repeat,
+        rgba(42, 48, 134, .14);
+    background-size: 300% 100%, auto;
+    animation: ai-sweep 1.5s linear infinite;
+}
+@keyframes ai-sweep {
+    from { background-position: 150% 0, 0 0; }
+    to { background-position: -50% 0, 0 0; }
+}
 }

@@ -1398,3 +1398,27 @@
    title, card and list switch together. */
 body:not(.hh-in-level) #div_level { display: none !important; }
 body.hh-in-level #div_level { display: flex !important; }
+
+/* Module rows: the count badge while it has no count yet. Same element and
+   same logic as before (selection.js puts images/ajax-loader.gif in it);
+   only what is drawn changes: a thin ring with a navy arc turning on it, in
+   place of the GIF on a black disc. */
+#module_list .mkbadge:not(.button-fill) {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+    min-width: 0;
+    /* the ring sits in the middle of the badge's box */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+#module_list .mkbadge img[src$="ajax-loader.gif"] {
+    content: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke-width=%222.4%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22 stroke=%22%23d0d3d9%22/%3E%3Cpath d=%22M12 3a9 9 0 0 1 9 9%22 stroke=%22%232a3086%22 stroke-linecap=%22round%22%3E%3CanimateTransform attributeName=%22transform%22 type=%22rotate%22 from=%220 12 12%22 to=%22360 12 12%22 dur=%220.9s%22 repeatCount=%22indefinite%22/%3E%3C/path%3E%3C/svg%3E");
+    display: block;
+    width: 22px !important;
+    height: 22px !important;
+}
+/* No rule under the level's title, above the list. */
+#div_level { border-bottom: 0 !important; }

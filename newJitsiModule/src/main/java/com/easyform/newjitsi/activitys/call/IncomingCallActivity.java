@@ -66,26 +66,13 @@ public class IncomingCallActivity extends AppCompatActivity {
                 | WindowManager.LayoutParams.FLAG_FULLSCREEN;
         getWindow().addFlags(flags);
 
-        final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.slide_down);
-
-
         btnAccept = findViewById(R.id.takeBtn);
         btnReject = findViewById(R.id.rejectBtn);
         txtCallfrom = findViewById(R.id.type_inc_call);
-       // btnReject.setAnimation(myAnim);
-        btnAccept.setAnimation(myAnim);
-        btnAccept.startAnimation(myAnim);
-
-        new CountDownTimer(30000, 3000) {
-            public void onTick(long millisUntilFinished) {
-                btnAccept.startAnimation(myAnim);
-                btnReject.startAnimation(myAnim);
-            }
-            public void onFinish() {
-            }
-        }.start();
-
-
+        // The two buttons used to bounce every three seconds. They are plain
+        // labelled buttons now (activity_incoming.xml), and the label is drawn
+        // over the button, so moving the button would slide it out from under
+        // its own words.
 
         intent = getIntent();
         if (intent != null) {

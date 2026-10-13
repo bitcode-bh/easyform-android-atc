@@ -1,63 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Incoming video call, in the app's Home language: a light page, the caller
+     on a grey card, and two plain buttons, Decline and Answer.
+     rejectBtn and takeBtn are still the ImageButtons the activity listens to;
+     each fills its button, with the icon and word drawn on top of it (those
+     take no touches, so a tap anywhere on the button reaches it). -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fragmentIncomeCall"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="@drawable/background">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFBFBFC">
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/infoAboutCall"
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop = "true">
+        android:layout_above="@+id/incomingButtons"
+        android:layout_alignParentTop="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp">
 
-        <include
-            android:id="@+id/avatar_and_name"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            layout="@layout/view_avatar_and_name_vertical">
-        </include>
-        <TextView
-            android:id="@+id/type_inc_call"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/white"
-            android:text="..."
-            android:gravity="center_horizontal|center_vertical"
-            android:layout_below="@+id/avatar_and_name"
-            android:layout_marginTop="@dimen/call_buttons_padding"
-            android:layout_centerHorizontal="true" />
+            android:background="@drawable/incoming_card"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingStart="18dp"
+            android:paddingTop="34dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="28dp">
 
-    </RelativeLayout>
+            <View
+                android:layout_width="104dp"
+                android:layout_height="104dp"
+                android:background="@drawable/incoming_avatar" />
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:letterSpacing="0.09"
+                android:text="VIDEO CALL"
+                android:textColor="#FF6B7280"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/type_inc_call"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="..."
+                android:textColor="#FF0F1729"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/incomingButtons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/call_buttons_margin"
-        android:gravity="center">
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="40dp"
+        android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/rejectBtn"
-            android:layout_width="@dimen/call_buttons_diameter"
-            android:layout_height="@dimen/call_buttons_diameter"
-            android:padding="@dimen/call_buttons_padding"
-            android:background="@drawable/takecallbackground"
-            android:src="@drawable/ic_baseline_call_end_24"
-            android:scaleType="centerCrop" />
-        <ImageButton
-            android:id="@+id/takeBtn"
-            android:layout_width="@dimen/call_buttons_diameter"
-            android:layout_height="@dimen/call_buttons_diameter"
-            android:padding="@dimen/call_buttons_padding"
-            android:scaleType="centerCrop"
-            android:background="@drawable/endcallbuttnbackground"
-            android:src="@drawable/ic_baseline_call_64"
-            android:layout_toRightOf="@id/rejectBtn"
-            android:layout_marginLeft="@dimen/income_call_buttons_margin" />
-    </RelativeLayout>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1">
+
+            <ImageButton
+                android:id="@+id/rejectBtn"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/incoming_btn_decline"
+                android:contentDescription="Decline" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_baseline_call_end_24"
+                    android:tint="#FFA32D2D" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Decline"
+                    android:textColor="#FFA32D2D"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1">
+
+            <ImageButton
+                android:id="@+id/takeBtn"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/incoming_btn_answer"
+                android:contentDescription="Answer" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_baseline_call_64"
+                    android:tint="#FFFFFFFF" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Answer"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
 
 </RelativeLayout>

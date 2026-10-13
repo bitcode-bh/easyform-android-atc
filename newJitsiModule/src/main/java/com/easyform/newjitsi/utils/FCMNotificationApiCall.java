@@ -37,17 +37,45 @@ public class FCMNotificationApiCall {
 //                firebaseRequest);
 //    }
 
+    // One HTTP client for every push, so its connection to FCM is reused
+    // instead of being opened afresh (a new TLS handshake) for each message.
+    private static final OkHttpClient CLIENT = new OkHttpClient();
+
+    // The access token is good for an hour. It used to be fetched again for
+    // every single push: a signature plus an extra round trip to Google before
+    // each call invite, each reject and each drawing stroke sent in a call.
+    private static String cachedAccessToken = null;
+    private static long cachedAccessTokenUntil = 0;
+    private static final long ACCESS_TOKEN_KEEP_MS = 50L * 60L * 1000L;
+
+    private static synchronized String accessToken() throws Exception {
+        long now = System.currentTimeMillis();
+        if (cachedAccessToken != null && now < cachedAccessTokenUntil) {
+            return cachedAccessToken;
+        }
+        String jwtToken = AccessToken.generateJWT(AccessToken.keyWithoutHeaders, AccessToken.client_email);
+        if (jwtToken == null || jwtToken.isEmpty()) {
+            return null;
+        }
+        String token = AccessToken.getAccessToken(jwtToken);
+        if (token != null && !token.isEmpty()) {
+            cachedAccessToken = token;
+            cachedAccessTokenUntil = now + ACCESS_TOKEN_KEEP_MS;
+        }
+        return token;
+    }
+
+    private static synchronized void forgetAccessToken() {
+        cachedAccessToken = null;
+        cachedAccessTokenUntil = 0;
+    }
+
     public static void sendNotification(FirebaseRequestData data, String token, boolean isiOS) throws Exception {
-        String jwtToken = null;
         String accessToken = null;
         try {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
-            jwtToken = AccessToken.generateJWT(AccessToken.keyWithoutHeaders, AccessToken.client_email);
-
-            if (jwtToken != null && !jwtToken.isEmpty()) {
-                accessToken = AccessToken.getAccessToken(jwtToken);
-            }
+            accessToken = accessToken();
         } catch (Exception e) {
 
             Log.e(TAG, "Error generating JWT or access token: " + e.getMessage());
@@ -108,12 +136,27 @@ public class FCMNotificationApiCall {
 
         messageContent.put("data", dataPayload);
 
+        // Deliver now. Without this a data message goes out at normal
+        // priority, which Android holds back while the receiving phone is idle
+        // or in Doze -- the call then rings late or not at all. A call that
+        // could not be delivered within a minute is dropped rather than
+        // ringing long after the caller has given up.
+        Map<String, Object> androidConfig = new HashMap<>();
+        androidConfig.put("priority", "high");
+        androidConfig.put("ttl", "60s");
+        messageContent.put("android", androidConfig);
+        Map<String, String> apnsHeaders = new HashMap<>();
+        apnsHeaders.put("apns-priority", "10");
+        Map<String, Object> apnsConfig = new HashMap<>();
+        apnsConfig.put("headers", apnsHeaders);
+        messageContent.put("apns", apnsConfig);
+
         message.put("message", messageContent);
 
         String json = new Gson().toJson(message);
 
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = CLIENT;
         RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
         Request request = new Request.Builder()
                 .url(Apis.FCMURL)
@@ -123,6 +166,9 @@ public class FCMNotificationApiCall {
                 .build();
 
         Response response = client.newCall(request).execute();
+        if (response.code() == 401) {
+            forgetAccessToken();   // rejected: fetch a new one for the next push
+        }
         if (!response.isSuccessful()) {
             System.out.println("❌ Error sending notification: " + json + response.body().string());
         } else {

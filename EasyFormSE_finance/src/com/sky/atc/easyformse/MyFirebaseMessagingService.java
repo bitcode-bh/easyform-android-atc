@@ -184,8 +184,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         sqlitewraper.context.sendBroadcast(jitsiPluginBroadcast);
                     }
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    // Any failure here (not only bad JSON): when the push
+                    // starts the app from cold, the login details may not be
+                    // readable yet, and an uncaught exception killed the
+                    // service -- the call was lost without a trace.
+                    Log.e("##FCM", "incoming call could not be shown", e);
                 }
             } else if (data.get("videocallType").matches("jitsimeetScreenShare")) {
 

@@ -209,16 +209,36 @@ public class NotificationUtils {
             startRingtone(context);
         }, 500);
 
+        // An unanswered call stops by itself. It used to ring, and its
+        // notification used to stay, until the user acted or a "call stopped"
+        // push arrived; if that push was lost the phone rang on, and because
+        // a call notification was still showing every later call was ignored.
+        final int thisRing = ++ringCount;
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (thisRing != ringCount) return;   // a newer call is ringing now
+            stopRingtone();
+            try {
+                if (IncomingCallActivity.mActivity != null) IncomingCallActivity.mActivity.finish();
+            } catch (Exception ignored) { }
+        }, RING_TIMEOUT_MS);
+
 
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
 
-        String CHANNEL_ID = "incoming_call_channel_v2";
+        // A new id on purpose. An earlier version of the app created
+        // "incoming_call_channel_v2" at LOW importance, and Android never lets
+        // an app raise a channel once it exists: on phones that had that
+        // version, calls arrived silently in the shade with no pop-up and no
+        // full-screen ringing. The old channel is removed.
+        String CHANNEL_ID = "incoming_call_channel_v3";
 
 
         // Android 8+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            try { manager.deleteNotificationChannel("incoming_call_channel_v2"); } catch (Exception ignored) { }
 
             NotificationChannel channel = manager.getNotificationChannel(CHANNEL_ID);
 
@@ -287,6 +307,12 @@ public class NotificationUtils {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(false)
                 .setAutoCancel(false)
+                .setTimeoutAfter(RING_TIMEOUT_MS)
+                // Also as ordinary actions: the custom view above is only the
+                // pop-up, so once that slid away the notification left in the
+                // shade had no way to answer or decline.
+                .addAction(R.drawable.reject_icon, "Reject", rejectCallPendingIntent)
+                .addAction(R.drawable.call_icon, "Accept", acceptCallPendingIntent)
                 .setContentIntent(fullScreenPendingIntent)
                 .setFullScreenIntent(fullScreenPendingIntent, true);
 
@@ -436,6 +462,10 @@ public class NotificationUtils {
             mediaPlayer = null;
         }
     }
+
+    // How long an unanswered call rings, and which ring is the current one.
+    private static final long RING_TIMEOUT_MS = 45000;
+    private static int ringCount = 0;
 
     static MediaPlayer outgoingPlayer;
     public static void startOutgoingRing(Context context) {

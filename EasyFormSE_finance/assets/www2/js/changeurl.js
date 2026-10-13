@@ -59,10 +59,31 @@ $(document).ready(function() {
 function changeurl(url) {
     try {
         // alert1("" + url + "");
-        // Go straight away and leave this page as it is: the WebView keeps
-        // it on screen until the next page has drawn, so the switch is one
-        // step. Fading this page out first left a blank screen in between.
-        window.location.href = url;
+        // Leave this page as it is and go: the WebView keeps it on screen
+        // until the next page has drawn, so the switch is one step. Fading
+        // this page out first left a blank screen in between.
+        //
+        // Not from inside the caller, though. changeurl() is usually called
+        // from a plugin's result callback, and a page change asked for from
+        // inside one of those is sometimes dropped by the WebView: the page
+        // then just sat there (after login, Home had already emptied its
+        // list ready for its reload, so it stayed empty). The old 350ms fade
+        // hid this by always going from a timer. So: go on the next tick,
+        // reload outright when the target is this same page, and if the page
+        // is somehow still here a moment later, ask again.
+        var here = String(window.location.pathname).split('/').pop();
+        var samePage = String(url).split(/[?#]/)[0] === here && !/[?#]/.test(String(url));
+        var left = false;
+        window.addEventListener('pagehide', function () { left = true; });
+        function go() {
+            if (samePage) window.location.reload();
+            else window.location.href = url;
+        }
+        setTimeout(go, 0);
+        setTimeout(function () {
+            if (left) return;
+            try { if (samePage) window.location.reload(); else window.location.replace(url); } catch (e) { }
+        }, 1500);
         // navigator.app.loadUrl("file:///android_asset/www2/" + url + "");
 
     } catch (e) {
