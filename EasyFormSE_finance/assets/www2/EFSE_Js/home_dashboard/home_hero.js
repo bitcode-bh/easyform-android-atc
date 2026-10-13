@@ -302,8 +302,6 @@ var HomeHero = (function () {
         var note = site.note;
         if (!note && site.fix && Date.now() - site.fix.at > STALE_FIX_MS) {
             note = 'Location from ' + clock(site.fix.at) + '. Tap Refresh for a new one.';
-        } else if (!note && !v && n && (status === 'on' || status === 'off')) {
-            note = 'Geofence radius ' + formatDistance(siteRadius(n));
         }
         $slide.find('.hh-site-note').text(note || '');
         fillReasons($slide.find('.hh-site-reason'), siteId == null ? null : { siteId: siteId, siteName: siteName });

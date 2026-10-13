@@ -978,3 +978,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* A gap between the pinned card and the list's window, so rows scrolling
+   under the card do not touch it. The gap is part of the pinned block (page
+   colour), and the list gives up its own top padding so the gap is not
+   doubled when Home is at rest. */
+#div_home_hero { padding-bottom: 10px; }
+#div_home_hero:not(:empty) + #div_home_dashboard { padding-top: 0; }
