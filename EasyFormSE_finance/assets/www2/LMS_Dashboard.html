@@ -766,7 +766,21 @@
 
         // Initialize the top-bar state for the default (Dashboard) tab on load,
         // so the search icon is visible without needing a tab tap first.
-        document.addEventListener('deviceready', function () { try { lms_set_title('Dashboard'); } catch (e) { } }, false);
+        // The LMS opens on the Dashboard, unless Home's Learning slide asked
+        // for a tab (Modules, Assessments or Micro Learning) on the way in.
+        document.addEventListener('deviceready', function () {
+            var titles = { 'tab-1': 'Modules', 'tab-2': 'Assessments', 'tab-4': 'Micro Learning' };
+            var wanted = null;
+            try { wanted = localStorage.getItem('lms_open_tab'); localStorage.removeItem('lms_open_tab'); } catch (e) { wanted = null; }
+            try {
+                if (wanted && titles[wanted]) {
+                    myApp.tab.show('#' + wanted);
+                    lms_set_title(titles[wanted]);
+                } else {
+                    lms_set_title('Dashboard');
+                }
+            } catch (e) { }
+        }, false);
         window.addEventListener('load', function () { try { lms_set_title('Dashboard'); } catch (e) { } }, false);
 
         // Phase 2: initialize the offline write queue and drive the sync indicator.

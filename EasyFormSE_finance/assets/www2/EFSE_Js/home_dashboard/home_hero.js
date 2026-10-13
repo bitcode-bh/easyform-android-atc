@@ -124,9 +124,25 @@ var HomeHero = (function () {
             + '</div>';
     }
 
+    // Decoration only: a faint street map with one route, fading out towards
+    // the text. It is drawn artwork, not the user's trips.
+    var TRIP_MAP_ART = '<svg class="hh-map-art" viewBox="0 0 320 170" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">'
+        + '<defs><linearGradient id="hh_map_fade" x1="0" x2="1"><stop offset=".35" stop-color="#ecedef"/>'
+        + '<stop offset="1" stop-color="#ecedef" stop-opacity="0"/></linearGradient></defs>'
+        + '<g stroke="#c9ccd3" stroke-width="6" fill="none" stroke-linecap="round">'
+        + '<path d="M120 20 L330 70"/><path d="M110 120 L330 150"/><path d="M170 -10 L150 170"/>'
+        + '<path d="M250 -10 L235 170"/><path d="M300 -10 L310 170"/></g>'
+        + '<g stroke="#d6d8de" stroke-width="2.5" fill="none"><path d="M120 70 L330 105"/><path d="M205 -10 L195 170"/>'
+        + '<path d="M275 -10 L272 170"/></g>'
+        + '<path d="M160 118 L240 130 L247 55 L320 68" fill="none" stroke="#2a3086" stroke-opacity=".55" stroke-width="3" '
+        + 'stroke-linecap="round" stroke-linejoin="round"/>'
+        + '<circle cx="160" cy="118" r="5" fill="#fff" stroke="#2a3086" stroke-width="2"/>'
+        + '<rect x="0" y="0" width="320" height="170" fill="url(#hh_map_fade)"/></svg>';
+
     function tripSlideHtml() {
         var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         return '<div class="hh-slide" data-slide="trips">'
+            + TRIP_MAP_ART
             + topHtml('Driver trips · ' + months[new Date().getMonth()], '', 'hh-trip-status')
             + '<div class="hh-head hh-figure hh-trip-km">…</div>'
             + '<div class="hh-sub hh-trip-sub"></div>'
@@ -136,10 +152,14 @@ var HomeHero = (function () {
             + '</div>';
     }
 
-    // One learning area: completed out of total, then what is pending and the score.
+    // The LMS tab each learning area opens (LMS_Dashboard.html).
+    var LMS_TABS = { mod: 'tab-1', ass: 'tab-2', ml: 'tab-4' };
+
+    // One learning area: completed out of total, then what is pending and the
+    // score. Tapping it opens the LMS on that area's tab.
     function lmsStatHtml(key, label) {
-        return '<div class="hh-stat"><b class="hh-lms-' + key + '-done">—</b><span>' + label + '</span>'
-            + '<span class="hh-lms-' + key + '-more"></span></div>';
+        return '<a href="#" class="hh-stat hh-lms-open" data-tab="' + LMS_TABS[key] + '"><b class="hh-lms-' + key + '-done">—</b>'
+            + '<span>' + label + '</span><span class="hh-lms-' + key + '-more"></span></a>';
     }
 
     function lmsSlideHtml() {
@@ -151,7 +171,6 @@ var HomeHero = (function () {
             + '<b class="hh-score-val"></b><small class="hh-score-tag"></small></div>'
             + '<div class="hh-stats">' + lmsStatHtml('mod', 'Modules') + lmsStatHtml('ass', 'Assessments')
             + lmsStatHtml('ml', 'Micro learning') + '</div>'
-            + '<a href="#" class="hh-foot hh-link hh-open-lms"><span>Continue learning</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>'
             + '</div>';
     }
 
@@ -1071,8 +1090,10 @@ var HomeHero = (function () {
             if (typeof TripListSheet !== 'undefined') TripListSheet.open();
             return false;
         });
-        $root.find('.hh-open-lms').off('click.homeHero').on('click.homeHero', function (ev) {
+        $root.find('.hh-lms-open').off('click.homeHero').on('click.homeHero', function (ev) {
             ev.preventDefault();
+            // Read once by the LMS as it opens.
+            try { localStorage.setItem('lms_open_tab', $(this).attr('data-tab')); } catch (e) { }
             if (typeof crossToLMS === 'function') crossToLMS('LMS_Dashboard.html');
             else if (typeof changeurl === 'function') changeurl('LMS_Dashboard.html');
             return false;

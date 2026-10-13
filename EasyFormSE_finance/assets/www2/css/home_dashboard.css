@@ -1217,3 +1217,21 @@
 #div_home_hero .hh-score small:empty { display: none; }
 #div_home_hero [data-slide="lms"] .hh-stats { padding-top: 10px; }
 #div_home_hero [data-slide="lms"] .hh-stat span + span { margin-top: 1px; font-size: 11px; }
+
+/* Driver trips: map artwork behind the top of the slide, clear of the figures. */
+#div_home_hero [data-slide="trips"] { position: relative; }
+#div_home_hero .hh-map-art {
+    position: absolute;
+    top: -18px;
+    right: 0;
+    width: 100%;
+    height: 150px;
+    pointer-events: none;
+}
+#div_home_hero [data-slide="trips"] > *:not(.hh-map-art) { position: relative; }
+#div_home_hero [data-slide="trips"] .hh-stats { background: #ecedef; }
+
+/* Learning areas are links into the LMS. */
+#div_home_hero a.hh-stat { display: block; text-decoration: none; }
+#div_home_hero a.hh-stat:active { opacity: .6; }
+#div_home_hero [data-slide="lms"] .hh-stats { padding-bottom: 4px; }
