@@ -1,12 +1,11 @@
-// Home hero: one swipeable card at the top of Home with up to three slides.
+// Home hero: one swipeable card at the top of Home with up to four slides.
 //
 //   Site visit    Vendor Technician role only. Nearest site from the phone's
 //                 site catalog, its distance, the geofence status, a Refresh
 //                 location button and the reason for the visit.
 //   Driver trips  This month's trips, rolled up the same way as the Trips tab.
 //   Learning      LMS progress, read from what the LMS last cached on the phone.
-//
-// Under the slides sits one compact Safety Passport line (all roles).
+//   Passport      The Safety Passport card from the profile menu.
 //
 // The card is always present; a slide with nothing to show says so rather than
 // disappearing. Everything here reads existing data. Nothing is written to the
@@ -408,43 +407,73 @@ var HomeHero = (function () {
 
     // ---- safety passport -----------------------------------------------------
 
-    // The passport ID is answer 10044 of the profile the app already keeps
-    // (login response, refreshed by the profile page). The backend sends no
-    // validity status or expiry with it, so none is shown.
-    var PASSPORT_QUE_ID = 10044;
+    // The same card as My Safety Passport in the profile menu, as a slide. Its
+    // fields are answers in the profile the app already keeps (login response,
+    // refreshed by the profile page); the question ids are the ones
+    // build_user_safety_passport() reads. The backend sends no validity status
+    // or expiry, so none is shown.
+    var PASSPORT_FIELDS = { id: 10044, name: 20, circle: 42, partner: 10016, contact: 10036, blood: 10037 };
 
-    function passportId() {
+    function passportSlideHtml() {
+        function cell(label, key) {
+            return '<div class="col-50"><div class="label">' + label + '</div>'
+                + '<div class="value"><span class="hh-pass-' + key + '"></span></div></div>';
+        }
+        return '<div class="hh-slide" data-slide="passport">'
+            + '<a href="#" class="hh-passport" aria-label="Open My Safety Passport">'
+            + '<div class="passport-header">'
+            + '<div class="passport-photo"><img class="hh-pass-photo" src="images/profile_pic.png" alt="" /></div>'
+            + '<div class="passport-title"><div class="country">SAFETY PASSPORT</div>'
+            + '<div class="doctype"><span class="hh-pass-name"></span></div></div>'
+            + '<div class="passport-badge"><img class="hh-pass-badge" alt="" /></div>'
+            + '</div>'
+            + '<div class="passport-body">'
+            + '<div class="row">' + cell('SAFETY PASSPORT ID', 'id') + cell('CIRCLE', 'circle') + '</div>'
+            + '<div class="row">' + cell('PARTNER NAME', 'partner') + cell('EMERGENCY CONTACT NO', 'contact') + '</div>'
+            + '<div class="row">' + cell('Role', 'role') + cell('BLOOD GROUP', 'blood') + '</div>'
+            + '</div></a></div>';
+    }
+
+    function passportData() {
+        var out = {};
         var data = null;
         try {
             data = localStorage.getItem('profile_user_data');
             for (var n = 0; n < 2 && typeof data === 'string' && data; n++) data = JSON.parse(data);
         } catch (e) { data = null; }
-        if (data && data.length) {
-            for (var i = 0; i < data.length; i++) {
-                if (data[i] && String(data[i].que_id) === String(PASSPORT_QUE_ID)) {
-                    var ans = data[i].ans;
-                    var val = (ans && ans.length !== undefined && typeof ans !== 'string') ? ans[0] : ans;
-                    val = String(val == null ? '' : val).trim();
-                    if (val) return val;
+        for (var i = 0; i < (data && data.length ? data.length : 0); i++) {
+            for (var key in PASSPORT_FIELDS) {
+                if (!data[i] || String(data[i].que_id) !== String(PASSPORT_FIELDS[key])) continue;
+                var ans = data[i].ans;
+                var val = (ans && typeof ans !== 'string' && ans.length !== undefined) ? ans[0] : ans;
+                // Only plain text answers; a structured one is left blank.
+                if (typeof val === 'string' || typeof val === 'number') {
+                    val = String(val).trim();
+                    if (val && val.charAt(0) !== '[' && val.charAt(0) !== '{') out[key] = val;
                 }
             }
         }
-        // The passport page, once opened, has it on screen.
-        var shown = $('#lbl_sp_empid').text();
-        return String(shown || '').trim();
+        var role = readSession('role_name');
+        out.role = String(role == null ? '' : role).replace(/Vender Technician/g, 'Vendor Technician');
+        return out;
     }
 
-    function passportHtml() {
-        return '<a href="#" class="hh-passport" aria-label="Open My Safety Passport">'
-            + '<i class="fa-solid fa-id-card" aria-hidden="true"></i>'
-            + '<span class="hh-pass-lab">Safety Passport</span>'
-            + '<span class="hh-pass-id"></span>'
-            + '<i class="fa-solid fa-chevron-right hh-pass-go" aria-hidden="true"></i></a>';
-    }
-
-    function paintPassport($root) {
-        var id = passportId();
-        $root.find('.hh-pass-id').text(id || 'Not available').toggleClass('is-missing', !id);
+    function paintPassport($slide) {
+        if (!$slide.length) return;
+        var d = passportData();
+        var keys = ['id', 'name', 'circle', 'partner', 'contact', 'blood', 'role'];
+        for (var i = 0; i < keys.length; i++) $slide.find('.hh-pass-' + keys[i]).text(d[keys[i]] || '');
+        if (!d.id) $slide.find('.hh-pass-id').text('Not available');
+        var photo = $('#menu_img_profile').attr('src');
+        if (photo) $slide.find('.hh-pass-photo').attr('src', photo);
+        // Same shield as the profile's card, from whichever host the app is on.
+        var $badge = $slide.find('.hh-pass-badge');
+        if (!$badge.attr('src')) {
+            try {
+                var base = JSON.parse(storage.getItem('global_wcf_url')) || (typeof global_wcf_url !== 'undefined' ? global_wcf_url : '');
+                $badge.attr('src', new URL(base).origin + '/images/safety_passport/sp_shield.png');
+            } catch (e) { }
+        }
     }
 
     // ---- driver trips ------------------------------------------------------
@@ -612,7 +641,7 @@ var HomeHero = (function () {
         if ($site.length) loadSite($site);
         paintTrips($root.find('[data-slide="trips"]'));
         paintLms($root.find('[data-slide="lms"]'));
-        paintPassport($root);
+        paintPassport($root.find('[data-slide="passport"]'));
     }
 
     function render() {
@@ -622,11 +651,12 @@ var HomeHero = (function () {
         if (isVendorTechnician()) slides.push(siteSlideHtml());
         slides.push(tripSlideHtml());
         slides.push(lmsSlideHtml());
+        slides.push(passportSlideHtml());
 
         var dots = '';
         for (var i = 0; i < slides.length; i++) dots += '<span' + (i === 0 ? ' class="on"' : '') + '></span>';
         $root.html('<div class="hh-card"><div class="hh-track">' + slides.join('') + '</div>'
-            + '<div class="hh-dots" aria-hidden="true">' + dots + '</div>' + passportHtml() + '</div>');
+            + '<div class="hh-dots" aria-hidden="true">' + dots + '</div></div>');
 
         var track = $root.find('.hh-track')[0];
         var raf = null;
@@ -660,7 +690,7 @@ var HomeHero = (function () {
                 return false;
             });
         }
-        paintPassport($root);
+        paintPassport($root.find('[data-slide="passport"]'));
         $root.find('.hh-passport').off('click.homeHero').on('click.homeHero', function (ev) {
             ev.preventDefault();
             if (typeof get_safety_passport === 'function') get_safety_passport();

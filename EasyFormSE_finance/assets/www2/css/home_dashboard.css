@@ -948,67 +948,32 @@
 }
 #div_home_hero .hh-field-lab { padding-top: 8px; }
 
-/* Safety Passport: one compact line at the foot of the card. */
+/* Safety Passport slide: the profile menu's passport card (styles_low.css
+   .passport-*), sized to the slide. */
 #div_home_hero .hh-passport {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 40px;
-    margin: 10px 18px 0;
-    padding: 0 12px;
-    border-radius: 12px;
-    background: #f9fafb;
-    color: #0D1829;
-    font-size: 13px;
-    text-decoration: none;
-}
-#div_home_hero .hh-passport:active { background: #eceef2; }
-#div_home_hero .hh-passport > i:first-child { color: var(--c-primary, #2a3086); font-size: 15px; }
-#div_home_hero .hh-pass-lab { flex: 0 0 auto; color: #6A6C74; }
-#div_home_hero .hh-pass-id {
+    flex-direction: column;
     flex: 1 1 auto;
-    min-width: 0;
-    text-align: right;
-    font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-#div_home_hero .hh-pass-id.is-missing { font-weight: 400; color: #6A6C74; }
-#div_home_hero .hh-pass-go { flex: 0 0 auto; font-size: 11px; color: #9aa0aa; }
-
-/* Main trip card: what it is showing, and the way back to the summary. */
-.trip-stats-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 24px;
-    padding: 0 2px 8px;
-    font-size: 13px;
-}
-.trip-stats-title {
-    flex: 0 1 auto;
-    min-width: 0;
-    font-weight: 800;
-    color: #0D1829;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.trip-stats-state { flex: 1 1 auto; min-width: 0; color: #6A6C74; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.trip-stats-clear {
-    flex: 0 0 auto;
-    padding: 4px 10px;
-    border-radius: 12px;
-    background: #fff;
-    color: #2a3086;
-    font-weight: 600;
-    font-size: 12px;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: gray;
+    color: #fff;
     text-decoration: none;
 }
-/* Times and the trip ID are longer than the averages they replace. */
-#trip_main_card.is-trip .trip-stats-avg .trip-list-metric-val {
-    font-size: 12px;
+#div_home_hero .hh-passport .passport-header { margin-bottom: 8px; }
+#div_home_hero .hh-passport .passport-photo img { object-fit: cover; }
+#div_home_hero .hh-passport .passport-title { flex: 1 1 auto; min-width: 0; margin: 0 58px 0 10px; }
+#div_home_hero .hh-passport .passport-title .doctype {
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#div_home_hero .hh-passport .passport-badge { top: 12px; right: 14px; }
+#div_home_hero .hh-passport .passport-body { margin-top: auto; }
+#div_home_hero .hh-passport .passport-body .value span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
