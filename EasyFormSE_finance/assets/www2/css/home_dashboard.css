@@ -1272,3 +1272,16 @@
     pointer-events: none;
 }
 #div_home_hero [data-slide="lms"] > *:not(.hh-learn-art):not(.hh-shield) { position: relative; }
+
+/* Permit to work: caution triangles behind the foot of the slide. The permit
+   card is opaque, so a real permit covers them. */
+#div_home_hero [data-slide="permit"] { position: relative; }
+#div_home_hero .hh-permit-art {
+    position: absolute;
+    top: -18px;
+    left: 0;
+    width: 100%;
+    height: calc(100% + 18px);
+    pointer-events: none;
+}
+#div_home_hero [data-slide="permit"] > .hh-permit { position: relative; background: #ecedef; }

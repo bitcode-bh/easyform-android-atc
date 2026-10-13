@@ -847,11 +847,21 @@ var HomeHero = (function () {
         return { name: t || 'Permit', icon: 'fa-clipboard-check' };
     }
 
+    // Decoration only: nested caution triangles in the foot of the slide.
+    var PERMIT_ART = '<svg class="hh-permit-art" viewBox="0 0 320 250" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">'
+        + '<g fill="none" stroke="#c9ccd3" stroke-linecap="round" stroke-linejoin="round">'
+        + '<path d="M236 118 L296 220 H176 Z" stroke-width="4"/>'
+        + '<path d="M236 92 L320 236 H152 Z" stroke-width="1.5" stroke-opacity=".7"/>'
+        + '<path d="M236 66 L344 252 H128 Z" stroke-width="1.5" stroke-opacity=".4"/>'
+        + '<path d="M236 154 V188" stroke-width="5"/></g>'
+        + '<circle cx="236" cy="203" r="3.5" fill="#c9ccd3"/>'
+        + '<path d="M236 154 V188" stroke="#2a3086" stroke-opacity=".3" stroke-width="5" stroke-linecap="round"/></svg>';
+
     function permitSlideHtml() {
         function cell(label, cls) {
             return '<div><small>' + label + '</small><b class="' + cls + '"></b></div>';
         }
-        return '<div class="hh-slide" data-slide="permit"><div class="hh-permit">'
+        return '<div class="hh-slide" data-slide="permit">' + PERMIT_ART + '<div class="hh-permit">'
             + '<div class="hh-permit-head"><div class="hh-permit-ic"><i class="hh-permit-icon fa-solid fa-clipboard-check" aria-hidden="true"></i></div>'
             + '<div class="hh-permit-title"><small>Permit to work</small><b class="hh-permit-type"></b></div>'
             + '<span class="hh-pill hh-permit-status"><i class="hh-dot"></i><span class="hh-status-text"></span></span>'
