@@ -175,14 +175,16 @@ var HomeHero = (function () {
             + '<span>' + label + '</span><span class="hh-lms-' + key + '-more"></span></a>';
     }
 
-    // Decoration only: a hard hat outline, in faint safety yellow, behind the
-    // top of the slide, since most of the learning is safety training.
-    var LEARNING_ART = '<svg class="hh-learn-art" viewBox="0 0 320 150" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">'
-        + '<g fill="none" stroke="#e0b63a" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" transform="translate(150 18)">'
+    // The learning score sits inside a hard hat drawn in faint safety yellow
+    // (most of the learning is safety training), with its label underneath.
+    var LEARNING_ART = '<div class="hh-learn-art"><svg viewBox="0 0 184 108" aria-hidden="true">'
+        + '<g fill="none" stroke="#e0b63a" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">'
         + '<path d="M20 86 C20 40 52 12 92 12 S164 40 164 86"/>'
         + '<path d="M4 88 H180 a6 6 0 0 1 0 14 H4 a6 6 0 0 1 0 -14 z"/>'
-        + '<path d="M76 14 V52"/><path d="M108 14 V52"/></g>'
-        + '<path d="M242 30 V70" stroke="#e0b63a" stroke-opacity=".8" stroke-width="5" stroke-linecap="round"/></svg>';
+        + '<path d="M76 14 V34"/><path d="M108 14 V34"/></g>'
+        + '<path d="M92 12 V32" stroke="#e0b63a" stroke-opacity=".8" stroke-width="5" stroke-linecap="round"/>'
+        + '<text x="92" y="76" text-anchor="middle"><tspan class="hh-score-val"></tspan><tspan class="hh-score-of">/100</tspan></text></svg>'
+        + '<div class="hh-score-lab">Learning score<small class="hh-score-tag"></small></div></div>';
 
     function lmsSlideHtml() {
         return '<div class="hh-slide" data-slide="lms">'
@@ -190,8 +192,6 @@ var HomeHero = (function () {
             + '<div class="hh-top"><span class="hh-eyebrow">Learning</span><img class="hh-shield" alt="" /></div>'
             + '<div class="hh-head hh-lms-name"></div>'
             + '<div class="hh-sub hh-lms-lessons"></div>'
-            + '<div class="hh-score"><span>Learning score</span>'
-            + '<b class="hh-score-val"></b><small class="hh-score-tag"></small></div>'
             + '<div class="hh-stats">' + lmsStatHtml('mod', 'Modules') + lmsStatHtml('ass', 'Assessments')
             + lmsStatHtml('ml', 'Micro learning') + '</div>'
             + '</div>';
@@ -781,8 +781,8 @@ var HomeHero = (function () {
 
     function paintLms($slide) {
         var score = learningScore();
-        $slide.find('.hh-score-val').text(score.value + '/100');
-        $slide.find('.hh-score-tag').text(score.sample ? 'Sample' : '');
+        $slide.find('.hh-score-val').text(String(score.value));
+        $slide.find('.hh-score-tag').text(score.sample ? ' · Sample' : '');
         var $shield = $slide.find('.hh-shield');
         if ($shield.length && !$shield.attr('src')) {
             try {
@@ -849,7 +849,7 @@ var HomeHero = (function () {
 
     // Decoration only: nested caution triangles, in faint safety yellow, in the
     // foot of the slide.
-    var PERMIT_ART = '<svg class="hh-permit-art" viewBox="140 84 180 140" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">'
+    var PERMIT_ART = '<svg class="hh-permit-art" viewBox="0 0 320 250" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">'
         + '<g fill="none" stroke="#e0b63a" stroke-opacity=".5" stroke-linecap="round" stroke-linejoin="round">'
         + '<path d="M236 118 L296 220 H176 Z" stroke-width="4"/>'
         + '<path d="M236 92 L320 236 H152 Z" stroke-width="1.5"/>'
@@ -863,7 +863,8 @@ var HomeHero = (function () {
             return '<div><small>' + label + '</small><b class="' + cls + '"></b></div>';
         }
         return '<div class="hh-slide" data-slide="permit">' + PERMIT_ART + '<div class="hh-permit">'
-            + '<div class="hh-permit-head"><div class="hh-permit-ic"><i class="hh-permit-icon fa-solid fa-clipboard-check" aria-hidden="true"></i></div>'
+            + '<div class="hh-permit-head"><div class="hh-permit-who"><img class="hh-permit-photo" src="images/profile_pic.png" alt="" />'
+            + '<span class="hh-permit-name"></span></div>'
             + '<div class="hh-permit-title"><small>Permit to work</small><b class="hh-permit-type"></b></div>'
             + '<span class="hh-pill hh-permit-status"><i class="hh-dot"></i><span class="hh-status-text"></span></span>'
             + '<i class="hh-permit-go fa-solid fa-arrow-right" aria-hidden="true"></i></div>'
@@ -871,7 +872,9 @@ var HomeHero = (function () {
             + cell('Valid from', 'hh-permit-from') + cell('Valid until', 'hh-permit-until') + '</div>'
             + '<div class="hh-permit-foot"><span class="hh-permit-by"></span><b class="hh-permit-time"></b></div>'
             + '<div class="hh-permit-none"><span>Request here</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>'
-            + '</div></div>';
+            + '</div>'
+            + '<a href="#" class="hh-foot hh-link hh-permit-sample"><span>Show sample</span></a>'
+            + '</div>';
     }
 
     function dayTime(ms) {
@@ -917,7 +920,10 @@ var HomeHero = (function () {
         var left = p.untilMs - now;
         var soon = active && left <= ENDING_SOON_MS;
         $card.removeClass('is-empty').toggleClass('is-active', active);
-        $slide.find('.hh-permit-icon').attr('class', 'hh-permit-icon fa-solid ' + type.icon);
+        // The holder's own picture and username, in the card's top left corner.
+        var photo = $('#menu_img_profile').attr('src');
+        if (photo) $slide.find('.hh-permit-photo').attr('src', photo);
+        $slide.find('.hh-permit-name').text(String(readSession('username') || ''));
         $slide.find('.hh-permit-type').text(type.name);
         $slide.find('.hh-permit-status').removeClass('is-on is-warn is-ring')
             .addClass(soon ? 'is-warn' : active ? 'is-on' : 'is-ring')
@@ -1193,6 +1199,11 @@ var HomeHero = (function () {
         // starts on the card never reaches the page's pull handler.
         $root.off('touchstart.hhPull').on('touchstart.hhPull', function (ev) { ev.stopPropagation(); });
         watchModuleList();
+        $root.find('.hh-permit-sample').off('click.homeHero').on('click.homeHero', function (ev) {
+            ev.preventDefault();
+            if (typeof PermitCards !== 'undefined') PermitCards.open();
+            return false;
+        });
         $root.find('.hh-permit').off('click.homeHero').on('click.homeHero', function () {
             var row = ptwModuleRow();
             if ($(this).hasClass('is-empty') && row) row.click();
