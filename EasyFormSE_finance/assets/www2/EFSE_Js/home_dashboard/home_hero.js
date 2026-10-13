@@ -591,7 +591,9 @@ var HomeHero = (function () {
 
     function passportSlideHtml() {
         return '<div class="hh-slide" data-slide="passport">'
-            + '<a href="#" class="hh-passport sp-card" aria-label="Open Safety Passport">' + passportFacesHtml() + '</a></div>';
+            // A div, not a link: the card holds the Share link, and a link
+            // inside a link makes the browser break the card's markup apart.
+            + '<div class="hh-passport sp-card" role="button" aria-label="Open Safety Passport">' + passportFacesHtml() + '</div></div>';
     }
 
     function passportData() {
