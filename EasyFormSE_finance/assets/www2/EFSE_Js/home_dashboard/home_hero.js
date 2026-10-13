@@ -849,7 +849,7 @@ var HomeHero = (function () {
 
     // Decoration only: nested caution triangles, in faint safety yellow, in the
     // foot of the slide.
-    var PERMIT_ART = '<svg class="hh-permit-art" viewBox="0 0 320 250" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">'
+    var PERMIT_ART = '<svg class="hh-permit-art" viewBox="140 84 180 140" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">'
         + '<g fill="none" stroke="#e0b63a" stroke-opacity=".5" stroke-linecap="round" stroke-linejoin="round">'
         + '<path d="M236 118 L296 220 H176 Z" stroke-width="4"/>'
         + '<path d="M236 92 L320 236 H152 Z" stroke-width="1.5"/>'
@@ -870,7 +870,7 @@ var HomeHero = (function () {
             + '<div class="hh-permit-body">' + cell('Permit no.', 'hh-permit-no') + cell('Site', 'hh-permit-site')
             + cell('Valid from', 'hh-permit-from') + cell('Valid until', 'hh-permit-until') + '</div>'
             + '<div class="hh-permit-foot"><span class="hh-permit-by"></span><b class="hh-permit-time"></b></div>'
-            + '<div class="hh-permit-none">Hot work, work at height, electrical or FTTH.</div>'
+            + '<div class="hh-permit-none"><span>Request here</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>'
             + '</div></div>';
     }
 
@@ -906,7 +906,7 @@ var HomeHero = (function () {
         var $card = $slide.find('.hh-permit');
         if (!p) {
             $card.removeClass('is-active').addClass('is-empty');
-            $slide.find('.hh-permit-type').text('Request permit');
+            $slide.find('.hh-permit-type').text('No active permit to work');
             $slide.find('.hh-permit-status .hh-status-text').text('');
             $slide.find('.hh-permit-no, .hh-permit-site, .hh-permit-from, .hh-permit-until').text('—');
             $slide.find('.hh-permit-by, .hh-permit-time').text('');
