@@ -1213,14 +1213,14 @@
    under the hat. The module name and lessons line keep to the left of it. */
 #div_home_hero .hh-learn-art {
     position: absolute;
-    top: 40px;
-    right: 60px;
-    width: 168px;
+    top: 32px;
+    right: 56px;
+    width: 196px;
     pointer-events: none;
 }
 #div_home_hero .hh-learn-art svg { display: block; width: 100%; height: auto; }
 #div_home_hero .hh-learn-art text { font-family: inherit; font-weight: 700; fill: #0f1729; }
-#div_home_hero .hh-learn-art .hh-score-val { font-size: 30px; }
+#div_home_hero .hh-learn-art .hh-score-val { font-size: 32px; }
 #div_home_hero .hh-learn-art .hh-score-of { font-size: 13px; font-weight: 400; fill: #6b7280; }
 #div_home_hero .hh-score-lab {
     margin-top: 4px;
@@ -1231,7 +1231,7 @@
 }
 #div_home_hero .hh-score-lab small { font-size: 11px; color: var(--hh-faint); }
 #div_home_hero [data-slide="lms"] .hh-head,
-#div_home_hero [data-slide="lms"] .hh-sub { max-width: calc(100% - 234px); padding-right: 0; }
+#div_home_hero [data-slide="lms"] .hh-sub { max-width: calc(100% - 272px); padding-right: 0; }
 #div_home_hero [data-slide="lms"] .hh-head { -webkit-line-clamp: 3; }
 #div_home_hero [data-slide="lms"] > *:not(.hh-learn-art):not(.hh-shield) { position: relative; }
 
@@ -1305,9 +1305,10 @@
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    /* Landscape card at a fixed 1.6 ratio, as wide as the screen allows. */
+    /* Landscape card as wide as the screen allows, and only as tall as its
+       content needs (the same ratio for permits and the passport). */
     width: 100%;
-    aspect-ratio: 1.6;
+    aspect-ratio: 1.78;
     padding: 14px 16px;
     border-radius: 16px;
     background: #ecedef;
@@ -1394,9 +1395,11 @@
    the card instead of scrolling Home. */
 #div_home_hero .hh-passport { flex: 1 1 auto; display: flex; touch-action: pan-x; }
 #div_home_hero .hh-passport .sp-face { flex: 1 1 auto; }
+#div_home_hero .hh-passport .sp-fields { gap: 12px 10px; margin-top: 12px; padding-top: 12px; }
+#div_home_hero .hh-passport .sp-rules img { height: 100px; }
 
 /* In the sheet it is a full-width landscape card, like the permit cards. */
-#permit_samples .sp-face { width: 100%; aspect-ratio: 1.6; padding: 14px 16px; border-radius: 16px; }
+#permit_samples .sp-face { width: 100%; aspect-ratio: 1.78; padding: 14px 16px; border-radius: 16px; }
 #permit_samples .sp-shield { right: 14px; bottom: 12px; }
-#permit_samples .sp-fields { gap: 6px 10px; margin-top: 10px; }
-#permit_samples .sp-rules img { height: 96px; }
+#permit_samples .sp-fields { gap: 8px 10px; margin-top: 10px; }
+#permit_samples .sp-rules img { height: 100px; }
