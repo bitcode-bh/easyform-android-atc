@@ -28,6 +28,8 @@ var HomeHero = (function () {
     // staying fixed (same rule as BillBaant K's PinnedHeaderList).
     var FIXED_MIN_HEIGHT = 600;
     var REST_AFTER_MS = 140;
+    // Room under the last row, clear of the strip above the tab bar.
+    var LIST_END_ROOM = 18;
 
     // A fix less accurate than this is not treated as a reliable location.
     var ACCURACY_LIMIT_M = 100;
@@ -667,14 +669,13 @@ var HomeHero = (function () {
         return '<div class="hh-slide" data-slide="permit"><div class="hh-permit">'
             + '<div class="hh-permit-head"><div class="hh-permit-ic"><i class="hh-permit-icon fa-solid fa-clipboard-check" aria-hidden="true"></i></div>'
             + '<div class="hh-permit-title"><small>Permit to work</small><b class="hh-permit-type"></b></div>'
-            + '<span class="hh-pill hh-permit-status"><i class="hh-dot"></i><span class="hh-status-text"></span></span></div>'
+            + '<span class="hh-pill hh-permit-status"><i class="hh-dot"></i><span class="hh-status-text"></span></span>'
+            + '<i class="hh-permit-go fa-solid fa-arrow-right" aria-hidden="true"></i></div>'
             + '<div class="hh-permit-body">' + cell('Permit no.', 'hh-permit-no') + cell('Site', 'hh-permit-site')
             + cell('Valid from', 'hh-permit-from') + cell('Valid until', 'hh-permit-until') + '</div>'
             + '<div class="hh-permit-foot"><span class="hh-permit-by"></span><b class="hh-permit-time"></b></div>'
-            + '<div class="hh-permit-none">Start a blank permit for hot work, work at height, electrical or FTTH.</div>'
-            + '</div>'
-            + '<a href="#" class="hh-foot hh-link hh-blank-permit"><span>Blank permit</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>'
-            + '</div>';
+            + '<div class="hh-permit-none">Hot work, work at height, electrical or FTTH.</div>'
+            + '</div></div>';
     }
 
     function dayTime(ms) {
@@ -709,7 +710,7 @@ var HomeHero = (function () {
         var $card = $slide.find('.hh-permit');
         if (!p) {
             $card.removeClass('is-active').addClass('is-empty');
-            $slide.find('.hh-permit-type').text('No permit in force');
+            $slide.find('.hh-permit-type').text('Request permit');
             $slide.find('.hh-permit-status .hh-status-text').text('');
             $slide.find('.hh-permit-no, .hh-permit-site, .hh-permit-from, .hh-permit-until').text('—');
             $slide.find('.hh-permit-by, .hh-permit-time').text('');
@@ -734,8 +735,9 @@ var HomeHero = (function () {
             .text(active ? span(left) + ' left' : (p.fromMs > now ? 'Starts in ' + span(p.fromMs - now) : 'Ready to start'));
     }
 
-    // The Permit To Work row of the Home module list. "Blank permit" opens the
-    // module through that row's own click, so navigation is the list's.
+    // The Permit To Work row of the Home module list. With no permit to show,
+    // tapping the card opens the module through that row's own click, so
+    // navigation is the list's.
     function ptwModuleRow() {
         var rows = document.querySelectorAll('#module_list > li[udf_name]');
         for (var i = 0; i < rows.length; i++) {
@@ -836,10 +838,21 @@ var HomeHero = (function () {
             return r > pitch / 2 ? r - pitch : r;
         }
         var r = remainder();
-        if (Math.abs(r) < 1) return;
-        root.style.setProperty('--hh-slide-h', (base + r) + 'px');
-        // A slide cannot shrink below its content; grow instead when it did not take.
-        if (Math.abs(remainder()) >= 1 && r < 0) root.style.setProperty('--hh-slide-h', (base + r + pitch) + 'px');
+        if (Math.abs(r) >= 1) {
+            root.style.setProperty('--hh-slide-h', (base + r) + 'px');
+            // A slide cannot shrink below its content; grow instead when it did not take.
+            if (Math.abs(remainder()) >= 1 && r < 0) root.style.setProperty('--hh-slide-h', (base + r + pitch) + 'px');
+        }
+        // The end of the list has to land on a whole row as well, or the list
+        // would stop with its top row cut by the card: pad the scroller so its
+        // full travel is a whole number of rows from where the first row rests.
+        var scroller = root.parentNode;
+        scroller.style.paddingBottom = LIST_END_ROOM + 'px';
+        var start = first.getBoundingClientRect().top + scroller.scrollTop - root.getBoundingClientRect().bottom;
+        if (root.getBoundingClientRect().top > scroller.getBoundingClientRect().top + 60) return;   // card not at its pinned place
+        var travel = scroller.scrollHeight - scroller.clientHeight - start;
+        var over = travel % pitch;
+        if (travel > 0 && over >= 1 && pitch - over >= 1) scroller.style.paddingBottom = (LIST_END_ROOM + pitch - over) + 'px';
     }
 
     function syncLevel() {
@@ -852,7 +865,6 @@ var HomeHero = (function () {
         if (!home) return;
         // The module list arrives after the card is first drawn.
         if (!!(permitProvider || ptwModuleRow()) !== shownPermitSlide) { render(); refresh(); return; }
-        $(root).find('.hh-blank-permit').toggle(!!ptwModuleRow());
         fitListWindow();
     }
 
@@ -976,11 +988,9 @@ var HomeHero = (function () {
         bindRestOnRow($root);
         addListFoot();
         watchModuleList();
-        $root.find('.hh-blank-permit').off('click.homeHero').on('click.homeHero', function (ev) {
-            ev.preventDefault();
+        $root.find('.hh-permit').off('click.homeHero').on('click.homeHero', function () {
             var row = ptwModuleRow();
-            if (row) row.click();
-            return false;
+            if ($(this).hasClass('is-empty') && row) row.click();
         });
         paintPermit($root.find('[data-slide="permit"]'));
 

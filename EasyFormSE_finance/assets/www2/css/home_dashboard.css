@@ -830,7 +830,7 @@
     font-size: 20px;
 }
 
-/* Three figures in a row, separated by hairlines. */
+/* Three figures in a row under a hairline. */
 #div_home_hero .hh-stats {
     display: flex;
     margin-top: auto;
@@ -840,10 +840,8 @@
 #div_home_hero .hh-stat {
     flex: 1 1 0;
     min-width: 0;
-    padding: 0 10px;
-    border-left: 1px solid var(--hh-line);
+    padding: 0 10px 0 0;
 }
-#div_home_hero .hh-stat:first-child { padding-left: 0; border-left: 0; }
 #div_home_hero .hh-stat b {
     display: block;
     font-size: 16px;
@@ -1058,7 +1056,11 @@
 }
 #div_home_hero .hh-permit.is-empty { flex: 0 0 auto; }
 #div_home_hero .hh-permit.is-empty .hh-permit-none { display: block; }
-#div_home_hero .hh-blank-permit { margin-top: auto; padding-top: 14px; }
+#div_home_hero .hh-permit-go { display: none; color: var(--hh-navy); font-size: 14px; }
+#div_home_hero .hh-permit.is-empty .hh-permit-go { display: block; }
+#div_home_hero .hh-permit.is-empty:active { background: #e3e5e9; }
+/* The spare line breaks under the Home list only add an uneven gap. */
+#div_page_content > br { display: none; }
 
 /* Safety Passport slide: the profile menu's passport card (styles_low.css
    .passport-*), sized to the slide. */
