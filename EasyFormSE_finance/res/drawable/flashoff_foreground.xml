@@ -1,13 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Camera screens: filled white icon. The 24-unit glyph sits in the middle of
+     the same 108dp box as the icon it replaces, so every camera shows it at
+     one size (about 28dp in the 64dp control). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="41.37931"
-    android:viewportHeight="41.37931"
-    android:tint="#FFFFFF">
-  <group android:translateX="8.689655"
-      android:translateY="8.689655">
-      <path
-          android:fillColor="#FF000000"
-          android:pathData="M3.27,3L2,4.27l5,5V13h3v9l3.58,-6.14L17.73,20 19,18.73 3.27,3zM17,10h-4l4,-8H7v2.18l8.46,8.46L17,10z"/>
-  </group>
+    android:viewportWidth="54"
+    android:viewportHeight="54">
+    <group android:translateX="15" android:translateY="15">
+        <path android:fillColor="#FFFFFFFF" android:pathData="M3.27,3L2,4.27l5,5V13h3v9l3.58,-6.14L17.73,20 19,18.73 3.27,3zM17,10h-4l4,-8H7v2.18l8.46,8.46L17,10z"/>
+    </group>
 </vector>

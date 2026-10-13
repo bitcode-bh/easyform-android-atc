@@ -1,122 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout
+<!-- The controls of the standard photo camera, laid over the picture: compass
+     heading and MF reading as readouts, then flash, shutter and switch-camera
+     as bare icons, on the darkened bottom of the picture. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fullpreview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_weight="1"
-    android:layout_marginBottom="5dp"
-    android:gravity="center"
-    android:orientation="horizontal"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:gravity="bottom"
+    android:orientation="vertical">
 
-
-
-
-    <LinearLayout android:id="@+id/preview_deg"
-        android:layout_width="fill_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginBottom="5dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:layout_gravity="bottom">
-        <!--    xmlns:android="http://schemas.android.com/apk/res/android">-->
+        android:background="@drawable/cam_fade_bottom"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="56dp"
+        android:paddingBottom="18dp">
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.35"
+            android:id="@+id/linearmgnt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/txtsi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/cam_heading_underline"
+                android:fontFamily="monospace"
+                android:paddingBottom="5dp"
+                android:text="MF"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtmgnt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="monospace"
+                android:text="MF"
+                android:textColor="#D9FFFFFF"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/preview_deg"
+            android:layout_width="match_parent"
+            android:layout_height="68dp"
+            android:layout_marginTop="16dp"
             android:gravity="center"
-            android:weightSum="1"
             android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.5"
-                android:gravity="center"
-                android:visibility="visible"
-                android:id="@+id/linearmgnt"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/txtsi"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="left"
-                    android:text="MF"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:id="@+id/txtmgnt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="left"
-                    android:text="MF"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
-            </LinearLayout>
 
             <ImageView
                 android:id="@+id/flash"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:visibility="visible"
-                android:layout_weight="0.5"
-                android:gravity="center"
+                android:layout_height="64dp"
+                android:layout_weight="1"
                 android:src="@drawable/flashon_foreground"
-                android:text="" />
+                android:visibility="visible" />
 
-
-
-
-        </LinearLayout>
-
-
-
-        <!--<ZoomControls-->
-        <!--android:id="@+id/CAMERA_ZOOM_CONTROLS"-->
-        <!--android:layout_width="0dp"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:visibility="gone"-->
-        <!--android:layout_weight="1.5">-->
-
-        <!--</ZoomControls>-->
-
-        <ImageView
-            android:id="@+id/captureFront"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.33"
-            android:onClick="onClick"
-            android:src="@drawable/cameraclick_foreground"
-            android:text="" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.30"
-            android:gravity="center"
-            android:layout_alignParentRight="true"
-            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/captureFront"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:onClick="onClick"
+                android:src="@drawable/cameraclick_foreground" />
 
             <ImageView
                 android:id="@+id/switchcamera"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_weight="1"
                 android:onClick="onClick"
-                android:src="@drawable/frontcamera_foreground"
-                />
+                android:src="@drawable/frontcamera_foreground" />
         </LinearLayout>
-
-
-
-
-
-
-
     </LinearLayout>
 
 </LinearLayout>

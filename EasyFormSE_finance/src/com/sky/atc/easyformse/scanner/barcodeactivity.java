@@ -69,6 +69,7 @@ public final class barcodeactivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         setContentView(R.layout.barcode_activity);
+        com.sky.atc.easyformse.utils.newView.CameraChrome.apply(this);
 
         preview = findViewById(R.id.firePreview);
         if (preview == null) {

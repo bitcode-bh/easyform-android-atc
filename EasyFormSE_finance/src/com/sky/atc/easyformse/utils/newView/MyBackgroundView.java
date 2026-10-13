@@ -56,7 +56,7 @@ public class MyBackgroundView extends View {
     }
     @Override
     protected void onDraw(Canvas canvas) {
-        backGroundPaint.setColor(Color.parseColor("#70FF0000"));
+        backGroundPaint.setColor(Color.parseColor("#9E080C18"));   // dark dim outside the reading window (was a red tint)
         backGroundPaint.setStyle(Paint.Style.FILL);
 
         if (rect == null) {

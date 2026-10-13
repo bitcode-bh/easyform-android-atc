@@ -37,6 +37,56 @@
         android:layout_height="match_parent"
         layout="@layout/frame" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/cam_fade_top" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/cam_fade_bottom" />
+
+    <!-- Close, and what the screen is doing, as on the other cameras. -->
+    <ImageView
+        android:id="@+id/cam_close"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="Close"
+        android:padding="12dp"
+        android:src="@drawable/cam_close" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="19dp"
+        android:layout_marginEnd="14dp"
+        android:background="@drawable/cam_pill"
+            android:paddingStart="12dp" android:paddingEnd="12dp" android:paddingTop="5dp" android:paddingBottom="5dp"
+            android:fontFamily="sans-serif-medium"
+        android:text="Scanning"
+        android:textColor="@color/white"
+        android:textSize="13sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="64dp"
+        android:gravity="center"
+        android:fontFamily="sans-serif" android:shadowColor="#99000000" android:shadowRadius="3"
+        android:text="Point at a QR code or barcode"
+        android:textColor="#D9FFFFFF"
+        android:textSize="14sp" />
+
     <TextView android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

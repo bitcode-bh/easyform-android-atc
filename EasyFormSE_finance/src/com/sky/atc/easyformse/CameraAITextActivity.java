@@ -159,6 +159,7 @@ public class CameraAITextActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ai_text);
+        com.sky.atc.easyformse.utils.newView.CameraChrome.apply(this);
         mCameraAITextActivity = this;
         imageView = findViewById(R.id.imageView);
         PromptText = findViewById(R.id.PromptText);
@@ -168,6 +169,12 @@ public class CameraAITextActivity extends AppCompatActivity {
         pdftext = (TextView) findViewById(R.id.pdftext);
         mLinearLayout = findViewById(R.id.responselayout);
         CaptureImage = findViewById(R.id.captureFront);
+        // The AI camera's own shutter: drifting colours and a sparkle.
+        try {
+            com.sky.atc.easyformse.utils.newView.AiShutterDrawable aiShutter = new com.sky.atc.easyformse.utils.newView.AiShutterDrawable();
+            ((android.widget.ImageView) CaptureImage).setImageDrawable(aiShutter);
+            aiShutter.start();
+        } catch (Exception ignored) { }
         mFrameLayout = findViewById(R.id.framlayout);
         linearsecond = findViewById(R.id.linearsecond);
         textureView = findViewById(R.id.textureView);

@@ -198,6 +198,7 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_preview);
+        com.sky.atc.easyformse.utils.newView.CameraChrome.apply(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (checkPermission()) {
             //main logic or main code
@@ -421,10 +422,12 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
                     textView1.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT));
                     textView1.setText(strArr[i]);
-                    textView1.setTextSize(14);
-                    textView1.setPadding(0,-7,0,0);
-                    textView1.setTextColor(Color.parseColor("#000000"));
-                    textView1.setTypeface(textView1.getTypeface(), Typeface.BOLD);
+                    // Same readout style as the rest of the stamp (camera_text.xml):
+                    // it sits on the picture now, not on a white box.
+                    textView1.setTextSize(13);
+                    textView1.setTextColor(Color.parseColor("#CCFFFFFF"));
+                    textView1.setTypeface(Typeface.MONOSPACE);
+                    textView1.setShadowLayer(3f, 0f, 0f, Color.parseColor("#99000000"));
                     mLayoutTextview.addView(textView1);
                 }
             } catch (JSONException e) {

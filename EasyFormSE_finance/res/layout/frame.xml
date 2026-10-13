@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.75"
-            android:alpha="0.5" />
+            android:alpha="0" />
 
         <LinearLayout
             android:id="@+id/frame_n"
@@ -33,8 +33,8 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:layout_weight="0.2"
-                android:alpha="0.3"
-                android:background="#000000"
+                android:alpha="0"
+                android:background="#080C18"
                 android:orientation="horizontal" >
             </LinearLayout>
 
@@ -63,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.75"
-            android:alpha="0.5" />
+            android:alpha="0" />
     </LinearLayout>
 
     <LinearLayout
@@ -80,8 +80,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.75"
-            android:alpha="0.3"
-            android:background="#000000"
+            android:alpha="0.62"
+            android:background="#080C18"
             android:orientation="vertical" />
 
         <LinearLayout
@@ -98,8 +98,8 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:layout_weight="0.3"
-                android:alpha="0"
-                android:background="#000000"
+                android:alpha="0.62"
+                android:background="#080C18"
                 android:orientation="horizontal" >
             </LinearLayout>
 
@@ -108,7 +108,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1.3"
-                android:background="@drawable/rect"
+                android:background="@android:color/transparent"
                 android:orientation="horizontal" >
 
 
@@ -120,8 +120,8 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:layout_weight="0.3"
-                android:alpha="0.3"
-                android:background="#000000"
+                android:alpha="0.62"
+                android:background="#080C18"
                 android:orientation="horizontal" >
             </LinearLayout>
         </LinearLayout>
@@ -131,8 +131,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.75"
-            android:alpha="0.3"
-            android:background="#000000"
+            android:alpha="0.62"
+            android:background="#080C18"
             android:orientation="vertical" />
     </LinearLayout>
 

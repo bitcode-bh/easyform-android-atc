@@ -114,6 +114,7 @@ public class NewCameraActivity extends AppCompatActivity implements FileCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_camera);
+        com.sky.atc.easyformse.utils.newView.CameraChrome.apply(this);
         googleApiClient = sqlitewraper.getGoogleApiHelper().getGoogleApiClient();
         if (checkPermission_camera()) {
             //main logic or main code

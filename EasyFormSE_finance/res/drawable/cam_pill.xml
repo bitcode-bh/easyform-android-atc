@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Camera screens: the small label saying what the screen is doing. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="14dp" />
+    <solid android:color="#99080C18" />
+    <stroke android:width="1dp" android:color="#33FFFFFF" />
+</shape>

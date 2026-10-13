@@ -1,64 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- The on-screen stamp of a photo: time, position, user, and any extra lines
+     the form asks for (added to tvlinear in code). White monospace readouts at
+     the top right, over the darkened top of the picture. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:alpha="0.5"
-    android:background="@color/white">
+    android:gravity="end"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/imgdate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.03"
+        android:shadowColor="#99000000"
+        android:shadowRadius="3"
         android:text=""
-        android:textColor="@color/Black"
-        android:textSize="15sp"
+        android:textColor="@color/white"
+        android:textSize="14sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/imglat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="2dp"
+        android:fontFamily="monospace"
+        android:shadowColor="#99000000"
+        android:shadowRadius="3"
         android:text=""
-        android:textColor="@color/Black"
-
-        android:textSize="15sp"
-        android:textStyle="bold" />
+        android:textColor="#CCFFFFFF"
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/imglng"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="40dp"
+        android:fontFamily="monospace"
+        android:shadowColor="#99000000"
+        android:shadowRadius="3"
         android:text=""
-        android:textColor="@color/Black"
-
-        android:textSize="15sp"
-        android:textStyle="bold" />
+        android:textColor="#CCFFFFFF"
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/imgusername"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="55dp"
+        android:fontFamily="monospace"
+        android:shadowColor="#99000000"
+        android:shadowRadius="3"
         android:text=""
-        android:textColor="@color/Black"
-        android:textSize="15sp"
-        android:textStyle="bold" />
-
+        android:textColor="#CCFFFFFF"
+        android:textSize="13sp" />
 
     <LinearLayout
         android:id="@+id/tvlinear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="75dp"
+        android:layout_marginTop="2dp"
+        android:gravity="end"
         android:orientation="vertical" />
 
-</RelativeLayout>
+</LinearLayout>

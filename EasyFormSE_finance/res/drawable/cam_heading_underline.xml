@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A 2dp accent line under the compass heading. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:gravity="bottom" android:height="2dp">
+        <shape><solid android:color="#FF3FB6E0"/></shape>
+    </item>
+</layer-list>
