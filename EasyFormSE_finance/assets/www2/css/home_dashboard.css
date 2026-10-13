@@ -670,19 +670,41 @@
 }
 
 /* ==========================================================================
-   Home hero (home_hero.js): one swipeable card above the dashboard. Uses the
-   dashboard widgets' own card, title and stat-tile values so it reads as one
-   of them; scoped under #div_home_hero because those rules are scoped under
-   #div_home_dashboard and do not reach here.
+   Home hero (home_hero.js): one swipeable card pinned above the Home list.
+
+   Every slide has the same anatomy (label + status, headline, supporting
+   line, body block, one action) and the same height. Ink and grey carry the
+   content; the Altius navy is kept for the action, the pager and the
+   learning bar, and for the header of a permit that is in force.
    ========================================================================== */
-#div_home_hero { padding: 10px 12px 0; }
+#div_home_hero {
+    --hh-ink: #0f1729;
+    --hh-grey: #6b7280;
+    --hh-faint: #98a2b3;
+    --hh-line: #eef1f5;
+    --hh-edge: #e1e5ec;
+    --hh-navy: var(--altius-navy, #2a3086);
+    --hh-navy-deep: var(--altius-navy-deep, #1e2464);
+    --hh-page: #fcfcfc;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 10px 12px 10px;
+    background: var(--hh-page);
+}
 #div_home_hero:empty { display: none; }
+/* The card belongs to Home only; the Trips tab hides the Home content. */
+.page.trips-open #div_home_hero,
+.page.trips-open #div_home_list_foot { display: none; }
+/* The pinned block already ends in a gap; the list does not add its own. */
+#div_home_hero:not(:empty) + #div_home_dashboard { padding-top: 0; }
+
 #div_home_hero .hh-card {
     background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 4px 12px rgba(16, 24, 40, .04);
-    padding: 14px 0 10px;
-    margin-bottom: 10px;
+    border: 1px solid #e9edf3;
+    border-radius: 16px;
+    padding: 18px 0 14px;
     overflow: hidden;
 }
 #div_home_hero .hh-track {
@@ -696,257 +718,318 @@
 #div_home_hero .hh-slide {
     flex: 0 0 100%;
     min-width: 0;
+    min-height: 222px;
     box-sizing: border-box;
-    padding: 0 16px;
+    padding: 0 20px;
     scroll-snap-align: start;
     display: flex;
     flex-direction: column;
 }
-#div_home_hero .hd-card-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: .02em;
-    margin-bottom: 6px;
-}
-#div_home_hero .hh-title {
+
+/* Label and status. */
+#div_home_hero .hh-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
 }
-#div_home_hero .hh-status {
-    display: flex;
+#div_home_hero .hh-eyebrow {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--hh-grey);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#div_home_hero .hh-pill {
+    flex: 0 0 auto;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 14px;
-    font-weight: 700;
-    color: #6b7280;
-    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #344054;
+    white-space: nowrap;
 }
-#div_home_hero .hh-status.is-on { color: var(--c-primary, #2a3086); }
 #div_home_hero .hh-dot {
-    width: 8px;
-    height: 8px;
+    display: block;
+    box-sizing: border-box;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background: #d0d5dd;
-    flex: 0 0 8px;
+    background: var(--hh-faint);
 }
-#div_home_hero .hh-status.is-on .hh-dot { background: #2dbb72; }
+#div_home_hero .hh-pill.is-on .hh-dot { background: #12b76a; }
+#div_home_hero .hh-pill.is-off .hh-dot { background: #f04438; }
+#div_home_hero .hh-pill.is-warn .hh-dot { background: #f79009; }
+#div_home_hero .hh-pill.is-ring .hh-dot { background: #fff; border: 2px solid var(--hh-navy); }
+
+/* Headline and supporting line. */
 #div_home_hero .hh-head {
-    font-size: 16px;
-    font-weight: 800;
-    color: #0f1729;
-    line-height: 1.3;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -.01em;
+    color: var(--hh-ink);
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }
+#div_home_hero .hh-head.hh-figure { font-size: 24px; }
 #div_home_hero .hh-sub {
-    font-size: 13px;
-    color: #6b7280;
-    margin-top: 2px;
-    min-height: 16px;
+    min-height: 18px;
+    margin-top: 3px;
+    font-size: 14px;
+    line-height: 18px;
+    color: var(--hh-grey);
 }
-#div_home_hero .hh-field-lab {
+#div_home_hero .hh-note {
+    margin-top: 4px;
     font-size: 12px;
-    color: #6b7280;
-    margin-top: 12px;
+    line-height: 16px;
+    color: var(--hh-grey);
 }
-#div_home_hero .hh-select {
-    width: 100%;
-    height: 42px;
-    margin-top: 6px;
-    padding: 0 12px;
-    border: 1px solid #d0d5dd;
+#div_home_hero .hh-note:empty { display: none; }
+
+/* Icon beside a headline (site type). */
+#div_home_hero .hh-row { display: flex; align-items: center; gap: 12px; }
+#div_home_hero .hh-row-text { flex: 1 1 auto; min-width: 0; }
+#div_home_hero .hh-ic {
+    flex: 0 0 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--hh-edge);
     border-radius: 12px;
-    background: #fff;
-    color: #0f1729;
-    font-size: 13px;
-    box-sizing: border-box;
+    color: #344054;
+    font-size: 20px;
 }
-#div_home_hero .hh-select:disabled {
-    background: #f9fafb;
-    border-color: #f2f4f7;
-    color: #98a2b3;
+
+/* Three figures in a row, separated by hairlines. */
+#div_home_hero .hh-stats {
+    display: flex;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--hh-line);
 }
-#div_home_hero .hd-trip-metrics { display: flex; gap: 8px; }
-#div_home_hero .hd-trip-metric {
+#div_home_hero .hh-stat {
     flex: 1 1 0;
     min-width: 0;
-    text-align: center;
-    padding: 8px 4px;
-    border-radius: 10px;
-    background: #f9fafb;
+    padding: 0 10px;
+    border-left: 1px solid var(--hh-line);
 }
-#div_home_hero .hd-trip-metric-val {
+#div_home_hero .hh-stat:first-child { padding-left: 0; border-left: 0; }
+#div_home_hero .hh-stat b {
     display: block;
     font-size: 16px;
-    font-weight: 800;
-    color: #0f1729;
+    font-weight: 700;
+    line-height: 20px;
+    color: var(--hh-ink);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-#div_home_hero .hd-trip-metric-label {
+#div_home_hero .hh-stat span {
     display: block;
-    font-size: 11px;
-    color: #6b7280;
-    margin-top: 2px;
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 14px;
+    color: var(--hh-grey);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-#div_home_hero .hh-trip-sub { margin-top: 10px; }
-#div_home_hero .hh-lms-progress {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    color: #6b7280;
-    margin-top: 4px;
-}
-#div_home_hero .hh-lms-pct { font-weight: 700; color: var(--c-primary, #2a3086); }
+
+/* Learning progress. */
 #div_home_hero .hh-bar {
-    height: 5px;
-    border-radius: 3px;
-    background: #f2f4f7;
-    margin: 6px 0 10px;
+    height: 4px;
+    margin-top: 12px;
+    border-radius: 2px;
+    background: var(--hh-line);
     overflow: hidden;
 }
-#div_home_hero .hh-bar i { display: block; height: 5px; width: 0; background: var(--c-primary, #2a3086); }
-#div_home_hero .hh-link {
+#div_home_hero .hh-bar i { display: block; height: 4px; width: 0; background: var(--hh-navy); }
+
+/* Reason for visit: one bordered field with its label inside. */
+#div_home_hero .hh-field {
+    display: block;
+    margin-top: auto;
+    padding: 5px 12px 4px;
+    border: 1px solid var(--hh-edge);
+    border-radius: 10px;
+}
+#div_home_hero .hh-row + .hh-note + .hh-field { margin-top: auto; }
+#div_home_hero .hh-field small {
+    display: block;
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--hh-grey);
+}
+#div_home_hero .hh-select {
+    display: block;
+    width: 100%;
+    height: 24px;
+    margin: 0;
+    padding: 0 18px 0 0;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    color: var(--hh-ink);
+    font-size: 14px;
+    line-height: 24px;
+}
+#div_home_hero .hh-select:disabled { color: var(--hh-faint); }
+
+/* The one action of a slide. */
+#div_home_hero .hh-foot {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0 0;
-    margin-top: 10px;
-    border-top: 1px solid #f2f4f7;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--c-primary, #2a3086);
+    gap: 12px;
+    min-height: 24px;
+    margin-top: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--hh-navy);
+    text-decoration: none;
 }
-#div_home_hero .hh-dots {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    padding-top: 10px;
+#div_home_hero .hh-foot small {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--hh-faint);
+    white-space: nowrap;
 }
-#div_home_hero .hh-dots span {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #d0d5dd;
-}
-#div_home_hero .hh-dots span.on {
-    width: 18px;
-    border-radius: 3px;
-    background: var(--c-primary, #2a3086);
-}
-/* The card belongs to Home only; the Trips tab hides the Home content. */
-.page.trips-open #div_home_hero { display: none; }
-
-/* Larger card (about half as tall again) that stays put while Home scrolls. */
-#div_home_hero {
-    position: -webkit-sticky;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: #f4f4f4;
-    padding-bottom: 2px;
-}
-#div_home_hero .hh-card { padding: 18px 0 12px; }
-#div_home_hero .hh-slide { min-height: 250px; padding: 0 18px; }
-#div_home_hero .hd-card-title { font-size: 13px; margin-bottom: 10px; }
-#div_home_hero .hh-title i { font-size: 16px; }
-#div_home_hero .hh-status { font-size: 16px; margin-bottom: 12px; }
-#div_home_hero .hh-dot { width: 10px; height: 10px; flex-basis: 10px; }
-#div_home_hero .hh-head { font-size: 21px; }
-#div_home_hero .hh-sub { font-size: 14px; margin-top: 4px; min-height: 18px; }
-#div_home_hero .hh-field-lab { font-size: 13px; margin-top: auto; padding-top: 14px; }
-#div_home_hero .hh-select { height: 50px; font-size: 15px; margin-top: 8px; }
-#div_home_hero .hd-trip-metric { padding: 14px 4px; border-radius: 12px; }
-#div_home_hero .hd-trip-metric-val { font-size: 21px; }
-#div_home_hero .hd-trip-metric-label { font-size: 12px; margin-top: 4px; }
-#div_home_hero .hh-trip-sub { margin-top: 14px; }
-#div_home_hero .hh-lms-progress { font-size: 14px; margin-top: 8px; }
-#div_home_hero .hh-bar { height: 7px; border-radius: 4px; margin: 8px 0 14px; }
-#div_home_hero .hh-bar i { height: 7px; }
-#div_home_hero .hh-link { margin-top: auto; padding-top: 14px; font-size: 15px; }
-#div_home_hero .hh-dots { padding-top: 12px; }
-
-/* About 10% shorter than the first enlarged size. */
-#div_home_hero .hh-slide { min-height: 222px; }
-#div_home_hero .hh-head { font-size: 19px; }
-#div_home_hero .hd-trip-metric { padding: 11px 4px; }
-#div_home_hero .hd-trip-metric-val { font-size: 19px; }
-#div_home_hero .hh-select { height: 46px; }
-/* Keeps the list's top corners rounded as it slides under the pinned card.
-   A strip the height of the list's corner radius sits just below the card and
-   paints the page colour into the two corner wedges only (a quarter-circle is
-   left clear in each), so whatever part of the list is at the top shows a
-   curved edge. */
-#div_home_hero::after {
-    content: "";
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: -10px;
-    height: 10px;
-    pointer-events: none;
-    background:
-        radial-gradient(circle at 10px 10px, transparent 9.5px, #fcfcfc 10px) left top / 10px 10px no-repeat,
-        radial-gradient(circle at 0 10px, transparent 9.5px, #fcfcfc 10px) right top / 10px 10px no-repeat;
-}
-
-/* The pinned card sits on the page colour, not the body colour. */
-#div_home_hero { background: #fcfcfc; }
-
-/* Short screen (landscape, split screen): the card scrolls with the list
-   instead of staying fixed, as BillBaant K's PinnedHeaderList does. */
-@media (max-height: 599px) {
-    #div_home_hero { position: static; }
-    #div_home_hero::after { display: none; }
-}
-
-/* Nearest site slide: status colours, the compact Refresh button beside the
-   status, and one line for location messages. */
-#div_home_hero .hh-status.is-off { color: #b42318; }
-#div_home_hero .hh-status.is-off .hh-dot { background: #d92d20; }
-#div_home_hero .hh-status.is-warn { color: #b54708; }
-#div_home_hero .hh-status.is-warn .hh-dot { background: #f79009; }
-#div_home_hero .hh-status-text { flex: 1 1 auto; min-width: 0; }
 #div_home_hero .hh-refresh {
-    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 32px;
-    min-width: 44px;
-    padding: 0 12px;
-    margin: -8px 0;
-    border: 0;
-    border-radius: 16px;
-    background: #f9fafb;
-    color: var(--c-primary, #2a3086);
-    font-size: 13px;
-    font-weight: 600;
+    gap: 8px;
     width: auto;
+    min-height: 32px;
+    margin: -4px 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--hh-navy);
+    font-size: 14px;
+    font-weight: 600;
 }
-#div_home_hero .hh-refresh:active { background: #eceef2; }
 #div_home_hero .hh-refresh:disabled { opacity: .6; }
 #div_home_hero .hh-refresh.is-busy i { animation: hh-spin 1s linear infinite; }
 @keyframes hh-spin { to { transform: rotate(360deg); } }
-/* Always one line tall, so a message arriving does not move the dropdown. */
-#div_home_hero .hh-note {
-    min-height: 16px;
-    margin-top: 2px;
-    font-size: 12px;
-    line-height: 16px;
-    color: #6A6C74;
+
+/* Pager. */
+#div_home_hero .hh-dots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding-top: 14px;
+}
+#div_home_hero .hh-dots span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #d5dae2;
+}
+#div_home_hero .hh-dots span.on {
+    width: 16px;
+    border-radius: 3px;
+    background: var(--hh-navy);
+}
+
+/* Permit to work: a permit card inside the slide. The header is deep navy
+   while the permit is in force and plain while it is only approved. */
+#div_home_hero .hh-permit {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--hh-edge);
+    border-radius: 14px;
+    overflow: hidden;
+}
+#div_home_hero .hh-permit-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--hh-edge);
+}
+#div_home_hero .hh-permit-ic {
+    flex: 0 0 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--hh-edge);
+    border-radius: 10px;
+    color: var(--hh-navy-deep);
+    font-size: 18px;
+}
+#div_home_hero .hh-permit-title { flex: 1 1 auto; min-width: 0; }
+#div_home_hero .hh-permit-title small {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--hh-grey);
+}
+#div_home_hero .hh-permit-title b {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--hh-ink);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-#div_home_hero .hh-field-lab { padding-top: 8px; }
+#div_home_hero .hh-permit.is-active .hh-permit-head { background: var(--hh-navy-deep); border-bottom-color: var(--hh-navy-deep); }
+#div_home_hero .hh-permit.is-active .hh-permit-ic { border-color: rgba(255, 255, 255, .22); color: #fff; }
+#div_home_hero .hh-permit.is-active .hh-permit-title small { color: rgba(255, 255, 255, .62); }
+#div_home_hero .hh-permit.is-active .hh-permit-title b,
+#div_home_hero .hh-permit.is-active .hh-pill { color: #fff; }
+#div_home_hero .hh-permit-body {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+    align-content: center;
+    padding: 12px 14px;
+}
+#div_home_hero .hh-permit-body small { display: block; font-size: 11px; line-height: 14px; color: var(--hh-grey); }
+#div_home_hero .hh-permit-body b {
+    display: block;
+    margin-top: 1px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 18px;
+    color: var(--hh-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#div_home_hero .hh-permit-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--hh-line);
+    font-size: 13px;
+    color: var(--hh-grey);
+}
+#div_home_hero .hh-permit-foot b { font-weight: 700; color: var(--hh-ink); white-space: nowrap; }
+#div_home_hero .hh-permit-foot b.is-warn { color: #b54708; }
+#div_home_hero .hh-permit.is-empty .hh-permit-body,
+#div_home_hero .hh-permit.is-empty .hh-permit-foot { display: none; }
 
 /* Safety Passport slide: the profile menu's passport card (styles_low.css
    .passport-*), sized to the slide. */
@@ -979,12 +1062,44 @@
     text-overflow: ellipsis;
 }
 
-/* A gap between the pinned card and the list's window, so rows scrolling
-   under the card do not touch it. The gap is part of the pinned block (page
-   colour), and the list gives up its own top padding so the gap is not
-   doubled when Home is at rest. */
-#div_home_hero { padding-bottom: 10px; }
-#div_home_hero:not(:empty) + #div_home_dashboard { padding-top: 0; }
+/* The list's window. Rows slide under the pinned card and, at the foot,
+   under a strip above the tab bar; both edges keep rounded corners. Each cap
+   is a strip the height of the corner radius that paints the page colour
+   into the two corner wedges only (a quarter-circle is left clear in each). */
+#div_home_hero::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -10px;
+    height: 10px;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 10px 10px, transparent 9.5px, #fcfcfc 10px) left top / 10px 10px no-repeat,
+        radial-gradient(circle at 0 10px, transparent 9.5px, #fcfcfc 10px) right top / 10px 10px no-repeat;
+}
+#div_home_list_foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 56px;
+    height: 18px;
+    z-index: 20;
+    pointer-events: none;
+    background:
+        linear-gradient(#fcfcfc, #fcfcfc) left bottom / 100% 8px no-repeat,
+        radial-gradient(circle at 10px 0, transparent 9.5px, #fcfcfc 10px) left 12px top / 10px 10px no-repeat,
+        radial-gradient(circle at 0 0, transparent 9.5px, #fcfcfc 10px) right 12px top / 10px 10px no-repeat;
+}
+/* Room for the last row to clear the strip. */
+#div_page_content { padding-bottom: 18px; }
+
+/* Short screen (landscape, split screen): the card scrolls with the list
+   instead of staying fixed, as BillBaant K's PinnedHeaderList does. */
+@media (max-height: 599px) {
+    #div_home_hero { position: static; }
+    #div_home_hero::after { display: none; }
+}
 
 /* Tab bar and the page above it. Home's scroller used to stop at 94% of the
    page while the bar was 48px, which left a strip of page background above
@@ -993,3 +1108,40 @@
 #div_new_tabbar,
 #div_new_tabbar .toolbar-inner { height: 56px !important; }
 #div_page_content { height: calc(100% - 56px) !important; }
+
+/* Main trip card: what it is showing, and the way back to the summary. */
+.trip-stats-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 24px;
+    padding: 0 2px 8px;
+    font-size: 13px;
+}
+.trip-stats-title {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-weight: 800;
+    color: #0D1829;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.trip-stats-state { flex: 1 1 auto; min-width: 0; color: #6A6C74; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trip-stats-clear {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #fff;
+    color: #2a3086;
+    font-weight: 600;
+    font-size: 12px;
+    text-decoration: none;
+}
+/* Times and the trip ID are longer than the averages they replace. */
+#trip_main_card.is-trip .trip-stats-avg .trip-list-metric-val {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

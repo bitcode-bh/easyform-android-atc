@@ -1,10 +1,12 @@
-// Home hero: one swipeable card at the top of Home with up to four slides.
+// Home hero: one swipeable card at the top of Home with up to five slides.
 //
 //   Site visit    Vendor Technician role only. Nearest site from the phone's
 //                 site catalog, its distance, the geofence status, a Refresh
 //                 location button and the reason for the visit.
 //   Driver trips  This month's trips, rolled up the same way as the Trips tab.
 //   Learning      LMS progress, read from what the LMS last cached on the phone.
+//   Permit        The permit to work in force (or the next approved one), as
+//                 a card. Shown only once a permit source is plugged in.
 //   Passport      The Safety Passport card from the profile menu.
 //
 // The card is always present; a slide with nothing to show says so rather than
@@ -93,47 +95,52 @@ var HomeHero = (function () {
 
     // ---- slides ----------------------------------------------------------
 
+    // Every slide has the same anatomy: a quiet label with the status beside
+    // it, one headline, one supporting line, a body block and one action.
+    function topHtml(label, labelClass, pillClass) {
+        return '<div class="hh-top"><span class="hh-eyebrow ' + labelClass + '">' + label + '</span>'
+            + '<span class="hh-pill ' + pillClass + '"><i class="hh-dot"></i><span class="hh-status-text"></span></span></div>';
+    }
+
+    function statHtml(valueClass, label) {
+        return '<div class="hh-stat"><b class="' + valueClass + '">…</b><span>' + label + '</span></div>';
+    }
+
     function siteSlideHtml() {
         return '<div class="hh-slide" data-slide="site">'
-            + '<div class="hd-card-title hh-title"><span>Nearest site</span><i class="fa-solid fa-location-dot" aria-hidden="true"></i></div>'
-            + '<div class="hh-status hh-site-status"><span class="hh-dot"></span><span class="hh-status-text">Checking…</span>'
-            + '<button type="button" class="hh-refresh" aria-label="Refresh location">'
-            + '<i class="fa-solid fa-rotate" aria-hidden="true"></i><span>Refresh</span></button></div>'
-            + '<div class="hh-head hh-site-name"></div>'
-            + '<div class="hh-sub hh-site-sub"></div>'
+            + topHtml('Nearest site', 'hh-site-label', 'hh-site-status')
+            + '<div class="hh-row"><div class="hh-ic"><i class="hh-site-icon fa-solid fa-location-dot" aria-hidden="true"></i></div>'
+            + '<div class="hh-row-text"><div class="hh-head hh-site-name"></div><div class="hh-sub hh-site-sub"></div></div></div>'
             + '<div class="hh-note hh-site-note"></div>'
-            + '<div class="hh-field-lab">Reason for site visit</div>'
-            + '<select class="hh-select hh-site-reason" disabled aria-label="Reason for site visit">'
-            + '<option value="">Loading modules…</option></select>'
+            + '<label class="hh-field"><small>Reason for visit</small>'
+            + '<select class="hh-select hh-site-reason" disabled aria-label="Reason for visit">'
+            + '<option value="">Loading modules…</option></select></label>'
+            + '<div class="hh-foot"><button type="button" class="hh-refresh">'
+            + '<i class="fa-solid fa-rotate" aria-hidden="true"></i><span>Refresh location</span></button>'
+            + '<small class="hh-site-updated"></small></div>'
             + '</div>';
     }
 
     function tripSlideHtml() {
+        var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         return '<div class="hh-slide" data-slide="trips">'
-            + '<div class="hd-card-title hh-title"><span>Driver trips · this month</span><i class="fa-solid fa-route" aria-hidden="true"></i></div>'
-            + '<div class="hh-status hh-trip-status"><span class="hh-dot"></span><span class="hh-status-text">…</span></div>'
-            + '<div class="hd-trip-metrics">'
-            + '<div class="hd-trip-metric"><span class="hd-trip-metric-val hh-trip-km">…</span><span class="hd-trip-metric-label">Distance</span></div>'
-            + '<div class="hd-trip-metric"><span class="hd-trip-metric-val hh-trip-time">…</span><span class="hd-trip-metric-label">Time</span></div>'
-            + '<div class="hd-trip-metric"><span class="hd-trip-metric-val hh-trip-viol">…</span><span class="hd-trip-metric-label">Violations</span></div>'
-            + '</div>'
+            + topHtml('Driver trips · ' + months[new Date().getMonth()], '', 'hh-trip-status')
+            + '<div class="hh-head hh-figure hh-trip-km">…</div>'
             + '<div class="hh-sub hh-trip-sub"></div>'
-            + '<a href="#" class="hh-link hh-open-trips"><span>View trips</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>'
+            + '<div class="hh-stats">' + statHtml('hh-trip-time', 'Drive time') + statHtml('hh-trip-viol', 'Violations')
+            + statHtml('hh-trip-call', 'On call') + '</div>'
+            + '<a href="#" class="hh-foot hh-link hh-open-trips"><span>View trips</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>'
             + '</div>';
     }
 
     function lmsSlideHtml() {
         return '<div class="hh-slide" data-slide="lms">'
-            + '<div class="hd-card-title hh-title"><span>Learning</span><i class="fa-solid fa-shield" aria-hidden="true"></i></div>'
+            + '<div class="hh-top"><span class="hh-eyebrow">Learning</span><span class="hh-pill hh-lms-lessons"></span></div>'
             + '<div class="hh-head hh-lms-name"></div>'
-            + '<div class="hh-lms-progress"><span class="hh-lms-lessons"></span><span class="hh-lms-pct"></span></div>'
             + '<div class="hh-bar"><i></i></div>'
-            + '<div class="hd-trip-metrics">'
-            + '<div class="hd-trip-metric"><span class="hd-trip-metric-val hh-lms-score">—</span><span class="hd-trip-metric-label">Avg score</span></div>'
-            + '<div class="hd-trip-metric"><span class="hd-trip-metric-val hh-lms-modules">—</span><span class="hd-trip-metric-label">Modules</span></div>'
-            + '<div class="hd-trip-metric"><span class="hd-trip-metric-val hh-lms-assess">—</span><span class="hd-trip-metric-label">Assessments</span></div>'
-            + '</div>'
-            + '<a href="#" class="hh-link hh-open-lms"><span>Continue learning</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>'
+            + '<div class="hh-stats">' + statHtml('hh-lms-pct', 'Complete') + statHtml('hh-lms-score', 'Avg score')
+            + statHtml('hh-lms-assess', 'Assessments') + '</div>'
+            + '<a href="#" class="hh-foot hh-link hh-open-lms"><span>Continue learning</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>'
             + '</div>';
     }
 
@@ -240,7 +247,7 @@ var HomeHero = (function () {
             if (!validCoords(lat, lon)) continue;
             var d = metresBetween(fix.lat, fix.lon, lat, lon);
             if (!best || d < best.distanceM) {
-                best = { siteId: sites[i].place_id, distanceM: d, radiusM: parseFloat(sites[i].radius), flowId: sites[i].flow_id };
+                best = { siteId: sites[i].place_id, distanceM: d, radiusM: parseFloat(sites[i].radius), flowId: sites[i].flow_id, siteType: sites[i].site_type };
             }
         }
         if (best) best.siteName = knownSiteName(best.siteId);
@@ -276,39 +283,61 @@ var HomeHero = (function () {
         off: 'Off-site'
     };
 
+    // Telecom site type -> icon. The phone's site catalog carries no type today
+    // (place id, coordinates, radius, flow only), so every site gets the pin
+    // until the server sends one with the site.
+    var SITE_TYPE_ICONS = [
+        [/gbt|ground/, 'fa-tower-cell'],
+        [/rtt|rtp|roof/, 'fa-building'],
+        [/cow|wheel/, 'fa-truck'],
+        [/ibs|in.?building|indoor/, 'fa-city'],
+        [/small|pole|gbm/, 'fa-tower-broadcast']
+    ];
+
+    function siteTypeIcon(type) {
+        var t = String(type == null ? '' : type).trim().toLowerCase();
+        for (var i = 0; t && i < SITE_TYPE_ICONS.length; i++) {
+            if (SITE_TYPE_ICONS[i][0].test(t)) return SITE_TYPE_ICONS[i][1];
+        }
+        return 'fa-location-dot';
+    }
+
     function paintSite($slide) {
         var status = siteStatus();
-        var $status = $slide.find('.hh-site-status');
-        $status.removeClass('is-on is-off is-warn')
+        $slide.find('.hh-site-status').removeClass('is-on is-off is-warn')
             .addClass(status === 'on' ? 'is-on' : status === 'off' ? 'is-off' : status === 'unavailable' ? 'is-warn' : '')
-            .find('.hh-status-text').text(site.busy ? 'Getting location…' : STATUS_TEXT[status]);
+            .find('.hh-status-text').text(STATUS_TEXT[status]);
+        // "Nearest" only while the technician is not at it.
+        $slide.find('.hh-site-label').text(status === 'on' ? 'Current site' : 'Nearest site');
         var $btn = $slide.find('.hh-refresh');
-        $btn.prop('disabled', site.busy).toggleClass('is-busy', site.busy);
+        $btn.prop('disabled', site.busy).toggleClass('is-busy', site.busy)
+            .find('span').text(site.busy ? 'Getting location…' : 'Refresh location');
 
         // The server's own site and distance win over the phone's when it gave them.
         var v = site.verdict, n = site.nearest;
         var siteId = (v && v.siteId != null) ? v.siteId : (n ? n.siteId : null);
         var siteName = (v && v.siteName) ? v.siteName : (n ? n.siteName : '');
+        var siteType = n ? n.siteType : '';
         var distanceM = (v && v.distanceM != null) ? v.distanceM : (n ? n.distanceM : null);
 
+        $slide.find('.hh-site-icon').attr('class', 'hh-site-icon fa-solid ' + siteTypeIcon(siteType));
         if (siteId == null) {
-            $slide.find('.hh-site-name').text(status === 'checking' ? '' : status === 'nosites' ? 'No sites downloaded' : 'Nearest site not known yet');
+            $slide.find('.hh-site-name').text(status === 'checking' ? '' : status === 'nosites' ? 'No sites downloaded' : 'Not known yet');
             $slide.find('.hh-site-sub').text('');
         } else {
-            // The ID is the heading when there is no name, so it is not repeated below.
-            $slide.find('.hh-site-name').text(siteName || ('Site ID ' + siteId));
+            $slide.find('.hh-site-name').text(siteName || ('Site ' + siteId));
             var parts = [];
             if (siteName) parts.push('Site ID ' + siteId);
-            if (distanceM != null) parts.push(formatDistance(distanceM) + ' away');
-            var sub = parts.join(' · ');
-            $slide.find('.hh-site-sub').text(sub);
+            if (siteType) parts.push(String(siteType));
+            if (distanceM != null && status !== 'unavailable') {
+                parts.push(formatDistance(distanceM) + (status === 'on' ? ' from site' : ' away'));
+            }
+            $slide.find('.hh-site-sub').text(parts.join(' · '));
         }
 
-        var note = site.note;
-        if (!note && site.fix && Date.now() - site.fix.at > STALE_FIX_MS) {
-            note = 'Location from ' + clock(site.fix.at) + '. Tap Refresh for a new one.';
-        }
-        $slide.find('.hh-site-note').text(note || '');
+        $slide.find('.hh-site-note').text(site.note || '');
+        var stale = site.fix && Date.now() - site.fix.at > STALE_FIX_MS;
+        $slide.find('.hh-site-updated').text(site.fix ? ((stale || site.problem ? 'Last seen ' : 'Updated ') + clock(site.fix.at)) : '');
         fillReasons($slide.find('.hh-site-reason'), siteId == null ? null : { siteId: siteId, siteName: siteName });
     }
 
@@ -515,8 +544,8 @@ var HomeHero = (function () {
         $slide.find('.hh-trip-km').text(t.kmText);
         $slide.find('.hh-trip-time').text(t.timeText);
         $slide.find('.hh-trip-viol').text(String(t.violations));
-        $slide.find('.hh-trip-sub').text(t.trips + (t.trips === 1 ? ' trip' : ' trips')
-            + ' · ' + t.speed + ' overspeed · ' + t.call + ' on call');
+        $slide.find('.hh-trip-call').text(String(t.call));
+        $slide.find('.hh-trip-sub').text(t.trips + (t.trips === 1 ? ' trip' : ' trips') + ' this month');
     }
 
     function cachedTrips() {
@@ -574,7 +603,7 @@ var HomeHero = (function () {
         if (!modules) {
             $slide.find('.hh-lms-name').text('Open LMS to see your progress');
             $slide.find('.hh-lms-lessons').text('');
-            $slide.find('.hh-lms-pct').text('');
+            $slide.find('.hh-lms-pct, .hh-lms-score, .hh-lms-assess').text('—');
             $slide.find('.hh-bar i').css('width', '0%');
             return;
         }
@@ -595,8 +624,123 @@ var HomeHero = (function () {
         $slide.find('.hh-lms-pct').text(pct + '%');
         $slide.find('.hh-bar i').css('width', pct + '%');
         $slide.find('.hh-lms-score').text(questions ? Math.round(score / questions * 100) + '%' : '—');
-        $slide.find('.hh-lms-modules').text(String(modules.length));
         $slide.find('.hh-lms-assess').text(assessments ? String(assessments.length) : '—');
+    }
+
+    // ---- permit to work ------------------------------------------------------
+
+    // Where permits come from. Nothing in the app reads PTW records yet, so no
+    // provider is set and the slide is not shown. A provider is called with a
+    // callback and answers a list of
+    //   {workType, permitNo, siteId, fromMs, untilMs, approvedBy, status}
+    // where status is 'active' or 'approved'. The slide shows the active
+    // permit, else the next approved one.
+    var permitProvider = null;
+    var permits = [];
+    var ENDING_SOON_MS = 15 * 60000;
+
+    // Work type -> its name on the card and its icon.
+    var WORK_TYPES = [
+        [/hot/, 'Hot work', 'fa-fire'],
+        [/height/, 'Work at height', 'fa-person-falling'],
+        [/electric/, 'Electrical', 'fa-bolt'],
+        [/ftth|fib/, 'FTTH', 'fa-network-wired']
+    ];
+
+    function workType(raw) {
+        var t = String(raw == null ? '' : raw).trim();
+        for (var i = 0; i < WORK_TYPES.length; i++) {
+            if (WORK_TYPES[i][0].test(t.toLowerCase())) return { name: WORK_TYPES[i][1], icon: WORK_TYPES[i][2] };
+        }
+        return { name: t || 'Permit', icon: 'fa-clipboard-check' };
+    }
+
+    function permitSlideHtml() {
+        function cell(label, cls) {
+            return '<div><small>' + label + '</small><b class="' + cls + '"></b></div>';
+        }
+        return '<div class="hh-slide" data-slide="permit"><div class="hh-permit">'
+            + '<div class="hh-permit-head"><div class="hh-permit-ic"><i class="hh-permit-icon fa-solid fa-clipboard-check" aria-hidden="true"></i></div>'
+            + '<div class="hh-permit-title"><small>Permit to work</small><b class="hh-permit-type"></b></div>'
+            + '<span class="hh-pill hh-permit-status"><i class="hh-dot"></i><span class="hh-status-text"></span></span></div>'
+            + '<div class="hh-permit-body">' + cell('Permit no.', 'hh-permit-no') + cell('Site', 'hh-permit-site')
+            + cell('Valid from', 'hh-permit-from') + cell('Valid until', 'hh-permit-until') + '</div>'
+            + '<div class="hh-permit-foot"><span class="hh-permit-by"></span><b class="hh-permit-time"></b></div>'
+            + '</div></div>';
+    }
+
+    function dayTime(ms) {
+        var d = new Date(ms);
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return clock(ms) + ', ' + d.getDate() + ' ' + months[d.getMonth()];
+    }
+
+    function span(ms) {
+        var mins = Math.max(0, Math.round(ms / 60000));
+        if (mins < 60) return mins + 'm';
+        if (mins < 48 * 60) return Math.floor(mins / 60) + 'h ' + pad(mins % 60) + 'm';
+        return Math.round(mins / 1440) + ' days';
+    }
+
+    // The permit in force now, else the approved one that starts first.
+    function permitToShow(list, now) {
+        var active = null, next = null;
+        for (var i = 0; i < (list || []).length; i++) {
+            var p = list[i];
+            if (!p || !(p.untilMs > now)) continue;
+            if (p.status === 'active') { if (!active || p.untilMs < active.untilMs) active = p; }
+            else if (p.status === 'approved') { if (!next || p.fromMs < next.fromMs) next = p; }
+        }
+        return active || next;
+    }
+
+    function paintPermit($slide) {
+        if (!$slide.length) return;
+        var now = Date.now();
+        var p = permitToShow(permits, now);
+        var $card = $slide.find('.hh-permit');
+        if (!p) {
+            $card.removeClass('is-active').addClass('is-empty');
+            $slide.find('.hh-permit-type').text('No active or approved permit');
+            $slide.find('.hh-permit-status .hh-status-text').text('');
+            $slide.find('.hh-permit-no, .hh-permit-site, .hh-permit-from, .hh-permit-until').text('—');
+            $slide.find('.hh-permit-by, .hh-permit-time').text('');
+            return;
+        }
+        var active = p.status === 'active';
+        var type = workType(p.workType);
+        var left = p.untilMs - now;
+        var soon = active && left <= ENDING_SOON_MS;
+        $card.removeClass('is-empty').toggleClass('is-active', active);
+        $slide.find('.hh-permit-icon').attr('class', 'hh-permit-icon fa-solid ' + type.icon);
+        $slide.find('.hh-permit-type').text(type.name);
+        $slide.find('.hh-permit-status').removeClass('is-on is-warn is-ring')
+            .addClass(soon ? 'is-warn' : active ? 'is-on' : 'is-ring')
+            .find('.hh-status-text').text(soon ? 'Ending soon' : active ? 'Active' : 'Approved');
+        $slide.find('.hh-permit-no').text(p.permitNo == null ? '—' : String(p.permitNo));
+        $slide.find('.hh-permit-site').text(p.siteId == null ? '—' : String(p.siteId));
+        $slide.find('.hh-permit-from').text(p.fromMs ? dayTime(p.fromMs) : '—');
+        $slide.find('.hh-permit-until').text(p.untilMs ? dayTime(p.untilMs) : '—');
+        $slide.find('.hh-permit-by').text(p.approvedBy ? 'Approved by ' + p.approvedBy : '');
+        $slide.find('.hh-permit-time').toggleClass('is-warn', soon)
+            .text(active ? span(left) + ' left' : (p.fromMs > now ? 'Starts in ' + span(p.fromMs - now) : 'Ready to start'));
+    }
+
+    function loadPermits($slide) {
+        if (!permitProvider || !$slide.length) return;
+        try {
+            permitProvider(function (list) {
+                permits = (list && list.length) ? list : [];
+                paintPermit($slide);
+            });
+        } catch (e) { paintPermit($slide); }
+    }
+
+    function setPermitProvider(fn) {
+        permitProvider = (typeof fn === 'function') ? fn : null;
+        permits = [];
+        render();
+        refresh();
     }
 
     // ---- list under the pinned card -----------------------------------------
@@ -671,7 +815,20 @@ var HomeHero = (function () {
         if ($site.length) loadSite($site);
         paintTrips($root.find('[data-slide="trips"]'));
         paintLms($root.find('[data-slide="lms"]'));
+        loadPermits($root.find('[data-slide="permit"]'));
         paintPassport($root.find('[data-slide="passport"]'));
+    }
+
+    // The list's window ends a little above the tab bar with the same rounded
+    // corners it has under the pinned card: a strip of page colour over the
+    // foot of the scroller, with a quarter-circle left clear in each corner.
+    function addListFoot() {
+        var scroller = document.getElementById('div_page_content');
+        if (!scroller || document.getElementById('div_home_list_foot')) return;
+        var foot = document.createElement('div');
+        foot.id = 'div_home_list_foot';
+        foot.setAttribute('aria-hidden', 'true');
+        scroller.parentNode.insertBefore(foot, scroller.nextSibling);
     }
 
     function render() {
@@ -681,6 +838,7 @@ var HomeHero = (function () {
         if (isVendorTechnician()) slides.push(siteSlideHtml());
         slides.push(tripSlideHtml());
         slides.push(lmsSlideHtml());
+        if (permitProvider) slides.push(permitSlideHtml());
         slides.push(passportSlideHtml());
 
         var dots = '';
@@ -728,6 +886,8 @@ var HomeHero = (function () {
         });
 
         bindRestOnRow($root);
+        addListFoot();
+        paintPermit($root.find('[data-slide="permit"]'));
 
         if (timer) clearInterval(timer);
         timer = setInterval(refresh, REFRESH_MS);
@@ -753,7 +913,7 @@ var HomeHero = (function () {
         }, false);
     } catch (e) { }
 
-    return { render: render, refresh: refresh, setGeofenceValidator: setGeofenceValidator, isVendorTechnician: isVendorTechnician,
+    return { render: render, refresh: refresh, setGeofenceValidator: setGeofenceValidator, setPermitProvider: setPermitProvider, isVendorTechnician: isVendorTechnician,
         // exposed for tests
-        _toRowEdge: toRowEdge, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
+        _toRowEdge: toRowEdge, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
 })();
