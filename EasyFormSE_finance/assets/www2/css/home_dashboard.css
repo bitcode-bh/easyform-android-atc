@@ -1176,3 +1176,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* Safety Passport back side: shown in place of the front after a vertical
+   swipe over the card. pan-x leaves sideways swipes to the slide pager and
+   hands vertical ones to the card instead of scrolling Home. */
+#div_home_hero .hh-passport { touch-action: pan-x; }
+#div_home_hero .hh-pass-back { display: none; flex: 1 1 auto; flex-direction: column; justify-content: center; gap: 10px; }
+#div_home_hero .hh-pass-back-row { display: flex; gap: 6px; }
+#div_home_hero .hh-pass-back-row img { flex: 1 1 0; min-width: 0; height: 72px; object-fit: contain; }
+#div_home_hero .hh-pass-back-row img:nth-child(2) { flex-grow: 2; }
+#div_home_hero .hh-passport.is-back .passport-header,
+#div_home_hero .hh-passport.is-back .passport-body { display: none; }
+#div_home_hero .hh-passport.is-back .hh-pass-back { display: flex; }
+
+/* Trips main card: per-trip averages are not shown; the second line is used
+   only for a picked trip's own start, end and ID. */
+#trip_main_card:not(.is-trip) .trip-stats-avg { display: none; }

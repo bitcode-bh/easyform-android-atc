@@ -484,6 +484,12 @@ var HomeHero = (function () {
             return '<div class="col-50"><div class="label">' + label + '</div>'
                 + '<div class="value"><span class="hh-pass-' + key + '"></span></div></div>';
         }
+        // The back of the card: the six panels the passport page shows under
+        // the front. Swiping up or down over the card turns it over.
+        function backRow(from) {
+            return '<div class="hh-pass-back-row"><img data-back="' + from + '" alt="" /><img data-back="' + (from + 1)
+                + '" alt="" /><img data-back="' + (from + 2) + '" alt="" /></div>';
+        }
         return '<div class="hh-slide" data-slide="passport">'
             + '<a href="#" class="hh-passport" aria-label="Open My Safety Passport">'
             + '<div class="passport-header">'
@@ -496,7 +502,9 @@ var HomeHero = (function () {
             + '<div class="row">' + cell('SAFETY PASSPORT ID', 'id') + cell('CIRCLE', 'circle') + '</div>'
             + '<div class="row">' + cell('PARTNER NAME', 'partner') + cell('EMERGENCY CONTACT NO', 'contact') + '</div>'
             + '<div class="row">' + cell('Role', 'role') + cell('BLOOD GROUP', 'blood') + '</div>'
-            + '</div></a></div>';
+            + '</div>'
+            + '<div class="hh-pass-back" aria-hidden="true">' + backRow(1) + backRow(4) + '</div>'
+            + '</a></div>';
     }
 
     function passportData() {
@@ -536,9 +544,43 @@ var HomeHero = (function () {
         if (!$badge.attr('src')) {
             try {
                 var base = JSON.parse(storage.getItem('global_wcf_url')) || (typeof global_wcf_url !== 'undefined' ? global_wcf_url : '');
-                $badge.attr('src', new URL(base).origin + '/images/safety_passport/sp_shield.png');
+                var art = new URL(base).origin + '/images/safety_passport/';
+                $badge.attr('src', art + 'sp_shield.png');
+                $slide.find('.hh-pass-back img').each(function () {
+                    $(this).attr('src', art + 'sp_back_' + $(this).attr('data-back') + '.png');
+                });
             } catch (e) { }
         }
+    }
+
+    // A vertical swipe over the passport turns it over; leaving the slide
+    // turns it back to the front.
+    function bindPassportFlip($root) {
+        var $card = $root.find('.hh-passport');
+        if (!$card.length) return;
+        var x0 = 0, y0 = 0, tracking = false, turned = false;
+        $card.off('.hhFlip')
+            .on('touchstart.hhFlip', function (ev) {
+                var t = (ev.originalEvent || ev).touches[0];
+                x0 = t.clientX; y0 = t.clientY; tracking = true; turned = false;
+            })
+            .on('touchend.hhFlip touchcancel.hhFlip', function (ev) {
+                if (!tracking) return;
+                tracking = false;
+                var t = (ev.originalEvent || ev).changedTouches[0];
+                var dx = t.clientX - x0, dy = t.clientY - y0;
+                if (Math.abs(dy) < 30 || Math.abs(dy) < Math.abs(dx) * 1.5) return;
+                $card.toggleClass('is-back');
+                turned = true;
+            })
+            // The swipe that turned the card must not also open the passport page.
+            .on('click.hhFlip', function (ev) {
+                if (!turned) return;
+                turned = false;
+                ev.preventDefault();
+                ev.stopImmediatePropagation();
+                return false;
+            });
     }
 
     // ---- driver trips ------------------------------------------------------
@@ -950,7 +992,13 @@ var HomeHero = (function () {
         var raf = null;
         $(track).off('scroll.homeHero').on('scroll.homeHero', function () {
             if (raf) return;
-            raf = setTimeout(function () { raf = null; setDots($root); }, 80);
+            raf = setTimeout(function () {
+                raf = null;
+                setDots($root);
+                // Off the passport slide, the card goes back to its front.
+                var $pass = $root.find('[data-slide="passport"]');
+                if ($pass.length && Math.abs($pass[0].offsetLeft - track.scrollLeft) > 4) $pass.find('.hh-passport').removeClass('is-back');
+            }, 80);
         });
         $root.find('.hh-open-trips').off('click.homeHero').on('click.homeHero', function (ev) {
             ev.preventDefault();
@@ -979,6 +1027,7 @@ var HomeHero = (function () {
             });
         }
         paintPassport($root.find('[data-slide="passport"]'));
+        bindPassportFlip($root);
         $root.find('.hh-passport').off('click.homeHero').on('click.homeHero', function (ev) {
             ev.preventDefault();
             if (typeof get_safety_passport === 'function') get_safety_passport();

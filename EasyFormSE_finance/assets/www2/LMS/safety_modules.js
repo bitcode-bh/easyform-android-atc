@@ -1224,6 +1224,13 @@ function get_questionlog_by_skill_id(Skill_Id, Video_Link, Module_Id, Progress) 
         // before, and a late pause from the old media under this one.
         safetyVideo._lmsPlaySkillId = null;
         safetyVideo._lmsSwitchingLesson = true;
+        // Opening a lesson starts its video: no second tap on the player.
+        $(safetyVideo).off('canplay.lmsAutoPlay').one('canplay.lmsAutoPlay', function () {
+            try {
+                var started = this.play();
+                if (started && started.catch) started.catch(function () { });
+            } catch (e) { }
+        });
         // Set src last so even a cached video's metadata cannot arrive before
         // the selected lesson's resume position has been attached.
         $(safetyVideo).attr("src", Video_Link);
@@ -1805,6 +1812,8 @@ function lms_sync_lesson_submit_footer() {
 
 // True while the lesson popup is showing its just-submitted answers.
 var safetyLessonReviewAfterSubmit = false;
+// How long those answers stay up before the lesson closes on its own.
+var LMS_REVIEW_HOLD_MS = 1800;
 
 // Turn the inline question list into review mode after a successful submit:
 // correct option highlighted exactly as a completed lesson renders it on
@@ -1858,12 +1867,21 @@ function lms_refresh_module_after_submit(moduleId, skillId) {
 }
 
 function lms_reopen_module_preview(moduleId) {
-    if (!safetyModulePreviewActive) return;
     // Rebuilding the module page under an open lesson would empty the list it
     // was opened from; wait until the lesson is closed.
     if ($('.popup-level-4').hasClass('modal-in')) { lms_deferred_module_reopen = moduleId; return; }
     var opener = document.querySelector('#dv_Module_List [onclick*="get_target_skill_by_module_id(\'' + moduleId + '\'"]');
-    if (opener && typeof opener.onclick === 'function') opener.onclick();
+    if (opener && typeof opener.onclick === 'function') { opener.onclick(); return; }
+    // The module's card is not in the list as drawn (a filter or search is
+    // on): open the module page from the listing data instead, so the learner
+    // still lands on the module and not on Modules home.
+    for (var i = 0; i < (safety_module_data || []).length; i++) {
+        var m = safety_module_data[i];
+        if (String(m.Module_Id) === String(moduleId)) {
+            get_target_skill_by_module_id(m.Module_Id, m.Progress, m.SubmitedSkill, m.Module_Schedule_Id);
+            return;
+        }
+    }
 }
 
 // Called from the lesson popup's popup:closed handler (LMS_Misc.js).
@@ -2143,12 +2161,13 @@ function call_by_videolog(flag) {
                 myApp.popup.close('.popup-level-4');
             }
             else if (flag == 'submit') {
-                // Stay inside the module in both modes; this used to close the
-                // module page as well and drop the learner on Modules home.
-                // Full-screen has already shown each answer and closed the
-                // lesson; inline keeps it open on the highlighted answers.
-                if (!safetyLessonReviewAfterSubmit) myApp.popup.close('.popup-level-4');
+                // After the last (or only) question the learner goes back to
+                // the module's own page, never to Modules home. Full-screen
+                // has already shown each answer; inline holds the highlighted
+                // answers on screen for a moment first, then closes too.
                 lms_refresh_module_after_submit(Module_Id, Skill_Id);
+                if (!safetyLessonReviewAfterSubmit) myApp.popup.close('.popup-level-4');
+                else setTimeout(function () { myApp.popup.close('.popup-level-4'); }, LMS_REVIEW_HOLD_MS);
             }
         }
         if (showPreloader) loading_hide();
