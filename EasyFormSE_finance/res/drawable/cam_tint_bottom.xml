@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Photo camera: the flat dark tint behind the controls, the same tint the
+     scanner puts around its clear window. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#9E080C18"/>
+</shape>

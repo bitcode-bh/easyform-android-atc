@@ -29,20 +29,21 @@
             android:src="@drawable/browse"
             />
         <!-- Same camera chrome as the photo cameras: darkened top and bottom,
-             close at the top left, an "AI CHECK" readout, bare controls. -->
+             close at the top left, bare controls. The coloured shutter is
+             what marks this camera as the AI one. -->
         <com.sky.atc.easyformse.utils.newView.ThirdsGridView
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
         <View
             android:layout_width="match_parent"
-            android:layout_height="130dp"
+            android:layout_height="68dp"
             android:layout_gravity="top"
-            android:background="@drawable/cam_fade_top" />
+            android:background="@drawable/cam_tint_top" />
         <View
             android:layout_width="match_parent"
-            android:layout_height="190dp"
+            android:layout_height="124dp"
             android:layout_gravity="bottom"
-            android:background="@drawable/cam_fade_bottom" />
+            android:background="@drawable/cam_tint_bottom" />
         <ImageView
             android:id="@+id/cam_close"
             android:layout_width="52dp"
@@ -53,18 +54,6 @@
             android:contentDescription="Close"
             android:padding="12dp"
             android:src="@drawable/cam_close" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_marginTop="19dp"
-            android:layout_marginEnd="14dp"
-            android:background="@drawable/cam_pill"
-            android:paddingStart="12dp" android:paddingEnd="12dp" android:paddingTop="5dp" android:paddingBottom="5dp"
-            android:fontFamily="sans-serif-medium"
-            android:text="AI check"
-            android:textColor="@color/white"
-            android:textSize="13sp" />
         <ImageView
             android:id="@+id/switchcamera"
             android:layout_width="64dp"

@@ -37,18 +37,6 @@
         android:layout_height="match_parent"
         layout="@layout/frame" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="130dp"
-        android:layout_alignParentTop="true"
-        android:background="@drawable/cam_fade_top" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="190dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/cam_fade_bottom" />
-
     <!-- Close, and what the screen is doing, as on the other cameras. -->
     <ImageView
         android:id="@+id/cam_close"

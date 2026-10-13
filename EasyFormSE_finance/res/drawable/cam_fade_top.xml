@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Camera screens: the picture darkens towards the readouts at the top. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <gradient android:angle="270" android:startColor="#B3080C18" android:endColor="#00080C18"/>
-</shape>

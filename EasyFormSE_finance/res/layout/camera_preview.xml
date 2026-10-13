@@ -42,13 +42,23 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/preview" />
 
+    <!-- The tint runs from the top edge to a little below the stamp, however
+         many lines the stamp has. -->
     <View
         android:layout_width="0dp"
-        android:layout_height="130dp"
-        android:background="@drawable/cam_fade_top"
+        android:layout_height="0dp"
+        android:background="@drawable/cam_tint_top"
+        app:layout_constraintBottom_toBottomOf="@+id/cam_tint_top_end"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Space
+        android:id="@+id/cam_tint_top_end"
+        android:layout_width="1dp"
+        android:layout_height="16dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lay_cameratext" />
 
     <ImageView
         android:id="@+id/cam_close"

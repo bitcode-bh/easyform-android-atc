@@ -12,10 +12,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/cam_fade_bottom"
+        android:background="@drawable/cam_tint_bottom"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:paddingTop="56dp"
+        android:paddingTop="20dp"
         android:paddingBottom="18dp">
 
         <LinearLayout
