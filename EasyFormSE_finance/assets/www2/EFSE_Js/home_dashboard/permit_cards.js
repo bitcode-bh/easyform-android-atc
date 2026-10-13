@@ -152,9 +152,6 @@ var PermitCards = (function () {
             + '<div class="ps-track">' + slides + '</div>'
             + '<div class="ps-dots" aria-hidden="true">' + dots + '</div>'
             + '<div class="ps-hint">Swipe to change permit type</div></div>';
-        // The cards are as tall as the Safety Passport card on Home.
-        var passport = document.querySelector('#div_home_hero .hh-passport');
-        if (passport && passport.offsetHeight) root.style.setProperty('--ps-h', passport.offsetHeight + 'px');
         document.body.appendChild(root);
 
         var track = root.querySelector('.ps-track');

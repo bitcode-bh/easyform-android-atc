@@ -1348,8 +1348,10 @@
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    height: var(--ps-h, 237px);
-    padding: 12px 16px;
+    /* Landscape card at a fixed 1.6 ratio, as wide as the screen allows. */
+    width: 100%;
+    aspect-ratio: 1.6;
+    padding: 14px 16px;
     border-radius: 16px;
     background: #ecedef;
     color: #0f1729;
@@ -1374,16 +1376,16 @@
 #permit_samples .ps-tag { padding: 2px 8px; border: 1px solid #d0d3d9; border-radius: 10px; background: #ecedef; font-size: 11px; font-weight: 600; color: #344054; }
 /* Details sit straight under the heading; the right-hand strip is left for
    the corner logo. */
-#permit_samples .ps-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; margin: 8px 76px 0 0; padding-top: 6px; border-top: 1px solid #dedfe0; }
+#permit_samples .ps-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 10px; margin: 10px 76px 0 0; padding-top: 8px; border-top: 1px solid #dedfe0; }
 #permit_samples .ps-fields small,
 #permit_samples .ps-lists small { display: block; font-size: 11px; color: #6b7280; }
 #permit_samples .ps-fields b { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#permit_samples .ps-qr { position: absolute !important; right: 16px; bottom: 12px; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 8px; background: #fff; color: #98a2b3; font-size: 40px; }
+#permit_samples .ps-qr { position: absolute !important; right: 16px; bottom: 14px; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 8px; background: #fff; color: #98a2b3; font-size: 40px; }
 #permit_samples .ps-brand { display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 6px; font-size: 11px; color: #6b7280; }
 /* Logos keep their own proportions: height set, width follows. */
 #permit_samples .ps-altius { margin-left: auto; align-self: flex-start; font-size: 14px; font-weight: 700; letter-spacing: .08em; color: #2a3086; }
 #permit_samples .ps-altius img { display: block; height: 26px; width: auto; max-width: 110px; object-fit: contain; }
-#permit_samples .ps-shield { position: absolute !important; right: 14px; bottom: 10px; height: 42px; width: auto; }
+#permit_samples .ps-shield { position: absolute !important; right: 14px; bottom: 12px; height: 46px; width: auto; }
 #permit_samples .ps-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 12px; line-height: 1.3; color: #344054; }
 #permit_samples .ps-lists small { font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 #permit_samples .ps-wide { grid-column: 1 / -1; padding-right: 72px; }
