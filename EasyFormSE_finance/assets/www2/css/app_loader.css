@@ -1,6 +1,5 @@
-/* The app's one loading animation (EFSE_Js/app_loader.js): the Home cards'
-   line art -- site rings, trip route, hard hat, permit triangle, passport
-   shield -- switching every half second on the cards' grey.
+/* The app's one loading animation (EFSE_Js/app_loader.js): the site card's
+   dot with a ring pulsing out from it, on the cards' grey.
    #app_loader covers the whole screen across a page change (Login to Home,
    Home to LMS and back) and while a page builds; #app_busy is the same
    drawing in a small tile, for a wait inside a page. */
@@ -23,7 +22,8 @@ body { animation: none !important; }
 }
 #app_loader.al-in { animation: alIn 200ms ease both; }
 #app_loader.al-out { opacity: 0; pointer-events: none; }
-#app_loader svg { display: block; width: 132px; height: 100px; overflow: visible; }
+#app_loader svg { display: block; width: 132px; height: 100px; overflow: visible; animation: alIn 200ms ease 250ms both; }
+#app_loader.al-cont svg { animation: none; }
 
 #app_busy {
     position: fixed;
@@ -42,24 +42,13 @@ body { animation: none !important; }
 }
 #app_busy svg { display: block; width: 66px; height: 50px; overflow: visible; }
 
-/* Each drawing has half a second of the 2.5 s loop: it draws itself, holds,
-   fades. --d is the drawing's place in the loop; --p is how far into the
-   loop the animation starts, so it carries on across a page change instead
-   of starting over. */
-.al-box .al-i { opacity: 0; animation: alShow 2.5s linear infinite; animation-delay: calc(var(--d, 0s) - var(--p, 0s)); }
-.al-box .al-d {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    animation: alDraw 2.5s ease-out infinite;
-    animation-delay: calc(var(--d, 0s) - var(--p, 0s));
-}
-/* The site rings pulse outward instead of being drawn. */
+/* --p is how far into its 1.2 s pulse the ring starts, so the pulse carries
+   on across a page change instead of starting over. */
 .al-box .al-r {
     transform-box: fill-box;
     transform-origin: center;
-    animation: alRing .5s ease-out infinite;
+    animation: alRing 1.2s ease-out infinite;
+    animation-delay: calc(0s - var(--p, 0s));
 }
 @keyframes alIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes alShow { 0% { opacity: 0; } 2%, 17% { opacity: 1; } 20%, 100% { opacity: 0; } }
-@keyframes alDraw { 0% { stroke-dashoffset: 1; } 10%, 100% { stroke-dashoffset: 0; } }
 @keyframes alRing { from { transform: scale(.15); opacity: .7; } to { transform: scale(1); opacity: 0; } }

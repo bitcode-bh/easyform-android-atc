@@ -17,6 +17,25 @@ public class SystemBarPlugin extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        // "pageColor": [colour] -- the WebView's own background, which is what
+        // shows between one page and the next (white under Login, grey elsewhere).
+        if ("pageColor".equals(action)) {
+            final int page;
+            try {
+                page = Color.parseColor(args.getString(0));
+            } catch (IllegalArgumentException e) {
+                callbackContext.error("bad colour");
+                return true;
+            }
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    webView.getView().setBackgroundColor(page);
+                    callbackContext.success();
+                }
+            });
+            return true;
+        }
         if (!"navColor".equals(action)) {
             return false;
         }

@@ -65,6 +65,34 @@ var HomeHero = (function () {
         readyAt: 0
     };
 
+    // Home is a page of its own and is loaded afresh every time it is opened,
+    // so what the slide last showed is kept for the session and shown at once.
+    // Without it the slide said "Not known yet / Location unavailable" for a
+    // moment on every return to Home, until the phone's records were re-read.
+    var SITE_SNAP_KEY = 'home_hero_site_snapshot';
+    function saveSiteSnapshot() {
+        if (!site.loaded) return;
+        try {
+            sessionStorage.setItem(SITE_SNAP_KEY, JSON.stringify({
+                count: site.sites.length || site.catalogCount || 0, fix: site.fix, nearest: site.nearest,
+                verdict: site.verdict, problem: site.problem, flowRadius: site.flowRadius
+            }));
+        } catch (e) { }
+    }
+    (function restoreSiteSnapshot() {
+        try {
+            var s = JSON.parse(sessionStorage.getItem(SITE_SNAP_KEY));
+            if (!s || !s.count) return;
+            site.loaded = true;
+            site.catalogCount = s.count;   // stands in for the catalog until it is read
+            site.fix = s.fix || null;
+            site.nearest = s.nearest || null;
+            site.verdict = s.verdict || null;
+            site.problem = s.problem || '';
+            site.flowRadius = s.flowRadius || {};
+        } catch (e) { }
+    })();
+
     var timer = null;
 
     function esc(s) {
@@ -320,7 +348,7 @@ var HomeHero = (function () {
     // One of: checking, nosites, unavailable, pending, on, off.
     function siteStatus() {
         if (!site.loaded) return 'checking';
-        if (!site.sites.length) return 'nosites';
+        if (!site.sites.length && !site.catalogCount) return 'nosites';
         if (!site.fix || site.problem) return 'unavailable';
         if (site.verdict && (site.verdict.status === 'on' || site.verdict.status === 'off')) return site.verdict.status;
         // A position too old to say where the technician is now.
@@ -358,6 +386,7 @@ var HomeHero = (function () {
     }
 
     function paintSite($slide) {
+        saveSiteSnapshot();
         var status = siteStatus();
         $slide.find('.hh-site-status').removeClass('is-on is-off is-warn')
             .addClass(status === 'on' ? 'is-on' : status === 'off' ? 'is-off' : status === 'unavailable' ? 'is-warn' : '')
@@ -410,6 +439,7 @@ var HomeHero = (function () {
         if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getSiteCatalog) { paintSite($slide); return; }
         HomeDashboardData.getSiteCatalog(function (rows) {
             site.sites = rows || [];
+            site.catalogCount = 0;
             site.loaded = true;
             HomeDashboardData.getLastLocation(function (row) {
                 var lat = row ? parseFloat(row.lat) : NaN, lon = row ? parseFloat(row.lon) : NaN;
@@ -1063,6 +1093,8 @@ var HomeHero = (function () {
         if (!root) return;
         var home = isHomeLevel();
         root.classList[home ? 'remove' : 'add']('hh-off');
+        // The level's title row follows the list too (see home_dashboard.css).
+        if (document.body) document.body.classList[home ? 'remove' : 'add']('hh-in-level');
         var foot = document.getElementById('div_home_list_foot');
         if (foot) foot.classList[home ? 'remove' : 'add']('hh-off');
         if (!home) return;
@@ -1075,20 +1107,22 @@ var HomeHero = (function () {
     function watchModuleList() {
         var list = document.getElementById('module_list');
         if (!list || listWatch || typeof MutationObserver === 'undefined') return;
-        var wait = null;
-        listWatch = new MutationObserver(function () {
-            if (wait) clearTimeout(wait);
-            wait = setTimeout(function () { wait = null; syncLevel(); showPage(); }, 60);
-        });
+        // No delay: the observer runs before the next frame is drawn, so the
+        // card, the level title and the new list all change in that one
+        // frame. With a delay the list changed first and the card a step
+        // later, which showed as a jump on entering and leaving a module.
+        listWatch = new MutationObserver(function () { syncLevel(); showPage(); });
         listWatch.observe(list, { childList: true });
         showPage();
 
         // selection.html keeps the page hidden until the list is drawn and the
-        // card is sized to it; two frames later that layout is on screen.
+        // card is sized to it. Both are done by the time this runs (syncLevel
+        // has just laid the card out), so the page is shown in the same frame.
+        // Showing a saved copy of the list first was tried and measured on a
+        // phone: the real list arrived 25 ms after it, so it gained nothing.
         function showPage() {
             if (!list.children.length || typeof window.homeReveal !== 'function') return;
-            var raf = window.requestAnimationFrame || function (fn) { setTimeout(fn, 16); };
-            raf(function () { raf(window.homeReveal); });
+            window.homeReveal();
         }
     }
 
@@ -1261,6 +1295,8 @@ var HomeHero = (function () {
             deviceIsReady = true;
             // Coming back from the LMS reels, the system bar is light again.
             try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor', ['#ECEDEF', true]); } catch (e) { }
+            // Grey between pages again after the white the login page uses.
+            try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'pageColor', ['#F4F4F4']); } catch (e) { }
             if (!$('#' + ROOT_ID + ' .hh-track').length) render();
             refresh();
           } catch (e) { try { console.error('HomeHero failed:', e); } catch (ignored) { } }

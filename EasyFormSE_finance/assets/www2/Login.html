@@ -25,6 +25,13 @@
     </style>
     <script>
         document.documentElement.className += ' login-wait';
+        // Signed out: drop what Home kept to draw itself quickly.
+        try {
+            for (var si = sessionStorage.length - 1; si >= 0; si--) {
+                var sk = sessionStorage.key(si);
+                if (sk && sk.indexOf('home_hero_') === 0) sessionStorage.removeItem(sk);
+            }
+        } catch (e) { }
         var loginReveal = (function () {
             var done = false;
             return function () {
@@ -213,6 +220,7 @@
                 leaving = true;
                 AppLoader.show();
                 try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor', ['#ECEDEF', true]); } catch (e) { }
+                try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'pageColor', ['#ECEDEF']); } catch (e) { }
                 setTimeout(function () { window.location.href = url; }, 220);
             };
         })();
@@ -220,6 +228,7 @@
         document.addEventListener('deviceready', function showValues() {
             // White system bar under the white login page (Home sets its own).
             try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor', ['#FFFFFF', true]); } catch (e) { }
+            try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'pageColor', ['#FFFFFF']); } catch (e) { }
 
             $("#test_support").css("white-space", "pre");
 
@@ -281,7 +290,7 @@
 
                 }
                 else {
-                    setTimeout(function () { pageload_main(); }, 500);
+                    setTimeout(function () { pageload_main(); }, 16);
                 }
             }
 

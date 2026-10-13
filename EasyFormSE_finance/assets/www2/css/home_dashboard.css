@@ -1391,3 +1391,10 @@
 #permit_samples .sp-shield { right: 14px; bottom: 12px; }
 #permit_samples .sp-fields { gap: 8px 10px; margin-top: 10px; }
 #permit_samples .sp-rules img { height: 100px; }
+
+/* Home, entering or leaving a module: selection.js shows or hides the level's
+   title row at the tap, before the new list has been read. Held here to the
+   state HomeHero sets when the list actually changes (body.hh-in-level), so
+   title, card and list switch together. */
+body:not(.hh-in-level) #div_level { display: none !important; }
+body.hh-in-level #div_level { display: flex !important; }

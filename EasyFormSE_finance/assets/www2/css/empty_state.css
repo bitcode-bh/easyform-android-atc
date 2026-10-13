@@ -19,7 +19,9 @@ li.es-empty::before {
     width: 128px;
     height: 104px;
     margin-bottom: 14px;
-    background: url("../images/empty_mascot.svg") center / contain no-repeat;
+    /* images/empty_mascot.svg, carried here so it is drawn in the same frame
+       as the text instead of arriving a frame later. */
+    background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 104%22 width=%22128%22 height=%22104%22 fill=%22none%22 stroke-width=%222.4%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cstyle%3E.bob%7Banimation:bob 2.6s ease-in-out infinite%7D%40keyframes bob%7B50%25%7Btransform:translateY(-4px)%7D%7D.bl%7Btransform-box:fill-box%3Btransform-origin:center%3Banimation:bl 4s infinite%7D%40keyframes bl%7B0%25%2C92%25%2C100%25%7Btransform:scaleY(1)%7D96%25%7Btransform:scaleY(.1)%7D%7D%3C/style%3E%3Cg class=%22bob%22%3E%3Cg transform=%22translate(64 52) scale(.8)%22 stroke=%22%23e0b63a%22 stroke-width=%223.75%22%3E%3Cpath d=%22M-38 0 C-38 -30 -22 -48 0 -48 S38 -30 38 0%22/%3E%3Cpath d=%22M-50 2 H50 a5 5 0 0 1 0 10 H-50 a5 5 0 0 1 0 -10 z%22/%3E%3Cpath d=%22M-10 -46 V-34 M0 -48 V-34 M10 -46 V-34%22/%3E%3C/g%3E%3Cg fill=%22%232a3086%22 stroke=%22none%22%3E%3Cellipse class=%22bl%22 cx=%2255%22 cy=%2240%22 rx=%222.6%22 ry=%223.4%22/%3E%3Cellipse class=%22bl%22 cx=%2273%22 cy=%2240%22 rx=%222.6%22 ry=%223.4%22/%3E%3C/g%3E%3C/g%3E%3Crect x=%2230%22 y=%2256%22 width=%2268%22 height=%2246%22 rx=%226%22 fill=%22%23ecedef%22 stroke=%22%232a3086%22/%3E%3Crect x=%2252%22 y=%2250%22 width=%2224%22 height=%2211%22 rx=%224%22 fill=%22%23fff%22 stroke=%22%232a3086%22/%3E%3Cpath d=%22M42 74 H86 M42 86 H70%22 stroke=%22%23d0d3d9%22 stroke-dasharray=%221 7%22/%3E%3C/svg%3E") center / contain no-repeat;
 }
 li.es-empty::after,
 li.es-empty *::after { display: none !important; }

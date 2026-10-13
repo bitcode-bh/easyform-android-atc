@@ -115,6 +115,15 @@ function onfail_logout_on_click_online(e) {
 
 
 
+// Every page that loads this file gets the app's loading animation
+// (EFSE_Js/app_loader.js), so loading() below never falls back to the
+// progress line at the top of the screen.
+if (typeof AppLoader === 'undefined' && document.readyState === 'loading') {
+    document.write('<link href="css/app_loader.css" rel="stylesheet" /><script src="EFSE_Js/app_loader.js"><\/script>');
+}
+// Likewise the top bar's line icons (css/topbar_icons.css).
+if (document.readyState === 'loading') document.write('<link href="css/topbar_icons.css" rel="stylesheet" />');
+
 var loading_timer;
 function loading() {
     //  loading_hide();
@@ -2834,20 +2843,43 @@ function find_index_by_que_id(curr_form_flag, f_que_id) {
 }
 
 //====read more click for task list card
+// Expands or collapses a task card (only one stays open). The card's height
+// limit is animated to and from the card's real height (--readmore-h, read
+// by .readmore.expand in styles_low.css). It used to animate to a fixed
+// 5000px: opening was over in the first few frames, and closing did nothing
+// visible for most of its half second and then snapped shut.
+function readmore_set_height(card, open) {
+    if (!card) return;
+    if (open) {
+        card.style.setProperty('--readmore-h', card.offsetHeight + 'px');
+        card.classList.add('expand');
+        card.style.setProperty('--readmore-h', card.scrollHeight + 'px');
+        // Once open, no limit: the card may still grow (late photos, text).
+        setTimeout(function () {
+            if (card.classList.contains('expand')) card.style.setProperty('--readmore-h', 'none');
+        }, 300);
+    } else {
+        card.style.setProperty('--readmore-h', card.offsetHeight + 'px');
+        void card.offsetHeight;   // start the close from the height it has now
+        card.classList.remove('expand');
+        card.style.removeProperty('--readmore-h');
+    }
+}
+
 function show_more_task_data(e) {
     // record if our text is expanded
     var isExpanded = $(e).hasClass("expand");
 
     //close all open cards
-    $(".readmore.expand").removeClass("expand");
-    $(".readmore-link.expand").removeClass("expand");
+    $(".readmore.expand").each(function () { readmore_set_height(this, false); });
+    $(".readmore-link.expand").removeClass("expand").html('<div class="showmore-box"><i class="fa fa-angle-down"></i></div>');
     $(e).html('<div class="showmore-box"><i class="fa fa-angle-down"></i></div>');
 
     // if target wasn't expand, then expand it
     if (!isExpanded) {
-        $(e).parent(".readmore").addClass("expand");
         $(e).addClass("expand");
         $(e).html('<div class="showmore-box"><i class="fa fa-angle-up"></i></div>');
+        readmore_set_height($(e).parent(".readmore")[0], true);
     }
 }
 

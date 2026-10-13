@@ -1,0 +1,46 @@
+/* Top bar icons, app-wide (loaded by EFSE_Js/common-functions.js): the old
+   Font Awesome 4 glyphs in a page's top bar are redrawn as thin line icons in
+   the Home ink colour, to match the line art used on the Home cards. The <i>
+   elements and their handlers are untouched; only what is painted changes. */
+.navbar .fa.fa-chevron-left:not(.home-search-ico),
+.navbar .fa.fa-search:not(.home-search-ico),
+.navbar .fa.fa-search-plus:not(.home-search-ico),
+.navbar .fa.fa-refresh:not(.home-search-ico),
+.navbar .fa.fa-close:not(.home-search-ico),
+.navbar .fa.fa-filter:not(.home-search-ico),
+.navbar .fa.fa-plus:not(.home-search-ico),
+.navbar .fa.fa-ellipsis-h:not(.home-search-ico),
+.navbar .fa.fa-th-list:not(.home-search-ico),
+.navbar .fa.fa-remove:not(.home-search-ico),
+.navbar .fa.fa-times:not(.home-search-ico) {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    font-size: 0 !important;
+    vertical-align: middle;
+    background-color: #0f1729;
+    -webkit-mask: var(--tb-icon) center / 24px 24px no-repeat;
+    mask: var(--tb-icon) center / 24px 24px no-repeat;
+}
+.navbar .fa.fa-chevron-left:not(.home-search-ico)::before,
+.navbar .fa.fa-search:not(.home-search-ico)::before,
+.navbar .fa.fa-search-plus:not(.home-search-ico)::before,
+.navbar .fa.fa-refresh:not(.home-search-ico)::before,
+.navbar .fa.fa-close:not(.home-search-ico)::before,
+.navbar .fa.fa-filter:not(.home-search-ico)::before,
+.navbar .fa.fa-plus:not(.home-search-ico)::before,
+.navbar .fa.fa-ellipsis-h:not(.home-search-ico)::before,
+.navbar .fa.fa-th-list:not(.home-search-ico)::before,
+.navbar .fa.fa-remove:not(.home-search-ico)::before,
+.navbar .fa.fa-times:not(.home-search-ico)::before { content: none !important; }
+.navbar .fa.fa-chevron-left { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M15 5l-7 7 7 7%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-search { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2210.5%22 cy=%2210.5%22 r=%226.5%22/%3E%3Cpath d=%22M15.5 15.5L20 20%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-search-plus { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2210.5%22 cy=%2210.5%22 r=%226.5%22/%3E%3Cpath d=%22M15.5 15.5L20 20M10.5 8v5M8 10.5h5%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-refresh { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-close { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 6l12 12M18 6L6 18%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-filter { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M4 5h16l-6 7.5V19l-4-2v-4.5z%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-plus { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 5v14M5 12h14%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-ellipsis-h { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M5 12h.01M12 12h.01M19 12h.01%22 stroke-width=%223%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-th-list { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-remove { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 6l12 12M18 6L6 18%22/%3E%3C/svg%3E"); }
+.navbar .fa.fa-times { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 6l12 12M18 6L6 18%22/%3E%3C/svg%3E"); }

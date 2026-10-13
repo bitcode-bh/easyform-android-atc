@@ -30,11 +30,9 @@
     function start() {
         mark();
         if (typeof MutationObserver === 'undefined') return;
-        var wait = null;
-        new MutationObserver(function () {
-            if (wait) return;
-            wait = setTimeout(function () { wait = null; mark(); }, 60);
-        }).observe(document.body, { childList: true, subtree: true });
+        // Straight away: the observer runs before the next frame is drawn,
+        // so the row is never seen as plain text first.
+        new MutationObserver(mark).observe(document.body, { childList: true, subtree: true });
     }
 
     if (document.body) start();

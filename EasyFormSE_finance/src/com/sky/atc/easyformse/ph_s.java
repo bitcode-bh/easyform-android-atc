@@ -289,6 +289,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             // The login page is white; the theme's grey bar is for Home.
             getWindow().setNavigationBarColor(android.graphics.Color.WHITE);
             super.loadUrl("file:///android_asset/www2/Login.html");
+            // ...and so is what shows before it has drawn (grey elsewhere).
+            if (appView != null) appView.getView().setBackgroundColor(android.graphics.Color.WHITE);
 //            super.loadUrl("file:///android_asset/www2_muvr/index.html");
         }
 

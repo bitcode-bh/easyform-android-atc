@@ -19,6 +19,10 @@
     <content src="index.html" />
 
     <preference name="loglevel" value="DEBUG" />
+    <!-- What shows for a frame or two between one page and the next. It was
+         the WebView's default white, a flash on every screen change; this is
+         the pages' own backdrop grey (#f4f4f4). -->
+    <preference name="BackgroundColor" value="0xfff4f4f4" />
     <preference name="useBrowserHistory" value="true" />
     <preference name="exit-on-suspend" value="false" />
 

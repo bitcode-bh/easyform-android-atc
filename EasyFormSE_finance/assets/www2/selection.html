@@ -19,7 +19,7 @@
         html.home-wait .page-content,
         html.home-in .page-content { animation: none !important; }
         @keyframes homeIn { from { opacity: 0; } to { opacity: 1; } }
-        html.home-in .views { animation: homeIn 320ms ease both; }
+        html.home-in .views { animation: homeIn 160ms ease-out both; }
     </style>
     <script>
         document.documentElement.className += ' home-wait';
@@ -28,6 +28,7 @@
             return function () {
                 if (done) return;
                 done = true;
+                try { window.homeRevealMs = Math.round(performance.now()); } catch (e) { }
                 var html = document.documentElement;
                 var pc = document.querySelectorAll('.page-content');
                 for (var i = 0; i < pc.length; i++) pc[i].classList.remove('premium-fade-in');
@@ -267,7 +268,7 @@
                 }
             }
             else {
-                setTimeout(function () { pageload_main(); }, 500);
+                setTimeout(function () { pageload_main(); }, 16);
             }
         }
 
@@ -404,8 +405,10 @@
     <link href="css/home_nav.css" rel="stylesheet" />
 </head>
 <body>
-    <!-- Loading screen, drawn first and hidden by homeReveal() -->
-    <script>try { document.write(AppLoader.html()); } catch (e) { }</script>
+    <!-- Loading screen, hidden by homeReveal(): only when the page before
+         (Login, LMS) left under it. Coming back from a list or a form, Home
+         simply appears. -->
+    <script>try { if (AppLoader.pending()) document.write(AppLoader.html()); } catch (e) { }</script>
     <script>
         // Home to LMS: leave under the loading animation; LMS opens under it.
         function crossToLMS(url) {

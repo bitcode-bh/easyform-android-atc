@@ -3,15 +3,18 @@ $(document).ready(function() {
         var style = document.createElement('style');
         style.id = 'premium-transitions';
         style.innerHTML = `
+            /* A short fade only. The page used to scale and slide in over
+               400ms after the old one had faded out over 350ms; with the
+               page already loaded in ~150ms, that read as a flicker. */
             @keyframes premiumPageFadeIn {
-                0% { opacity: 0; transform: scale(0.98) translateY(10px); }
-                100% { opacity: 1; transform: scale(1) translateY(0); }
+                0% { opacity: 0; }
+                100% { opacity: 1; }
             }
             body {
                 background-color: #f4f4f4 !important;
             }
             .page-content.premium-fade-in, swiper-container.tabs.premium-fade-in {
-                animation: premiumPageFadeIn 400ms cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+                animation: premiumPageFadeIn 140ms ease-out forwards;
             }
             .page-content.premium-fade-out, swiper-container.tabs.premium-fade-out {
                 transition: opacity 350ms cubic-bezier(0.4, 0.0, 0.2, 1), transform 350ms cubic-bezier(0.4, 0.0, 0.2, 1) !important;
@@ -44,11 +47,6 @@ $(document).ready(function() {
                 transform: scale(0.95);
             }
             
-            /* Background subtle glow */
-            .page-content {
-                background-image: radial-gradient(circle at top, rgba(100,150,255,0.04), transparent 70%);
-                background-attachment: fixed;
-            }
         `;
         document.head.appendChild(style);
         // Top-level page only. On pages inside a popup the animation restarted
@@ -61,10 +59,10 @@ $(document).ready(function() {
 function changeurl(url) {
     try {
         // alert1("" + url + "");
-        $(".page-content, swiper-container.tabs").removeClass("premium-fade-in").addClass("premium-fade-out");
-        setTimeout(function() {
-            window.location.href = url;
-        }, 350);
+        // Go straight away and leave this page as it is: the WebView keeps
+        // it on screen until the next page has drawn, so the switch is one
+        // step. Fading this page out first left a blank screen in between.
+        window.location.href = url;
         // navigator.app.loadUrl("file:///android_asset/www2/" + url + "");
 
     } catch (e) {
