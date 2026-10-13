@@ -416,6 +416,87 @@ var TripListSheet = (function () {
 
     // The summary card is the sum (or per-trip average) of the cards below it,
     // so it can never disagree with them.
+    // The main card's second line: averages for the list, times for one trip.
+    function setCardLabels(forTrip) {
+        setText('trip_stat_time_lab', forTrip ? 'Duration' : 'Time');
+        setText('trip_stat_avg_km_lab', forTrip ? 'Started' : 'Avg distance');
+        setText('trip_stat_avg_time_lab', forTrip ? 'Ended' : 'Avg duration');
+        setText('trip_stat_avg_viol_lab', forTrip ? 'Trip ID' : 'Violations / trip');
+    }
+
+    function setCardHead(title, state, forTrip) {
+        setText('trip_stat_title', title);
+        setText('trip_stat_state', state);
+        var clear = document.getElementById('trip_stat_clear');
+        if (clear) clear.style.display = forTrip ? '' : 'none';
+        var card = document.getElementById('trip_main_card');
+        if (card) card.classList[forTrip ? 'add' : 'remove']('is-trip');
+    }
+
+    // The picked trip in the main card: only what the trip record holds.
+    function paintTrip(row) {
+        var live = String(row.trip_status) === '0';
+        var v = rowViolations(row);
+        var id = rowTripId(row);
+        setCardHead(rowTitle(row, live, row._km), rowStatus(row, live), true);
+        setCardLabels(true);
+        // Distance and events arrive after the list is drawn.
+        var known = summaryReady;
+        setStats(known || row._km != null ? formatKm(row._km || 0) : '…', formatDuration(row.min_milli, row.max_milli, live) || '—',
+            known ? String(v.speed + v.accel + v.brake + v.call) : '…');
+        setText('trip_stat_avg_km', formatWhen(row.min_milli) || '—');
+        setText('trip_stat_avg_time', live ? 'In progress' : (formatWhen(row.max_milli) || '—'));
+        setText('trip_stat_avg_viol', id || '—');
+        setEventStat('trip_stat_ev_speed', v.speed);
+        setEventStat('trip_stat_ev_accel', v.accel);
+        setEventStat('trip_stat_ev_brake', v.brake);
+        setEventStat('trip_stat_ev_call', v.call);
+    }
+
+    // What the list is showing, which of its trips is picked (-1: none), and
+    // the list's total time once known.
+    var shownRows = [];
+    var pickedIdx = -1;
+    var shownTimeMs = 0;
+    var summaryReady = false;
+
+    // Paints the main card for the current state: the picked trip, or the
+    // summary of the list.
+    function paintCard() {
+        if (pickedIdx >= 0 && shownRows[pickedIdx]) { paintTrip(shownRows[pickedIdx]); return; }
+        setCardHead('All trips', shownRows.length + (shownRows.length === 1 ? ' trip' : ' trips'), false);
+        setCardLabels(false);
+        if (summaryReady) paintSummary(shownRows, shownTimeMs);
+        else paintSummaryLoading(shownRows, shownTimeMs);
+    }
+
+    function pick(idx) {
+        pickedIdx = (idx === pickedIdx) ? -1 : idx;
+        $('#trip_list_ul .trip-li').removeClass('is-picked').find('.trip-list-item').attr('aria-pressed', 'false');
+        if (pickedIdx >= 0) {
+            $('#trip_list_ul .trip-li[data-idx="' + pickedIdx + '"]').addClass('is-picked')
+                .find('.trip-list-item').attr('aria-pressed', 'true');
+        }
+        paintCard();
+        // The card is at the top of the page; bring it into view for a trip
+        // picked from further down the list.
+        var page = document.getElementById('div_trip_list');
+        if (pickedIdx >= 0 && page && page.scrollTop > 0) {
+            try { page.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { page.scrollTop = 0; }
+        }
+    }
+
+    function paintSummaryLoading(rows, timeMs) {
+        setStats('…', rows.length ? formatTotalDuration(timeMs) : '0m', '…');
+        setText('trip_stat_avg_km', '…');
+        setText('trip_stat_avg_time', '…');
+        setText('trip_stat_avg_viol', '…');
+        setEventStat('trip_stat_ev_speed', null);
+        setEventStat('trip_stat_ev_accel', null);
+        setEventStat('trip_stat_ev_brake', null);
+        setEventStat('trip_stat_ev_call', null);
+    }
+
     function paintSummary(rows, timeMs) {
         var n = rows.length;
         var tot = totalsFor(rows);
@@ -437,26 +518,24 @@ var TripListSheet = (function () {
         for (var i = 0; i < rows.length; i++) {
             timeMs += tripDurationMs(rows[i], String(rows[i].trip_status) === '0');
         }
-        setStats('…', rows.length ? formatTotalDuration(timeMs) : '0m', '…');
-        setText('trip_stat_avg_km', '…');
-        setText('trip_stat_avg_time', '…');
-        setText('trip_stat_avg_viol', '…');
-        setEventStat('trip_stat_ev_speed', null);
-        setEventStat('trip_stat_ev_accel', null);
-        setEventStat('trip_stat_ev_brake', null);
-        setEventStat('trip_stat_ev_call', null);
+        shownRows = rows;
+        shownTimeMs = timeMs;
+        summaryReady = false;
+        paintCard();
 
         var seq = loadSeq;
         var b = boundsFor(range);
         function withEvents() {
             if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getEventsInRange) {
-                paintSummary(rows, timeMs);
+                summaryReady = true;
+                paintCard();
                 return;
             }
             HomeDashboardData.getEventsInRange(b.start, Date.now(), function (eventRows) {
                 if (seq !== loadSeq) return;
                 assignEvents(rows, eventRows);
-                paintSummary(rows, timeMs);
+                summaryReady = true;
+                paintCard();
             });
         }
         if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getTripPath) {
@@ -475,6 +554,7 @@ var TripListSheet = (function () {
         var box = document.getElementById('trip_list_ul');
         if (!box) return;
         rows = rows || [];
+        pickedIdx = -1;
         setCount(rows.length);
         refreshListStats(rows);
         if (!rows.length) {
@@ -490,10 +570,11 @@ var TripListSheet = (function () {
             var sub = rowSubtitle(row, live);
             var status = rowStatus(row, live);
             var tripId = rowTripId(row);
-            // Tapping the row expands it; the icon on the right opens the map.
+            // Tapping the row shows the trip in the main card; the icon on the
+            // right opens the map.
             html += '<li class="trip-li" data-idx="' + j + '">'
                 + '<div class="trip-row">'
-                + '<a href="#" class="item-content trip-list-item" data-idx="' + j + '" aria-expanded="false">'
+                + '<a href="#" class="item-content trip-list-item" data-idx="' + j + '" aria-pressed="false">'
                 + '<div class="item-inner">'
                 + '<div class="item-title">' + esc(title) + '</div>'
                 + '<div class="item-text">' + esc(sub) + '</div>'
@@ -505,14 +586,13 @@ var TripListSheet = (function () {
                 + '<a href="#" class="trip-map-btn" data-idx="' + j + '" aria-label="Open trip on map" title="Open map">'
                 + '<i class="fa-solid fa-map-location-dot" aria-hidden="true"></i></a>'
                 + '</div>'
-                + '<div class="trip-details" style="display:none"></div>'
                 + '</li>';
         }
         box.innerHTML = html;
         $(box).find('.trip-list-item').off('click.tripList').on('click.tripList', function (ev) {
             ev.preventDefault();
             var idx = parseInt($(this).attr('data-idx'), 10);
-            if (rows[idx]) toggleDetails(rows[idx], $(this).closest('.trip-li'));
+            if (rows[idx]) pick(idx);
             return false;
         });
         $(box).find('.trip-map-btn').off('click.tripMap').on('click.tripMap', function (ev) {
@@ -525,7 +605,7 @@ var TripListSheet = (function () {
         });
     }
 
-    // Engine / server event names -> the buckets shown in a trip's details.
+    // Engine / server event names -> the buckets shown on the main card.
     // Normal (non-harsh) acceleration events are not violations and are left out.
     var EVENT_BUCKETS = {
         'speed': 'speed',
@@ -545,80 +625,6 @@ var TripListSheet = (function () {
             if (bucket) out[bucket] += parseInt(counts[key], 10) || 0;
         }
         return out;
-    }
-
-    function detailCell(label, value) {
-        return '<div class="trip-detail"><span class="trip-detail-lab">' + esc(label) + '</span>'
-            + '<span class="trip-detail-val">' + esc(value) + '</span></div>';
-    }
-
-    function eventChip(icon, label, count) {
-        return '<div class="trip-event' + (count > 0 ? ' has-events' : '') + '">'
-            + '<i class="fa-solid ' + icon + '" aria-hidden="true"></i>'
-            + '<span class="trip-event-count">' + count + '</span>'
-            + '<span class="trip-event-lab">' + esc(label) + '</span></div>';
-    }
-
-    function detailsHtml(row) {
-        var live = String(row.trip_status) === '0';
-        var ev = bucketEvents(row._events || {});
-        // Overspeed is also visible in the path itself (tripflag 3 runs); a trip
-        // whose events were already uploaded and cleared still shows it.
-        var speed = Math.max(ev.speed, row._speedRuns || 0);
-        var end = live ? 'In progress' : (formatWhen(row.max_milli) || '—');
-        var html = '<div class="trip-detail-grid">'
-            + detailCell('Started', formatWhen(row.min_milli) || '—')
-            + detailCell('Ended', end)
-            + detailCell('Duration', formatDuration(row.min_milli, row.max_milli, live) || '—')
-            + detailCell('Distance', formatKm(row._km || 0))
-            + '</div>';
-        html += '<div class="trip-event-row">'
-            + eventChip('fa-gauge-high', 'Overspeed', speed)
-            + eventChip('fa-angles-up', 'Harsh accel.', ev.accel)
-            + eventChip('fa-angles-down', 'Harsh brake', ev.brake)
-            + eventChip('fa-phone', 'On call', ev.call)
-            + '</div>';
-        if (ev.idle > 0 || ev.power > 0) {
-            html += '<div class="trip-event-extra">'
-                + (ev.idle > 0 ? 'Idle stops: ' + ev.idle : '')
-                + (ev.idle > 0 && ev.power > 0 ? ' · ' : '')
-                + (ev.power > 0 ? 'Power saving: ' + ev.power : '')
-                + '</div>';
-        }
-        if (!row._eventsLoaded) html += '<div class="trip-event-extra">Loading events…</div>';
-        return html;
-    }
-
-    function toggleDetails(row, $li) {
-        var $panel = $li.find('.trip-details');
-        var open = $li.hasClass('is-open');
-        if (open) {
-            $li.removeClass('is-open');
-            $panel.hide();
-            $li.find('.trip-list-item').attr('aria-expanded', 'false');
-            return;
-        }
-        $li.addClass('is-open');
-        $li.find('.trip-list-item').attr('aria-expanded', 'true');
-        $panel.html(detailsHtml(row)).show();
-        if (row._eventsLoaded) return;
-        if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getTripEvents) {
-            row._events = {};
-            row._eventsLoaded = true;
-            $panel.html(detailsHtml(row));
-            return;
-        }
-        var live = String(row.trip_status) === '0';
-        HomeDashboardData.getTripEvents(row.tid, row.min_milli, live ? 0 : row.max_milli, function (eventRows) {
-            var counts = {};
-            for (var i = 0; i < (eventRows || []).length; i++) {
-                counts[eventRows[i].Event_type] = parseInt(eventRows[i].c, 10) || 0;
-            }
-            row._events = counts;
-            row._eventsLoaded = true;
-            // Only repaint if this row is still the open one on screen.
-            if ($li.hasClass('is-open')) $panel.html(detailsHtml(row));
-        });
     }
 
     var loadSeq = 0;
@@ -710,6 +716,8 @@ var TripListSheet = (function () {
         $('#div_trip_list').hide();
         $('#div_page_content').show();
         setChrome(false);
+        // Home's trip summary follows whatever changed while Trips was open.
+        try { if (typeof HomeHero !== 'undefined') HomeHero.refresh(); } catch (e) { }
         return false;
     }
 
@@ -727,6 +735,10 @@ var TripListSheet = (function () {
     }
 
     function bindOnce() {
+        $(document).off('click.tripClear', '#trip_stat_clear').on('click.tripClear', '#trip_stat_clear', function () {
+            if (pickedIdx >= 0) pick(pickedIdx);
+            return false;
+        });
         $(document).off('click.tripFilter', '.trip-filter-chip').on('click.tripFilter', '.trip-filter-chip', function () {
             range = $(this).attr('data-range') || 'month';
             if (range === 'custom') fillCustomDefaults();

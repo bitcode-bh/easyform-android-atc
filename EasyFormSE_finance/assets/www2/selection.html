@@ -782,10 +782,15 @@
                                 <span class="trip-date-sep">–</span>
                                 <input type="date" id="trip_date_to" class="trip-date-input" aria-label="To date" />
                             </div>
-                            <!-- Summary of the trips listed below, for the selected range.
-                                 Totals on the first line, per-trip averages on the second,
-                                 then the same four event counts each trip card shows, summed. -->
-                            <div class="trip-list-stats-card trip-stats-stack">
+                            <!-- Main trip card. With no trip picked it summarises the trips listed
+                                 below (totals, per-trip averages, event counts). Tapping a trip
+                                 shows that trip's own details here instead. -->
+                            <div class="trip-list-stats-card trip-stats-stack" id="trip_main_card">
+                                <div class="trip-stats-head">
+                                    <span class="trip-stats-title" id="trip_stat_title">All trips</span>
+                                    <span class="trip-stats-state" id="trip_stat_state"></span>
+                                    <a href="#" class="trip-stats-clear" id="trip_stat_clear" style="display:none">All trips</a>
+                                </div>
                                 <div class="trip-stats-line">
                                     <div class="trip-list-metric">
                                         <span class="trip-list-metric-val" id="trip_stat_km">—</span>
@@ -793,7 +798,7 @@
                                     </div>
                                     <div class="trip-list-metric">
                                         <span class="trip-list-metric-val" id="trip_stat_time">—</span>
-                                        <span class="trip-list-metric-lab">Time</span>
+                                        <span class="trip-list-metric-lab" id="trip_stat_time_lab">Time</span>
                                     </div>
                                     <div class="trip-list-metric">
                                         <span class="trip-list-metric-val" id="trip_stat_violations">—</span>
@@ -803,15 +808,15 @@
                                 <div class="trip-stats-line trip-stats-avg">
                                     <div class="trip-list-metric">
                                         <span class="trip-list-metric-val" id="trip_stat_avg_km">—</span>
-                                        <span class="trip-list-metric-lab">Avg distance</span>
+                                        <span class="trip-list-metric-lab" id="trip_stat_avg_km_lab">Avg distance</span>
                                     </div>
                                     <div class="trip-list-metric">
                                         <span class="trip-list-metric-val" id="trip_stat_avg_time">—</span>
-                                        <span class="trip-list-metric-lab">Avg duration</span>
+                                        <span class="trip-list-metric-lab" id="trip_stat_avg_time_lab">Avg duration</span>
                                     </div>
                                     <div class="trip-list-metric">
                                         <span class="trip-list-metric-val" id="trip_stat_avg_viol">—</span>
-                                        <span class="trip-list-metric-lab">Violations / trip</span>
+                                        <span class="trip-list-metric-lab" id="trip_stat_avg_viol_lab">Violations / trip</span>
                                     </div>
                                 </div>
                                 <div class="trip-stats-events">

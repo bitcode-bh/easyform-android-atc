@@ -559,8 +559,8 @@
 .trip-stats-events .trip-event.has-events { background: #fdecea; color: #b42318; }
 .trip-stats-events .trip-event.has-events .trip-event-count { color: #b42318; }
 
-/* Trip row: tap to expand, icon on the right opens the map. The row itself
-   keeps the list's fixed 50px line; the <li> grows for the details panel. */
+/* Trip row: tap to show the trip in the main card, icon on the right opens
+   the map. */
 #trip_list_ul > li.trip-li {
     height: auto;
     min-height: 50px;
@@ -593,71 +593,9 @@
     border-left: 1px solid #dedfe0;
 }
 #trip_list_ul .trip-map-btn:active { background: #dfe1e6; }
-#trip_list_ul .trip-details {
-    padding: 4px 16px 12px;
-    border-top: 1px solid #dedfe0;
-    background: #f5f6f8;
-}
-#trip_list_ul .trip-detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 12px;
-    padding: 8px 0;
-}
-#trip_list_ul .trip-detail { min-width: 0; }
-#trip_list_ul .trip-detail-lab {
-    display: block;
-    font-size: 11px;
-    color: #6A6C74;
-    line-height: 14px;
-}
-#trip_list_ul .trip-detail-val {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    color: #0D1829;
-    line-height: 18px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-#trip_list_ul .trip-event-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-}
-#trip_list_ul .trip-event {
-    text-align: center;
-    padding: 6px 2px;
-    border-radius: 8px;
-    background: #ecedef;
-    color: #6A6C74;
-    min-width: 0;
-}
-#trip_list_ul .trip-event i { font-size: 13px; }
-#trip_list_ul .trip-event-count {
-    display: block;
-    font-size: 15px;
-    font-weight: 800;
-    color: #0D1829;
-    line-height: 20px;
-}
-#trip_list_ul .trip-event-lab {
-    display: block;
-    font-size: 10px;
-    line-height: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-#trip_list_ul .trip-event.has-events { background: #fdecea; color: #b42318; }
-#trip_list_ul .trip-event.has-events .trip-event-count { color: #b42318; }
-#trip_list_ul .trip-event-extra {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #6A6C74;
-}
-
+/* The trip shown in the main card. */
+#trip_list_ul > li.trip-li.is-picked { background: #e3e6f5; }
+#trip_list_ul > li.trip-li.is-picked .item-title { color: #2a3086; }
 .trip-list-empty {
     text-align: center;
     color: #8b93a7;
@@ -967,4 +905,111 @@
 @media (max-height: 599px) {
     #div_home_hero { position: static; }
     #div_home_hero::after { display: none; }
+}
+
+/* Nearest site slide: status colours, the compact Refresh button beside the
+   status, and one line for location messages. */
+#div_home_hero .hh-status.is-off { color: #b42318; }
+#div_home_hero .hh-status.is-off .hh-dot { background: #d92d20; }
+#div_home_hero .hh-status.is-warn { color: #b54708; }
+#div_home_hero .hh-status.is-warn .hh-dot { background: #f79009; }
+#div_home_hero .hh-status-text { flex: 1 1 auto; min-width: 0; }
+#div_home_hero .hh-refresh {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    min-width: 44px;
+    padding: 0 12px;
+    margin: -8px 0;
+    border: 0;
+    border-radius: 16px;
+    background: #f9fafb;
+    color: var(--c-primary, #2a3086);
+    font-size: 13px;
+    font-weight: 600;
+    width: auto;
+}
+#div_home_hero .hh-refresh:active { background: #eceef2; }
+#div_home_hero .hh-refresh:disabled { opacity: .6; }
+#div_home_hero .hh-refresh.is-busy i { animation: hh-spin 1s linear infinite; }
+@keyframes hh-spin { to { transform: rotate(360deg); } }
+/* Always one line tall, so a message arriving does not move the dropdown. */
+#div_home_hero .hh-note {
+    min-height: 16px;
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 16px;
+    color: #6A6C74;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#div_home_hero .hh-field-lab { padding-top: 8px; }
+
+/* Safety Passport: one compact line at the foot of the card. */
+#div_home_hero .hh-passport {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    margin: 10px 18px 0;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: #f9fafb;
+    color: #0D1829;
+    font-size: 13px;
+    text-decoration: none;
+}
+#div_home_hero .hh-passport:active { background: #eceef2; }
+#div_home_hero .hh-passport > i:first-child { color: var(--c-primary, #2a3086); font-size: 15px; }
+#div_home_hero .hh-pass-lab { flex: 0 0 auto; color: #6A6C74; }
+#div_home_hero .hh-pass-id {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: right;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#div_home_hero .hh-pass-id.is-missing { font-weight: 400; color: #6A6C74; }
+#div_home_hero .hh-pass-go { flex: 0 0 auto; font-size: 11px; color: #9aa0aa; }
+
+/* Main trip card: what it is showing, and the way back to the summary. */
+.trip-stats-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 24px;
+    padding: 0 2px 8px;
+    font-size: 13px;
+}
+.trip-stats-title {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-weight: 800;
+    color: #0D1829;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.trip-stats-state { flex: 1 1 auto; min-width: 0; color: #6A6C74; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trip-stats-clear {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #fff;
+    color: #2a3086;
+    font-weight: 600;
+    font-size: 12px;
+    text-decoration: none;
+}
+/* Times and the trip ID are longer than the averages they replace. */
+#trip_main_card.is-trip .trip-stats-avg .trip-list-metric-val {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

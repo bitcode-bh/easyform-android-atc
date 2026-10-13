@@ -666,6 +666,38 @@ var HomeDashboardData = (function () {
         );
     }
 
+    // The site catalog on this phone (geofence_tracking: the sites the server
+    // sent down for this user). Same row filter as the native map's
+    // GeofenceTrackingReader. SELECT only.
+    function getSiteCatalog(onDone) {
+        sql(
+            "select place_id, latitude, longitude, radius from geofence_tracking "
+            + "where latitude is not null and latitude <> '' and latitude <> '0' "
+            + "and longitude is not null and longitude <> '' and longitude <> '0' "
+            + "and not (latitude = '21' and longitude = '61')",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                onDone(rows);
+            },
+            function () { onDone([]); }
+        );
+    }
+
+    // The most recent position the location service stored. SELECT only.
+    function getLastLocation(onDone) {
+        sql(
+            "select lat, lon, accuracy, date from track_master "
+            + "where lat is not null and lat <> '' and lat <> '0' order by _id desc limit 1",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                onDone(rows.length ? rows[0] : null);
+            },
+            function () { onDone(null); }
+        );
+    }
+
     // Events the engine logged for one trip (Events table), counted by type.
     // Matched on the trip's tid, or on the trip's time window for rows written
     // without one. SELECT only.
@@ -708,6 +740,8 @@ var HomeDashboardData = (function () {
     return {
         getEventsInRange: getEventsInRange,
         getTripEvents: getTripEvents,
+        getSiteCatalog: getSiteCatalog,
+        getLastLocation: getLastLocation,
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,
         getUploadCounts: getUploadCounts,
