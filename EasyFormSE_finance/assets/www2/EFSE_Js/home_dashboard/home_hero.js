@@ -111,6 +111,7 @@ var HomeHero = (function () {
             + topHtml('Nearest site', 'hh-site-label', 'hh-site-status')
             + '<div class="hh-row"><div class="hh-ic"><i class="hh-site-icon fa-solid fa-location-dot" aria-hidden="true"></i></div>'
             + '<div class="hh-row-text"><div class="hh-head hh-site-name"></div><div class="hh-sub hh-site-sub"></div></div></div>'
+            + '<div class="hh-site-fullname"></div>'
             + '<div class="hh-note hh-site-note"></div>'
             + '<label class="hh-field"><small>Reason for visit</small>'
             + '<select class="hh-select hh-site-reason" disabled aria-label="Reason for visit">'
@@ -324,15 +325,18 @@ var HomeHero = (function () {
         if (siteId == null) {
             $slide.find('.hh-site-name').text(status === 'checking' ? '' : status === 'nosites' ? 'No sites downloaded' : 'Not known yet');
             $slide.find('.hh-site-sub').text('');
+            $slide.find('.hh-site-fullname').text('');
         } else {
-            $slide.find('.hh-site-name').text(siteName || ('Site ' + siteId));
+            // The Site ID is the headline; the name, when the app has it, goes
+            // underneath in smaller text.
+            $slide.find('.hh-site-name').text('Site ' + siteId);
             var parts = [];
-            if (siteName) parts.push('Site ID ' + siteId);
             if (siteType) parts.push(String(siteType));
             if (distanceM != null && status !== 'unavailable') {
                 parts.push(formatDistance(distanceM) + (status === 'on' ? ' from site' : ' away'));
             }
             $slide.find('.hh-site-sub').text(parts.join(' · '));
+            $slide.find('.hh-site-fullname').text(siteName || '');
         }
 
         $slide.find('.hh-site-note').text(site.note || '');
@@ -636,6 +640,7 @@ var HomeHero = (function () {
     // where status is 'active' or 'approved'. The slide shows the active
     // permit, else the next approved one.
     var permitProvider = null;
+    var shownPermitSlide = false;
     var permits = [];
     var ENDING_SOON_MS = 15 * 60000;
 
@@ -666,7 +671,10 @@ var HomeHero = (function () {
             + '<div class="hh-permit-body">' + cell('Permit no.', 'hh-permit-no') + cell('Site', 'hh-permit-site')
             + cell('Valid from', 'hh-permit-from') + cell('Valid until', 'hh-permit-until') + '</div>'
             + '<div class="hh-permit-foot"><span class="hh-permit-by"></span><b class="hh-permit-time"></b></div>'
-            + '</div></div>';
+            + '<div class="hh-permit-none">Start a blank permit for hot work, work at height, electrical or FTTH.</div>'
+            + '</div>'
+            + '<a href="#" class="hh-foot hh-link hh-blank-permit"><span>Blank permit</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>'
+            + '</div>';
     }
 
     function dayTime(ms) {
@@ -701,7 +709,7 @@ var HomeHero = (function () {
         var $card = $slide.find('.hh-permit');
         if (!p) {
             $card.removeClass('is-active').addClass('is-empty');
-            $slide.find('.hh-permit-type').text('No active or approved permit');
+            $slide.find('.hh-permit-type').text('No permit in force');
             $slide.find('.hh-permit-status .hh-status-text').text('');
             $slide.find('.hh-permit-no, .hh-permit-site, .hh-permit-from, .hh-permit-until').text('—');
             $slide.find('.hh-permit-by, .hh-permit-time').text('');
@@ -724,6 +732,16 @@ var HomeHero = (function () {
         $slide.find('.hh-permit-by').text(p.approvedBy ? 'Approved by ' + p.approvedBy : '');
         $slide.find('.hh-permit-time').toggleClass('is-warn', soon)
             .text(active ? span(left) + ' left' : (p.fromMs > now ? 'Starts in ' + span(p.fromMs - now) : 'Ready to start'));
+    }
+
+    // The Permit To Work row of the Home module list. "Blank permit" opens the
+    // module through that row's own click, so navigation is the list's.
+    function ptwModuleRow() {
+        var rows = document.querySelectorAll('#module_list > li[udf_name]');
+        for (var i = 0; i < rows.length; i++) {
+            if (/permit\s*to\s*work/i.test(rows[i].getAttribute('udf_name') || '')) return rows[i];
+        }
+        return null;
     }
 
     function loadPermits($slide) {
@@ -766,7 +784,7 @@ var HomeHero = (function () {
         if (!root.offsetHeight) return;
         var edge = root.getBoundingClientRect().bottom;
         var windowHeight = scroller.getBoundingClientRect().bottom - edge;
-        var rows = document.querySelectorAll('#div_home_dashboard .hd-widget');
+        var rows = document.querySelectorAll('#div_home_dashboard .hd-widget, #module_list > li');
         for (var i = 0; i < rows.length; i++) {
             var r = rows[i].getBoundingClientRect();
             if (!r.height || r.top >= edge - 1 || r.bottom <= edge + 1) continue;
@@ -781,6 +799,75 @@ var HomeHero = (function () {
         }
     }
 
+    // The card is Home's. Inside a module the same page lists that module's
+    // items (selection.js keeps the open levels in level_Array), and the card
+    // and the list foot are hidden there.
+    function isHomeLevel() {
+        var levels = readSession('level_Array');
+        return !(levels && levels.length);
+    }
+
+    // Sizes the card so the list's window holds a whole number of module rows:
+    // with the top row resting whole under the card, the bottom row is whole
+    // too instead of being cut through its text by the foot. The card gives or
+    // takes at most half a row.
+    function fitListWindow() {
+        var root = document.getElementById(ROOT_ID);
+        var foot = document.getElementById('div_home_list_foot');
+        var rows = document.querySelectorAll('#module_list > li');
+        if (!root || !foot || !root.offsetHeight) return;
+        root.style.removeProperty('--hh-slide-h');
+        if (window.innerHeight < FIXED_MIN_HEIGHT) return;
+        var first = null, second = null;
+        for (var i = 0; i < rows.length && !second; i++) {
+            if (!rows[i].offsetHeight) continue;
+            if (!first) first = rows[i]; else second = rows[i];
+        }
+        if (!second) return;
+        var pitch = second.getBoundingClientRect().top - first.getBoundingClientRect().top;
+        if (!(pitch > 20)) return;
+        var slide = root.querySelector('.hh-slide');
+        if (!slide) return;
+        var base = slide.getBoundingClientRect().height;
+        function remainder() {
+            // The window runs from the card's foot to the top of the foot's solid strip.
+            var h = (foot.getBoundingClientRect().top + 10) - root.getBoundingClientRect().bottom;
+            var r = h % pitch;
+            return r > pitch / 2 ? r - pitch : r;
+        }
+        var r = remainder();
+        if (Math.abs(r) < 1) return;
+        root.style.setProperty('--hh-slide-h', (base + r) + 'px');
+        // A slide cannot shrink below its content; grow instead when it did not take.
+        if (Math.abs(remainder()) >= 1 && r < 0) root.style.setProperty('--hh-slide-h', (base + r + pitch) + 'px');
+    }
+
+    function syncLevel() {
+        var root = document.getElementById(ROOT_ID);
+        if (!root) return;
+        var home = isHomeLevel();
+        root.classList[home ? 'remove' : 'add']('hh-off');
+        var foot = document.getElementById('div_home_list_foot');
+        if (foot) foot.classList[home ? 'remove' : 'add']('hh-off');
+        if (!home) return;
+        // The module list arrives after the card is first drawn.
+        if (!!(permitProvider || ptwModuleRow()) !== shownPermitSlide) { render(); refresh(); return; }
+        $(root).find('.hh-blank-permit').toggle(!!ptwModuleRow());
+        fitListWindow();
+    }
+
+    var listWatch = null;
+    function watchModuleList() {
+        var list = document.getElementById('module_list');
+        if (!list || listWatch || typeof MutationObserver === 'undefined') return;
+        var wait = null;
+        listWatch = new MutationObserver(function () {
+            if (wait) clearTimeout(wait);
+            wait = setTimeout(function () { wait = null; syncLevel(); }, 60);
+        });
+        listWatch.observe(list, { childList: true });
+    }
+
     function bindRestOnRow($root) {
         var root = $root[0];
         var scroller = $root.closest('.page-content')[0];
@@ -790,7 +877,7 @@ var HomeHero = (function () {
             if (wait) clearTimeout(wait);
             wait = setTimeout(function () {
                 wait = null;
-                if (!touching) restOnRow(root, scroller);
+                if (!touching && isHomeLevel()) restOnRow(root, scroller);
             }, REST_AFTER_MS);
         }
         $(scroller).off('.homeHeroRest')
@@ -838,7 +925,8 @@ var HomeHero = (function () {
         if (isVendorTechnician()) slides.push(siteSlideHtml());
         slides.push(tripSlideHtml());
         slides.push(lmsSlideHtml());
-        if (permitProvider) slides.push(permitSlideHtml());
+        shownPermitSlide = !!(permitProvider || ptwModuleRow());
+        if (shownPermitSlide) slides.push(permitSlideHtml());
         slides.push(passportSlideHtml());
 
         var dots = '';
@@ -887,7 +975,16 @@ var HomeHero = (function () {
 
         bindRestOnRow($root);
         addListFoot();
+        watchModuleList();
+        $root.find('.hh-blank-permit').off('click.homeHero').on('click.homeHero', function (ev) {
+            ev.preventDefault();
+            var row = ptwModuleRow();
+            if (row) row.click();
+            return false;
+        });
         paintPermit($root.find('[data-slide="permit"]'));
+
+        syncLevel();
 
         if (timer) clearInterval(timer);
         timer = setInterval(refresh, REFRESH_MS);
@@ -915,5 +1012,5 @@ var HomeHero = (function () {
 
     return { render: render, refresh: refresh, setGeofenceValidator: setGeofenceValidator, setPermitProvider: setPermitProvider, isVendorTechnician: isVendorTechnician,
         // exposed for tests
-        _toRowEdge: toRowEdge, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
+        _toRowEdge: toRowEdge, _isHomeLevel: isHomeLevel, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
 })();

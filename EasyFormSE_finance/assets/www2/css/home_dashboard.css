@@ -681,8 +681,8 @@
     --hh-ink: #0f1729;
     --hh-grey: #6b7280;
     --hh-faint: #98a2b3;
-    --hh-line: #eef1f5;
-    --hh-edge: #e1e5ec;
+    --hh-line: #dedfe0;
+    --hh-edge: #d0d3d9;
     --hh-navy: var(--altius-navy, #2a3086);
     --hh-navy-deep: var(--altius-navy-deep, #1e2464);
     --hh-page: #fcfcfc;
@@ -693,16 +693,18 @@
     padding: 10px 12px 10px;
     background: var(--hh-page);
 }
-#div_home_hero:empty { display: none; }
+#div_home_hero:empty,
+#div_home_hero.hh-off,
+#div_home_list_foot.hh-off { display: none; }
 /* The card belongs to Home only; the Trips tab hides the Home content. */
 .page.trips-open #div_home_hero,
 .page.trips-open #div_home_list_foot { display: none; }
 /* The pinned block already ends in a gap; the list does not add its own. */
 #div_home_hero:not(:empty) + #div_home_dashboard { padding-top: 0; }
 
+/* The card is the list's own grey, so Home reads as one surface. */
 #div_home_hero .hh-card {
-    background: #fff;
-    border: 1px solid #e9edf3;
+    background: #ecedef;
     border-radius: 16px;
     padding: 18px 0 14px;
     overflow: hidden;
@@ -718,7 +720,7 @@
 #div_home_hero .hh-slide {
     flex: 0 0 100%;
     min-width: 0;
-    min-height: 222px;
+    min-height: var(--hh-slide-h, 222px);
     box-sizing: border-box;
     padding: 0 20px;
     scroll-snap-align: start;
@@ -797,6 +799,21 @@
     color: var(--hh-grey);
 }
 #div_home_hero .hh-note:empty { display: none; }
+
+/* Site name, under the icon and Site ID. */
+#div_home_hero .hh-site-fullname {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 17px;
+    color: var(--hh-grey);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow-wrap: anywhere;
+}
+#div_home_hero .hh-site-fullname:empty { display: none; }
 
 /* Icon beside a headline (site type). */
 #div_home_hero .hh-row { display: flex; align-items: center; gap: 12px; }
@@ -936,7 +953,7 @@
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #d5dae2;
+    background: #c5c9d1;
 }
 #div_home_hero .hh-dots span.on {
     width: 16px;
@@ -1029,7 +1046,19 @@
 #div_home_hero .hh-permit-foot b { font-weight: 700; color: var(--hh-ink); white-space: nowrap; }
 #div_home_hero .hh-permit-foot b.is-warn { color: #b54708; }
 #div_home_hero .hh-permit.is-empty .hh-permit-body,
-#div_home_hero .hh-permit.is-empty .hh-permit-foot { display: none; }
+#div_home_hero .hh-permit.is-empty .hh-permit-foot,
+#div_home_hero .hh-permit.is-empty .hh-permit-status { display: none; }
+#div_home_hero .hh-permit.is-empty .hh-permit-head { border-bottom: 0; }
+#div_home_hero .hh-permit-none {
+    display: none;
+    padding: 0 14px 14px;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--hh-grey);
+}
+#div_home_hero .hh-permit.is-empty { flex: 0 0 auto; }
+#div_home_hero .hh-permit.is-empty .hh-permit-none { display: block; }
+#div_home_hero .hh-blank-permit { margin-top: auto; padding-top: 14px; }
 
 /* Safety Passport slide: the profile menu's passport card (styles_low.css
    .passport-*), sized to the slide. */
