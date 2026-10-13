@@ -35,12 +35,15 @@ var HomeHero = (function () {
     // A stored position older than this is shown with its time.
     var STALE_FIX_MS = 10 * 60000;
 
-    // Server-side geofence validation. Called with a fresh fix and the nearest
-    // site ({lat, lon, accuracy, at, siteId}); answers {status: 'on' | 'off',
-    // siteId, siteName, distanceM} or null when the server could not say.
-    // On-site / Off-site are only ever shown from this answer, never from the
-    // distance worked out on the phone. Nothing is plugged in yet: the app has
-    // no endpoint that validates a position without an open task.
+    // The radius used for a site whose catalog row carries none (0 or blank).
+    var DEFAULT_RADIUS_M = 50;
+
+    // Optional server-side geofence validation. Called with a fresh fix and the
+    // nearest site ({lat, lon, accuracy, at, siteId}); answers {status: 'on' |
+    // 'off', siteId, siteName, distanceM} or null when the server could not
+    // say. When one is plugged in its answer wins. Without one (the app has no
+    // endpoint that validates a position without an open task) the status is
+    // worked out on the phone: inside the site's geofence radius is On-site.
     var geofenceValidator = null;
 
     // What the site slide currently knows.
@@ -53,6 +56,7 @@ var HomeHero = (function () {
         problem: '',      // why a location could not be used
         note: '',
         busy: false,
+        autoAsked: false,
         readyAt: 0
     };
 
@@ -242,13 +246,20 @@ var HomeHero = (function () {
         return best;
     }
 
+    function siteRadius(n) {
+        return (n && n.radiusM > 0) ? n.radiusM : DEFAULT_RADIUS_M;
+    }
+
     // One of: checking, nosites, unavailable, pending, on, off.
     function siteStatus() {
         if (!site.loaded) return 'checking';
         if (!site.sites.length) return 'nosites';
         if (!site.fix || site.problem) return 'unavailable';
         if (site.verdict && (site.verdict.status === 'on' || site.verdict.status === 'off')) return site.verdict.status;
-        return 'pending';
+        // A position too old to say where the technician is now.
+        if (Date.now() - site.fix.at > STALE_FIX_MS) return 'pending';
+        if (!site.nearest) return 'pending';
+        return site.nearest.distanceM <= siteRadius(site.nearest) ? 'on' : 'off';
     }
 
     var STATUS_TEXT = {
@@ -289,8 +300,10 @@ var HomeHero = (function () {
         }
 
         var note = site.note;
-        if (!note && site.fix && !site.fix.fresh && Date.now() - site.fix.at > STALE_FIX_MS) {
+        if (!note && site.fix && Date.now() - site.fix.at > STALE_FIX_MS) {
             note = 'Location from ' + clock(site.fix.at) + '. Tap Refresh for a new one.';
+        } else if (!note && !v && n && (status === 'on' || status === 'off')) {
+            note = 'Geofence radius ' + formatDistance(siteRadius(n));
         }
         $slide.find('.hh-site-note').text(note || '');
         fillReasons($slide.find('.hh-site-reason'), siteId == null ? null : { siteId: siteId, siteName: siteName });
@@ -314,8 +327,13 @@ var HomeHero = (function () {
                 if (!site.fix && validCoords(lat, lon) && !isNaN(at) && at > 0) {
                     site.fix = { lat: lat, lon: lon, accuracy: parseFloat(row.accuracy), at: at, fresh: false };
                 }
-                if (!site.fix && !site.note) site.note = 'Tap Refresh to get your location.';
                 done();
+                // The stored position is missing or too old to place the
+                // technician: ask for a new one once, not on every repaint.
+                if (!site.autoAsked && site.sites.length && (!site.fix || Date.now() - site.fix.at > STALE_FIX_MS)) {
+                    site.autoAsked = true;
+                    refreshLocation($slide);
+                }
             });
         });
     }
@@ -383,11 +401,7 @@ var HomeHero = (function () {
             }
             site.problem = '';
             if (!site.nearest) { end(); return; }
-            if (!geofenceValidator) {
-                site.note = 'Location updated. Server check is not connected yet.';
-                end();
-                return;
-            }
+            if (!geofenceValidator) { end(); return; }
             if (navigator.onLine === false) {
                 site.note = 'No network. Tap Refresh when you are back online.';
                 end();
@@ -729,5 +743,5 @@ var HomeHero = (function () {
 
     return { render: render, refresh: refresh, setGeofenceValidator: setGeofenceValidator, isVendorTechnician: isVendorTechnician,
         // exposed for tests
-        _toRowEdge: toRowEdge, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
+        _toRowEdge: toRowEdge, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
 })();

@@ -14,7 +14,10 @@
 var TripServerHistory = (function () {
     'use strict';
 
-    var STORE_KEY = 'trip_server_history';
+    // _v2: downloads made before every status was requested are fetched again.
+    var STORE_KEY = 'trip_server_history_v2';
+    var OLD_STORE_KEYS = ['trip_server_history'];
+    var TRIP_STATUSES = '0,1,2,100,101';
     var API_NAME = 'GetTripData';
     // Intent extras cannot carry an unbounded path; the server sends a handful
     // of points per trip, this only guards against a pathological row.
@@ -94,8 +97,9 @@ var TripServerHistory = (function () {
         return [{
             flow_id: flow.flowId,
             checksheetId: flow.checksheetId,
-            // 0 = Trip Started, 2 = Trip Completed
-            task_status: ['0,2'],
+            // Every status of the trip flow, as the web portal's trip page
+            // sends it (0 = Trip Started, 2 = Trip Completed, ...).
+            task_status: [TRIP_STATUSES],
             offset: 0,
             fetch: 500,
             searchParticularColumn: [
@@ -194,6 +198,9 @@ var TripServerHistory = (function () {
     }
 
     function readStore() {
+        for (var k = 0; k < OLD_STORE_KEYS.length; k++) {
+            try { localStorage.removeItem(OLD_STORE_KEYS[k]); } catch (e) { }
+        }
         var s = readJson(localStorage, STORE_KEY);
         if (!s || typeof s !== 'object' || !s.at || !s.rows) return null;
         return s;
