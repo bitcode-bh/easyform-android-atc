@@ -591,6 +591,17 @@ function update_ml_stat_badge() {
     if (el && typeof lms_count_distinct_ml === 'function') {
         el.textContent = lms_count_distinct_ml(user_activitiy_Array, 'Watch_Count');
     }
+    // Home's Learning slide is on another page and cannot see the reel
+    // catalog or the activity rows, so the two counts are left for it here.
+    try {
+        if (ml_catalog_ml_ids && typeof lms_count_distinct_ml === 'function') {
+            localStorage.setItem('lms_ml_home_summary', JSON.stringify({
+                uid: (typeof lms_get_storage_user_id === 'function') ? lms_get_storage_user_id() : '',
+                watched: lms_count_distinct_ml(user_activitiy_Array, 'Watch_Count'),
+                total: Object.keys(ml_catalog_ml_ids).length
+            }));
+        }
+    } catch (e) { }
 
     var timeEl = document.getElementById('ml_stat_watch_time');
     if (timeEl && typeof lms_get_watch_seconds === 'function') {

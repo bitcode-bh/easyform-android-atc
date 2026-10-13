@@ -1192,3 +1192,12 @@
 /* Trips main card: per-trip averages are not shown; the second line is used
    only for a picked trip's own start, end and ID. */
 #trip_main_card:not(.is-trip) .trip-stats-avg { display: none; }
+
+/* Learning slide: the passport's shield at the top right, and a second line
+   under each figure for what is pending and the score. */
+#div_home_hero .hh-shield { flex: 0 0 auto; width: 26px; height: 26px; margin: -6px 0; object-fit: contain; }
+#div_home_hero .hh-shield:not([src]) { visibility: hidden; }
+#div_home_hero [data-slide="lms"] .hh-head { font-size: 18px; -webkit-line-clamp: 1; }
+#div_home_hero [data-slide="lms"] .hh-bar { margin-top: 8px; }
+#div_home_hero [data-slide="lms"] .hh-stats { padding-top: 10px; }
+#div_home_hero [data-slide="lms"] .hh-stat span + span { margin-top: 1px; font-size: 11px; }

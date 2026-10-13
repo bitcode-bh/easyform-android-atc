@@ -136,13 +136,20 @@ var HomeHero = (function () {
             + '</div>';
     }
 
+    // One learning area: completed out of total, then what is pending and the score.
+    function lmsStatHtml(key, label) {
+        return '<div class="hh-stat"><b class="hh-lms-' + key + '-done">—</b><span>' + label + '</span>'
+            + '<span class="hh-lms-' + key + '-more"></span></div>';
+    }
+
     function lmsSlideHtml() {
         return '<div class="hh-slide" data-slide="lms">'
-            + '<div class="hh-top"><span class="hh-eyebrow">Learning</span><span class="hh-pill hh-lms-lessons"></span></div>'
+            + '<div class="hh-top"><span class="hh-eyebrow">Learning</span><img class="hh-shield" alt="" /></div>'
             + '<div class="hh-head hh-lms-name"></div>'
+            + '<div class="hh-sub hh-lms-lessons"></div>'
             + '<div class="hh-bar"><i></i></div>'
-            + '<div class="hh-stats">' + statHtml('hh-lms-pct', 'Complete') + statHtml('hh-lms-score', 'Avg score')
-            + statHtml('hh-lms-assess', 'Assessments') + '</div>'
+            + '<div class="hh-stats">' + lmsStatHtml('mod', 'Modules') + lmsStatHtml('ass', 'Assessments')
+            + lmsStatHtml('ml', 'Micro learning') + '</div>'
             + '<a href="#" class="hh-foot hh-link hh-open-lms"><span>Continue learning</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>'
             + '</div>';
     }
@@ -645,34 +652,80 @@ var HomeHero = (function () {
         return best;
     }
 
+    // Completed count and average score of a listing, by the LMS's own rules
+    // (lms_compute_completion_kpi): complete at Progress 100, score averaged
+    // over items that have answers in.
+    function listingKpi(items) {
+        var total = (items || []).length, done = 0, scoreSum = 0, scored = 0;
+        for (var i = 0; i < total; i++) {
+            var it = items[i];
+            if ((Number(it.Progress) || 0) >= 100) done++;
+            var questions = Number(it.TotalQuestion) || 0;
+            var submitted = Number(it.SubmitedSkill) || Number(it.SubmitedQuestion) || 0;
+            var score = Number(it.Score);
+            if (submitted > 0 && questions > 0 && !isNaN(score)) { scoreSum += score / questions * 100; scored++; }
+        }
+        return { total: total, done: done, score: scored ? Math.round(scoreSum / scored) : null };
+    }
+
+    function showLmsStat($slide, key, done, total, score) {
+        if (total == null) {
+            $slide.find('.hh-lms-' + key + '-done').text('—');
+            $slide.find('.hh-lms-' + key + '-more').text('');
+            return;
+        }
+        $slide.find('.hh-lms-' + key + '-done').text(done + '/' + total);
+        var pending = Math.max(0, total - done);
+        $slide.find('.hh-lms-' + key + '-more').text(pending + ' pending' + (score == null ? '' : ' · ' + score + '%'));
+    }
+
+    // Watched and library counts the Micro Learning screen leaves behind, and
+    // the quiz score it keeps on the phone.
+    function microLearning() {
+        var s = null;
+        try { s = JSON.parse(localStorage.getItem('lms_ml_home_summary')); } catch (e) { s = null; }
+        if (!s || String(s.uid) !== String(readSession('user_id'))) return null;
+        var answered = Number(localStorage.getItem('lms_ml_quiz_total')) || 0;
+        var correct = Number(localStorage.getItem('lms_ml_quiz_correct')) || 0;
+        return { done: Number(s.watched) || 0, total: Number(s.total) || 0, score: answered ? Math.round(correct / answered * 100) : null };
+    }
+
     function paintLms($slide) {
+        var $shield = $slide.find('.hh-shield');
+        if ($shield.length && !$shield.attr('src')) {
+            try {
+                var base = JSON.parse(storage.getItem('global_wcf_url')) || (typeof global_wcf_url !== 'undefined' ? global_wcf_url : '');
+                $shield.attr('src', new URL(base).origin + '/images/safety_passport/sp_shield.png');
+            } catch (e) { }
+        }
         var modules = cachedListing('modules');
         var assessments = cachedListing('assessments');
+        var ml = microLearning();
+        if (ml) showLmsStat($slide, 'ml', ml.done, ml.total, ml.score); else showLmsStat($slide, 'ml', 0, null);
+        if (assessments) { var ak = listingKpi(assessments); showLmsStat($slide, 'ass', ak.done, ak.total, ak.score); }
+        else showLmsStat($slide, 'ass', 0, null);
         if (!modules) {
             $slide.find('.hh-lms-name').text('Open LMS to see your progress');
             $slide.find('.hh-lms-lessons').text('');
-            $slide.find('.hh-lms-pct, .hh-lms-score, .hh-lms-assess').text('—');
             $slide.find('.hh-bar i').css('width', '0%');
+            showLmsStat($slide, 'mod', 0, null);
             return;
         }
-        var done = 0, total = 0, score = 0, questions = 0, current = null;
+        var done = 0, total = 0, current = null;
         for (var i = 0; i < modules.length; i++) {
             var m = modules[i];
-            var d = Number(m.SubmitedSkill) || 0, t = Number(m.TotalSkill) || 0;
-            done += d; total += t;
-            if (d > 0) { score += Number(m.Score) || 0; questions += Number(m.TotalQuestion) || 0; }
+            done += Number(m.SubmitedSkill) || 0;
+            total += Number(m.TotalSkill) || 0;
             var p = Number(m.Progress) || 0;
             // The module to carry on with: furthest along but not finished.
             if (p < 100 && (!current || p > (Number(current.Progress) || 0))) current = m;
         }
-        var head = current ? current.Module_Name : 'All modules complete';
         var pct = total ? Math.round(done / total * 100) : 0;
-        $slide.find('.hh-lms-name').text(head || '');
-        $slide.find('.hh-lms-lessons').text(done + ' of ' + total + ' lessons');
-        $slide.find('.hh-lms-pct').text(pct + '%');
+        $slide.find('.hh-lms-name').text((current ? current.Module_Name : 'All modules complete') || '');
+        $slide.find('.hh-lms-lessons').text(done + ' of ' + total + ' lessons · ' + pct + '%');
         $slide.find('.hh-bar i').css('width', pct + '%');
-        $slide.find('.hh-lms-score').text(questions ? Math.round(score / questions * 100) + '%' : '—');
-        $slide.find('.hh-lms-assess').text(assessments ? String(assessments.length) : '—');
+        var mk = listingKpi(modules);
+        showLmsStat($slide, 'mod', mk.done, mk.total, mk.score);
     }
 
     // ---- permit to work ------------------------------------------------------
@@ -1084,5 +1137,5 @@ var HomeHero = (function () {
 
     return { render: render, refresh: refresh, setGeofenceValidator: setGeofenceValidator, setPermitProvider: setPermitProvider, isVendorTechnician: isVendorTechnician,
         // exposed for tests
-        _toRowEdge: toRowEdge, _isHomeLevel: isHomeLevel, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
+        _toRowEdge: toRowEdge, _listingKpi: listingKpi, _isHomeLevel: isHomeLevel, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
 })();
