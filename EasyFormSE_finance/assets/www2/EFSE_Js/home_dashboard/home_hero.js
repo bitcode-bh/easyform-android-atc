@@ -156,8 +156,28 @@ var HomeHero = (function () {
             + '</div>';
     }
 
+    // The LMS tab each learning area opens (LMS_Dashboard.html).
+    var LMS_TABS = { mod: 'tab-1', ass: 'tab-2', ml: 'tab-4' };
+
+    // One learning area: completed out of total, then what is pending and the
+    // score. Tapping it opens the LMS on that area's tab.
+    function lmsStatHtml(key, label) {
+        return '<a href="#" class="hh-stat hh-lms-open" data-tab="' + LMS_TABS[key] + '"><b class="hh-lms-' + key + '-done">—</b>'
+            + '<span>' + label + '</span><span class="hh-lms-' + key + '-more"></span></a>';
+    }
+
+    // Decoration only: a hard hat outline behind the top of the slide, since
+    // most of the learning is safety training.
+    var LEARNING_ART = '<svg class="hh-learn-art" viewBox="0 0 320 150" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">'
+        + '<g fill="none" stroke="#c9ccd3" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" transform="translate(150 18)">'
+        + '<path d="M20 86 C20 40 52 12 92 12 S164 40 164 86"/>'
+        + '<path d="M4 88 H180 a6 6 0 0 1 0 14 H4 a6 6 0 0 1 0 -14 z"/>'
+        + '<path d="M76 14 V52"/><path d="M108 14 V52"/></g>'
+        + '<path d="M242 30 V70" stroke="#2a3086" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/></svg>';
+
     function lmsSlideHtml() {
         return '<div class="hh-slide" data-slide="lms">'
+            + LEARNING_ART
             + '<div class="hh-top"><span class="hh-eyebrow">Learning</span><img class="hh-shield" alt="" /></div>'
             + '<div class="hh-head hh-lms-name"></div>'
             + '<div class="hh-sub hh-lms-lessons"></div>'
@@ -1150,16 +1170,23 @@ var HomeHero = (function () {
         ico.classList.add('tab-pop');
     });
     try {
+        // A failure in the card must never take the rest of Home's start-up
+        // with it: an exception thrown from a ready handler stops the ones
+        // queued after it.
         $(document).ready(function () {
-            render();
-            if (deviceIsReady || (typeof cordova !== 'undefined' && cordova.exec && window.device)) refresh();
+            try {
+                render();
+                if (deviceIsReady || (typeof cordova !== 'undefined' && cordova.exec && window.device)) refresh();
+            } catch (e) { try { console.error('HomeHero failed:', e); } catch (ignored) { } }
         });
         document.addEventListener('deviceready', function () {
+          try {
             deviceIsReady = true;
             // Coming back from the LMS reels, the system bar is light again.
             try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor', ['#ECEDEF', true]); } catch (e) { }
             if (!$('#' + ROOT_ID + ' .hh-track').length) render();
             refresh();
+          } catch (e) { try { console.error('HomeHero failed:', e); } catch (ignored) { } }
         }, false);
     } catch (e) { }
 

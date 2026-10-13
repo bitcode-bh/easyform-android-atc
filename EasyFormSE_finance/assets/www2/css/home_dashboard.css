@@ -1236,3 +1236,14 @@
 #div_home_hero a.hh-stat:active { opacity: .6; }
 #div_home_hero [data-slide="lms"] .hh-stats,
 #div_home_hero [data-slide="trips"] .hh-stats { padding-bottom: 4px; }
+
+/* Learning: hard hat artwork behind the top of the slide. */
+#div_home_hero .hh-learn-art {
+    position: absolute;
+    top: -18px;
+    right: 0;
+    width: 100%;
+    height: 150px;
+    pointer-events: none;
+}
+#div_home_hero [data-slide="lms"] > *:not(.hh-learn-art):not(.hh-shield) { position: relative; }
