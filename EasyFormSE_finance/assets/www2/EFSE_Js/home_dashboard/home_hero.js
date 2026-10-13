@@ -55,8 +55,9 @@ var HomeHero = (function () {
         verdict: null,    // the server's answer for the current fix
         problem: '',      // why a location could not be used
         note: '',
+        flowRadius: {},   // flow id -> geofence radius in metres
         busy: false,
-        autoAsked: false,
+        autoAskAt: 0,     // no automatic location request before this time
         readyAt: 0
     };
 
@@ -239,15 +240,19 @@ var HomeHero = (function () {
             if (!validCoords(lat, lon)) continue;
             var d = metresBetween(fix.lat, fix.lon, lat, lon);
             if (!best || d < best.distanceM) {
-                best = { siteId: sites[i].place_id, distanceM: d, radiusM: parseFloat(sites[i].radius) };
+                best = { siteId: sites[i].place_id, distanceM: d, radiusM: parseFloat(sites[i].radius), flowId: sites[i].flow_id };
             }
         }
         if (best) best.siteName = knownSiteName(best.siteId);
         return best;
     }
 
+    // The site's own radius, else its flow's (what the app's geofence itself
+    // uses when the site row carries 0), else DEFAULT_RADIUS_M.
     function siteRadius(n) {
-        return (n && n.radiusM > 0) ? n.radiusM : DEFAULT_RADIUS_M;
+        if (n && n.radiusM > 0) return n.radiusM;
+        if (n && site.flowRadius[n.flowId] > 0) return site.flowRadius[n.flowId];
+        return DEFAULT_RADIUS_M;
     }
 
     // One of: checking, nosites, unavailable, pending, on, off.
@@ -307,31 +312,40 @@ var HomeHero = (function () {
         fillReasons($slide.find('.hh-site-reason'), siteId == null ? null : { siteId: siteId, siteName: siteName });
     }
 
-    // Catalog plus, until Refresh has been used, the position the location
-    // service last stored. No GPS request is made here.
+    // Catalog plus the position the location service last stored, taken
+    // whenever it is newer than the one held. The only GPS request made from
+    // here is one automatic one when that position is missing or too old to
+    // place the technician, and at most once per STALE_FIX_MS.
     function loadSite($slide) {
         if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getSiteCatalog) { paintSite($slide); return; }
         HomeDashboardData.getSiteCatalog(function (rows) {
             site.sites = rows || [];
             site.loaded = true;
-            function done() {
-                site.nearest = site.fix ? nearestSite(site.sites, site.fix) : null;
-                paintSite($slide);
-            }
-            if (site.fix) { done(); return; }
             HomeDashboardData.getLastLocation(function (row) {
                 var lat = row ? parseFloat(row.lat) : NaN, lon = row ? parseFloat(row.lon) : NaN;
                 var at = row ? parseInt(row.date, 10) : NaN;
-                if (!site.fix && validCoords(lat, lon) && !isNaN(at) && at > 0) {
+                if (validCoords(lat, lon) && !isNaN(at) && at > 0 && (!site.fix || at > site.fix.at)) {
                     site.fix = { lat: lat, lon: lon, accuracy: parseFloat(row.accuracy), at: at, fresh: false };
+                    site.verdict = null;
+                    site.problem = '';
+                    site.note = '';
                 }
-                done();
-                // The stored position is missing or too old to place the
-                // technician: ask for a new one once, not on every repaint.
-                if (!site.autoAsked && site.sites.length && (!site.fix || Date.now() - site.fix.at > STALE_FIX_MS)) {
-                    site.autoAsked = true;
-                    refreshLocation($slide);
+                site.nearest = site.fix ? nearestSite(site.sites, site.fix) : null;
+                var n = site.nearest;
+                var needsFlowRadius = n && !(n.radiusM > 0) && site.flowRadius[n.flowId] === undefined && HomeDashboardData.getFlowRadius;
+                function done() {
+                    paintSite($slide);
+                    var stale = !site.fix || Date.now() - site.fix.at > STALE_FIX_MS;
+                    if (stale && !site.busy && site.sites.length && Date.now() >= site.autoAskAt) {
+                        site.autoAskAt = Date.now() + STALE_FIX_MS;
+                        refreshLocation($slide);
+                    }
                 }
+                if (!needsFlowRadius) { done(); return; }
+                HomeDashboardData.getFlowRadius(n.flowId, function (radius) {
+                    site.flowRadius[n.flowId] = radius || 0;
+                    done();
+                });
             });
         });
     }

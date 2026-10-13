@@ -671,7 +671,7 @@ var HomeDashboardData = (function () {
     // GeofenceTrackingReader. SELECT only.
     function getSiteCatalog(onDone) {
         sql(
-            "select place_id, latitude, longitude, radius from geofence_tracking "
+            "select place_id, latitude, longitude, radius, flow_id from geofence_tracking "
             + "where latitude is not null and latitude <> '' and latitude <> '0' "
             + "and longitude is not null and longitude <> '' and longitude <> '0' "
             + "and not (latitude = '21' and longitude = '61')",
@@ -681,6 +681,28 @@ var HomeDashboardData = (function () {
                 onDone(rows);
             },
             function () { onDone([]); }
+        );
+    }
+
+    // The geofence radius (metres) a flow defines, for catalog rows whose own
+    // radius is 0: the same value GeoFenceDraw.getRadiusfromFlowmaster() reads
+    // (User_Define_Flow_Master.data -> geotracking[0].radius). SELECT only.
+    function getFlowRadius(flowId, onDone) {
+        var id = parseInt(flowId, 10);
+        if (isNaN(id)) { onDone(null); return; }
+        sql(
+            "select data from User_Define_Flow_Master where id = " + id + " limit 1",
+            function (e) {
+                var radius = null;
+                try {
+                    var geo = JSON.parse(JSON.parse(e)[0].data)[0].geotracking;
+                    if (typeof geo === 'string') geo = JSON.parse(geo);
+                    radius = parseFloat(geo[0].radius);
+                    if (isNaN(radius) || radius <= 0) radius = null;
+                } catch (err) { radius = null; }
+                onDone(radius);
+            },
+            function () { onDone(null); }
         );
     }
 
@@ -742,6 +764,7 @@ var HomeDashboardData = (function () {
         getTripEvents: getTripEvents,
         getSiteCatalog: getSiteCatalog,
         getLastLocation: getLastLocation,
+        getFlowRadius: getFlowRadius,
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,
         getUploadCounts: getUploadCounts,

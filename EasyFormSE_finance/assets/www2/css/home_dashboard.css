@@ -985,3 +985,11 @@
    doubled when Home is at rest. */
 #div_home_hero { padding-bottom: 10px; }
 #div_home_hero:not(:empty) + #div_home_dashboard { padding-top: 0; }
+
+/* Tab bar and the page above it. Home's scroller used to stop at 94% of the
+   page while the bar was 48px, which left a strip of page background above
+   the bar. The bar is now 56px (its links were already min-height 56px) and
+   the scroller ends exactly where the bar begins. */
+#div_new_tabbar,
+#div_new_tabbar .toolbar-inner { height: 56px !important; }
+#div_page_content { height: calc(100% - 56px) !important; }
