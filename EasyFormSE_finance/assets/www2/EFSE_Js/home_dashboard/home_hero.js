@@ -108,8 +108,18 @@ var HomeHero = (function () {
         return '<div class="hh-stat"><b class="' + valueClass + '">…</b><span>' + label + '</span></div>';
     }
 
+    // Decoration only: geofence rings around a point, for what the slide
+    // answers (inside the site's radius or not).
+    var SITE_ART = '<svg class="hh-site-art" viewBox="0 0 320 250" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">'
+        + '<g fill="none" stroke="#c9ccd3" stroke-width="1.5"><circle cx="262" cy="70" r="26"/><circle cx="262" cy="70" r="52"/>'
+        + '<circle cx="262" cy="70" r="80" stroke-opacity=".8"/><circle cx="262" cy="70" r="110" stroke-opacity=".55"/>'
+        + '<circle cx="262" cy="70" r="142" stroke-opacity=".35"/></g>'
+        + '<circle cx="262" cy="70" r="26" fill="#2a3086" fill-opacity=".07"/>'
+        + '<circle cx="262" cy="70" r="5" fill="#2a3086" fill-opacity=".55"/></svg>';
+
     function siteSlideHtml() {
         return '<div class="hh-slide" data-slide="site">'
+            + SITE_ART
             + topHtml('Nearest site', 'hh-site-label', 'hh-site-status')
             + '<div class="hh-row"><div class="hh-ic"><i class="hh-site-icon fa-solid fa-location-dot" aria-hidden="true"></i></div>'
             + '<div class="hh-row-text"><div class="hh-head hh-site-name"></div><div class="hh-sub hh-site-sub"></div></div></div>'
@@ -118,26 +128,25 @@ var HomeHero = (function () {
             + '<label class="hh-field"><small>Reason for visit</small>'
             + '<select class="hh-select hh-site-reason" disabled aria-label="Reason for visit">'
             + '<option value="">Loading modules…</option></select></label>'
-            + '<div class="hh-foot"><button type="button" class="hh-refresh">'
-            + '<i class="fa-solid fa-rotate" aria-hidden="true"></i><span>Refresh location</span></button>'
-            + '<small class="hh-site-updated"></small></div>'
+            + '<div class="hh-foot hh-pull"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i>'
+            + '<span class="hh-pull-text">Pull down to refresh location</span></div>'
             + '</div>';
     }
 
-    // Decoration only: a faint street map with one route, fading out towards
-    // the text. It is drawn artwork, not the user's trips.
-    var TRIP_MAP_ART = '<svg class="hh-map-art" viewBox="0 0 320 170" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">'
-        + '<defs><linearGradient id="hh_map_fade" x1="0" x2="1"><stop offset=".35" stop-color="#ecedef"/>'
-        + '<stop offset="1" stop-color="#ecedef" stop-opacity="0"/></linearGradient></defs>'
-        + '<g stroke="#c9ccd3" stroke-width="6" fill="none" stroke-linecap="round">'
-        + '<path d="M120 20 L330 70"/><path d="M110 120 L330 150"/><path d="M170 -10 L150 170"/>'
-        + '<path d="M250 -10 L235 170"/><path d="M300 -10 L310 170"/></g>'
-        + '<g stroke="#d6d8de" stroke-width="2.5" fill="none"><path d="M120 70 L330 105"/><path d="M205 -10 L195 170"/>'
-        + '<path d="M275 -10 L272 170"/></g>'
-        + '<path d="M160 118 L240 130 L247 55 L320 68" fill="none" stroke="#2a3086" stroke-opacity=".55" stroke-width="3" '
+    // Decoration only: a faint street map with one route across the whole
+    // slide, under a light veil so the figures stay readable. It is drawn
+    // artwork, not the user's trips.
+    var TRIP_MAP_ART = '<svg class="hh-map-art" viewBox="0 0 320 250" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'
+        + '<g stroke="#d3d6dc" stroke-width="7" fill="none" stroke-linecap="round">'
+        + '<path d="M-10 40 L330 95"/><path d="M-10 150 L330 190"/><path d="M-10 235 L330 262"/>'
+        + '<path d="M50 -10 L25 260"/><path d="M140 -10 L118 260"/><path d="M228 -10 L212 260"/><path d="M300 -10 L308 260"/></g>'
+        + '<g stroke="#dcdee3" stroke-width="3" fill="none"><path d="M-10 95 L330 142"/><path d="M-10 195 L330 228"/>'
+        + '<path d="M95 -10 L72 260"/><path d="M185 -10 L165 260"/><path d="M265 -10 L258 260"/></g>'
+        + '<path d="M130 172 L215 182 L224 82 L308 96" fill="none" stroke="#2a3086" stroke-opacity=".5" stroke-width="3.5" '
         + 'stroke-linecap="round" stroke-linejoin="round"/>'
-        + '<circle cx="160" cy="118" r="5" fill="#fff" stroke="#2a3086" stroke-width="2"/>'
-        + '<rect x="0" y="0" width="320" height="170" fill="url(#hh_map_fade)"/></svg>';
+        + '<circle cx="130" cy="172" r="5.5" fill="#fff" stroke="#2a3086" stroke-width="2"/>'
+        + '<circle cx="308" cy="96" r="5.5" fill="#2a3086" fill-opacity=".7"/>'
+        + '<rect width="320" height="250" fill="#ecedef" fill-opacity=".45"/></svg>';
 
     // A trip figure; tapping any of them opens the Trips page.
     function tripStat(valueClass, label) {
@@ -351,11 +360,16 @@ var HomeHero = (function () {
         $slide.find('.hh-site-status').removeClass('is-on is-off is-warn')
             .addClass(status === 'on' ? 'is-on' : status === 'off' ? 'is-off' : status === 'unavailable' ? 'is-warn' : '')
             .find('.hh-status-text').text(STATUS_TEXT[status]);
-        // "Nearest" only while the technician is not at it.
-        $slide.find('.hh-site-label').text(status === 'on' ? 'Current site' : 'Nearest site');
-        var $btn = $slide.find('.hh-refresh');
-        $btn.prop('disabled', site.busy).toggleClass('is-busy', site.busy)
-            .find('span').text(site.busy ? 'Getting location…' : 'Refresh location');
+        // "Nearest" only while the technician is not at it; then when the
+        // position behind it was taken.
+        var label = status === 'on' ? 'Current site' : 'Nearest site';
+        if (site.fix) {
+            var old = Date.now() - site.fix.at > STALE_FIX_MS || site.problem;
+            label += (old ? ' · last seen ' : ' · updated ') + clock(site.fix.at);
+        }
+        $slide.find('.hh-site-label').text(label);
+        $slide.find('.hh-pull').toggleClass('is-busy', site.busy)
+            .find('.hh-pull-text').text(site.busy ? 'Getting location…' : 'Pull down to refresh location');
 
         // The server's own site and distance win over the phone's when it gave them.
         var v = site.verdict, n = site.nearest;
@@ -383,8 +397,6 @@ var HomeHero = (function () {
         }
 
         $slide.find('.hh-site-note').text(site.note || '');
-        var stale = site.fix && Date.now() - site.fix.at > STALE_FIX_MS;
-        $slide.find('.hh-site-updated').text(site.fix ? ((stale || site.problem ? 'Last seen ' : 'Updated ') + clock(site.fix.at)) : '');
         fillReasons($slide.find('.hh-site-reason'), siteId == null ? null : { siteId: siteId, siteName: siteName });
     }
 
@@ -424,6 +436,39 @@ var HomeHero = (function () {
                 });
             });
         });
+    }
+
+    // Pulling down on the site slide asks for a new position. The slide takes
+    // vertical drags itself (touch-action in the stylesheet), so the pull does
+    // not scroll Home.
+    var PULL_DISTANCE = 56;
+
+    function bindPullToRefresh($slide) {
+        var x0 = 0, y0 = 0, tracking = false;
+        function pulled(t) {
+            var dx = t.clientX - x0, dy = t.clientY - y0;
+            return dy >= PULL_DISTANCE && dy > Math.abs(dx) * 1.5;
+        }
+        $slide.off('.hhPullSite')
+            .on('touchstart.hhPullSite', function (ev) {
+                // The dropdown keeps its own touches.
+                if ($(ev.target).closest('.hh-field').length) { tracking = false; return; }
+                var t = (ev.originalEvent || ev).touches[0];
+                x0 = t.clientX; y0 = t.clientY; tracking = true;
+            })
+            .on('touchmove.hhPullSite', function (ev) {
+                if (!tracking || site.busy) return;
+                var ready = pulled((ev.originalEvent || ev).touches[0]);
+                $slide.find('.hh-pull').toggleClass('is-ready', ready)
+                    .find('.hh-pull-text').text(ready ? 'Release to refresh' : 'Pull down to refresh location');
+            })
+            .on('touchend.hhPullSite touchcancel.hhPullSite', function (ev) {
+                if (!tracking) return;
+                tracking = false;
+                $slide.find('.hh-pull').removeClass('is-ready');
+                var done = ev.type === 'touchend' && pulled((ev.originalEvent || ev).changedTouches[0]);
+                if (done) refreshLocation($slide); else paintSite($slide);
+            });
     }
 
     // A new position from the location service (the plugin the site list's own
@@ -1121,11 +1166,7 @@ var HomeHero = (function () {
         var $site = $root.find('[data-slide="site"]');
         if ($site.length) {
             paintSite($site);
-            $site.find('.hh-refresh').off('click.homeHero').on('click.homeHero', function (ev) {
-                ev.preventDefault();
-                refreshLocation($site);
-                return false;
-            });
+            bindPullToRefresh($site);
         }
         paintPassport($root.find('[data-slide="passport"]'));
         bindPassportFlip($root);

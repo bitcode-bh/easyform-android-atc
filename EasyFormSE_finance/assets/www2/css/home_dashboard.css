@@ -1218,18 +1218,43 @@
 #div_home_hero [data-slide="lms"] .hh-stats { padding-top: 10px; }
 #div_home_hero [data-slide="lms"] .hh-stat span + span { margin-top: 1px; font-size: 11px; }
 
-/* Driver trips: map artwork behind the top of the slide, clear of the figures. */
+/* Driver trips: map artwork across the whole slide, behind everything. */
 #div_home_hero [data-slide="trips"] { position: relative; }
 #div_home_hero .hh-map-art {
     position: absolute;
     top: -18px;
-    right: 0;
+    left: 0;
     width: 100%;
-    height: 150px;
+    height: calc(100% + 18px);
     pointer-events: none;
 }
 #div_home_hero [data-slide="trips"] > *:not(.hh-map-art) { position: relative; }
-#div_home_hero [data-slide="trips"] .hh-stats { background: #ecedef; }
+
+/* Site slide: geofence rings behind it, and pull down to refresh. Vertical
+   drags belong to the slide (pan-x leaves sideways swipes to the pager). */
+#div_home_hero [data-slide="site"] { position: relative; touch-action: pan-x; }
+#div_home_hero .hh-site-art {
+    position: absolute;
+    top: -18px;
+    left: 0;
+    width: 100%;
+    height: calc(100% + 18px);
+    pointer-events: none;
+}
+#div_home_hero [data-slide="site"] > *:not(.hh-site-art) { position: relative; }
+#div_home_hero [data-slide="site"] .hh-ic,
+#div_home_hero [data-slide="site"] .hh-field { background: #ecedef; }
+#div_home_hero .hh-pull {
+    justify-content: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--hh-faint);
+}
+#div_home_hero .hh-pull.is-ready { color: var(--hh-navy); font-weight: 600; }
+#div_home_hero .hh-pull.is-ready i { transform: rotate(180deg); }
+#div_home_hero .hh-pull i { transition: transform .15s ease; }
+#div_home_hero .hh-pull.is-busy i { animation: hh-spin 1s linear infinite; }
 
 /* Learning areas are links into the LMS. */
 #div_home_hero a.hh-stat { display: block; text-decoration: none; }
