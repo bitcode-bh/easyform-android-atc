@@ -31,6 +31,8 @@
     <link href="LMS/dashboard.css" rel="stylesheet" />
     <link href="LMS/micro learning.css" rel="stylesheet" />
     <link href="LMS/lms_ux_fixes.css" rel="stylesheet" />
+    <link href="css/app_loader.css" rel="stylesheet" />
+    <script src="EFSE_Js/app_loader.js"></script>
 
     <script src="LMS/lms_state.js"></script>
     <script src="LMS/lms_data.js"></script>
@@ -143,13 +145,13 @@
 </head>
 <body>
 
-    <!-- Cross-page fade veil (shared with selection.html) -->
-    <div id="page-veil" class="show" aria-hidden="true"><img alt="" src="images/lms_shield_logo.png" /></div>
+    <!-- Loading animation (shared with selection.html), drawn first -->
+    <script>try { document.write(AppLoader.html()); } catch (e) { }</script>
     <script>
-        /* Hold the SHIELD veil over the incoming LMS page until its bottom tabbar
-           has laid out, so it never flashes as a vertical icon stack (FOUC). */
+        /* Hold the loading animation over the incoming LMS page until its bottom
+           tabbar has laid out, so it never flashes as a vertical icon stack (FOUC). */
         (function () {
-            function hideVeil() { var v = document.getElementById('page-veil'); if (v) v.classList.remove('show'); }
+            function hideVeil() { try { AppLoader.hide(); } catch (e) { } }
             function arm() { requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(hideVeil, 350); }); }); }
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', arm);
@@ -748,14 +750,10 @@
 
         var mainView = myApp.views.create('.view-main');
 
-        // Fade to a shared grey veil before the full-page reload so the
-        // Home<->LMS hop reads as a push, not a white flash.
+        // LMS back to Home: leave under the loading animation; Home opens under it.
         function crossToLMS(url) {
             try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { }
-            var v = document.getElementById('page-veil');
-            var img = v && v.querySelector('img');
-            if (img && !img.src) img.src = 'images/lms_shield_logo.png';
-            if (v) v.classList.add('show');
+            try { AppLoader.show(); } catch (e) { }
             setTimeout(function () { changeurl(url); }, 200);
             return false;
         }

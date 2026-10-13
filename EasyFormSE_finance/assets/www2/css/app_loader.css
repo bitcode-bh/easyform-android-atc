@@ -1,7 +1,14 @@
-/* Loading screen shown between Login and Home (and while Home builds), so the
-   gap between the two pages is never a blank white screen. Same grey as the
-   Home cards; the drawing cycles through the cards' own line art: site rings,
-   trip route, hard hat, permit triangle, passport shield. */
+/* The app's one loading animation (EFSE_Js/app_loader.js): the Home cards'
+   line art -- site rings, trip route, hard hat, permit triangle, passport
+   shield -- switching every half second on the cards' grey.
+   #app_loader covers the whole screen across a page change (Login to Home,
+   Home to LMS and back) and while a page builds; #app_busy is the same
+   drawing in a small tile, for a wait inside a page. */
+html { background: #ecedef; }
+/* The loader is what a page arrives under; a second fade on the body made
+   the drawing blink on every page change. */
+body { animation: none !important; }
+
 #app_loader {
     position: fixed;
     top: 0; right: 0; bottom: 0; left: 0;
@@ -10,28 +17,44 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
     background: #ecedef;
     opacity: 1;
     transition: opacity 280ms ease;
 }
-#app_loader.al-in { animation: alIn 240ms ease both; }
+#app_loader.al-in { animation: alIn 200ms ease both; }
 #app_loader.al-out { opacity: 0; pointer-events: none; }
 #app_loader svg { display: block; width: 132px; height: 100px; overflow: visible; }
-#app_loader b { font-size: 13px; font-weight: 600; letter-spacing: .08em; color: #2a3086; }
-#app_loader small { font-size: 12px; color: #6b7280; }
 
-/* The drawings switch every half second (a fifth of the 2.5 s loop), so a
-   normal wait shows all of them: each draws itself, holds, fades. */
-#app_loader .al-i { opacity: 0; animation: alShow 2.5s linear infinite; animation-delay: var(--d, 0s); }
-#app_loader .al-d {
+#app_busy {
+    position: fixed;
+    top: 50%; left: 50%;
+    z-index: 99990;
+    width: 96px; height: 96px;
+    margin: -48px 0 0 -48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    border: 1px solid #dedfe0;
+    background: #ecedef;
+    pointer-events: none;
+    animation: alIn 180ms ease both;
+}
+#app_busy svg { display: block; width: 66px; height: 50px; overflow: visible; }
+
+/* Each drawing has half a second of the 2.5 s loop: it draws itself, holds,
+   fades. --d is the drawing's place in the loop; --p is how far into the
+   loop the animation starts, so it carries on across a page change instead
+   of starting over. */
+.al-box .al-i { opacity: 0; animation: alShow 2.5s linear infinite; animation-delay: calc(var(--d, 0s) - var(--p, 0s)); }
+.al-box .al-d {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
     animation: alDraw 2.5s ease-out infinite;
-    animation-delay: var(--d, 0s);
+    animation-delay: calc(var(--d, 0s) - var(--p, 0s));
 }
 /* The site rings pulse outward instead of being drawn. */
-#app_loader .al-r {
+.al-box .al-r {
     transform-box: fill-box;
     transform-origin: center;
     animation: alRing .5s ease-out infinite;

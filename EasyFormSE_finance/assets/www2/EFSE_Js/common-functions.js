@@ -119,6 +119,10 @@ var loading_timer;
 function loading() {
     //  loading_hide();
 
+    // Pages that carry the app's loading animation (EFSE_Js/app_loader.js)
+    // show that, in a small tile, instead of the progress line at the top.
+    if (typeof AppLoader !== 'undefined' && AppLoader.busy) { AppLoader.busy(); return; }
+
     var is_loading = $(".preloader-indicator-modal");
     if (is_loading.length == 0) {
         // Round spinner (showIndicator) removed — keep only the top progress bar.
@@ -128,6 +132,7 @@ function loading() {
 }
 
 function loading_hide() {
+    if (typeof AppLoader !== 'undefined' && AppLoader.idle) AppLoader.idle();
     myApp.hideIndicator();
     myApp.hideProgressbar();
 }

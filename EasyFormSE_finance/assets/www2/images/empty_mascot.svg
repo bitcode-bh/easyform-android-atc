@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 104" width="128" height="104" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+<style>
+.bob{animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.bl{transform-box:fill-box;transform-origin:center;animation:bl 4s infinite}
+@keyframes bl{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+</style>
+<g class="bob">
+<g transform="translate(64 52) scale(.8)" stroke="#e0b63a" stroke-width="3.75">
+<path d="M-38 0 C-38 -30 -22 -48 0 -48 S38 -30 38 0"/>
+<path d="M-50 2 H50 a5 5 0 0 1 0 10 H-50 a5 5 0 0 1 0 -10 z"/>
+<path d="M-10 -46 V-34 M0 -48 V-34 M10 -46 V-34"/>
+</g>
+<g fill="#2a3086" stroke="none"><ellipse class="bl" cx="55" cy="40" rx="2.6" ry="3.4"/><ellipse class="bl" cx="73" cy="40" rx="2.6" ry="3.4"/></g>
+</g>
+<rect x="30" y="56" width="68" height="46" rx="6" fill="#ecedef" stroke="#2a3086"/>
+<rect x="52" y="50" width="24" height="11" rx="4" fill="#fff" stroke="#2a3086"/>
+<path d="M42 74 H86 M42 86 H70" stroke="#d0d3d9" stroke-dasharray="1 7"/>
+</svg>

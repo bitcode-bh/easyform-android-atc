@@ -1,0 +1,65 @@
+/* Empty list: the "No Record Found !" row drawn as the hard-hat mascot
+   peeking over a blank clipboard, with a short heading and line under it.
+   EFSE_Js/empty_state.js marks the row with .es-empty; the row's own text is
+   left in place (the list code compares it to tell an empty list) and only
+   hidden from view, so everything here is drawn with pseudo-elements. */
+li.es-empty {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    padding: 72px 24px 24px !important;
+    border: 0 !important;
+    background: transparent !important;
+    text-align: center;
+    list-style: none;
+}
+li.es-empty::before {
+    content: "";
+    display: block;
+    width: 128px;
+    height: 104px;
+    margin-bottom: 14px;
+    background: url("../images/empty_mascot.svg") center / contain no-repeat;
+}
+li.es-empty::after,
+li.es-empty *::after { display: none !important; }
+li.es-empty .item-link,
+li.es-empty .item-content,
+li.es-empty .item-inner {
+    display: block !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    pointer-events: none;
+}
+li.es-empty .item-title {
+    display: block;
+    font-size: 0 !important;
+    white-space: normal;
+    overflow: visible;
+}
+li.es-empty .item-title::before {
+    content: "Nothing here yet";
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 20px;
+    color: #0f1729;
+}
+li.es-empty .item-title::after {
+    content: "No records found.";
+    display: block !important;
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+    color: #6b7280;
+}
+/* The list's own frame lines around a lone row. */
+ul.es-empty-list,
+ul.es-empty-list::before,
+ul.es-empty-list::after { border: 0 !important; background: transparent !important; height: auto; }
+ul.es-empty-list::before,
+ul.es-empty-list::after { display: none !important; }

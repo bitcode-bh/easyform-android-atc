@@ -15,7 +15,6 @@
          flickered: the card appeared, vanished as the page's entrance
          animation restarted, came back, and the list then popped in below. -->
     <style>
-        html { background: #ecedef; }
         html.home-wait .views { opacity: 0 !important; }
         html.home-wait .page-content,
         html.home-in .page-content { animation: none !important; }
@@ -399,16 +398,6 @@
             margin: 0px 5px;
         }*/
 
-        /* Cross-page fade veil (Home<->LMS) — mirrors LMS/lms_ux_fixes.css so the
-           switch dips through the shared grey instead of flicking the bottom bar */
-        #page-veil { position: fixed; inset: 0; z-index: 99999; background: #ecedef; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.22s ease; }
-        #page-veil.show { opacity: 1; visibility: visible; }
-        #page-veil img { width: 64px; height: 64px; opacity: 0.9; animation: veil-pulse 1s ease-in-out infinite alternate; }
-        @keyframes veil-pulse { to { transform: scale(1.06); opacity: 1; } }
-        /* Fade the page in on arrival so returning from LMS dips through grey, not a white blank */
-        body { animation: page-in 0.28s ease both; }
-        @keyframes page-in { from { opacity: 0; } to { opacity: 1; } }
-        @media (prefers-reduced-motion: reduce) { #page-veil { transition: none; } #page-veil img { animation: none; } body { animation: none; } }
     </style>
     <!-- LMS-style bottom nav (scoped, no module-list side effects) + FA7 icons -->
     <link href="LMS/font-awesome-7.0.0/css/all.min.css" rel="stylesheet" />
@@ -416,14 +405,12 @@
 </head>
 <body>
     <!-- Loading screen, drawn first and hidden by homeReveal() -->
-    <script>try { document.write(AppLoader.html); } catch (e) { }</script>
-    <!-- Cross-page fade veil (shared look with LMS) so Home->LMS matches LMS->Home -->
-    <div id="page-veil" aria-hidden="true"><img alt="" src="images/lms_shield_logo.png" /></div>
+    <script>try { document.write(AppLoader.html()); } catch (e) { }</script>
     <script>
+        // Home to LMS: leave under the loading animation; LMS opens under it.
         function crossToLMS(url) {
             try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { }
-            var v = document.getElementById('page-veil');
-            if (v) v.classList.add('show');
+            try { AppLoader.show(); } catch (e) { }
             setTimeout(function () { changeurl(url); }, 200);
             return false;
         }

@@ -193,17 +193,29 @@
             };
         }
 
-        // Leaving for Home: cover the form with the loading screen (Home
-        // opens with the same one) instead of fading it out to a white page.
-        if (typeof changeurl === 'function') {
+        // Signing in: the loading animation covers the form from the tap on
+        // LOGIN until Home is ready (Home opens under the same animation), so
+        // there is no progress line, no fade to a white page and no second
+        // loader. A failed sign-in takes it away again and the form is back.
+        (function () {
+            if (typeof AppLoader === 'undefined') return;
+            var leaving = false;
+            loading = function () { AppLoader.show(); };
+            var loading_hide_base = loading_hide;
+            loading_hide = function () {
+                try { loading_hide_base(); } catch (e) { }
+                // Short wait: sign-in hides and shows again between its steps.
+                if (!leaving) AppLoader.hide(250);
+            };
             var changeurl_base = changeurl;
             changeurl = function (url) {
-                if (!/^selection\.html/.test(String(url)) || typeof AppLoader === 'undefined') return changeurl_base(url);
+                if (!/^selection\.html/.test(String(url))) return changeurl_base(url);
+                leaving = true;
                 AppLoader.show();
                 try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor', ['#ECEDEF', true]); } catch (e) { }
-                setTimeout(function () { window.location.href = url; }, 280);
+                setTimeout(function () { window.location.href = url; }, 220);
             };
-        }
+        })();
 
         document.addEventListener('deviceready', function showValues() {
             // White system bar under the white login page (Home sets its own).
