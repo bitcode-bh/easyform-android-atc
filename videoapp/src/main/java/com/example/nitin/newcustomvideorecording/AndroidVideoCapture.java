@@ -140,6 +140,16 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
         pauseButton.setOnClickListener(myButtonOnClickListener);
         pauseButton.setVisibility(View.GONE);
 
+        // Black system bars like the photo cameras; the X closes as Back does.
+        getWindow().setStatusBarColor(0xFF000000);
+        getWindow().setNavigationBarColor(0xFF000000);
+        findViewById(R.id.cam_close).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
         pausepath = new ArrayList<>();
 
         context = AndroidVideoCapture.this;

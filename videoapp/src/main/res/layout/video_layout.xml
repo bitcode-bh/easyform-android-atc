@@ -1,70 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<!-- Video recorder, in the same chrome as the photo cameras: close at the top
+     left, the running time at the top right, and the controls at the bottom,
+     each on a flat dark tint. -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
-    <RelativeLayout
-        android:orientation="vertical"
+    android:background="@android:color/black">
+
+    <FrameLayout
+        android:id="@+id/videoview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="match_parent" />
 
-        <FrameLayout
-            android:id="@+id/videoview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/vid_tint" />
 
-        <TextView
-            android:id="@+id/cam_timer"
-            android:textSize="25sp"
-            android:text=""
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#d21242"
-            />
+    <ImageView
+        android:id="@+id/cam_close"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="Close"
+        android:padding="12dp"
+        android:src="@drawable/vid_close" />
 
-        <TextView
-            android:id="@+id/cam_timer2"
-            android:textSize="25sp"
-            android:text=""
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_alignBottom="@+id/cam_timer"
-            android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/cam_timer"
-            android:layout_toRightOf="@+id/cam_timer"
-            android:layout_alignBaseline="@+id/cam_timer"
-            android:textColor="#d21242"
-            />
+    <TextView
+        android:id="@+id/cam_timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:visibility="gone" />
 
-        <Button
-            android:id="@+id/mybutton"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/background_button"
-            android:text="REC"
-            android:textColor="@android:color/white"
-            android:textSize="15dp" />
+    <TextView
+        android:id="@+id/cam_timer2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="23dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.03"
+        android:text=""
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="124dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/vid_tint" />
 
-        <Button
-            android:textColor="@android:color/white"
-            android:id="@+id/mypause"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:text="PAUSE"
-            android:textSize="10dp"
-            android:background="@drawable/background_button"
-            android:layout_alignParentBottom="true"
-            android:layout_toRightOf="@+id/cam_timer"
-            android:layout_marginLeft="17dp"
-            android:layout_marginStart="17dp" />
+    <Button
+        android:id="@+id/mybutton"
+        android:layout_width="68dp"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="28dp"
+        android:background="@drawable/background_button"
+        android:fontFamily="sans-serif-medium"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:padding="0dp"
+        android:stateListAnimator="@null"
+        android:text="REC"
+        android:textColor="@android:color/white"
+        android:textSize="12sp" />
 
+    <Button
+        android:id="@+id/mypause"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="28dp"
+        android:layout_marginBottom="44dp"
+        android:background="@drawable/vid_pill"
+        android:fontFamily="sans-serif-medium"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:stateListAnimator="@null"
+        android:text="PAUSE"
+        android:textColor="@android:color/white"
+        android:textSize="12sp" />
 
-    </RelativeLayout>
-</LinearLayout>
+</RelativeLayout>
