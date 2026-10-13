@@ -199,9 +199,10 @@ var HomeHero = (function () {
         return 6371000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
     }
 
-    // Metres under 1 km, kilometres from there.
+    // Meters (spelled out, so "3 m" is not read as minutes) under 1 km,
+    // kilometres from there.
     function formatDistance(m) {
-        if (Math.round(m) < 1000) return Math.round(m) + ' m';
+        if (Math.round(m) < 1000) return Math.round(m) + (Math.round(m) === 1 ? ' meter' : ' meters');
         return (Math.round(m / 100) / 10) + ' km';
     }
 
@@ -278,9 +279,12 @@ var HomeHero = (function () {
             $slide.find('.hh-site-name').text(status === 'checking' ? '' : status === 'nosites' ? 'No sites downloaded' : 'Nearest site not known yet');
             $slide.find('.hh-site-sub').text('');
         } else {
-            $slide.find('.hh-site-name').text(siteName || ('Site ' + siteId));
-            var sub = 'Site ID ' + siteId;
-            if (distanceM != null) sub += ' · ' + formatDistance(distanceM) + ' away';
+            // The ID is the heading when there is no name, so it is not repeated below.
+            $slide.find('.hh-site-name').text(siteName || ('Site ID ' + siteId));
+            var parts = [];
+            if (siteName) parts.push('Site ID ' + siteId);
+            if (distanceM != null) parts.push(formatDistance(distanceM) + ' away');
+            var sub = parts.join(' · ');
             $slide.find('.hh-site-sub').text(sub);
         }
 
