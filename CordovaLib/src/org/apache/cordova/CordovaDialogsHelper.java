@@ -37,10 +37,12 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 /**
  * Helper class for WebViews to implement prompt(), alert(), confirm() dialogs.
  * Visual language matches the in-app End Work Trip confirm (centered title/body,
- * outline Cancel + filled primary, no divider).
+ * shared filled buttons, no divider).
  */
 public class CordovaDialogsHelper {
     private static final int COLOR_TITLE = 0xFF1C2333;
@@ -48,6 +50,7 @@ public class CordovaDialogsHelper {
     private static final int COLOR_BORDER = 0xFFD0D5DD;
     private static final int COLOR_PRIMARY = 0xFF2A3086;
     private static final int COLOR_DANGER = 0xFFE25555;
+    private static final int COLOR_SUCCESS = 0xFF4CAF50; // Existing checksheet green.
 
     private final Context context;
     private Dialog lastHandledDialog;
@@ -61,7 +64,10 @@ public class CordovaDialogsHelper {
     }
 
     public void showConfirm(String message, final Result result) {
-        showCard("Confirm", message, null, "OK", "Cancel", false, result);
+        String text = message == null ? "" : message.toLowerCase(Locale.ROOT);
+        boolean yesNo = text.contains("unsaved") || text.contains("changes are not saved")
+                || text.contains("exit") || text.contains("logout");
+        showCard("Confirm", message, null, yesNo ? "Yes" : "OK", yesNo ? "Stay" : "Cancel", false, result);
     }
 
     public void showPrompt(String message, String defaultValue, final Result result) {
@@ -198,14 +204,14 @@ public class CordovaDialogsHelper {
         buttons.setGravity(Gravity.CENTER_VERTICAL);
 
         if (onCancel != null) {
-            TextView cancel = makeButton(cancelLabel, false, false);
+            TextView cancel = makeButton(cancelLabel, "Stay".equals(cancelLabel) ? COLOR_SUCCESS : COLOR_DANGER);
             cancel.setOnClickListener(onCancel);
             LinearLayout.LayoutParams cLp = lp(0, dp(40), 1);
             cLp.rightMargin = dp(5);
             buttons.addView(cancel, cLp);
         }
 
-        TextView ok = makeButton(okLabel, true, dangerOk);
+        TextView ok = makeButton(okLabel, dangerOk ? COLOR_DANGER : COLOR_PRIMARY);
         ok.setOnClickListener(onOk);
         LinearLayout.LayoutParams oLp = lp(0, dp(40), 1);
         if (onCancel != null) {
@@ -235,7 +241,7 @@ public class CordovaDialogsHelper {
         return input;
     }
 
-    private TextView makeButton(String label, boolean primary, boolean danger) {
+    private TextView makeButton(String label, int fill) {
         TextView btn = new TextView(context);
         btn.setText(label);
         btn.setGravity(Gravity.CENTER);
@@ -245,16 +251,9 @@ public class CordovaDialogsHelper {
         btn.setFocusable(true);
         GradientDrawable bg = new GradientDrawable();
         bg.setCornerRadius(dp(12));
-        if (primary) {
-            int fill = danger ? COLOR_DANGER : COLOR_PRIMARY;
-            bg.setColor(fill);
-            bg.setStroke(dp(1), fill);
-            btn.setTextColor(Color.WHITE);
-        } else {
-            bg.setColor(Color.WHITE);
-            bg.setStroke(dp(1), COLOR_BORDER);
-            btn.setTextColor(COLOR_TITLE);
-        }
+        bg.setColor(fill);
+        bg.setStroke(dp(1), fill);
+        btn.setTextColor(Color.WHITE);
         btn.setBackground(bg);
         return btn;
     }
@@ -263,9 +262,9 @@ public class CordovaDialogsHelper {
         if (message == null) {
             return false;
         }
-        String m = message.toLowerCase();
+        String m = message.toLowerCase(Locale.ROOT);
         return m.contains("exit") || m.contains("logout") || m.contains("delete")
-                || m.contains("remove") || m.contains("stop the trip") || m.contains("stop trip");
+                || m.contains("remove") || m.contains("discard") || m.contains("unsaved") || m.contains("changes are not saved") || m.contains("stop the trip") || m.contains("stop trip");
     }
 
     private LinearLayout.LayoutParams lp(int w, int h, float weight) {

@@ -1597,10 +1597,10 @@ function advance_column_search(t_flag, fltr_type) {
                         type_icon_str = "fa-calendar";
                     }
                     else if (ctrl_type == 2 || ctrl_type == 3 || ctrl_type == 6 || (system_var == "Status_Name" && value_Array.length > 0)) {
-                        type_icon_str = "fa-chevron-circle-down";
+                        type_icon_str = "fa-chevron-down";
                     }
                     else if (ctrl_type == 20) {
-                        type_icon_str = "fa-arrow-circle-down";
+                        type_icon_str = "fa-chevron-down";
 
                         var Query_type = columndata_Array[c].Query_type;
                         //var value_new = columndata_Array[c].value_new;

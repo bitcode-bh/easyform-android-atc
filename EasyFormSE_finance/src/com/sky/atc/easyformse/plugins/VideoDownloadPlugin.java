@@ -48,7 +48,7 @@ public class VideoDownloadPlugin extends CordovaPlugin {
     SQLiteDatabase database;
     String filename;
     private Context context;
-    private boolean isDownloading = false;
+    private volatile boolean isDownloading = false;
 
     private static final int PERMISSION_REQUEST_CODE = 201;
     @Override
@@ -60,9 +60,14 @@ public class VideoDownloadPlugin extends CordovaPlugin {
 
 
     @Override
-    public boolean execute(String action, JSONArray args,
+    public synchronized boolean execute(String action, JSONArray args,
                            CallbackContext callbackContext) throws JSONException {
         try {
+            if (isDownloading) {
+                callbackContext.error("Another download is already in progress");
+                return true;
+            }
+            isDownloading = true;
             database = sqlitewraper.getDatabase();
             this.callbackContext = callbackContext;
             video_url = args.getJSONObject(0).getString("video_url");
@@ -79,8 +84,9 @@ public class VideoDownloadPlugin extends CordovaPlugin {
         }
         catch ( Exception e)
         {
-            this.callbackContext.success("Error");
-            return false;
+            isDownloading = false;
+            callbackContext.error("Unable to start video download");
+            return true;
         }
     }
 
@@ -90,6 +96,8 @@ public class VideoDownloadPlugin extends CordovaPlugin {
          if (video_url == null || video_url.isEmpty()) {
              Toast.makeText(this.cordova.getActivity(), "Url not found", Toast.LENGTH_LONG).show();
              callbackContext.error("URL not found");
+             isDownloading = false;
+             return;
          }
 
          String existingPath = getDownloadPathFromDB(video_url);
@@ -111,6 +119,7 @@ public class VideoDownloadPlugin extends CordovaPlugin {
                  callbackContext.success("File is being downloaded in the background.");
              }
              else {
+                 isDownloading = false;
                  callbackContext.success("File is already downloaded.");
              }
 
@@ -118,7 +127,12 @@ public class VideoDownloadPlugin extends CordovaPlugin {
              // Insert url if not exists, start download
              new Handler(Looper.getMainLooper()).post(new Runnable() {
                  public void run() {
-                     handleDownload(video_url);
+                     try {
+                         handleDownload(video_url);
+                     } catch (RuntimeException e) {
+                         isDownloading = false;
+                         callbackContext.error("Unable to start video download");
+                     }
                  }
              });
          }
@@ -126,14 +140,6 @@ public class VideoDownloadPlugin extends CordovaPlugin {
 
     private void handleDownload(String videoUrl) {
 
-        if (isDownloading) {
-            // Already downloading, notify JS or ignore
-            if (callbackContext != null) {
-                callbackContext.success("Another download is already in progress");
-            }
-            return; // Don't start new download
-        }
-        isDownloading = true;
         // Insert video URL in table
          Insert_video_url(videoUrl);
 
@@ -199,7 +205,10 @@ public class VideoDownloadPlugin extends CordovaPlugin {
                             String filePath = fileUri.getPath();
 
                             // Update DB with local path
-                            updateDownloadPathByUrl(video_url, filePath);
+                            String downloadedUrl = prefs.getString("videoUrl", null);
+                            if (downloadedUrl != null) {
+                                updateDownloadPathByUrl(downloadedUrl, filePath);
+                            }
 
                             // Notify JS success with file path
 //                            if (callbackContext != null) {
@@ -218,8 +227,8 @@ public class VideoDownloadPlugin extends CordovaPlugin {
                     }
                     cursor.close();
                 }
-                isDownloading = false;
                 prefs.edit().remove("downloadId").remove("videoUrl").apply();
+                isDownloading = false;
 
             }
         };
@@ -313,6 +322,8 @@ public class VideoDownloadPlugin extends CordovaPlugin {
                 // Permission granted, handle accordingly
                 downloadstart();
             } else {
+                isDownloading = false;
+                callbackContext.error("Storage permission denied");
                 if ( ContextCompat.checkSelfPermission(this.cordova.getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) +
                         ContextCompat.checkSelfPermission(this.cordova.getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)  {
 

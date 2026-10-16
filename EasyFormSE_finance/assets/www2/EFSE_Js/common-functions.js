@@ -55,32 +55,81 @@ function lms_clear_vapt_cache() {
     } catch (e) { }
 }
 
-// redirect to login page on logout button click
-function logout_on_click() {
-    if (F7_device == 'ios') {
-        var user_choice = true;
+// Fresh read-only queue counts, shared by Home upload status and logout.
+function get_pending_upload_counts(onDone, forLogout) {
+    var queues = {
+        tasks: 'task_master where flag = 1 or flag = 3',
+        trips: 'lat_plug where issend = 0', videos: 'video where issend_track = 0',
+        files: 'f_master where flag = 0', photos: 'p_master where flag = 0'
+    };
+    if (forLogout) queues.history = 'task_master_history where flag = 1';
+    var settled = false;
+    var timer = setTimeout(function () { finish(null, false); }, 5000);
+    function finish(row, known) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        var counts = { total: 0, known: known };
+        Object.keys(queues).forEach(function (key) {
+            var n = row && row[key] != null ? Number(row[key]) : NaN;
+            if (!isFinite(n) || n < 0) { counts.known = false; n = 0; }
+            counts[key] = n;
+            counts.total += n;
+        });
+        onDone(counts);
     }
-    else {
+    function read(query, success, failure) {
+        try { cordova.exec(success, failure, 'SqlitePlugin', 'showValues', [{ data: query, p: '1' }]); }
+        catch (error) { failure(); }
+    }
+    function count(known) {
+        if (settled) return;
+        var query = 'select ' + Object.keys(queues).map(function (key) {
+            return '(select count(*) from ' + queues[key] + ') as ' + key;
+        }).join(', ');
+        read(query, function (e) {
+            try { finish(JSON.parse(e)[0], known); }
+            catch (error) { finish(null, false); }
+        }, function () { finish(null, false); });
+    }
+    if (forLogout) {
+        // The learning outbox is created only after the LMS has been used.
+        read("select name from sqlite_master where type = 'table' and name = 'lms_action_queue'", function (e) {
+            try {
+                var tables = JSON.parse(e);
+                if (!Array.isArray(tables)) throw new Error('Invalid queue response');
+                if (tables.length) queues.learning = 'lms_action_queue';
+                count(true);
+            } catch (error) { count(false); }
+        }, function () { count(false); });
+    } else count(true);
+}
+
+function confirm_logout(onConfirm) {
+    if (F7_device == 'ios') { onConfirm(); return; }
+    if (confirm_logout.checking) return;
+    confirm_logout.checking = true;
+    get_pending_upload_counts(function (counts) {
+        confirm_logout.checking = false;
+        var message = 'Are you sure you want to logout?';
+        if (counts.total > 0) message = 'Some data is waiting to sync. Do you want to logout?';
+        else if (!counts.known) message = 'Sync status could not be checked. Do you want to logout?';
         vibrate_device();
-        var user_choice = confirm("Some data may get stuck in upload. Are you sure, you want to logout?");
-    }
-    if (user_choice == true) {
+        if (confirm(message)) onConfirm();
+    }, true);
+}
+
+// Keep the existing logout actions behind the same state-aware confirmation.
+function logout_on_click() {
+    confirm_logout(function () {
         lms_clear_vapt_cache();
         if (typeof HomeDashboard !== 'undefined' && HomeDashboard.destroy) HomeDashboard.destroy();
         changeurl("Login.html");
-    }
+    });
 }
 
-// redirect to login page on logout button click
 function logout_on_click_online() {
-    if (F7_device == 'ios') {
-        var user_choice = true;
-    }
-    else {
-        vibrate_device();
-        var user_choice = confirm("Some data may get stuck in upload. Are you sure, you want to logout?");
-    }
-    if (user_choice == true) {
+    confirm_logout(function () {
         loading();
         var login_obj = [];
         login_obj.push({
@@ -96,7 +145,7 @@ function logout_on_click_online() {
             'otp': ''
         });
         cordova.exec(onsuccess_logout_on_click_online, onfail_logout_on_click_online, 'SqlitePlugin', 'login_detail_plug1', login_obj);
-    }
+    });
 }
 
 function onsuccess_logout_on_click_online(e) {
@@ -109,7 +158,39 @@ function onsuccess_logout_on_click_online(e) {
 
 function onfail_logout_on_click_online(e) {
     loading_hide();
-    alert1("Network Error! Please Check Your Internet Connection!");
+    show_request_failure(e);
+}
+
+// Login and logout share one failure popup and the existing modal styling.
+function show_request_failure(error) {
+    if (typeof error === 'string') {
+        try { error = JSON.parse(error); } catch (ignored) { error = {}; }
+    }
+    error = error || {};
+    var title = 'Server Communication Error';
+    var messages = {
+        offline: 'No internet connection is available. Connect to Wi-Fi or mobile data and try again.',
+        dns: 'Your network could not find the server. Check your connection and try again.',
+        connection: 'The connection to the server was interrupted. Check your connection and try again.',
+        timeout: 'The server connection timed out. Please try again shortly.',
+        tls: 'A secure connection to the server could not be established. Please try again later or contact support.',
+        response: 'The server returned an empty or invalid response. Please try again shortly.'
+    };
+    var message = messages[error.reason] || 'Unable to communicate with the server. Please try again shortly.';
+    if (error.type === 'network') title = 'Network Error';
+    else if (error.type === 'authentication') {
+        title = 'Login Error';
+        message = 'The server\'s sign-in confirmation could not be verified. Please try again.';
+    } else if (error.type === 'request') {
+        title = 'Request Error';
+        message = 'The request could not be completed. Please try again.';
+    }
+    var status = Number(error.httpStatus);
+    if (error.reason === 'http' && status >= 100 && status <= 599) {
+        message = 'The server could not complete the request (HTTP ' + status + '). Please try again shortly.';
+    }
+    if (typeof myApp !== 'undefined' && myApp.alert) myApp.alert(message, title);
+    else alert1(title + '\n' + message);
 }
 
 
@@ -122,7 +203,7 @@ if (typeof AppLoader === 'undefined' && document.readyState === 'loading') {
     document.write('<link href="css/app_loader.css" rel="stylesheet" /><script src="EFSE_Js/app_loader.js"><\/script>');
 }
 // Likewise the top bar's line icons (css/topbar_icons.css).
-if (document.readyState === 'loading') document.write('<link href="css/topbar_icons.css" rel="stylesheet" />');
+if (document.readyState === 'loading') document.write('<link href="css/topbar_icons.css" rel="stylesheet" /><link href="css/shared_listing.css" rel="stylesheet" /><script src="EFSE_Js/shared_listing.js"><\/script>');
 
 var loading_timer;
 function loading() {
@@ -232,11 +313,17 @@ function back_button(page) {
     var task_create_popup = $('.popup-new-task-create.modal-in:visible');
     var pinch_zoom_popup = $('.pinch-zoom-container:visible');
     var safety_passport_popup = $('.popup-safety-passport:visible');
+    var profile_popup = $('.popup-profile.modal-in:visible');
+    var privacy_popup = $('.popup-privacy-policy.modal-in:visible');
 
     if (popups.length > 0) {
         // profile photo from profile menu popup is open
         myApp.closeModal('.photo-browser-popup.modal-in');
         $('.photo-browser-popup').hide();
+        return false;
+    }
+    else if (privacy_popup.length > 0) {
+        close_info_popup('.popup-privacy-policy');
         return false;
     }
     else if (cmnt_popup.length > 0) {
@@ -278,8 +365,11 @@ function back_button(page) {
     }
     else if (safety_passport_popup.length > 0) {
         // safety passport popup is open
-        myApp.closeModal('.popup-safety-passport.modal-in');
-        $('.popup-safety-passport').hide();
+        close_info_popup('.popup-safety-passport');
+        return false;
+    }
+    else if (profile_popup.length > 0) {
+        close_my_profile();
         return false;
     }
     else {
@@ -541,7 +631,7 @@ function back_button(page) {
             var user_choice = true;
             if (form_has_changed == "true") {
                 //vibrate_device();
-                //user_choice = confirm("Your changes are not saved. Are you sure, you want to go back?");
+                //user_choice = confirm("Discard unsaved changes?");
 
                 var company_id = JSON.parse(storage.getItem('company_id'));
                 if (company_id == 157) {
@@ -555,7 +645,7 @@ function back_button(page) {
                 }
                 else {
                     // found no auto save button
-                    user_choice = confirm("Your changes are not saved. Are you sure, you want to go ahead?");
+                    user_choice = confirm("Discard unsaved changes?");
                     if (user_choice == false) {
                         loading_hide();
                     }
@@ -665,7 +755,7 @@ function back_button(page) {
                 }
                 else {
                     vibrate_device();
-                    user_choice = confirm("Your changes are not saved. Are you sure, you want to go back?");
+                    user_choice = confirm("Discard unsaved changes?");
                 }
             }
             if (user_choice == true) {
@@ -811,6 +901,11 @@ function disable_back_button() {
 }
 
 // My Profile Start
+function close_my_profile() {
+    myApp.closeModal('.popup-profile');
+    $('.popup-profile').hide();
+}
+
 function get_my_profile_details_F7() {
     $('#chartContainer').empty();
     myApp.popup('.popup-profile');
@@ -1054,14 +1149,12 @@ function get_blank_checksheet_profile(user_data, safety_passport) {
 
 function build_user_table(user_data) {
 
-    var detail_str = '<tr><th colspan="2">User Info</th></tr>';
+    var detail_str = '';
 
     user_language = localStorage.getItem("user_language");
     if (user_language == "" || user_language == null || user_language == undefined) {
         user_language = "en";
     }
-
-    detail_str += '<tr><td>Preferred Language</td><td id="pro_language">' + languages[user_language] +'</td></tr>';
 
     var itemObj = new MKCheckItem();
 
@@ -1221,7 +1314,67 @@ function build_user_table(user_data) {
 
     $("#profile_user_detail").empty();
     $("#profile_user_detail").html(detail_str);
+    arrange_my_profile_rows();
     $('#btn_update_profile').show();
+}
+
+
+// Display labels only; keep server keys, identifiers and answers unchanged.
+function profile_label(label) {
+    var labels = {
+        preferredlanguage: 'Preferred language', safetypassportid: 'Safety passport ID',
+        username: 'Username', fullname: 'Full name', rolelist: 'Role list',
+        circlemap: 'Circle map', vendorname: 'Vendor name',
+        emergencycontactnumber: 'Emergency contact number', bloodgroup: 'Blood group',
+        emailid: 'Email address', contactno: 'Contact number',
+        locationcluster: 'Location / cluster', imeinumber: 'IMEI number',
+        jobtitle: 'Job title', function: 'Function', smartphone: 'Smartphone',
+        osversion: 'Android version', brand: 'Brand', model: 'Model',
+        arcore: 'ARCore', accelerometer: 'Accelerometer', gyroscope: 'Gyroscope'
+    };
+    return labels[String(label).toLowerCase().replace(/[^a-z0-9]/g, '')] || label;
+}
+
+// Reuse the existing rendered values, including links and nested array tables.
+function arrange_my_profile_rows() {
+    var work = document.getElementById('profile_user_detail');
+    var contact = document.getElementById('profile_contact_detail');
+    if (!work || !contact) return;
+    contact.innerHTML = '';
+    var body = contact.createTBody();
+    var device = document.getElementById('tbl_deviceInfo');
+    $(device).find('tr.profile-user-device').remove();
+    var deviceBody = device && (device.tBodies[0] || device.createTBody());
+    $('#profile_full_name').empty();
+    Array.from(work.rows).forEach(function (row) {
+        if (row.cells.length !== 2) return;
+        var label = row.cells[0].textContent.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        var value = row.cells[1].textContent.trim();
+        row.cells[0].textContent = profile_label(row.cells[0].textContent.trim());
+        if (label === 'smartphone' && /^(yes|no|true|false)$/i.test(value)) {
+            row.cells[1].textContent = /^(yes|true)$/i.test(value) ? 'Yes' : 'No';
+        }
+        if (label === 'preferredlanguage') {
+            row.remove();
+        } else if (label === 'fullname' && value) {
+            $('#profile_full_name').text(value);
+            row.remove();
+        } else if (label === 'username' && value === $('#lblusername_my').text().trim()) {
+            row.remove();
+        } else if (deviceBody && /^(imeinumber|smartphone)$/.test(label)) {
+            row.classList.add('profile-user-device');
+            deviceBody.appendChild(row);
+        } else if (/contact|phone|mobile|email|blood|passport/.test(label)) {
+            body.appendChild(row);
+        }
+    });
+    var languageRow = body.insertRow();
+    languageRow.insertCell().textContent = 'Preferred language';
+    var languageCell = languageRow.insertCell();
+    languageCell.id = 'pro_language';
+    languageCell.textContent = languages[user_language] || languages.en;
+    $('#profile_work_card').toggle(work.rows.length > 0);
+    $('#profile_contact_card').toggle(contact.rows.length > 0);
 }
 
 update_profile = () => {
@@ -3959,8 +4112,26 @@ scroll_to_bottom = (t_div_obj) => {
     }, 500);
 }
 
+// These pages return to the existing form or Settings panel that opened them.
+function open_info_popup(selector) {
+    var popup = $(selector);
+    if (!popup.hasClass('modal-in')) {
+        popup.data('return-to-settings', $('.panel-left.active:visible').length > 0);
+    }
+    myApp.popup(selector);
+}
+
+function close_info_popup(selector) {
+    var popup = $(selector);
+    var returnToSettings = popup.data('return-to-settings');
+    popup.removeData('return-to-settings');
+    myApp.closeModal(selector);
+    popup.hide();
+    if (returnToSettings) myApp.openPanel('left');
+}
+
 function get_safety_passport() {
-    myApp.popup('.popup-safety-passport');
+    open_info_popup('.popup-safety-passport');
 
     // dynamic url in case domain is changed in future - mk - 25022026
     $(".popup-safety-passport .passport-card img").not("#img_sp_profilephoto").each(function () {
@@ -4335,17 +4506,7 @@ function open_pinch_zoom_div_safety_passport() {
 
             const imgSrc = canvas.toDataURL('image/png');
 
-            $(".pinch-zoom-container").remove();
-            $(".pinch_close").remove();
-            let zoom_str = '<div class="pinch-zoom"><i id="pinch_close" class="fa fa-times-circle text-danger" onclick="close_zoom()"></i><img src = "' + imgSrc + '" /></div>';
-            $("body").prepend(zoom_str);
-
-            new PinchZoom.default(document.querySelector('.pinch-zoom'), {
-                minZoom: 1,
-                maxZoom: 4
-            });
-
-            $(".pinch-zoom-container").css({ "z-index": "11001", "background": "white" });
+            open_pinch_zoom_div(imgSrc);
 
         });
     }
@@ -4354,9 +4515,41 @@ function open_pinch_zoom_div_safety_passport() {
 
 }
 
+var imageViewerZoom = null;
+function open_pinch_zoom_div(t_src) {
+    if (imageViewerZoom) imageViewerZoom.destroy();
+    $(".pinch-zoom-container").remove();
+    $(".pinch_close").remove();
+    let zoom_str = '<div class="pinch-zoom"><button id="pinch_close" type="button" aria-label="Back" onclick="close_zoom()"><span class="app-back-icon" aria-hidden="true"></span></button><img src = "' + t_src + '" /></div>';
+    $("body").prepend(zoom_str);
+    try {
+        cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'imageViewer',
+            [true, '#080C18']);
+    } catch (e) { }
+
+    imageViewerZoom = new PinchZoom.default(document.querySelector('.pinch-zoom'), {
+        minZoom: 1,
+        maxZoom: 4
+    });
+
+    let image = $(".pinch-zoom img");
+    function centerImage() {
+        let middle_height = ($(".pinch-zoom-container").height() - image.height()) / 2;
+        image.css({ 'position': 'absolute', 'top': middle_height + 'px' });
+    }
+    image.on('load', centerImage);
+    if (image[0].complete) centerImage();
+
+}
+
 function close_zoom() {
+    if (imageViewerZoom) imageViewerZoom.destroy();
+    imageViewerZoom = null;
     $(".pinch-zoom-container").remove();
     $(".pinch-zoom").hide();
+    try {
+        cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'imageViewer', [false]);
+    } catch (e) { }
 }
 
 // for safety passport view from profile menu
@@ -4401,7 +4594,7 @@ function isCurrentTimeInSlot(startTime, hoursToAdd) {
 // privacy policy
 function get_privacy_policy() {
 
-    myApp.popup('.popup-privacy-policy');
+    open_info_popup('.popup-privacy-policy');
 
     let user_consent = localStorage.getItem("user_consent");
     if (user_consent != "true") {
@@ -4480,9 +4673,9 @@ function create_table_by_device_info() {
 
         var table = $("#tbl_deviceInfo");
 
+        var profileRows = table.find('tr.profile-user-device').detach();
         $(table).empty();
 
-        $("#tbl_deviceInfo").append("<tr><th colspan='2'>Device Info</th></tr>");
 
         //var table = $(table);
         //$(table).addClass('mk_table');
@@ -4500,6 +4693,20 @@ function create_table_by_device_info() {
 
                 }
                 else {
+                    var displayLabel = profile_label(ind_cell);
+                    if (/^(ACCELEROMETER|GYROSCOPE)$/.test(ind_cell) && /^(true|false)$/i.test(String(val_cell))) {
+                        val_cell = String(val_cell).toLowerCase() === 'true' ? 'Yes' : 'No';
+                    } else if (ind_cell === 'ARCORE') {
+                        val_cell = {
+                            SUPPORTED_INSTALLED: 'Supported, installed',
+                            SUPPORTED_APK_TOO_OLD: 'Update required',
+                            SUPPORTED_NOT_INSTALLED: 'Supported, not installed',
+                            UNSUPPORTED_DEVICE_NOT_CAPABLE: 'Not supported',
+                            UNKNOWN_CHECKING: 'Checking', UNKNOWN_TIMED_OUT: 'Check timed out', UNKNOWN_ERROR: 'Unavailable'
+                        }[val_cell] || val_cell;
+                    } else if ((ind_cell === 'BRAND' || ind_cell === 'MODEL') && typeof val_cell === 'string') {
+                        val_cell = val_cell.charAt(0).toUpperCase() + val_cell.slice(1);
+                    }
                     var td_val = Array.isArray(val_cell);
                     if (td_val == true) {
                         // array
@@ -4511,14 +4718,14 @@ function create_table_by_device_info() {
                             var str = "build_innert_table('" + ind_cell + "')";
                             var param_str = "hide_plus_btn('" + ind_cell + "')";
 
-                            col = $("<tr><td>" + ind_cell + "</td><td style='word-wrap: break-word;overflow:auto;width: 227px;'><table id='tbl_" + ind_cell + "' class='mk_table'></table><button type='button' class='fn_btn' onclick=" + str + " value='Add Push Array' id='plus_" + ind_cell + "'><img src='Images/EF_Images/add_new_rdo.png' style='height: 20px; width: 20px;'></button><button type='button' class='fn_btn' onclick=" + param_str + " style='display: none; margin-left:1px;margin-top: 3px;' value='Add Push Array' id='minus_" + ind_cell + "''><i class='fa fa-minus-circle' aria-hidden='true'></i></button><input type='hidden'id='hdn_" + ind_cell + "' value='" + JSON.stringify(json1) + "'></td></tr>");
+                            col = $("<tr><td>" + displayLabel + "</td><td style='word-wrap: break-word;overflow:auto;width: 227px;'><table id='tbl_" + ind_cell + "' class='mk_table'></table><button type='button' class='fn_btn' onclick=" + str + " value='Add Push Array' id='plus_" + ind_cell + "'><img src='Images/EF_Images/add_new_rdo.png' style='height: 20px; width: 20px;'></button><button type='button' class='fn_btn' onclick=" + param_str + " style='display: none; margin-left:1px;margin-top: 3px;' value='Add Push Array' id='minus_" + ind_cell + "''><i class='fa fa-minus-circle' aria-hidden='true'></i></button><input type='hidden'id='hdn_" + ind_cell + "' value='" + JSON.stringify(json1) + "'></td></tr>");
                         } else {
                             //Not Json
                             if (val_cell.length == 0) {
-                                col = $("<tr><td>" + ind_cell + "</td><td></td></tr>");
+                                col = $("<tr><td>" + displayLabel + "</td><td></td></tr>");
                             }
                             else {
-                                col = $("<tr><td>" + ind_cell + "</td><td style='word-wrap: break-word;overflow:auto;width: 227px;'>" + val_cell.toString() + "</td></tr>");
+                                col = $("<tr><td>" + displayLabel + "</td><td style='word-wrap: break-word;overflow:auto;width: 227px;'>" + val_cell.toString() + "</td></tr>");
                             }
                         }
                         table.append(col);
@@ -4526,10 +4733,10 @@ function create_table_by_device_info() {
                     } else {
                         // string
                         if (val_cell == "" || val_cell == null || val_cell == undefined) {
-                            col = $("<tr><td>" + ind_cell + "</td><td></td></tr>");
+                            col = $("<tr><td>" + displayLabel + "</td><td></td></tr>");
                         }
                         else {
-                            col = $("<tr><td>" + ind_cell + "</td><td style='word-wrap: break-word;overflow:auto;width: 227px;'>" + val_cell + "</td></tr>");
+                            col = $("<tr><td>" + displayLabel + "</td><td style='word-wrap: break-word;overflow:auto;width: 227px;'>" + val_cell + "</td></tr>");
                             table.append(col);
                         }
                     }
@@ -4539,6 +4746,7 @@ function create_table_by_device_info() {
             // display only first row details only (mobile info)
             return false;
         })
+        table.append(profileRows);
     }
 
 }
@@ -4600,3 +4808,25 @@ function isEmpty(obj) {
         Object.keys(obj).length === 0
     );
 }
+
+// Shared negative-action variant; callbacks and native disabled states are retained.
+(function () {
+    var buttons = '.button, .modal-button, button, input[type="button"], a.link, .swipeout-actions-right a';
+    function style(root) {
+        var nodes = root.matches && root.matches(buttons) ? [root] : [];
+        if (root.querySelectorAll) nodes = nodes.concat(Array.prototype.slice.call(root.querySelectorAll(buttons)));
+        nodes.forEach(function (button) {
+            if (button.closest('.searchbar') || button.hasAttribute('data-action-positive')) return;
+            var label = (button.value || button.textContent || button.getAttribute('aria-label') || '').trim();
+            if (!/^(cancel|delete|remove|reject|discard)\b/i.test(label)) return;
+            button.classList.add('button-negative');
+            if (!button.closest('.swipeout-actions-right')) button.classList.add('button', 'button-fill');
+        });
+    }
+    function init() {
+        style(document.body);
+        new MutationObserver(function (records) { records.forEach(function (record) { record.addedNodes.forEach(function (node) { if (node.nodeType === 1) style(node); else if (node.parentElement && node.parentElement.matches(buttons)) style(node.parentElement); }); }); })
+            .observe(document.body, {childList: true, subtree: true});
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once: true}); else init();
+})();

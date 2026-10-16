@@ -50,9 +50,12 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, AutofocusTo
     float mDist = 0;
     private int previewHeight;
     private int previewWidth;
+    private int displayAngle = 90;
+    private boolean mirrored = true;
 
     Preview(Context context) {
         super(context);
+        setLayoutParams(new android.widget.FrameLayout.LayoutParams(-1, -1, android.view.Gravity.CENTER));
 
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
@@ -68,7 +71,8 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, AutofocusTo
         // The Surface has been created, acquire the camera and tell it where
         // to draw.
         if (camera == null) {
-            camera = Camera.open(cameraviewid);
+            cam_id = findCamera(cameraviewid == 1);
+            camera = Camera.open(cam_id);
             Parameters p = camera.getParameters();
             int k = b.getFlash();
             set_flash(k);
@@ -78,6 +82,8 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, AutofocusTo
 
         try {
             camera.setPreviewDisplay(holder);
+            applyMirror();
+            if (acti instanceof MakePhotoActivity) ((MakePhotoActivity) acti).onCameraReady(isFrontCamera());
 
 //            camera.setPreviewCallback(new PreviewCallback() {
 //                public void onPreviewFrame(byte[] data, Camera arg1) {
@@ -94,6 +100,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, AutofocusTo
     //To set flash
     void set_flash(int i) {
         Parameters p = camera.getParameters();
+        if (p.getSupportedFlashModes() == null || p.getSupportedFlashModes().isEmpty()) return;
 
         List<String> supportedFlashModes = p.getSupportedFlashModes();
         if (supportedFlashModes == null
@@ -118,6 +125,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, AutofocusTo
 
 
     public void surfaceDestroyed(SurfaceHolder holder) {
+        if (camera == null) return;
         // Surface will be destroyed when we return, so stop the preview.
         // Because the CameraDevice object is not a shared resource, it's very
         // important to release it when the activity is paused.
@@ -129,176 +137,57 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, AutofocusTo
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-        // Now that the size is known, set up the camera parameters and begin
-        // the preview.
-        camera.stopPreview();
-
-        Parameters parameters = camera.getParameters();
-        List<Camera.Size> size = parameters.getSupportedPictureSizes();
-        int max_width = Integer.MAX_VALUE;
-        int max_height = Integer.MAX_VALUE;
-
-
-        int max = 0;
-        int index = 0;
-
-        int previewMax = 0;
-        int previewIndex = 0;
-
-        for (int i = 0; i < size.size(); i++) {
-            Camera.Size s = size.get(i);
-
-            float heightR = size.get(i).width;
-            float widthR = size.get(i).height;
-
-            float ratio = heightR / widthR;
-
-            String s2 = String.format("%.2f", ratio);
-            Log.d("##PREVIEWRATIO", String.valueOf(s2));
-
-            Size deviceReolution = MakePhotoActivity.deviceRealSize;
-
-            float deviceRatio;
-            deviceRatio = (float) deviceReolution.getHeight() / (float) deviceReolution.getWidth();
-            String deviRatio = String.format("%.2f", deviceRatio);
-
-            if (s.width < 2000) {
-//                if (s2.equalsIgnoreCase("1.33") || s2.equalsIgnoreCase("1.78")) {
-                if (s2.equalsIgnoreCase("1.78")) {
-                    if (s.width > max) {
-                        index = i;
-                        max = s.width;
-                        max_width = size.get(i).width;
-                        max_height = size.get(i).height;
-                        LogUtils.photoLogFile("##DeviceRatio: " + s2 + " ##PREVIEWHEGHT: " + "Height :" + max_height + " Width:" + max_width, Preview.class.getSimpleName() + "deviRatio 1");
-                    }
-                }
-//                if (s2.equalsIgnoreCase(deviRatio)) {
-//
-//                    if (previewWidth == 0) {
-//                        previewWidth = size.get(i).width;
-//                        previewHeight = size.get(i).height;
-//                        Log.d("##PREVIEWSIZE", "Height :" + previewHeight + " Width:" + previewWidth);
-//                    }
-//                }
-            }
-        }
-
-        if (previewWidth == 0) {
-            previewWidth = max_width;
-            previewHeight = max_height;
-        }
-
-        parameters.setPictureSize(size.get(index).width, size.get(index).height);
-
-
-        MySharedPreferences editor = sqlitewraper.getSecureShared("Size");
-        editor.putInt("max_width", max_width);
-        editor.putInt("max_height", max_height);
-        editor.commit();
-
-
+        if (camera == null) return;
         try {
-            parameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
-            parameters.setPreviewSize(previewWidth, previewHeight);
-            setCameraDisplayOrientation(acti, cam_id, camera);
-            parameters.setPictureSize(max_width, max_height);
-            final Handler handler = new Handler();
-            handler.postDelayed(() -> {
-                try {
-                    handleFocus(parameters);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }, 1000);
-        } catch (Exception e) {
-            LogUtils.photoLogFile("Exception: " + e.toString(), Preview.class.getSimpleName());
-
-            for (int i = 0; i < size.size(); i++) {
-                Camera.Size s = size.get(i);
-//          int size1 = s.height * s.width;
-
-                float heightR = size.get(i).width;
-                float widthR = size.get(i).height;
-
-                float ratio = heightR / widthR;
-
-                String s2 = String.format("%.2f", ratio);
-                Log.d("##PREVIEWRATIO", String.valueOf(s2));
-
-                Size deviceReolution = MakePhotoActivity.deviceRealSize;
-
-                float deviceRatio;
-                deviceRatio = (float) deviceReolution.getHeight() / (float) deviceReolution.getWidth();
-                String deviRatio = String.format("%.2f", deviceRatio);
-
-                if (s.width < 2000) {
-
-//                    if (s2.equalsIgnoreCase("1.33") || s2.equalsIgnoreCase("1.78")) {
-                    if (s2.equalsIgnoreCase("1.78")) {
-
-                        if (s.width > max) {
-                            index = i;
-                            max = s.width;
-                            max_width = size.get(i).width;
-                            max_height = size.get(i).height;
-                            Log.d("##PREVIEWHEGHT", "Height :" + max_height + " Width:" + max_width);
-                        }
-                    }
-//                    if (s2.equalsIgnoreCase(deviRatio)) {
-//
-//                        if (previewWidth == 0) {
-//                            previewWidth = size.get(i).width;
-//                            previewHeight = size.get(i).height;
-//                            Log.d("##PREVIEWSIZE", "Height :" + previewHeight + " Width:" + previewWidth);
-//                        }
-//                    }
-                }
-            }
-
-            if (previewWidth == 0) {
-                previewWidth = max_width;
-                previewHeight = max_height;
-            }
-
-            parameters.setPictureSize(size.get(index).width, size.get(index).height);
-
-            MySharedPreferences editor1 = sqlitewraper.getSecureShared("Size");
-            editor1.putInt("max_width", max_width);
-            editor1.putInt("max_height", max_height);
-            editor1.commit();
-
-
-            try {
-                parameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
-                parameters.setPreviewSize(max_width, max_height);
-                setCameraDisplayOrientation(acti, cam_id, camera);
-                parameters.setPictureSize(max_width, max_height);
-                final Handler handler = new Handler();
-                handler.postDelayed(() -> {
-                    try {
-                        handleFocus(parameters);
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
-                }, 1000);
-            } catch (Exception e1) {
-                LogUtils.photoLogFile("Exception: " + e.toString(), Preview.class.getSimpleName());
-
-            }
+            camera.stopPreview();
+            Parameters parameters = camera.getParameters();
+            Camera.CameraInfo info = new Camera.CameraInfo(); Camera.getCameraInfo(cam_id, info);
+            int degrees = acti.getWindowManager().getDefaultDisplay().getRotation() * 90;
+            displayAngle = com.sky.atc.easyformse.camera.CameraGeometry.previewRotation(info.orientation, degrees, isFrontCamera());
+            List<Camera.Size> pictures = parameters.getSupportedPictureSizes();
+            Camera.Size sensor = pictures.get(0);
+            for(Camera.Size candidate:pictures) if((long)candidate.width*candidate.height > (long)sensor.width*sensor.height) sensor=candidate;
+            Camera.Size picture = chooseSize(pictures, (float)sensor.width/sensor.height, 2000);
+            Camera.Size stream = chooseSize(parameters.getSupportedPreviewSizes(), (float)picture.width/picture.height, 1920);
+            previewWidth = stream.width; previewHeight = stream.height;
+            parameters.setPreviewSize(stream.width, stream.height);
+            parameters.setPictureSize(picture.width, picture.height);
+            parameters.setRotation(com.sky.atc.easyformse.camera.CameraGeometry.jpegRotation(info.orientation, degrees, isFrontCamera()));
+            List<String> modes = parameters.getSupportedFocusModes();
+            if (modes != null && modes.contains(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) parameters.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+            camera.setParameters(parameters); camera.setDisplayOrientation(displayAngle);
+            MySharedPreferences prefs = sqlitewraper.getSecureShared("Size");
+            prefs.putInt("max_width", picture.width); prefs.putInt("max_height", picture.height); prefs.commit();
+            requestLayout(); applyMirror(); camera.startPreview();
+        } catch (RuntimeException error) {
+            LogUtils.photoLogFile("Unable to configure preview: " + error.getClass().getSimpleName(), TAG);
         }
-
-        try {
-            camera.setParameters(parameters);
-        } catch (Exception e) {
-            LogUtils.photoLogFile("Exception: " + e.toString(), Preview.class.getSimpleName() + "set Parametesrs");
-
+    }
+    private Camera.Size chooseSize(List<Camera.Size> sizes, float ratio, int maxWidth) {
+        Camera.Size best = null; double score = Double.MAX_VALUE;
+        boolean bounded = false; for(Camera.Size size:sizes) if(size.width <= maxWidth) bounded = true;
+        for(Camera.Size size:sizes) {
+            if(bounded && size.width > maxWidth) continue;
+            double candidate = Math.abs((double)size.width/size.height-ratio);
+            if(best==null || candidate < score-0.0001 || (Math.abs(candidate-score)<0.0001 && (long)size.width*size.height > (long)best.width*best.height)) { best=size; score=candidate; }
         }
-        camera.startPreview();
+        return best;
+    }
+    private int findCamera(boolean front) {
+        for(int id=0;id<Camera.getNumberOfCameras();id++) { Camera.CameraInfo info=new Camera.CameraInfo(); Camera.getCameraInfo(id,info); if((info.facing==Camera.CameraInfo.CAMERA_FACING_FRONT)==front) return id; }
+        return 0;
+    }
+    boolean isFrontCamera() { Camera.CameraInfo info=new Camera.CameraInfo(); Camera.getCameraInfo(cam_id,info); return info.facing==Camera.CameraInfo.CAMERA_FACING_FRONT; }
+    void setMirrored(boolean value) { mirrored=value; applyMirror(); }
+    private void applyMirror() { setScaleX(com.sky.atc.easyformse.camera.CameraGeometry.needsLegacyFlip(isFrontCamera(),mirrored) ? -1 : 1); }
+    @Override protected void onMeasure(int widthSpec,int heightSpec) {
+        int width=MeasureSpec.getSize(widthSpec), height=MeasureSpec.getSize(heightSpec);
+        if(width<=0) { super.onMeasure(widthSpec,heightSpec); return; }
+        if(height<=0) height=width*2;
+        int[] fit=com.sky.atc.easyformse.camera.CameraGeometry.fit(width,height,previewWidth>0?previewWidth:1920,previewHeight>0?previewHeight:1080,displayAngle);
+        setMeasuredDimension(fit[0],fit[1]);
     }
 
-
-    //to set display orientation
     public static void setCameraDisplayOrientation(Activity activity,
                                                    int cameraId, Camera camera) {
         Camera.CameraInfo info = new Camera.CameraInfo();

@@ -435,7 +435,7 @@ MkControls.prototype.build_type_3_dropdown = function () {
             var ico_str = 'fa-ban';
         }
         else {
-            var ico_str = 'fa-chevron-circle-down';
+            var ico_str = 'fa-chevron-down';
         }
         str += '</select><i class="fa ' + ico_str + ' form-ico" ' + this.enable_disable + ' style="margin-left:-12%"></i></div>';
         return str;
@@ -602,7 +602,7 @@ MkControls.prototype.build_type_7_camera = function () {
         }
 
         var str = '';
-        str += '<div class="item-input-field form-div" ' + this.enable_disable + ' style="text-align:center">';
+        str += '<div class="item-input-field form-div photo-field" ' + this.enable_disable + ' style="text-align:center">';
 
         var onclick_str = "onclick = '" + this.param + "'";
         var onerror_str = "onerror = '" + this.param1 + "'";
@@ -694,7 +694,7 @@ MkControls.prototype.build_type_9_sign = function () {
         var onclick_str = "onclick = '" + this.param + "'";
         var onerror_str = "onerror = '" + this.param1 + "'";
 
-        str += '<div class="item-input item-input-field form-div" ' + this.enable_disable + '>';
+        str += '<div class="item-input item-input-field form-div photo-field" ' + this.enable_disable + '>';
 
         str += '<img src="' + this.src_str + '" id="sign_' + this.new_id
             + '" ' + onclick_str + ' ' + onerror_str + ' style="height:50px; width:50px; margin:7px 7px 7px 0px; border-radius: 10px" name="' + this.name + '" ' + this.enable_disable + ' />';
@@ -883,10 +883,10 @@ MkControls.prototype.build_type_20_search = function () {
 
         if (qr_code == 'true') {
             if (is_barcode == true) {
-                var qr_ico_str = '<i id="btn20_QR_' + this.new_id + '" class="fa form-ico fa-barcode force_show" ' + this.enable_disable + ' style="margin-left:6px" onclick="' + this.param_qr + '" ></i>';
+                var qr_ico_str = '<i id="btn20_QR_' + this.new_id + '" class="fa form-ico fa-barcode selection-scanner force_show" ' + this.enable_disable + ' style="margin-left:6px" onclick="' + this.param_qr + '" ></i>';
             }
             else {
-                var qr_ico_str = '<i id="btn20_QR_' + this.new_id + '" class="fa form-ico fa-qrcode force_show" ' + this.enable_disable + ' style="margin-left:6px" onclick="' + this.param_qr + '" ></i>';
+                var qr_ico_str = '<i id="btn20_QR_' + this.new_id + '" class="fa form-ico fa-qrcode selection-scanner force_show" ' + this.enable_disable + ' style="margin-left:6px" onclick="' + this.param_qr + '" ></i>';
             }
         }
         else {
@@ -901,17 +901,17 @@ MkControls.prototype.build_type_20_search = function () {
             }
         }
 
-        str += '<div class="item-input item-input-field form-div" ' + this.enable_disable + '>';
+        str += '<div class="item-input item-input-field form-div selection-field" ' + this.enable_disable + '>';
         //str += '<input type="text" value="' + ans_value + '" title="' + ans_id + '" class="form-ele-med" id="search_item_name_Search_'
-        //        + this.new_id + '" placeholder="Enter search value..." name="' + name + '" onchange="' + this.clickcheck + '" ' + this.enable_disable
+        //        + this.new_id + '" placeholder="Enter search value..." name="' + name + '" ' + (qr_code == 'true' ? 'onclick="' + this.param + '"' : '') + ' onchange="' + this.clickcheck + '" ' + this.enable_disable
         //        + '>' + qr_ico_str + '<i id="btn20_Search_'
         //        + this.new_id + '" class="fa ' + ico_str + ' form-ico" style="margin-top:6px" onclick="' + this.param1 + '" ' + this.enable_disable + '></i>';
         str += '<input type="text" value="' + ans_value + '" title="' + ans_id + '" class="form-ele-med" style="width:74% !important" id="search_item_name_Search_'
-            + this.new_id + '" placeholder="Enter search value..." name="' + name + '" onchange="' + this.clickcheck + '" ' + this.enable_disable
-            + '>' + add_customer_str + qr_ico_str + '<i id="btn20_Search_'
-            + this.new_id + '" class="fa ' + ico_str + ' form-ico" style="margin-top:6px" onclick="' + this.param1 + '" ' + this.enable_disable + '></i>';
+            + this.new_id + '" placeholder="Enter search value..." name="' + name + '" ' + (qr_code == 'true' ? 'onclick="' + this.param + '"' : '') + ' onchange="' + this.clickcheck + '" ' + this.enable_disable
+            + '>' + (qr_code == 'true' ? qr_ico_str : '<i id="btn20_Search_'
+            + this.new_id + '" class="fa ' + ico_str + ' form-ico" onclick="' + this.param1 + '" ' + this.enable_disable + '></i>');
 
-        str += '</div>';
+        str += '</div>' + add_customer_str;
 
         // Adding UL List below search box //
         str += '<ul id="product_list_' + this.new_id
@@ -967,7 +967,7 @@ MkControls.prototype.build_type_21_s_search = function () {
             var ico_str = 'fa-search';
         }
 
-        str += '<div class="item-input item-input-field form-div" ' + this.enable_disable + '>';
+        str += '<div class="item-input item-input-field form-div selection-field" ' + this.enable_disable + '>';
         str += '<input type="text" value="' + ans_str + '" class="form-ele" id="search_item_name_S_Search_' + this.new_id
             + '" placeholder="Enter search value..." name="' + name + '" onchange="' + this.clickcheck + '" ' + this.enable_disable
             + '><i id="btn21_Search_' + this.new_id + '" class="fa ' + ico_str + ' form-ico" onclick="' + this.param1 + '" ' + this.enable_disable + '></i>';
@@ -982,12 +982,13 @@ MkControls.prototype.build_type_21_s_search = function () {
 MkControls.prototype.build_type_22_invoice = function () {
     try {
         var str = '';
-        str += '<div class="item-input item-input-field form-div" ' + this.enable_disable + ' style="' + this.display_add_btn + '">';
+        str += '<div class="item-input item-input-field form-div array-field" ' + this.enable_disable + ' style="' + this.display_add_btn + '">';
         if (this.add_button == "false") { }                      //hide add record button [21102021]
         else {
             str += '<a id="btn_add_row_' + this.new_id + '" onclick="' + this.param
-                + '" style="width:auto;" data-popup=".popup-type22" class="button button-fill button-raised form-btn open-popup" ' + this.enable_disable + '>' + this.btn_text + '</a></div>';
+                + '" style="width:auto;" data-popup=".popup-type22" class="button button-fill button-raised form-btn open-popup" ' + this.enable_disable + '>' + this.btn_text + '</a>';
         }
+        str += '</div>';
         return str;
     }
     catch (e) {
@@ -1324,9 +1325,9 @@ MkControls.prototype.build_type_31_label = function () {
         //str += '<label class="note_type31" style="display:block; width:92%; word-break: break-word; font-size: 15px; font-family: calibri" id="lbl_' + this.new_id + '"><i class="fa fa-info-circle" style="display: inline; font-size: 18px;"></i> ' + this.value + '</label>';
         //str += '<label class="note_type31" style="background-color: #e7f3fe;border: 0.5px solid #2196F3; border-radius: 3px;font-style: italic;padding: 3px 0; display:block; width:92%; word-break: break-word; font-size: 15px; font-family: calibri" id="lbl_' + this.new_id + '"> <i class="fa fa-info-circle" style="display: inline; font-size: 18px; margin: 0 3px; vertical-align: middle;"></i> Please read this Note.</label>';
         //this.value = 'Please read this note. Please read this note. Please read this note. Please read this note. Please read this note.'
-        str += '<table style="width: 100%; background-color: #f7f7d6; border-radius: 10px;"><tr>';
-        str += '<td style="width: 40px;"><img src="images/hint_bulb_info.png" style="height:20px; width:20px;display:inline;vertical-align:middle !important;margin:0px 0px 0px 20px;"/></td>';
-        str += '<td style="text-align: justify;padding: 15px !important;"><label class="note_type31" style="display:block; word-break: break-word; font-size: 13px; font-family: calibri"> ' + this.value + '</label></td>';
+        str += '<table style="width: 100%; background-color: #f7f7d6; border-radius: 10px; border-spacing:0; table-layout:fixed;"><tr>';
+        str += '<td style="width:40px;padding:8px 0;vertical-align:middle;"><img src="images/hint_bulb_info.png" style="height:20px;width:20px;display:block;margin-left:14px;"/></td>';
+        str += '<td style="text-align:left;padding:8px 14px 8px 10px;vertical-align:middle;"><label class="note_type31" style="display:block;word-break:break-word;font-size:13px;line-height:20px;font-family:calibri"> ' + this.value + '</label></td>';
         str += '</tr></table>';
 
         return str;
@@ -1586,7 +1587,7 @@ MkControls.prototype.build_type_40_livelink = function () {
 
         if (doc_type == "image") {
             var str = '';
-            str += '<div class="item-input item-input-field form-div" ' + this.enable_disable + '>';
+            str += '<div class="item-input item-input-field form-div photo-field" ' + this.enable_disable + '>';
             str += '<img src="' + doc_url + '" onclick="get_full_view_image_type40_F7(this)" id="livelink_image_' + this.new_id + '" style="height:50px; width:50px; margin-left: 5px; border-radius: 7px" que_id = "' + this.que_id + '" ' + this.enable_disable + '/>';
             str += '</div>';
         }

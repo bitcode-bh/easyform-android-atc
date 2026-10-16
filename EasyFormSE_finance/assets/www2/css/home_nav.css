@@ -119,7 +119,22 @@
 
 /* Back arrow removed from the Home app bar (hardware back still navigates
    sub-flows via the same back_button() handler). */
-.home-greeting #btn_page_back { display: none !important; }
+body:not(.hh-in-level) .home-greeting #btn_page_back { display: none !important; }
+body.hh-in-level .views .navbar .left.home-greeting #btn_page_back {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    color: #0f1729 !important;
+    font-size: 20px !important;
+}
+body.hh-in-level .views .navbar .left.home-greeting #btn_page_back .icon {
+    color: #0f1729 !important;
+    font-size: 20px !important;
+}
+body.hh-in-level .views .navbar .left.home-greeting .open-panel,
+body.hh-in-level .views .navbar .left.home-greeting .home-greet-text { display: none !important; }
 
 /* The theme label never carries the username here — hide it so the name shown
    beside the avatar isn't duplicated in the (unused) navbar center. */

@@ -937,7 +937,7 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
                                     var margin_right = "margin-right: 14px !important;"
                                 }
 
-                                btn_str += '<a class="button button-fill button-raised cls_fence cls-punchinout" onclick="' + param_btn + '" style="margin: 0;' + margin_right + 'background:grey!important; border-right: 0px !important;display: inline-block;">';
+                                btn_str += '<a class="button button-fill button-raised cls_fence cls-punchinout" onclick="' + param_btn + '" style="margin: 0;' + margin_right + ' border-right: 0px !important;display: inline-block;">';
                                 btn_str += '<i class="fa ' + sb_icon + '" style="font-size: 20px;display: inline-block; color: #fff !important;vertical-align: middle;margin-right: 10px !important;"></i>' + buttons[b].name + '</a>';
                             }
                         }

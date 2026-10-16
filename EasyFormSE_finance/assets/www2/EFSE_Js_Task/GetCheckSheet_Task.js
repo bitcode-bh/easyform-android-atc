@@ -58,6 +58,13 @@ function onsuccess_check_for_notification_task(e) {
         } else {
             // attendance notification exist
             is_attendance_task = 1;
+            var attendanceJson = myArray[0].attendance_json;
+            if (attendanceJson) {
+                var attendance = typeof attendanceJson === 'string' ? JSON.parse(attendanceJson) : attendanceJson;
+                if (Array.isArray(attendance) && attendance[0]) {
+                    localStorage.setItem('AttendanceJson', JSON.stringify(attendance));
+                }
+            }
             var flow_id = myArray[0].flow_id;
             var flow_name = myArray[0].flow_name;
             attendance_photo_url = myArray[0].photo_url;

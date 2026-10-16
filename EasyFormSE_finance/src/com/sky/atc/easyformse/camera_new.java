@@ -57,6 +57,7 @@ public class camera_new extends CordovaPlugin {
     Context c1;
 //	Editor editor;
     String info;
+    private String cameraSiteId = "";
     String max_file_size;
 
     @Override
@@ -68,6 +69,7 @@ public class camera_new extends CordovaPlugin {
             PhotoConstants.originalPhotoList.clear();
         }
         c1 = this.cordova.getActivity();
+        cameraSiteId = args.getJSONObject(0).optString("site_id", "");
         this.callbackContext = callbackContext;
         boolean returnValue = false;
         pref = sqlitewraper.getSecureShared("MyPref");
@@ -498,6 +500,7 @@ public class camera_new extends CordovaPlugin {
                 intent.putExtra("height", height);
                 intent.putExtra("quality", quality);
                 intent.putExtra("info", info);
+                intent.putExtra("site_id", cameraSiteId);
                 intent.putExtra("max_file_size",max_file_size);
                 if (this.cordova != null) {
                     this.cordova.startActivityForResult(this, intent, 121);

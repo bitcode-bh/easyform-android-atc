@@ -1918,6 +1918,10 @@ function updateLoginFail(e) {
 
 //Exit and close application
 function ShowExitDialog() {
+    if ($('.popup-privacy-policy.modal-in:visible').length > 0) {
+        close_info_popup('.popup-privacy-policy');
+        return;
+    }
     // Cordova's backbutton event (this function) fires for ANY visible
     // popover too, not just the OTP popup below -- without these guards,
     // pressing back while Support Info or App Info is open skipped straight
@@ -1963,7 +1967,7 @@ function alertexit(button) {
 function onfail(e) {
     loading_hide();
     myApp.closeModal(".popover-login");
-    alert1("Network Error! Please Check Your Internet Connection!");
+    show_request_failure(e);
 }
 
 //function show_pass(source) {

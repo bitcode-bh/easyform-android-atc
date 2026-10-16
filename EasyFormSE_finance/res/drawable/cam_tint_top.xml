@@ -2,5 +2,5 @@
 <!-- Photo camera: the flat dark tint behind the close button and the stamp
      (time, position, user), the same tint the scanner puts around its window. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#9E080C18"/>
+    <solid android:color="@color/camera_overlay_tint"/>
 </shape>

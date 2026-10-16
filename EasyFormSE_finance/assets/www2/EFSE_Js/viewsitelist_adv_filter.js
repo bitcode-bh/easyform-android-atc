@@ -52,7 +52,7 @@
                     str += "<option value='BETWEEN' name='" + condition + "'>" + condition.replace(/_/g, " ") + "</option>";
                 }
                 str += '</select>';
-                str += '<i class="fa fa-chevron-circle-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
+                str += '<i class="fa fa-chevron-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
                 str += '</div>';
 
                 str += '<label id="lbl_tp_info_' + index + '" style="font-weight:bold" style="display: none;"></label>';
@@ -94,7 +94,7 @@
                     str += "<option value='" + condition_val + "'>" + condition.replace(/_/g, " ") + "</option>";
                 }
                 str += '</select>';
-                str += '<i class="fa fa-chevron-circle-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
+                str += '<i class="fa fa-chevron-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
                 str += '</div>';
 
                 str += '<div class="item-input item-input-field form-div">';
@@ -126,7 +126,7 @@
                     str += "<option value='" + condition_val + "'>" + condition.replace(/_/g, " ") + "</option>";
                 }
                 str += '</select>';
-                str += '<i class="fa fa-chevron-circle-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
+                str += '<i class="fa fa-chevron-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
                 str += '</div>';
 
                 var multiselect_onchange = "display_selected_opt_ddl('" + index + "', this)";
@@ -153,7 +153,7 @@
                 }
 
                 str += '</select>';
-                str += '<i class="fa fa-chevron-circle-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
+                str += '<i class="fa fa-chevron-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
                 str += '</div>';
                 str += '<div id="fltr_div_multiselect_' + index + '" class="fltr-div-multiselect-outer"></div>';
                 str += '</div>';
@@ -208,7 +208,7 @@
                     str += "<option value='" + condition_val + "'>" + condition.replace(/_/g, " ") + "</option>";
                 }
                 str += '</select>';
-                str += '<i class="fa fa-chevron-circle-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
+                str += '<i class="fa fa-chevron-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
                 str += '</div>';
 
                 var multiselect_onchange = "display_selected_opt_ddl('" + index + "', this)";
@@ -218,7 +218,7 @@
                 str += '<div class="item-input item-input-field form-div" onclick="' + ddl_param + '">';
                 str += '<select id="fltr_val_ddl_' + index + '" class="margin cls-ctrl-ans" style="width:75%; display:inline-block;height:auto !important;white-space:normal;padding:8px;" disabled="disabled" ><option>--- Select ---</option>';
                 str += '</select>';
-                str += '<i class="fa fa-arrow-circle-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
+                str += '<i class="fa fa-chevron-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
                 str += '</div>';
 
                 //smartSelect ddl
@@ -257,7 +257,7 @@
                     str += "<option value='" + condition_val + "'>" + condition.replace(/_/g, " ") + "</option>";
                 }
                 str += '</select>';
-                str += '<i class="fa fa-arrow-circle-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
+                str += '<i class="fa fa-chevron-down form-ico" style="margin-left:-12%;font-size:14px;"></i>';
                 str += '</div>';
 
                 //str += '<input type="text" class="form-control mx-1 p-1 cls-ctrl-ans" placeholder="Type here">';
@@ -420,6 +420,7 @@ function get_type20_ddl_list_for_filter(value_new_ary, index, search_val) {
                                 li_txt += '</div></li>';
 
                                 $('#type20_ddl_list').append(li_txt);
+                                sync_type20_popup_selection();
                                 myApp.closeModal(".popup-type20-dropdown");
                                 if (F7_device == 'android' || F7_device == 'ios') {
                                     //popup UI issue in iOS
@@ -451,6 +452,7 @@ function get_type20_ddl_list_for_filter(value_new_ary, index, search_val) {
                                     li_txt += '</div></li>';
 
                                     $('#type20_ddl_list').append(li_txt);
+                                    sync_type20_popup_selection();
                                     myApp.closeModal(".popup-type20-dropdown");
                                     if (F7_device == 'android' || F7_device == 'ios') {
                                         //popup UI issue in iOS
@@ -472,6 +474,7 @@ function get_type20_ddl_list_for_filter(value_new_ary, index, search_val) {
                                     li_txt += '</div></li>';
 
                                     $('#type20_ddl_list').append(li_txt);
+                                    sync_type20_popup_selection();
                                     $('.cls_task_ico').click(function (event) {
                                         event.stopPropagation();
                                     });
@@ -595,7 +598,7 @@ function get_dropdown_data_filter(t_new_id, TableName, JoinTableName, Checksheet
         new_id_G = t_new_id;
 
         $('#type20_ddl_list').empty();
-        $("#F7_type20_ddl_Search :input[type='search']").val('');
+        reset_type20_popup_search();
         $('.searchbar-not-found').hide();
         $('.searchbar-found').show();
 
@@ -636,6 +639,7 @@ function get_dropdown_data_filter(t_new_id, TableName, JoinTableName, Checksheet
             //li_txt += '</li>';
         })
         $('#type20_ddl_list').append(li_txt);
+        sync_type20_popup_selection();
 
         $('.cls_task_ico').click(function (event) {
             event.stopPropagation();

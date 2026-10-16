@@ -8,7 +8,13 @@
 # Krishna ignor list 03012024
 EasyFormSE_finance/build.gradle
 EasyFormSE_finance/assets/www2/Framework7-1.4.2/dist/css/Css_f7.css
-EasyFormSE_finance/res/
+EasyFormSE_finance/res/*
+!EasyFormSE_finance/res/layout/
+EasyFormSE_finance/res/layout/*
+!EasyFormSE_finance/res/layout/camera_close_control.xml
+!EasyFormSE_finance/res/drawable/
+EasyFormSE_finance/res/drawable/*
+!EasyFormSE_finance/res/drawable/annotation_*.xml
 EasyFormSE_finance/src/com/sky/atc/easyformse/BackupFragment.java
 
 # Java class files
@@ -52,3 +58,5 @@ easyform-zoom-chat/build.gradle
 
 # Local session catch-up (local-only; documents test bypass)
 CLAUDE.md
+
+!EasyFormSE_finance/res/drawable/cam_mirror.xml

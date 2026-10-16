@@ -99,28 +99,22 @@ function onfail_get_trip_info(e) {
 
 function auto_start_trip_on_attendane_task_create(t_tid) {
     myApp.showPreloader('Initializing Trip...');
-    var locObj = new MkLocation();
-    locObj._getLocation(function (e) {
-        temp_location_Array = e;
-        start_stop_trip_on_attendace(0, t_tid);
-    });
+    // TripPlugin already uses the saved task location and opens the location UI.
+    start_stop_trip_on_attendace(0, t_tid);
 }
 
 // trip start from notification click (on task create)
 function start_stop_trip_on_attendace(trip_status, t_tid) {
     try {
         storage.setItem('crash_status', JSON.stringify('7'));               //when app is killed before start/stop trip
-        localStorage.setItem('trip_status', trip_status);
-        localStorage.setItem('trip_tid', t_tid);
-
-        if (btnJsonObj.length > 0) {
+        if (typeof btnJsonObj !== 'undefined' && btnJsonObj.length > 0) {
             // buttons are available in task form (task created from notification)
             var stillviolation_event = curr_survey_data["stillviolation_event"];
         }
         else {
             // buttons are not available in task form (task created from notification)
             var AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
-            var stillviolation_event = AttendanceJson[0].stillviolation_event;
+            var stillviolation_event = AttendanceJson && AttendanceJson[0] ? AttendanceJson[0].stillviolation_event : 'false';
         }
 
         if (stillviolation_event == "" || stillviolation_event == null || stillviolation_event == undefined) {
@@ -166,11 +160,14 @@ function start_stop_trip_on_attendace(trip_status, t_tid) {
 
             storage.setItem('crash_status', JSON.stringify('0'));
             myApp.hidePreloader();
+            if (e !== 'error') alert1('The trip could not be started. Please try again.');
 
         }, 'TripPlugin', 'anAction', q_jsonobj);
     }
     catch (e) {
-        alert1(e + '_start_stop_trip_on_attendace()');
+        storage.setItem('crash_status', JSON.stringify('0'));
+        myApp.hidePreloader();
+        alert1('The trip could not be started. Please try again.');
     }
 }
 

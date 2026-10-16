@@ -65,6 +65,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
     private boolean isPluginValid;
     private static String photoType;
     String info;
+    private String cameraSiteId = "";
     String max_file_size;
     String allow_multiple_image;
     SQLiteDatabase database;
@@ -92,6 +93,13 @@ public class UploadPhotoPlugin extends CordovaPlugin {
         //for Camera
         photoType = args.getJSONObject(0).getString("photo_type");
         flowData = args.getJSONObject(0).getString("flowParamData");
+        cameraSiteId = args.getJSONObject(0).optString("site_id", "");
+        try {
+            JSONObject captureFlow = new JSONArray(flowData).optJSONObject(0);
+            if (captureFlow != null) cameraSiteId = captureFlow.optString("site_id", cameraSiteId);
+        } catch (JSONException ignored) {
+            // Optional display metadata must not block a capture or browse flow.
+        }
 
         String time = "";
         String b_write = "true";
@@ -377,6 +385,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                 intent.putExtra("height", height);
                 intent.putExtra("quality", quality);
                 intent.putExtra("info", info);
+                intent.putExtra("site_id", cameraSiteId);
                 intent.putExtra("max_file_size",max_file_size);
                 if (this.cordova != null) {
                     this.cordova.startActivityForResult(this, intent, 102);
@@ -491,12 +500,31 @@ public class UploadPhotoPlugin extends CordovaPlugin {
         intent.putExtra("camera_type", photoType);
         intent.putExtra("AI_type", "Camera");
         intent.putExtra("flowData",flowData);
+        intent.putExtra("capture_only",true);
         if (this.cordova != null) {
             this.cordova.startActivityForResult(this, intent, 104);
             return true;
         }
 
         return false;
+    }
+
+    private void processAiPhoto(Intent capture) {
+        final CallbackContext callback = callbackContext;
+        try {
+            JSONObject request = com.sky.atc.easyformse.camera.AiPhotoProcessor.request(capture, capture.getStringExtra("photo_path"));
+            com.sky.atc.easyformse.camera.AiPhotoProcessor processor = new com.sky.atc.easyformse.camera.AiPhotoProcessor(cordova.getActivity(), request);
+            JSONObject photo = new JSONObject().put("phase", "captured").put("photo_path", request.getString("photo_path"));
+            org.apache.cordova.PluginResult preview = new org.apache.cordova.PluginResult(org.apache.cordova.PluginResult.Status.OK, new JSONArray().put(photo).toString());
+            preview.setKeepCallback(true); callback.sendPluginResult(preview);
+            cordova.getThreadPool().execute(() -> {
+                try { callback.success(processor.process().toString()); }
+                catch (Exception error) {
+                    Log.w("AIPhoto", "Photo processing failed", error);
+                    callback.error(error.getMessage() == null ? "AI could not process this photo. Please try again." : error.getMessage());
+                }
+            });
+        } catch (Exception error) { callback.error("The captured photo could not be processed. Please try again."); }
     }
 
     public boolean openFaceRecognizerActivity(Context context, List<String> filePaths) {
@@ -630,6 +658,11 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                 case 104:
                 {
                     if (resultCode == android.app.Activity.RESULT_OK) {
+                        if (intent != null && intent.getBooleanExtra("captured_only",false)) {
+                            processAiPhoto(intent);
+                            return;
+                        }
+
                         String status = null;
                         String responsetxt = null;
                         Bundle bundle = intent.getExtras();
@@ -864,7 +897,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                         JSONObject jsonObject1 = new JSONObject();
                         jsonObject1.put("photo_id", photoId);
                         jsonObject1.put("photo_path", photopath);
-                        jsonObject1.put("photo_size", UploadUtils.sizeofFile);
+                        jsonObject1.put("photo_size", UploadUtils.getFileSize(new java.io.File(caseid.equalsIgnoreCase("103") ? videopath : caseid.equalsIgnoreCase("101") ? photopath : status).length()));
                         jsonObject1.put("Helmet", WithHelmet);
                         jsonObject1.put("Harnessjacket", Harness_jacket);
                         jsonObject1.put("Reflectivejacket", reflective_jacket);
@@ -882,7 +915,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
 //                        JSONObject jsonObject1 = new JSONObject();
 //                        jsonObject1.put("photo_id", photoId);
 //                        jsonObject1.put("photo_path", photopath);
-//                        jsonObject1.put("photo_size", UploadUtils.sizeofFile);
+//                        jsonObject1.put("photo_size", UploadUtils.getFileSize(new java.io.File(caseid.equalsIgnoreCase("103") ? videopath : caseid.equalsIgnoreCase("101") ? photopath : status).length()));
 //                        jsonObject1.put("responsetext", responsetext);
 //                        jsonArray.put(jsonObject1);
 //
@@ -895,7 +928,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
                         JSONObject jsonObject1 = new JSONObject();
                         jsonObject1.put("photo_id", photoId);
                         jsonObject1.put("photo_path", status);
-                        jsonObject1.put("photo_size", UploadUtils.sizeofFile);
+                        jsonObject1.put("photo_size", UploadUtils.getFileSize(new java.io.File(caseid.equalsIgnoreCase("103") ? videopath : caseid.equalsIgnoreCase("101") ? photopath : status).length()));
                         jsonArray.put(jsonObject1);
 
                         pref.putString("photo_path", status);

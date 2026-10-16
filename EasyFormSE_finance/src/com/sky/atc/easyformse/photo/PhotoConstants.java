@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.sky.atc.easyformse.NewCameraActivity;
 import com.sky.atc.easyformse.camera_new;
+import com.sky.atc.easyformse.camera.CameraImages;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -57,22 +58,25 @@ public class PhotoConstants {
             File f = new File(filepath);
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            Bitmap bitmapPicture = BitmapFactory.decodeStream(new FileInputStream(f), null, options);
-            Matrix matrix = new Matrix();
-            if (camera_new.isCropMode) {
-                matrix.postRotate(NewCameraActivity.rotation);
-            } else {
-                matrix.postRotate(90);
+            Bitmap bitmapPicture;
+            try (FileInputStream input = new FileInputStream(f)) {
+                bitmapPicture = BitmapFactory.decodeStream(input, null, options);
             }
-            rotatedBitmap = Bitmap.createBitmap(bitmapPicture, 0, 0,
-                    bitmapPicture.getWidth(), bitmapPicture.getHeight(), matrix, true);
+            if (camera_new.isScanmode) {
+                Matrix matrix = new Matrix();
+                matrix.postRotate(NewCameraActivity.rotation);
+                rotatedBitmap = Bitmap.createBitmap(bitmapPicture, 0, 0,
+                        bitmapPicture.getWidth(), bitmapPicture.getHeight(), matrix, true);
+            } else {
+                rotatedBitmap = CameraImages.orient(bitmapPicture, f);
+            }
 
             f2 = savebitmap(rotatedBitmap, serverWidth, serverHeight);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return f2.getAbsolutePath();
+        return f2 == null ? filepath : f2.getAbsolutePath();
     }
 
     private static File savebitmap(Bitmap bmp, int serverWidth, int serverHeight) throws IOException {

@@ -4,4 +4,7 @@
     <color name="light_blue_A200">#FF40C4FF</color>
     <color name="light_blue_A400">#FF00B0FF</color>
     <color name="black_overlay">#66000000</color>
+    <color name="camera_viewfinder_tint">#1F2229</color>
+    <color name="camera_overlay_tint">#9E080C18</color>
+    <color name="action_negative_red">#E25555</color>
 </resources>

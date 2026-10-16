@@ -54,12 +54,17 @@ public class LoadingActivity extends AppCompatActivity {
         App.setContext(getApplicationContext());
         action = getIntent().getAction();
         extras = getIntent().getExtras();
+        if (extras == null || !(Utils.BroadcastAction.JITSI_PLUGIN_CALL.equals(action) || Utils.BroadcastAction.JITSI_CALL_ACCEPT.equals(action))) { finish(); return; }
         MultiChoiceDialogFragment.inviteListItems.clear();
         MultiChoiceDialogFragment.adapter = null;
         String loginUserDataString = extras.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");
-        UserData mUserData = mGson.fromJson(loginUserDataString, UserData.class);
+        UserData mUserData;
+        try { mUserData = mGson.fromJson(loginUserDataString, UserData.class); } catch (RuntimeException e) { finish(); return; }
+        if (mUserData == null) { finish(); return; }
         String otherDataString = extras.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
-        OtherData mOtherData = mGson.fromJson(otherDataString, OtherData.class);
+        OtherData mOtherData;
+        try { mOtherData = mGson.fromJson(otherDataString, OtherData.class); } catch (RuntimeException e) { finish(); return; }
+        if (mOtherData == null) { finish(); return; }
         if (action.matches(Utils.BroadcastAction.JITSI_PLUGIN_CALL)) {
 
             mLoadingViewModel.sendNotification(extras,LoadingActivity.this);
@@ -76,7 +81,9 @@ public class LoadingActivity extends AppCompatActivity {
 
         if (extras.containsKey(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA) && extras.containsKey(Utils.BroadcastActionExtrasKeys.NOTIFICATION_ID)) {
             String notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
-            FirebaseRequestData mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class);
+            FirebaseRequestData mFirebaseRequestData;
+            try { mFirebaseRequestData = mGson.fromJson(notificationRemoteDataString, FirebaseRequestData.class); } catch (RuntimeException e) { finish(); return; }
+            if (mFirebaseRequestData == null || mFirebaseRequestData.getRoomName() == null) { finish(); return; }
 
             Utils.clearNotification(LoadingActivity.this, extras.getInt(Utils.BroadcastActionExtrasKeys.NOTIFICATION_ID, -2));
 
@@ -85,6 +92,7 @@ public class LoadingActivity extends AppCompatActivity {
         } else {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.postDelayed(() -> {
+                if (isFinishing() || isDestroyed()) return;
                 SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("Jitsi_roomname", MODE_PRIVATE);
                 String roomname = sharedPreferences.getString("Roomname","");
                 CustomJitsiMeetActivity.customLaunch(LoadingActivity.this, roomname, mUserData,mOtherData, extras);

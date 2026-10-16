@@ -412,6 +412,11 @@ public class sql_class implements Runnable {
             lHashMap.put("udf_data", udf_data);
             lHashMap.put("task_checksheet_id",task_checksheet_id);
             lHashMap.put("photo_url",photo_url);
+            if (!task_checksheet_id.isEmpty()) {
+                // Notification entry also works when WebView storage was cleared.
+                lHashMap.put("attendance_json", sqlitewraper.getSecureShared("AttendanceData")
+                        .getString("attendanceJson", ""));
+            }
             json = new JSONObject(lHashMap);
             list.add(json);
 

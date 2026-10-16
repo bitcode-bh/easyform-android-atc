@@ -25,7 +25,7 @@ import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 public class MySQLiteHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "location.db";
-    private static final int DATABASE_VERSION = 78;
+    private static final int DATABASE_VERSION = 79;
     private static final String DATABASE_CREATE0 = " CREATE TABLE Login_Master (username TEXT,password TEXT, u_c TEXT, imei TEXT, company_id INTEGER,user_id INTEGER,appid TEXT,servermilli TEXT,devicetype TEXT,appversion TEXT,main_milli,sub_milli,main_id,sub_id) ;";
 
     // Database creation sql statement
@@ -118,6 +118,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         database.execSQL(DATABASE_CREATE29);
         database.execSQL(DATABASE_CREATE30);
         database.execSQL(DATABASE_CREATE31);
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_track_master_date_tripflag ON track_master(date,tripflag)");
         database.execSQL(DATABASE_CREATE32);
         database.execSQL(DATABASE_CREATE41);
 
@@ -759,6 +760,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
                 database.execSQL("ALTER TABLE track_master ADD COLUMN gps_speed TEXT");
             }
 
+        }
+        if (oldVersion < 79) {
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_track_master_date_tripflag ON track_master(date,tripflag)");
         }
     }
 

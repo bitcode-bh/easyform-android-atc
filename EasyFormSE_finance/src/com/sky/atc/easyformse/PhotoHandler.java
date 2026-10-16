@@ -31,6 +31,7 @@ import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 public class PhotoHandler implements PictureCallback {
 
     private final Context context;
+    private final boolean mirrored;
 
     private MakePhotoActivity activity1;
 
@@ -40,6 +41,7 @@ public class PhotoHandler implements PictureCallback {
     public PhotoHandler(Context context, MakePhotoActivity p1, View rectangleView, View previewLayout) {
         this.context = context;
         activity1 = p1;
+        mirrored = p1.isPhotoMirrored();
         this.rectangleView = rectangleView;
         this.previewLayout = previewLayout;
     }
@@ -69,6 +71,7 @@ public class PhotoHandler implements PictureCallback {
             FileOutputStream fos = new FileOutputStream(pictureFile);
             fos.write(data);
             fos.close();
+            if (mirrored) com.sky.atc.easyformse.camera.CameraImages.mirrorFile(pictureFile);
 
 
             Bundle b = new Bundle();
@@ -145,45 +148,23 @@ public class PhotoHandler implements PictureCallback {
             Bitmap bitmapPicture = BitmapFactory.decodeStream(new FileInputStream(f), null, options);
 
 
-            Matrix matrix = new Matrix();
-            matrix.postRotate(90);
-            Bitmap rotatedBitmap = Bitmap.createBitmap(bitmapPicture, 0, 0,
-                    bitmapPicture.getWidth(), bitmapPicture.getHeight(), matrix, true);
+            Bitmap rotatedBitmap = com.sky.atc.easyformse.camera.CameraImages.orient(bitmapPicture, f);
 
-            //calculate aspect ratio
-            float koefX = (float) rotatedBitmap.getWidth() / (float) previewLayout.getWidth();
-            float koefY = (float) rotatedBitmap.getHeight() / previewLayout.getHeight();
+            // Map the mask through the fitted preview, excluding any letterbox area.
+            View livePreview = ((android.view.ViewGroup) previewLayout).getChildAt(0);
+            int[] previewLocation = new int[2], maskLocation = new int[2];
+            livePreview.getLocationOnScreen(previewLocation);
+            borderCamera.getLocationOnScreen(maskLocation);
+            float scaleX = (float) rotatedBitmap.getWidth() / livePreview.getWidth();
+            float scaleY = (float) rotatedBitmap.getHeight() / livePreview.getHeight();
+            int left = Math.max(0, Math.round((maskLocation[0] - previewLocation[0]) * scaleX));
+            int top = Math.max(0, Math.round((maskLocation[1] - previewLocation[1]) * scaleY));
+            int right = Math.min(rotatedBitmap.getWidth(), Math.round((maskLocation[0] - previewLocation[0] + borderCamera.getWidth()) * scaleX));
+            int bottom = Math.min(rotatedBitmap.getHeight(), Math.round((maskLocation[1] - previewLocation[1] + borderCamera.getHeight()) * scaleY));
+            if (right <= left || bottom <= top) throw new IOException("Crop is outside the camera image");
+            Bitmap croppedBitmapNew = Bitmap.createBitmap(rotatedBitmap, left, top, right - left, bottom - top);
+            finalFile = savebitmap(croppedBitmapNew);
 
-            //get viewfinder border size and position on the screen
-            int x1 = (int) borderCamera.getX();
-            int y1 = (int) borderCamera.getY();
-
-            Log.d("##REC_Y_F_HANDLER_BLEFT", String.valueOf(x1));
-            Log.d("##REC_Y_F_HANDLER_BTOP", String.valueOf(y1));
-
-            int x2 = borderCamera.getWidth();
-            int y2 = borderCamera.getHeight();
-
-            //calculate position and size for cropping
-            int cropStartX = Math.round(x1 * koefX);
-            int cropStartY = Math.round(y1 * koefY);
-
-            int cropWidthX = Math.round(x2 * koefX);
-            int cropHeightY = Math.round(y2 * koefY);
-
-            Log.d("##REC_Y_F_HANDLER_CX", String.valueOf(cropWidthX));
-            Log.d("##REC_Y_F_HANDLER_CY", String.valueOf(cropHeightY));
-
-            //check limits and make crop
-            Bitmap croppedBitmapNew;
-            if (cropStartX + cropWidthX <= rotatedBitmap.getWidth() &&
-                    cropStartY + cropHeightY <= rotatedBitmap.getHeight()) {
-                croppedBitmapNew = Bitmap.createBitmap(rotatedBitmap, cropStartX,
-                        cropStartY, cropWidthX, cropHeightY);
-            } else {
-                croppedBitmapNew = null;
-            }
-            finalFile=savebitmap(croppedBitmapNew);
         } catch (Exception e) {
             e.printStackTrace();
         }

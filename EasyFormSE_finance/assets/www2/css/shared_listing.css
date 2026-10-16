@@ -1,0 +1,85 @@
+/* Shared listing surface, taken from Home's module rows and pinned window. */
+:root {
+    --listing-gutter: 12px;
+    --listing-radius: 10px;
+    --listing-page: #fcfcfc;
+    --listing-surface: #ecedef;
+    --listing-line: #dedfe0;
+    --listing-ink: #0d1829;
+    --listing-row-height: 50px;
+    --listing-title-size: 13px;
+    --listing-title-weight: 700;
+}
+.app-listing,
+.list-block .app-listing {
+    margin: 0 var(--listing-gutter);
+    padding: 0;
+    list-style: none;
+    background: var(--listing-surface);
+    border-radius: var(--listing-radius);
+    overflow: hidden;
+}
+.app-listing:empty { display: none; }
+.app-listing > .app-listing-row,
+.app-listing > li[udf_name],
+.app-listing > .item-content {
+    position: relative;
+    box-sizing: border-box;
+    margin: 0;
+    min-height: var(--listing-row-height);
+    border-bottom: 1px solid var(--listing-line);
+    background: var(--listing-surface);
+    font-size: 14px;
+    list-style: none;
+}
+.app-listing > :last-child { border-bottom: 0; }
+.app-listing::before, .app-listing::after { display: none !important; }
+.app-listing .item-title,
+.list-block .app-listing .item-title,
+.app-listing .app-listing-title { color: var(--listing-ink); font-size: var(--listing-title-size); font-weight: var(--listing-title-weight); }
+.app-listing > .app-listing-row:active,
+.app-listing > li[udf_name]:active,
+.app-listing > .item-content:active { background-color: #e3e6f5; }
+.app-listing-row:focus-visible { outline: 2px solid var(--app-action-blue, #2a3086); outline-offset: -2px; }
+
+/* A standalone list uses the same curved clipping window as Home's caps. */
+.app-listing-window.page-content {
+    position: absolute;
+    top: 64px;
+    bottom: 8px;
+    left: var(--listing-gutter);
+    right: var(--listing-gutter);
+    width: auto;
+    height: auto;
+    padding: 0;
+    border-radius: var(--listing-radius);
+    background: var(--listing-page);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.app-listing-window .app-listing { margin: 0; }
+.app-listing-head::after {
+    content: "";
+    position: absolute;
+    left: var(--listing-gutter);
+    right: var(--listing-gutter);
+    bottom: calc(-1 * var(--listing-radius));
+    height: var(--listing-radius);
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 100% 100%, transparent calc(var(--listing-radius) - .5px), var(--listing-page) var(--listing-radius)) left top / var(--listing-radius) var(--listing-radius) no-repeat,
+        radial-gradient(circle at 0 100%, transparent calc(var(--listing-radius) - .5px), var(--listing-page) var(--listing-radius)) right top / var(--listing-radius) var(--listing-radius) no-repeat;
+}
+.app-listing-foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: calc(var(--listing-radius) + 8px);
+    z-index: 20;
+    pointer-events: none;
+    background:
+        linear-gradient(var(--listing-page), var(--listing-page)) left bottom / 100% 8px no-repeat,
+        radial-gradient(circle at 100% 0, transparent calc(var(--listing-radius) - .5px), var(--listing-page) var(--listing-radius)) left var(--listing-gutter) top / var(--listing-radius) var(--listing-radius) no-repeat,
+        radial-gradient(circle at 0 0, transparent calc(var(--listing-radius) - .5px), var(--listing-page) var(--listing-radius)) right var(--listing-gutter) top / var(--listing-radius) var(--listing-radius) no-repeat;
+}

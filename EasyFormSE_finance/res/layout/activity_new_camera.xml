@@ -32,7 +32,7 @@
             android:id="@+id/acIvImagePreview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitXY" />
+            android:scaleType="fitCenter" />
 
         <com.otaliastudios.cameraview.CameraView
             android:id="@+id/cvMainCamera"
@@ -152,17 +152,7 @@
 
         <!-- Close at the top left; readouts and bare controls on the darkened
              bottom of the picture: flash, shutter, switch-camera. -->
-        <ImageView
-            android:id="@+id/cam_close"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginStart="6dp"
-            android:layout_marginTop="8dp"
-            android:contentDescription="Close"
-            android:padding="12dp"
-            android:src="@drawable/cam_close" />
+        <include layout="@layout/camera_close_control" />
 
         <LinearLayout
             android:layout_width="match_parent"

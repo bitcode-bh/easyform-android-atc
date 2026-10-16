@@ -26,6 +26,7 @@ import com.sky.atc.easyformse.datautils.LoginUtils;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.download.ImageDownloadService;
 import com.sky.atc.easyformse.download.utils.Utils;
+import com.sky.atc.easyformse.utils.RequestFailure;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
@@ -217,7 +218,7 @@ public class login_plug implements Runnable {
 
 
                 //LOGIN WEBSERVICES CALL
-                restext = NewWebservicesCallEasyform.ExecuteNetworkHTTPPostRequest(data2, WCFURL, METHOD_NAME_corner);
+                restext = NewWebservicesCallEasyform.executeNetworkHTTPPostRequestOrThrow(data2, WCFURL, METHOD_NAME_corner);
 
                 String status = null;
                 String unique_code = "NA";
@@ -230,6 +231,7 @@ public class login_plug implements Runnable {
 
                 //Receive single object in Array
                 JSONArray jsonArray12 = new JSONArray(restext);
+                if (jsonArray12.length() == 0) throw RequestFailure.invalidResponse();
                 for (int k = 0; k < jsonArray12.length(); k++) {
                     jsonObject = jsonArray12.getJSONObject(0);
                     status = jsonObject.getString("status");
@@ -395,7 +397,7 @@ public class login_plug implements Runnable {
                                 boolean isLoginValid = LoginUtils.isValidLogin(responseUCT, unique_code, uctLogin);
 
                                 if (!isLoginValid) {
-                                    this.callbackContext.error("Not Valid Login");
+                                    reportFailure(RequestFailure.authentication());
                                     return;
                                 } else {
 
@@ -649,14 +651,30 @@ public class login_plug implements Runnable {
 
 
             } catch (Exception e) {
-                this.callbackContext.error(restext);
-                // TODO: handle exception
+                reportFailure(e);
             }
 
         } catch (
                 Exception e) {
+            reportFailure(e);
         }
         return;
+    }
+
+    private void reportFailure(Exception error) {
+        boolean connected = true;
+        try {
+            ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            android.net.NetworkInfo network = manager == null ? null : manager.getActiveNetworkInfo();
+            connected = network != null && network.isConnected();
+        } catch (RuntimeException ignored) { }
+        RequestFailure failure = RequestFailure.from(error, connected);
+        Log.w("LoginRequest", "Request failed: " + failure.type + "/" + failure.reason + " HTTP " + failure.httpStatus);
+        try {
+            callbackContext.error(failure.toJson());
+        } catch (JSONException impossible) {
+            callbackContext.error("Request failed");
+        }
     }
 
 

@@ -27,7 +27,6 @@ var HomeHero = (function () {
     // Below this screen height the card scrolls with the list instead of
     // staying fixed (same rule as BillBaant K's PinnedHeaderList).
     var FIXED_MIN_HEIGHT = 600;
-    var REST_AFTER_MS = 140;
     // Room under the last row, clear of the strip above the tab bar.
     var LIST_END_ROOM = 18;
 
@@ -1009,31 +1008,6 @@ var HomeHero = (function () {
     // How far to scroll on so the cut row is whole or gone, whichever is
     // nearer. top: where the row starts from the edge (negative: that much is
     // hidden); size: its height.
-    function toRowEdge(top, size, canGoOn) {
-        if (!canGoOn) return 0;
-        return (-top <= top + size) ? top : top + size;
-    }
-
-    function restOnRow(root, scroller) {
-        if (window.innerHeight < FIXED_MIN_HEIGHT) return;
-        if (!root.offsetHeight) return;
-        var edge = root.getBoundingClientRect().bottom;
-        var windowHeight = scroller.getBoundingClientRect().bottom - edge;
-        var rows = document.querySelectorAll('#div_home_dashboard .hd-widget, #module_list > li');
-        for (var i = 0; i < rows.length; i++) {
-            var r = rows[i].getBoundingClientRect();
-            if (!r.height || r.top >= edge - 1 || r.bottom <= edge + 1) continue;
-            // A card taller than the window could never show whole.
-            if (r.height > windowHeight) return;
-            var canGoOn = scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 1;
-            var by = Math.round(toRowEdge(r.top - edge, r.height, canGoOn));
-            if (!by) return;
-            try { scroller.scrollBy({ top: by, behavior: 'smooth' }); }
-            catch (e) { scroller.scrollTop += by; }
-            return;
-        }
-    }
-
     // The card is Home's. Inside a module the same page lists that module's
     // items (selection.js keeps the open levels in level_Array), and the card
     // and the list foot are hidden there.
@@ -1127,21 +1101,13 @@ var HomeHero = (function () {
     }
 
     function bindRestOnRow($root) {
-        var root = $root[0];
-        var scroller = $root.closest('.page-content')[0];
+        var root = $root[0], scroller = $root.closest('.page-content')[0];
         if (!root || !scroller) return;
-        var touching = false, wait = null;
-        function later() {
-            if (wait) clearTimeout(wait);
-            wait = setTimeout(function () {
-                wait = null;
-                if (!touching && isHomeLevel()) restOnRow(root, scroller);
-            }, REST_AFTER_MS);
-        }
-        $(scroller).off('.homeHeroRest')
-            .on('touchstart.homeHeroRest', function () { touching = true; if (wait) { clearTimeout(wait); wait = null; } })
-            .on('touchend.homeHeroRest touchcancel.homeHeroRest', function () { touching = false; later(); })
-            .on('scroll.homeHeroRest', later);
+        AppListing.bind(scroller, {
+            head: root,
+            rows: '#div_home_dashboard .hd-widget, #module_list > li',
+            enabled: function () { return window.innerHeight >= FIXED_MIN_HEIGHT && root.offsetHeight && isHomeLevel(); }
+        });
     }
 
     // ---- shell -------------------------------------------------------------
@@ -1172,6 +1138,7 @@ var HomeHero = (function () {
         if (!scroller || document.getElementById('div_home_list_foot')) return;
         var foot = document.createElement('div');
         foot.id = 'div_home_list_foot';
+        foot.className = 'app-listing-foot';
         foot.setAttribute('aria-hidden', 'true');
         scroller.parentNode.insertBefore(foot, scroller.nextSibling);
     }
@@ -1305,5 +1272,5 @@ var HomeHero = (function () {
 
     return { render: render, refresh: refresh, setGeofenceValidator: setGeofenceValidator, setPermitProvider: setPermitProvider, isVendorTechnician: isVendorTechnician,
         // exposed for tests
-        _toRowEdge: toRowEdge, _listingKpi: listingKpi, _isHomeLevel: isHomeLevel, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
+        _toRowEdge: AppListing.toRowEdge, _listingKpi: listingKpi, _isHomeLevel: isHomeLevel, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
 })();

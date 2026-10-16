@@ -60,6 +60,8 @@
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
+        <item name="colorAccent">#2A3086</item>
+        <item name="android:colorAccent">#2A3086</item>
         <item name="android:windowIsTranslucent">false</item>
         <!-- The system navigation bar continues the app's bottom tab bar
              (#ecedef) instead of sitting under it as a black strip; dark

@@ -15,8 +15,8 @@ var TripServerHistory = (function () {
     'use strict';
 
     // _v2: downloads made before every status was requested are fetched again.
-    var STORE_KEY = 'trip_server_history_v2';
-    var OLD_STORE_KEYS = ['trip_server_history'];
+    var STORE_KEY = 'trip_server_history_v3';
+    var OLD_STORE_KEYS = ['trip_server_history', 'trip_server_history_v2'];
     var TRIP_STATUSES = '0,1,2,100,101';
     var API_NAME = 'GetTripData';
     // Intent extras cannot carry an unbounded path; the server sends a handful
@@ -93,14 +93,14 @@ var TripServerHistory = (function () {
         };
     }
 
-    function requestBody(flow, uid, bounds) {
+    function requestBody(flow, uid, bounds, offset) {
         return [{
             flow_id: flow.flowId,
             checksheetId: flow.checksheetId,
             // Every status of the trip flow, as the web portal's trip page
             // sends it (0 = Trip Started, 2 = Trip Completed, ...).
             task_status: [TRIP_STATUSES],
-            offset: 0,
+            offset: offset || 0,
             fetch: 500,
             searchParticularColumn: [
                 // Without this the API returns every user's trips.
@@ -220,10 +220,12 @@ var TripServerHistory = (function () {
         return out;
     }
 
-    function save(rows) {
+    function save(rows, uid) {
         try {
-            localStorage.setItem(STORE_KEY, JSON.stringify({ uid: userId(), at: Date.now(), rows: rows }));
+            localStorage.setItem(STORE_KEY, JSON.stringify({ uid: uid, at: Date.now(), rows: rows }));
+            return true;
         } catch (e) {
+            return false;
             // Quota or serialisation failure: the list simply stays local-only.
         }
     }
@@ -272,37 +274,51 @@ var TripServerHistory = (function () {
         inFlight = true;
         var bounds = windowBounds();
         var settled = false;
-        function done(ok) { if (settled) return; settled = true; finish(ok); }
+        function done(ok) { if (settled) return; settled = true; clearTimeout(timer); finish(ok); }
 
-        try {
-            var call = new Webservicecall_REST(url, JSON.stringify(requestBody(flow, uid, bounds)), function (e) {
-                try {
-                    var res = JSON.parse(e.responseText);
-                    var status = res && res[0] ? res[0].status : 0;
-                    if (status == 2) { save([]); done(true); return; }   // no trips in the window
-                    if (status != 1) { done(false); return; }
-                    var data = res[0].data;
-                    if (typeof data === 'string') data = data ? JSON.parse(data) : [];
-                    var rows = [];
-                    for (var i = 0; i < (data || []).length; i++) {
-                        // Belt and braces: never keep another user's trip even if
-                        // the server-side filter were ever dropped.
-                        if (data[i].CREATEDBY != null && String(data[i].CREATEDBY) !== uid) continue;
-                        var slim = slimRow(data[i]);
-                        if (slim) rows.push(slim);
-                    }
-                    save(prune(rows, bounds));
-                    done(true);
-                } catch (err) {
-                    done(false);
-                }
-            }, function () { done(false); });
-            call.callOtherDomain();
-        } catch (ex) {
-            done(false);
+        var rows = [], seen = Object.create(null), offset = 0, pages = 0;
+        var timer = setTimeout(function () { done(false); }, 30000);
+        function commit() {
+            if (settled) return;
+            clearTimeout(timer);
+            if (userId() !== uid) { done(false); return; }
+            done(save(prune(rows, bounds), uid));
         }
-        // Webservicecall_REST has its own long timeout; do not hold the list for it.
-        setTimeout(function () { done(false); }, 30000);
+        function fetchPage() {
+            if (settled) return;
+            if (++pages > 20 || userId() !== uid) { done(false); return; }
+            try {
+                var call = new Webservicecall_REST(url, JSON.stringify(requestBody(flow, uid, bounds, offset)), function (e) {
+                    if (settled) return;
+                    try {
+                        var res = JSON.parse(e.responseText);
+                        var status = res && res[0] ? res[0].status : 0;
+                        if (status == 2) { commit(); return; }
+                        if (status != 1) { done(false); return; }
+                        var data = res[0].data;
+                        if (typeof data === 'string') data = data ? JSON.parse(data) : [];
+                        if (!Array.isArray(data)) { done(false); return; }
+                        var added = 0;
+                        for (var i = 0; i < data.length; i++) {
+                            var id = String(data[i].task_id);
+                            if (seen[id]) continue;
+                            seen[id] = true; added++;
+                            if (data[i].CREATEDBY != null && String(data[i].CREATEDBY) !== uid) continue;
+                            var slim = slimRow(data[i]);
+                            if (slim) rows.push(slim);
+                        }
+                        if (!data.length) { commit(); return; }
+                        // Continue even for short pages: the server may enforce a smaller cap.
+                        // Repeated nonempty pages mean the offset contract is not being honoured.
+                        if (!added) { done(false); return; }
+                        offset += data.length;
+                        fetchPage();
+                    } catch (err) { done(false); }
+                }, function () { done(false); });
+                call.callOtherDomain();
+            } catch (ex) { done(false); }
+        }
+        fetchPage();
     }
 
     return {

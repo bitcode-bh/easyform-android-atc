@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.utils.LogUtils;
-import com.sky.atc.easyformse.utils.UnsafeOkHttpClient;
+import com.sky.atc.easyformse.utils.RequestFailure;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
@@ -74,7 +74,14 @@ public class NewWebservicesCallEasyform {
     // json object response url
 
     public static String ExecuteNetworkHTTPPostRequest(JSONObject jsonData, String appUrl, String webMethod) {
+        return executeNetworkHTTPPostRequest(jsonData, appUrl, webMethod, false);
+    }
 
+    public static String executeNetworkHTTPPostRequestOrThrow(JSONObject jsonData, String appUrl, String webMethod) {
+        return executeNetworkHTTPPostRequest(jsonData, appUrl, webMethod, true);
+    }
+
+    private static String executeNetworkHTTPPostRequest(JSONObject jsonData, String appUrl, String webMethod, boolean throwOnFailure) {
 
         String jsonResponse = null;
 
@@ -143,6 +150,7 @@ public class NewWebservicesCallEasyform {
                 }
 
                 String auth1 = data2.toString();
+                String redactedAuth = "[redacted]";
 
 
                 MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -157,7 +165,7 @@ public class NewWebservicesCallEasyform {
                         .post(body1)
                         .url(appUrl)
                         .build();
-                String forErrorLog = "\nauth1 :" + auth1 + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
+                String forErrorLog = "\nauth1 :" + redactedAuth + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
                         "matchId" + "0" + "\nBody :" + jsds;
 
                 long startTime = System.currentTimeMillis();
@@ -171,47 +179,46 @@ public class NewWebservicesCallEasyform {
 
                 if (!auth1.equalsIgnoreCase("")) {
 
-                    Response response = okHttpClient.newCall(request).execute();
-                    Log.d("##WEBSERVICE2", response.toString());
-                    try {
+                    try (Response response = okHttpClient.newCall(request).execute()) {
+                        Log.d("##WEBSERVICE2", response.toString());
+                        if (throwOnFailure && response.code() != 200) throw RequestFailure.http(response.code());
+                        if (throwOnFailure && response.body() == null) throw RequestFailure.invalidResponse();
                         jsonResponse = response.body().string();
                         jsonResponse = jsonResponse.replaceAll("(\r\n|\n)", "");
+                        if (throwOnFailure && jsonResponse.trim().isEmpty()) throw RequestFailure.invalidResponse();
                         long endTime = System.currentTimeMillis();
                         LogUtils.writeApilistLogToFile(webMethod, startTime,endTime,context);
                         after_response(jsonResponse, webMethod, forErrorLog,companyFeatureid,appUrl);
                         LogUtils.writeAllApiCallLog( "Request : " + forErrorLog  + "\n\n\nResponse : " + jsonResponse   , appUrl , "");
 
-                    } catch (Exception e) {
-                        LogUtils.writeApiCallLogToFile(e +
-                                "\nJsonData: " + jsonData + "Auth1: " + auth1,  appUrl, "ExecuteNetworkHTTPPostRequest","0");
-                        return null;
-                    }
-                    if (response.code() != 200) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            public void run() {
-                                Toast.makeText(context, "Response code: " + response.code() + "\nMethod: " + webMethod, Toast.LENGTH_LONG).show();
-                            }
-                        });
-
-                        LogUtils.writeApiCallLogToFile("Response code: " + response.code()
-                                + "\nJsonData: " + jsonData + "Auth1: " + auth1,appUrl, "ExecuteNetworkHTTPPostRequest","1");
-                        return null;
+                        if (response.code() != 200) {
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(context, "Response code: " + response.code() + "\nMethod: " + webMethod, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                            LogUtils.writeApiCallLogToFile("Response code: " + response.code()
+                                    + "\nJsonData: " + jsonData + "Auth1: " + redactedAuth,appUrl, "ExecuteNetworkHTTPPostRequest","1");
+                            return null;
+                        }
                     }
                 } else {
                     LogUtils.writeApiCallLogToFile(
-                            "\nJsonData: " + jsonData + "Auth1: " + auth1 + " null or empty",  appUrl, "ExecuteNetworkHTTPPostRequest","0");
+                            "\nJsonData: " + jsonData + "Auth1: " + redactedAuth + " null or empty",  appUrl, "ExecuteNetworkHTTPPostRequest","0");
                     return null;
                 }
 
             } catch (Exception e) {
                 LogUtils.writeApiCallLogToFile(
                         e + "\nJsonData: " + jsonData,appUrl, "ExecuteNetworkHTTPPostRequest","0");
+                if (throwOnFailure) throw RequestFailure.from(e, true);
                 return null;
             } finally {
 //       TrafficStats.clearThreadStatsTag();
             }
 //        }
         }
+        if (throwOnFailure && jsonResponse == null) throw RequestFailure.invalidResponse();
         return jsonResponse;
 
     }
@@ -365,6 +372,7 @@ public class NewWebservicesCallEasyform {
                 jsds.put(jsonData);
 
                 String auth1 = data2.toString();
+                String redactedAuth = "[redacted]";
 
                 MediaType JSON = MediaType.parse("application/json; charset=utf-8");
                 RequestBody body1 = RequestBody.create(JSON, jsds.toString());
@@ -378,7 +386,7 @@ public class NewWebservicesCallEasyform {
                         .post(body1)
                         .url(appUrl)
                         .build();
-                String forErrorLog = "\nauth1 :" + auth1 + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
+                String forErrorLog = "\nauth1 :" + redactedAuth + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
                         "matchId" + "0" + "\nBody :" + jsds;
                 Log.d("##WEBSERVICEUPLOAD1", webMethod);
 
@@ -403,7 +411,7 @@ public class NewWebservicesCallEasyform {
 
                     } catch (Exception e) {
                         Toast.makeText(context, e + "\n" + appUrl, Toast.LENGTH_SHORT).show();
-                        LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + auth1 + "\nResponse parse: " + e, appUrl,"ExecuteNetworkHTTPPostRequestfile","0");
+                        LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + redactedAuth + "\nResponse parse: " + e, appUrl,"ExecuteNetworkHTTPPostRequestfile","0");
                         //e.printStackTrace()();
                     }
                     if (response.code() != 200) {
@@ -412,11 +420,11 @@ public class NewWebservicesCallEasyform {
                                 Toast.makeText(context, "Response code: " + response.code() + "\nMethod: " + webMethod, Toast.LENGTH_LONG).show();
                             }
                         });
-                        LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + auth1 + "\nResponse code: " + response.code() + "",  appUrl,"ExecuteNetworkHTTPPostRequestfile","1");
+                        LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + redactedAuth + "\nResponse code: " + response.code() + "",  appUrl,"ExecuteNetworkHTTPPostRequestfile","1");
                         return null;
                     }
                 } else {
-                    LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + auth1 + "\nauth is empty", appUrl,"ExecuteNetworkHTTPPostRequestfile","0");
+                    LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + redactedAuth + "\nauth is empty", appUrl,"ExecuteNetworkHTTPPostRequestfile","0");
                     return null;
                 }
 
@@ -485,19 +493,9 @@ public class NewWebservicesCallEasyform {
     private static OkHttpClient getHttpClientWithTimeout() {
 
         String isSSL = sqlitewraper.context.getResources().getString(R.string.SSL);
-        OkHttpClient.Builder builder;
-        if (isSSL.equalsIgnoreCase("true")) {
-            builder = new OkHttpClient.Builder();
-            // myaims.vedangcellular.com url is not working in android 6 same ssl problem
-            /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                builder = new OkHttpClient.Builder();
-            } else {
-                builder = UnsafeOkHttpClient.getUnsafeOkHttpClient();
-            } */
-        } else {
-            //  wfmtest.grameenphone.com url is not working in android same ssl problem as per discuss with sir we skip the check ssl
-            builder = UnsafeOkHttpClient.getUnsafeOkHttpClient();
-        }
+        // Certificate and hostname validation are mandatory. SSL controls
+        // additional certificate pinning, never whether TLS is verified.
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(16);
         dispatcher.setMaxRequestsPerHost(6);
@@ -581,7 +579,8 @@ public class NewWebservicesCallEasyform {
                 jsds.put(jsonData);
 
                 String auth1 = data2.toString();
-                String forErrorLog = "\nauth1 :" + auth1 + "Role_Id :" + roleID + "Company_Feature_Id :" + companyFeatureid +
+                String redactedAuth = "[redacted]";
+                String forErrorLog = "\nauth1 :" + redactedAuth + "Role_Id :" + roleID + "Company_Feature_Id :" + companyFeatureid +
                         "matchId" + matchKeyId + "\nBody :" + jsds;
                 MediaType JSON = MediaType.parse("application/json; charset=utf-8");
                 RequestBody body1 = RequestBody.create(JSON, jsds.toString());
@@ -618,7 +617,7 @@ public class NewWebservicesCallEasyform {
                         LogUtils.writeAllApiCallLog( "Request : " + forErrorLog  + "\n\n\nResponse : " + jsonResponse   , appUrl , "");
 
                     } catch (Exception e) {
-                        LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + auth1 + "\nResponse parse: " + e, appUrl,"ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload","0");
+                        LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + redactedAuth + "\nResponse parse: " + e, appUrl,"ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload","0");
                         //e.printStackTrace()();
                     }
                     if (response.code() != 200) {
@@ -627,7 +626,7 @@ public class NewWebservicesCallEasyform {
                                 Toast.makeText(context, "Response code: " + response.code() + "\nMethod: " + webMethod, Toast.LENGTH_LONG).show();
                             }
                         });
-                        LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + auth1 + "\nResponse code: " + response.code() + "",  appUrl,"ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload","1");
+                        LogUtils.writeApiCallLogToFile("Body: " + jsds + "\nAuth: " + redactedAuth + "\nResponse code: " + response.code() + "",  appUrl,"ExecuteNetworkHTTPPostRequestFilesAndPhotoUpload","1");
                         return null;
                     }
                 } else {
@@ -714,6 +713,7 @@ public class NewWebservicesCallEasyform {
                 }
 
                 String auth1 = data2.toString();
+                String redactedAuth = "[redacted]";
 
 
                 MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -728,7 +728,7 @@ public class NewWebservicesCallEasyform {
                         .post(body1)
                         .url(appUrl)
                         .build();
-                String forErrorLog = "\nauth1 :" + auth1 + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
+                String forErrorLog = "\nauth1 :" + redactedAuth + "Role_Id :" + roleid + "Company_Feature_Id :" + companyFeatureid +
                         "matchId" + "0" + "\nBody :" + jsds;
 
                 long startTime = System.currentTimeMillis();
@@ -753,7 +753,7 @@ public class NewWebservicesCallEasyform {
 
                     } catch (Exception e) {
                         LogUtils.writeApiCallLogToFile(e +
-                                "\nJsonData: " + jsonData + "Auth1: " + auth1,  appUrl, "ExecuteNetworkHTTPPostRequest","0");
+                                "\nJsonData: " + jsonData + "Auth1: " + redactedAuth,  appUrl, "ExecuteNetworkHTTPPostRequest","0");
                         return null;
                     }
                     if (response.code() != 200) {
@@ -764,12 +764,12 @@ public class NewWebservicesCallEasyform {
                         });
 
                         LogUtils.writeApiCallLogToFile("Response code: " + response.code()
-                                + "\nJsonData: " + jsonData + "Auth1: " + auth1,appUrl, "ExecuteNetworkHTTPPostRequest","1");
+                                + "\nJsonData: " + jsonData + "Auth1: " + redactedAuth,appUrl, "ExecuteNetworkHTTPPostRequest","1");
                         return null;
                     }
                 } else {
                     LogUtils.writeApiCallLogToFile(
-                            "\nJsonData: " + jsonData + "Auth1: " + auth1 + " null or empty",  appUrl, "ExecuteNetworkHTTPPostRequest","0");
+                            "\nJsonData: " + jsonData + "Auth1: " + redactedAuth + " null or empty",  appUrl, "ExecuteNetworkHTTPPostRequest","0");
                     return null;
                 }
 

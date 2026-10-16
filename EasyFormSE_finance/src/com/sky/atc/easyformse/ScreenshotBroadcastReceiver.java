@@ -229,7 +229,7 @@ public class ScreenshotBroadcastReceiver extends BroadcastReceiver {
                         intent.putExtra("task_id", taskid);
                         intent.putExtra("Photo_name", p_name);
                         intent.putExtra("Photo_path",p_url);
-                        intent.putExtra("Photo_size", UploadUtils.sizeofFile);
+                        intent.putExtra("Photo_size", UploadUtils.getFileSize(new java.io.File(p_url).length()));
                         intent.putExtra("LOGIN_USER_DATA",loginUserDataString);
                         intent.putExtra("OTHER_DATA",otherDataString);
                         intent.putExtra("JITSI_MEETING_PLUGIN_ARGS",pluginArgsString);

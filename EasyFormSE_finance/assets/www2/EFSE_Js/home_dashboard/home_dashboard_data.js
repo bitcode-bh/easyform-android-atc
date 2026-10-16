@@ -215,34 +215,9 @@ var HomeDashboardData = (function () {
         );
     }
 
-    // Verbatim copies of pending_status.js's own 5 queries — issued
-    // independently, never through get_pending_tasks()/get_pending_trips()/etc.
+    // Reuse the shared queue reader without pulling rows or caching counts.
     function getUploadCounts(onDone) {
-        var counts = { tasks: 0, trips: 0, videos: 0, files: 0, photos: 0 };
-        var remaining = 5;
-        function done(key, n) {
-            counts[key] = n;
-            remaining--;
-            if (remaining === 0) {
-                counts.total = counts.tasks + counts.trips + counts.videos + counts.files + counts.photos;
-                onDone(counts);
-            }
-        }
-        function countRows(query, key) {
-            sql(query,
-                function (e) {
-                    var rows = [];
-                    try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
-                    done(key, rows.length);
-                },
-                function () { done(key, 0); }
-            );
-        }
-        countRows("select flag from task_master where flag = 1 or flag = 3", 'tasks');
-        countRows("select issend from lat_plug where issend = 0", 'trips');
-        countRows("select issend_track from video where issend_track = 0", 'videos');
-        countRows("select flag from f_master where flag = 0", 'files');
-        countRows("select flag from p_master where flag = 0", 'photos');
+        get_pending_upload_counts(onDone);
     }
 
     function toRad(deg) {

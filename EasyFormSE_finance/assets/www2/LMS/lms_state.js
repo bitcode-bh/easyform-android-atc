@@ -11,6 +11,7 @@ var LMS_State = (function () {
 
     var isReady = false;
     var pending = 0;
+    var draining = false;
     var listeners = [];
 
     function write(sql, onOk, onErr) {
@@ -51,8 +52,8 @@ var LMS_State = (function () {
 
     function removeAction(id, cb) {
         write("DELETE FROM lms_action_queue WHERE id = " + id,
-            function () { if (pending > 0) pending--; notify(); if (cb) cb(); },
-            function () { if (cb) cb(); });
+            function () { if (pending > 0) pending--; notify(); if (cb) cb(true); },
+            function () { if (cb) cb(false); });
     }
 
     function getQueue(cb) {
@@ -62,12 +63,13 @@ var LMS_State = (function () {
     }
 
     function flushQueue() {
-        if (!isReady) return;
+        if (!isReady || draining) return;
+        draining = true;
         getQueue(function (records) {
-            if (!records || !records.length) return;
+            if (!records || !records.length) { draining = false; return; }
             if (typeof LmsData !== 'undefined' && LmsData.processOfflineQueue) {
-                LmsData.processOfflineQueue(records);
-            }
+                LmsData.processOfflineQueue(records, function () { draining = false; });
+            } else { draining = false; }
         });
     }
 

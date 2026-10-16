@@ -1634,6 +1634,7 @@ function onsuccess_get_all_searched_list_New(e) {
 
                                 li_txt += '</div></li>';
                                 $('#type20_ddl_list').append(li_txt);
+                                sync_type20_popup_selection();
 
                                 if (OFFSET_TYPE20 == 0) {
                                     myApp.closeModal(".popup-type20-dropdown");
@@ -1726,6 +1727,7 @@ function onsuccess_get_all_searched_list_New(e) {
                                 li_txt += '</div></li>';
 
                                 $('#type20_ddl_list').append(li_txt);
+                                sync_type20_popup_selection();
                                 $('.cls_task_ico').click(function (event) {
                                     event.stopPropagation();
                                 });
@@ -1992,6 +1994,7 @@ function onsuccess_get_all_searched_list_New(e) {
                         $(".li-new-cust").remove();
                     }
                     $('#type20_ddl_list').append(li_txt);
+                    sync_type20_popup_selection();
                 }
             }
 
@@ -6308,7 +6311,7 @@ function get_dropdown_data(t_new_id, TableName, JoinTableName, Checksheet_id, cu
             }
             else {
                 $('#type20_ddl_list').empty();
-                $("#F7_type20_ddl_Search :input[type='search']").val('');
+                reset_type20_popup_search();
                 $('.searchbar-not-found').hide();
                 $('.searchbar-found').show();
 
@@ -6361,6 +6364,7 @@ function get_dropdown_data(t_new_id, TableName, JoinTableName, Checksheet_id, cu
                     li_txt += '</div></li>';
                 });
                 $('#type20_ddl_list').append(li_txt);
+                sync_type20_popup_selection();
 
                 $('.cls_task_ico').click(function (event) {
                     event.stopPropagation();
@@ -6442,7 +6446,7 @@ function get_dropdown_data(t_new_id, TableName, JoinTableName, Checksheet_id, cu
                 if (type22_json_len == 1) {
                     if ($('#div_singleInvoice_cntrl_' + btn_add + '')) {
                         $("#type20_ddl_list li .item-icon > i").removeClass("fa-check-square-o").addClass("fa-info-circle");
-                        $("#ddl_search_type20_" + t_new_id + " option").removeAttr('selected');
+                        $("#ddl_search_type20_" + t_new_id + " option").prop('selected', false).removeAttr('selected');
 
                         var type22_badge_obj = $("#div_list_display_" + btn_add + " li span.badge.badge-secondary");
                         var type20_opt_obj = $("#div_singleInvoice_cntrl_" + btn_add + "").find("select[id^=ddl_search_type20] option");
@@ -6460,14 +6464,14 @@ function get_dropdown_data(t_new_id, TableName, JoinTableName, Checksheet_id, cu
                                             var curr_icon = $("#type20_ddl_list li[value='" + temp_curr_val + "'] .item-icon i.fa-info-circle");
                                             if (curr_icon.length > 0) {
                                                 $("#type20_ddl_list li[value='" + temp_curr_val + "'] .item-icon > i").removeClass("fa-info-circle").addClass("fa-check-square-o")
-                                                $("#ddl_search_type20_" + t_new_id + " option[value='" + temp_curr_val + "']").attr('selected', 'selected');
+                                                $("#ddl_search_type20_" + t_new_id + " option[value='" + temp_curr_val + "']").prop('selected', true).attr('selected', 'selected');
                                             }
                                         }
                                     });
                                 }
                                 else {
                                     $("#type20_ddl_list li .item-icon > i").removeClass("fa-check-square-o").addClass("fa-info-circle");
-                                    $("#ddl_search_type20_" + t_new_id + " option").removeAttr('selected');
+                                    $("#ddl_search_type20_" + t_new_id + " option").prop('selected', false).removeAttr('selected');
                                 }
                             }
                         });
@@ -6590,23 +6594,22 @@ function set_dropdown_data(t_val, t_new_id, add_cust_from_search, t_val1, ddl_tx
     else {
         // multiple selection
 
-        let curr_icon = $("#type20_ddl_list li[value='" + t_val + "'] .item-icon i.fa-info-circle");
-        if (curr_icon.length > 0) {
-            $("#type20_ddl_list li[value='" + t_val + "'] .item-icon > i").removeClass("fa-info-circle").addClass("fa-check-square-o")
-            $("#ddl_search_type20_" + t_new_id + " option[value='" + t_val + "']").attr('selected', 'selected');
-        }
-        else {
-            $("#type20_ddl_list li[value='" + t_val + "'] .item-icon > i").removeClass("fa-check-square-o").addClass("fa-info-circle")
-            $("#ddl_search_type20_" + t_new_id + " option[value='" + t_val + "']").removeAttr('selected');
-        }
-
-        let selected_count = $("#type20_ddl_list li .item-icon i.fa-check-square-o");
-        if (selected_count.length > 0) {
-            $("#ddl_search_type20_" + t_new_id + " option[value='0']").removeAttr('selected');
-        }
-        else {
-            $("#ddl_search_type20_" + t_new_id + " option[value='0']").attr('selected', 'selected');
-        }
+        var select = document.getElementById('ddl_search_type20_' + t_new_id);
+        var option = Array.from(select.options).find(function (item) {
+            return item.value === String(t_val) && (!t_val1 || (item.getAttribute('value1') || item.value) === String(t_val1));
+        });
+        if (!option) return;
+        var selected = !option.selected;
+        $(option).prop('selected', selected);
+        if (selected) $(option).attr('selected', 'selected');
+        else $(option).removeAttr('selected');
+        $('#type20_ddl_list > li[value]').filter(function () {
+            return this.getAttribute('value') === String(t_val);
+        }).find('.item-icon > i').toggleClass('fa-check-square-o', selected).toggleClass('fa-info-circle', !selected);
+        var selected_count = Array.from(select.options).some(function (item) { return item.value !== '0' && item.selected; });
+        $(select).find("option[value='0']").prop('selected', !selected_count);
+        if (selected_count) $(select).find("option[value='0']").removeAttr('selected');
+        else $(select).find("option[value='0']").attr('selected', 'selected');
 
         //$("#ddl_search_type20_" + t_new_id + " option").each(function () {
         //    var cell_id = $(this).attr('value1');
@@ -6614,6 +6617,8 @@ function set_dropdown_data(t_val, t_new_id, add_cust_from_search, t_val1, ddl_tx
         //        $(this).attr('selected', 'selected');
         //    }
         //});
+
+        sync_type20_popup_selection();
 
         //invoice single searchable value selection [FT - 07122023]
         var json_inv = $("#ddl_search_type20_" + t_new_id + "").attr('type22_array_index');
@@ -6626,6 +6631,35 @@ function set_dropdown_data(t_val, t_new_id, add_cust_from_search, t_val1, ddl_tx
             return submit_popup_data(json_inv, btn_add, 'readchecksheet');
         }
     }
+}
+
+function reset_type20_popup_search() {
+    var form = document.getElementById('F7_type20_ddl_Search');
+    if (form && form.f7Searchbar) form.f7Searchbar.disable();
+    else if (form) $(form).find('input[type=search]').val('');
+}
+
+// Coalesce row updates after local, paged and server-backed option rendering.
+var type20_selection_frame = 0;
+function sync_type20_popup_selection() {
+    if (type20_selection_frame) return;
+    type20_selection_frame = requestAnimationFrame(function () {
+        type20_selection_frame = 0;
+        if (typeof new_id_G === 'undefined') return;
+        var filter = typeof glob_type20_popup_flag !== 'undefined' && glob_type20_popup_flag === 'adv_filter';
+        var select = document.getElementById((filter ? 'fltr_val_ddl_' : 'ddl_search_type20_') + new_id_G);
+        if (!select) return;
+        var selected = new Set(Array.from(select.options).filter(function (option) { return option.selected; }).map(function (option) {
+            return JSON.stringify([option.value, option.textContent.trim()]);
+        }));
+        $('#type20_ddl_list').attr('aria-multiselectable', String(select.multiple));
+        $('#type20_ddl_list > li[value]').each(function () {
+            var title = $(this).find('.item-title').text().trim();
+            var active = selected.has(JSON.stringify([this.getAttribute('value'), title]));
+            $(this).toggleClass('type20-placeholder', title === 'Select Value');
+            $(this).toggleClass('type20-selected', active).attr({ 'role': 'option', 'aria-selected': String(active) });
+        });
+    });
 }
 
 function close_type20_dropdown_popup() {

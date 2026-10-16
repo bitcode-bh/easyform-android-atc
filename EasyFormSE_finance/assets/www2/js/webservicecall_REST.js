@@ -1,7 +1,10 @@
 ﻿
 // new CoreApiCall function
-var req_count = 0;
-function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30) {
+
+function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30, retryState) {
+    retryState = retryState || { attempts: 0, completed: false };
+    var attemptFinished = false;
+    var req_count = retryState.attempts;
     //var timeout = 1120000;
     var timeout = 180000;        // 3 minute
     if (settimeout != null) {
@@ -31,8 +34,35 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
         return request;
     }
 
+    this.cancel = function () {
+        retryState.completed = true;
+        attemptFinished = true;
+        clearTimeout(timer1);
+        invocation.onreadystatechange = null;
+        invocation.abort();
+    };
+
     this.callOtherDomain = function () {
+        if (retryState.completed) return;
         if (invocation) {
+            // retry last request for 3 times in case of network timeout 06042023
+            timer1 = setTimeout(function () {
+                if (attemptFinished || retryState.completed) return;
+                attemptFinished = true;
+                invocation.onreadystatechange = null;
+                if (req_count >= (retryState.maxAttempts || 4) - 1) {
+                    networkerror();
+                    clearTimeout(timer1);
+                    req_count = 0;
+                }
+                else {
+                    retryState.attempts = ++req_count;
+                    invocation.abort();
+                    mk_notify("Network Timeout! Retrying...");
+                    var t_getdata = new Webservicecall_REST(url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30, retryState);
+                    t_getdata.callOtherDomain();
+                }
+            }, timeout);
             if (isIE8) {
                 invocation = new XDomainRequest();
                 invocation.load = function () { sucesscallback(invocation); };
@@ -144,21 +174,7 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
             }
             //timer1 = setTimeout(networkerror, timeout);
 
-            // retry last request for 3 times in case of network timeout 06042023 
-            timer1 = setTimeout(function () {
-                if (req_count >= 3) {
-                    networkerror();
-                    clearTimeout(timer1);
-                    req_count = 0;
-                }
-                else {
-                    req_count++;
-                    invocation.abort();
-                    mk_notify("Network Timeout! Retrying...");
-                    var t_getdata = new Webservicecall_REST(url1, params, sucesscallback, failcallback);
-                    t_getdata.callOtherDomain();
-                }
-            }, timeout);
+
         }
         else {
             failcallback("No Invocation TookPlace At All");
@@ -166,6 +182,9 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
     }
 
     function networkerror() {
+        retryState.completed = true;
+        invocation.onreadystatechange = null;
+        clearTimeout(timer1);
         invocation.abort();
         failcallback('Network Time Out');
     }
@@ -173,18 +192,21 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
     function handler(evtXHR) {
         //alert(invocation.readyState);
         if (invocation.readyState == 4) {
+            if (attemptFinished || retryState.completed) return;
+            attemptFinished = true;
             //alert(invocation.status);
 
             clearTimeout(timer1);
             //req_count = 0;
 
             if (invocation.status == 200) {
-                req_count = 0;
-
-                var myArray = JSON.parse(invocation.responseText);
+                retryState.completed = true;
+                var myArray;
+                try { myArray = JSON.parse(invocation.responseText); }
+                catch (e) { failcallback("Invalid server response"); return; }
 
                 if (Array.isArray(myArray)) {
-                    var status = myArray[0].status;
+                    var status = myArray.length ? myArray[0].status : 0;
                 }
                 else {
                     // for aadhar verification testing
@@ -249,7 +271,8 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
                 //    failcallback(invocation);
                 //}
 
-                if (req_count >= 3) {
+                if (req_count >= (retryState.maxAttempts || 4) - 1) {
+                    retryState.completed = true;
                     // final failed
 
                     req_count = 0;
@@ -264,12 +287,13 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
 
                 }
                 else {
-                    // retry last request for 3 times in case of network failed - mk - 29012026 
+                    // retry last request for 3 times in case of network failed - mk - 29012026
 
-                    req_count++;
+                    retryState.attempts = ++req_count;
+                    invocation.onreadystatechange = null;
                     invocation.abort();
                     //mk_notify("Network Failed! Retrying...");
-                    var t_getdata = new Webservicecall_REST(url1, params, sucesscallback, failcallback);
+                    var t_getdata = new Webservicecall_REST(url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30, retryState);
                     t_getdata.callOtherDomain();
                 }
 

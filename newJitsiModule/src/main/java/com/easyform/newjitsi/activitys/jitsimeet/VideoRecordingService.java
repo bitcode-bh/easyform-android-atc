@@ -101,20 +101,30 @@ public class VideoRecordingService extends Service {
         mActivity = CameraPreviewActivity.cameraPreviewActivity;
 
         // Receive data from activity
+        if (mActivity == null || mActivity.isFinishing() || CameraPreviewActivity.surfaceHolder == null) { stopSelf(); return; }
         Intent intent = mActivity.getIntent();
         extras = intent.getBundleExtra("Bundle_extras");
+        if (extras == null) { stopSelf(); return; }
 
          otherDataString = extras.getString(Utils.BroadcastActionExtrasKeys.OTHER_DATA, "");
          loginUserDataString = extras.getString(Utils.BroadcastActionExtrasKeys.LOGIN_USER_DATA, "");
         pluginArgsString = extras.getString(Utils.BroadcastActionExtrasKeys.JITSI_MEETING_PLUGIN_ARGS, "");
         notificationRemoteDataString = extras.getString(Utils.BroadcastActionExtrasKeys.NOTIFICATION_REMOTE_DATA, "");
-        mOtherData = mGson.fromJson(otherDataString, OtherData.class);
-        mUserData = mGson.fromJson(loginUserDataString, UserData.class);
+        try {
+            mOtherData = mGson.fromJson(otherDataString, OtherData.class);
+            mUserData = mGson.fromJson(loginUserDataString, UserData.class);
+        } catch (RuntimeException e) { stopSelf(); return; }
+        if (mOtherData == null || mUserData == null) { stopSelf(); return; }
 
         // Use current Activity preview holder
         mSurfaceHolder = CameraPreviewActivity.surfaceHolder;
 
         startRecording();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_NOT_STICKY;
     }
 
     @Override

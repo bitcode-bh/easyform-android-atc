@@ -268,7 +268,7 @@ dependencies {
 
 
     // implementation project(path: ':Jitsi')
-   // implementation project(path: ':newJitsiModule')
+    implementation project(path: ':newJitsiModule')
     // implementation project(path: ':easyform-zoom-chat')
      implementation project(path: ':faceDetectionModel')
     // implementation project(path: ':documentscanner')

@@ -4310,9 +4310,17 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                         cordova.exec(function (e) {
                             // successfull attendance task create
 
-                            var AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
+                            var AttendanceJson;
+                            try {
+                                AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
+                                if (!Array.isArray(AttendanceJson) || !AttendanceJson[0]) throw new Error('Missing attendance settings');
+                            } catch (error) {
+                                loading_hide();
+                                alert1('Attendance was saved, but trip settings are unavailable. Please reopen the trip form.');
+                                return;
+                            }
                             var auto_trip = AttendanceJson[0].auto_trip;
-                            if (auto_trip == "true") {
+                            if (String(auto_trip).toLowerCase() === 'true') {
                                 var myArray = JSON.parse(e);
                                 var t_tid = myArray[0].tid;
 

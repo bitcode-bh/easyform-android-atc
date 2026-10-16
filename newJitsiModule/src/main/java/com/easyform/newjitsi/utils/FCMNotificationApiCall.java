@@ -8,14 +8,9 @@ import android.util.Log;
 
 import com.easyform.newjitsi.network.Apis;
 import com.easyform.newjitsi.network.Models.AccessToken;
-import com.easyform.newjitsi.network.RetrofitClient;
-import com.easyform.newjitsi.network.requests.notifcation.FirebaseRequest;
 import com.easyform.newjitsi.network.requests.notifcation.FirebaseRequestData;
-import com.easyform.newjitsi.network.response.notifcation.FirebaseResponse;
 import com.google.gson.Gson;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,9 +20,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import retrofit2.Call;
-import retrofit2.http.Headers;
-import retrofit2.http.POST;
 
 public class FCMNotificationApiCall {
 
@@ -88,12 +80,36 @@ public class FCMNotificationApiCall {
         }
 
 
+        String json = new Gson().toJson(buildMessage(data, token, isiOS));
+
+
+        OkHttpClient client = CLIENT;
+        RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
+        Request request = new Request.Builder()
+                .url(Apis.FCMURL)
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .addHeader("Content-Type", "application/json")
+                .post(body)
+                .build();
+
+        Response response = client.newCall(request).execute();
+        if (response.code() == 401) {
+            forgetAccessToken();   // rejected: fetch a new one for the next push
+        }
+        if (!response.isSuccessful()) {
+            System.out.println("❌ Error sending notification: " + json + response.body().string());
+        } else {
+            System.out.println("✅ Notification sent: " + json + response.body().string());
+        }
+    }
+
+    static Map<String, Object> buildMessage(FirebaseRequestData data, String token, boolean isiOS) {
         Map<String, Object> message = new HashMap<>();
         Map<String, Object> messageContent = new HashMap<>();
 
         messageContent.put("token", token);  // from your FirebaseRequestData
 
-        if (data.getDevice_type().equalsIgnoreCase("ios")) {
+        if (isiOS) {
             Map<String, String> notification = new HashMap<>();
             notification.put("title", data.getTitle());
             notification.put("body", data.getBody());
@@ -153,27 +169,7 @@ public class FCMNotificationApiCall {
 
         message.put("message", messageContent);
 
-        String json = new Gson().toJson(message);
-
-
-        OkHttpClient client = CLIENT;
-        RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
-        Request request = new Request.Builder()
-                .url(Apis.FCMURL)
-                .addHeader("Authorization", "Bearer " + accessToken)
-                .addHeader("Content-Type", "application/json")
-                .post(body)
-                .build();
-
-        Response response = client.newCall(request).execute();
-        if (response.code() == 401) {
-            forgetAccessToken();   // rejected: fetch a new one for the next push
-        }
-        if (!response.isSuccessful()) {
-            System.out.println("❌ Error sending notification: " + json + response.body().string());
-        } else {
-            System.out.println("✅ Notification sent: " + json + response.body().string());
-        }
+        return message;
     }
 
 }

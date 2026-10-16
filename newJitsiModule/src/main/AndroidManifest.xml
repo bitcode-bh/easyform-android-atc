@@ -61,7 +61,7 @@
             android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".activitys.loading.LoadingActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/JitsiModule.Theme" />
 
         <activity android:name=".activitys.call.IncomingCallActivity"
@@ -81,7 +81,7 @@
         <service
             android:name=".activitys.jitsimeet.VideoRecordingService"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="false"/>
 
         <receiver
             android:name=".broadcasts.FlashlightToggleReceiver"

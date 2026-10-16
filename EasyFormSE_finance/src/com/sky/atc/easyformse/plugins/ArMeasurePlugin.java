@@ -221,7 +221,7 @@ public class ArMeasurePlugin extends CordovaPlugin {
                     jsonObject1.put("photo_id", photoId);
                     jsonObject1.put("photo_path", status);
                     jsonObject1.put("code",distance);
-                    jsonObject1.put("photo_size", UploadUtils.sizeofFile);
+                    jsonObject1.put("photo_size", UploadUtils.getFileSize(new java.io.File(status).length()));
                     jsonArray.put(jsonObject1);
 
 //                    pref.putString("photo_path", status);

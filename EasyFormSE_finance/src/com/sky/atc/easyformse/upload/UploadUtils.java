@@ -106,14 +106,6 @@ import okio.Buffer;
 public class UploadUtils {
 
 
-    private static int track_offset = 0;
-    private static int offset = 0;
-    private static double track_bytes;
-    private static int bufferSize;
-    private static int track_chnumber;
-    private static int ch_number = 0;
-    private static double track_byte_g;
-    public static String sizeofFile = "0";
 
     private static int tidcnt;
     private static int tidcntlog;
@@ -345,8 +337,7 @@ public class UploadUtils {
 //
 //        String size = getFileSize((long) f_legnth);
 //
-//        sizeofFile = size;
-//
+////
 //        FileBody bin = new FileBody(f);
 //
 //        FileBody cbFile = new FileBody(f, "application/" + ext + "");
@@ -544,7 +535,8 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
 
     int photoID = 0;
 
-        ch_number = 0;
+        long offset = 0;
+        int bufferSize;
 
         String name_file = changeFileName(path);
         String l_name = path.substring(path.lastIndexOf("."));
@@ -566,8 +558,8 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
         int final_total_ch;
 
         File f = new File(path);
-        if (!f.exists()) {
-            return 1;
+        if (!f.isFile() || f.length() == 0) {
+            return 0;
         }
 
         double f_legnth = f.length();
@@ -582,12 +574,8 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
             final_total_ch = total_ch;
         }
 
-        if (track_byte_g > 0) {
-            totalbytes = track_byte_g;
-        }
 
         String size = getFileSize((long) f_legnth);
-        sizeofFile = size;
 
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(16);
@@ -620,20 +608,8 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
                 bufferSize = (int) totalbytes;
             }
 
-            byte[] buffer = new byte[bufferSize];
-
-            if (i == 0) {
-                FileInputStream fis = new FileInputStream(f);
-                fis.read(buffer);
-                fis.close();
-                offset = buffer.length;
-            } else {
-                RandomAccessFile raf = new RandomAccessFile(f, "r");
-                raf.seek(offset);
-                raf.readFully(buffer);
-                raf.close();
-                offset = offset + buffer.length;
-            }
+            byte[] buffer = UploadChunkReader.read(f, offset, bufferSize);
+            offset += buffer.length;
 
             RequestBody fileBody = RequestBody.create(
                     buffer,
@@ -693,10 +669,6 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
                                 targetUrl, "", "1");
                     }
 
-                    track_chnumber = i;
-                    track_offset = offset;
-                    track_bytes = totalbytes;
-
                 } else {
                     Log.d("##AA", String.valueOf(response.code()));
                     Response finalResponse = response;
@@ -746,7 +718,8 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        ch_number = 0;
+        long offset = 0;
+        int bufferSize;
         File currentFile = new File(path);
 
         String tempFileName = changeFileName(path);
@@ -762,10 +735,8 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
         int final_total_ch;
 
 
-        if (currentFile.exists()) {
-            System.out.print("dsds");
-        } else {
-            return 1;
+        if (!currentFile.isFile() || currentFile.length() == 0) {
+            return 0;
         }
 
         double f_legnth = currentFile.length();
@@ -779,14 +750,10 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
             final_total_ch = total_ch;
         }
 
-        if (track_byte_g > 0) {
-            totalbytes = track_byte_g;
-        }
 
 
         String size = getFileSize((long) f_legnth);
 
-        sizeofFile = size;
 
         FileBody bin = new FileBody(currentFile);
 
@@ -798,7 +765,7 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
 
             Log.d("##ACHUNNK_NUMBER", "CH:" + i + "FINAL:" + final_total_ch);
 
-            if (CustomerUniq.equals("null") || CustomerUniq == null) {
+            if (CustomerUniq == null || CustomerUniq.equals("null")) {
                 CustomerUniq = "0";
             }
 
@@ -855,49 +822,14 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             Writer writer = new StringWriter();
 
-            FileInputStream fileInputStream = new FileInputStream(
-                    path);
-
-            StringBuffer fileContent = new StringBuffer("");
-            // bufferSize = 1024 * 1024;
             if (totalbytes > (1024 * 1024)) {
                 bufferSize = 1024 * 1024;
-                totalbytes = totalbytes - bufferSize;
-
+                totalbytes -= bufferSize;
             } else {
                 bufferSize = (int) totalbytes;
             }
-
-            byte[] buffer = new byte[bufferSize];
-
-            int n = fileInputStream.read(buffer);
-
-            if (i == 0) {
-
-                fileContent.append(new String(buffer, 0, n));
-                offset = +n;
-
-            } else if (i + 1 != final_total_ch) {
-                try {
-
-                    RandomAccessFile raf = new RandomAccessFile(currentFile,
-                            "r");
-                    raf.seek(offset);
-                    raf.readFully(buffer);
-                    fileContent.append(new String(buffer));
-                    offset = offset + (1024 * 1024);
-
-                } catch (Exception e) {
-                    throw e;
-
-                }
-
-            } else if ((i + 1) == final_total_ch) {
-                RandomAccessFile raf = new RandomAccessFile(currentFile, "r");
-                raf.seek(offset);
-                raf.readFully(buffer);
-                fileContent.append(new String(buffer));
-            }
+            byte[] buffer = UploadChunkReader.read(currentFile, offset, bufferSize);
+            offset += buffer.length;
             multipartBody.addFormDataPart("FileData", tempFileName, RequestBody.create(MediaType.parse(cbFile.getMediaType()), buffer));
 
 
@@ -933,12 +865,6 @@ public static int uploadPhotoResumable(String path, String CompanyId, String Cus
                 } else {
                     return 0;
                 }
-
-
-                track_chnumber = i;
-                track_offset = offset;
-
-                track_bytes = totalbytes;
             } else {
                 return 0;
             }

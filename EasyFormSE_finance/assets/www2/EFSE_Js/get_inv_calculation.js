@@ -218,9 +218,9 @@ function add_row_to_table_by_popup(inv_test, json) {
                 }
             }
 
-            add_row += "<td style='padding:7px 10px; border:1px solid #ccc'><i class='fa fa-pencil' id='btn_edit_td_" + btn_NewInv_Counter + '_' + row_counter + "' onclick='" + param + "'></i></td>";
-            add_row += "<td style='padding:7px 10px; border:1px solid #ccc'><i class='fa fa-remove' id='btn_delete_td_"
-                + btn_NewInv_Counter + '_' + row_counter + "' onclick='" + param_delete + "'></i><input type='hidden' id='hdn_tr_delete_" + btn_NewInv_Counter + "_" + row_counter + " value='0'></td>";
+            add_row += "<td style='padding:7px 10px; border:1px solid #ccc'><button type='button' class='button' aria-label='Edit item' id='btn_edit_td_" + btn_NewInv_Counter + '_' + row_counter + "' onclick='" + param + "'><i class='fa fa-pencil' aria-hidden='true'></i></button></td>";
+            add_row += "<td style='padding:7px 10px; border:1px solid #ccc'><button type='button' class='button color-red' aria-label='Remove item' id='btn_delete_td_"
+                + btn_NewInv_Counter + '_' + row_counter + "' onclick='" + param_delete + "'><i class='fa fa-trash' aria-hidden='true'></i></button><input type='hidden' id='hdn_tr_delete_" + btn_NewInv_Counter + "_" + row_counter + " value='0'></td>";
         }
 
         var count = 0;
@@ -1121,10 +1121,10 @@ function add_row_to_listview_by_popup(inv_test, json) {
             }
         }
 
-        //add_row += "<i class='fa fa-remove' id='btn_delete_td_" + btn_NewInv_Counter + '_' + row_counter + "'  onclick='" + param_delete
-        //        + "' style='margin:0px 10px 7px 10px; float:right'></i>";
-        //add_row += "<i class='fa fa-pencil' id='btn_edit_td_" + btn_NewInv_Counter + '_' + row_counter + "'  onclick='" + param
-        //        + "' style='margin:0px 5px 7px 10px; float:right'></i><input type='hidden' id='hdn_tr_delete_"
+        //add_row += "<button type='button' class='button color-red' aria-label='Remove item' id='btn_delete_td_" + btn_NewInv_Counter + '_' + row_counter + "'  onclick='" + param_delete
+        //        + "' style='margin:0px 10px 7px 10px; float:right'><i class='fa fa-trash' aria-hidden='true'></i></button>";
+        //add_row += "<button type='button' class='button' aria-label='Edit item' id='btn_edit_td_" + btn_NewInv_Counter + '_' + row_counter + "'  onclick='" + param
+        //        + "' style='margin:0px 5px 7px 10px; float:right'><i class='fa fa-pencil' aria-hidden='true'></i></button><input type='hidden' id='hdn_tr_delete_"
         //        + btn_NewInv_Counter + "_" + row_counter + " value='0'><br></div>";
 
         var hide_blank = $("#hdn_hide_blank_" + btn_NewInv_Counter + "").val();
@@ -1555,10 +1555,10 @@ function add_row_to_listview_by_popup(inv_test, json) {
             add_row += '</div>';
         }
 
-        //add_row += "<i class='fa fa-remove' id='btn_delete_td_" + btn_NewInv_Counter + '_' + row_counter + "'  onclick='" + param_delete
-        //        + "' style='margin:0px 10px 7px 10px; float:right'></i>";
-        //add_row += "<i class='fa fa-pencil' id='btn_edit_td_" + btn_NewInv_Counter + '_' + row_counter + "'  onclick='" + param
-        //        + "' style='margin:0px 5px 7px 10px; float:right'></i><input type='hidden' id='hdn_tr_delete_"
+        //add_row += "<button type='button' class='button color-red' aria-label='Remove item' id='btn_delete_td_" + btn_NewInv_Counter + '_' + row_counter + "'  onclick='" + param_delete
+        //        + "' style='margin:0px 10px 7px 10px; float:right'><i class='fa fa-trash' aria-hidden='true'></i></button>";
+        //add_row += "<button type='button' class='button' aria-label='Edit item' id='btn_edit_td_" + btn_NewInv_Counter + '_' + row_counter + "'  onclick='" + param
+        //        + "' style='margin:0px 5px 7px 10px; float:right'><i class='fa fa-pencil' aria-hidden='true'></i></button><input type='hidden' id='hdn_tr_delete_"
         //        + btn_NewInv_Counter + "_" + row_counter + " value='0'><br></div>";
 
         if (dup_found == 0) {

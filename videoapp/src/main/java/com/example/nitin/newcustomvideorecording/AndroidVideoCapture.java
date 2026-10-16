@@ -44,6 +44,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
     private Camera myCamera;
     private MyCameraSurfaceView myCameraSurfaceView;
     private MediaRecorder mediaRecorder;
+    private boolean recorderStarted;
 
     Button myButton;
     Button pauseButton;
@@ -191,6 +192,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
         int max = 0;
         int index = 0;
         myCamera = getCameraInstance();
+        if (myCamera == null) return false;
         Camera.Parameters p = myCamera.getParameters();
         final List<Camera.Size> listSize = p.getSupportedPreviewSizes();
         int max_width = Integer.MAX_VALUE;
@@ -247,6 +249,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
             e.printStackTrace();
         }
         mediaRecorder = new MediaRecorder();
+        recorderStarted = false;
         if (MAXVideoMs != -1) {
             mediaRecorder.setMaxDuration((int) MAXVideoMs);
         }
@@ -340,13 +343,44 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
 
     }
 
-    private void releaseMediaRecorder() {
+    private boolean startPreparedRecorder() {
+        try {
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+            recorderStarted = true;
+            return true;
+        } catch (IOException | RuntimeException e) {
+            Log.e(TAG, "Unable to start recording", e);
+            releaseMediaRecorder();
+            releaseCamera();
+            finish();
+            return false;
+        }
+    }
 
-        if (mediaRecorder != null) {
-            mediaRecorder.stop();      // clear recorder configuration
-            mediaRecorder.release();   // release the recorder object
+    private void pauseRecordingTimer() {
+        if (countDownTimerPausable != null && !countDownTimerPausable.isPaused()) {
+            countDownTimerPausable.pause();
+        }
+    }
+
+    private void releaseMediaRecorder() {
+        pauseRecordingTimer();
+        if (mediaRecorder == null) return;
+        try {
+            if (recorderStarted) mediaRecorder.stop();
+        } catch (RuntimeException e) {
+            // A short/interrupted recording may contain no valid frames yet.
+            Log.w(TAG, "Unable to finalize recording", e);
+        } finally {
+            recorderStarted = false;
+            mediaRecorder.release();
             mediaRecorder = null;
-            myCamera.lock();           // lock camera for later use
+            if (myCamera != null) {
+                try { myCamera.lock(); } catch (RuntimeException e) {
+                    Log.w(TAG, "Unable to relock camera", e);
+                }
+            }
         }
     }
 
@@ -449,15 +483,10 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
                             "Fail in prepareMediaRecorder()!\n - Ended -",
                             Toast.LENGTH_LONG).show();
                     finish();
+                    return;
                 }
                 Toast.makeText(getApplicationContext(), "Recording... \n You have to record for 15 seconds.", Toast.LENGTH_LONG).show();
-                try {
-                    mediaRecorder.prepare();
-                } catch (IOException e) {
-                    releaseMediaRecorder();
-                    e.printStackTrace();
-                }
-                mediaRecorder.start();
+                if (!startPreparedRecorder()) return;
                 recording = true;
                 myButton.setText("STOP");
                 myButton.setVisibility(View.GONE);
@@ -493,7 +522,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
 
                 Toast.makeText(getApplicationContext(), "Paused", Toast.LENGTH_SHORT).show();
                 // pause timer
-                countDownTimerPausable.pause();
+                pauseRecordingTimer();
 
                 //stop recording and release camera
 
@@ -520,13 +549,9 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
                         "Fail in prepareMediaRecorder()!\n - Ended -",
                         Toast.LENGTH_LONG).show();
                 finish();
+                return;
             }
-            try {
-                mediaRecorder.prepare();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            mediaRecorder.start();
+            if (!startPreparedRecorder()) return;
             pauseButton.setText("PAUSE");
             recording = true;
             scnt++;
@@ -683,7 +708,7 @@ public class AndroidVideoCapture extends Activity implements MediaRecorder.OnInf
 
     void alert() {
 
-        countDownTimerPausable.pause();
+        pauseRecordingTimer();
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
         builder1.setMessage("You have Reached Maximum File Size");
         builder1.setCancelable(true);

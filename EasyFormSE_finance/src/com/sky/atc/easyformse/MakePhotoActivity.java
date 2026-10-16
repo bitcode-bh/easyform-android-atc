@@ -131,6 +131,8 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
     MySharedPreferences sharedpreferences;
     private Camera camera;
     private Preview preview;
+    private boolean mirrorSelected = true;
+    private com.sky.atc.easyformse.camera.MirrorControl mirrorControl;
 
     private int cameraId = 0;
     private LocationManager locationManager;
@@ -405,10 +407,15 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
 //        }
 
         imgdate.setText(dateTime);
+        TextView site = findViewById(R.id.imgsiteid);
+        String siteId = getIntent().getStringExtra("site_id");
+        if (siteId != null && !siteId.trim().isEmpty() && !siteId.equals("0") && !siteId.equalsIgnoreCase("null")) {
+            site.setText("Site ID: " + siteId); site.setVisibility(VISIBLE);
+        }
         imgusername.setText("Username: " + username);
         imglat.setText(lat_str);
         imglng.setText(long_str);
-        if(info.equalsIgnoreCase("") || info.equalsIgnoreCase("null") )
+        if(info == null || info.equalsIgnoreCase("") || info.equalsIgnoreCase("null") )
         {
         }
         else {
@@ -448,7 +455,23 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
         p.acti = this;
         p.cam_id = findrearFacingCamera();
         preview = p;
+        p.addOnLayoutChangeListener((view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            View grid = findViewById(R.id.photo_preview_grid);
+            // Apply after the current layout pass so the parent's measure cache
+            // does not keep the initial preview aspect ratio for the grid.
+            grid.post(() -> {
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) grid.getLayoutParams();
+                if (params.width != view.getWidth() || params.height != view.getHeight()) {
+                    params.width = view.getWidth(); params.height = view.getHeight();
+                    grid.setLayoutParams(params);
+                }
+            });
+        });
         B_new.setP(p);
+        mirrorControl = new com.sky.atc.easyformse.camera.MirrorControl(this,
+                (ViewGroup)findViewById(R.id.preview_deg), value -> { mirrorSelected=value; p.setMirrored(value); });
+        p.setMirrored(mirrorSelected);
+
 
         int myColor = Color.parseColor("#1AFF0000");
 
@@ -479,7 +502,8 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
                     camviewid = 1;
                     p.cameraviewid = 1;
                     ((FrameLayout) findViewById(R.id.preview)).removeView(preview);
-                    ((FrameLayout) findViewById(R.id.preview)).addView(preview);
+                    ((FrameLayout) findViewById(R.id.preview)).addView(preview, 0,
+                            new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, android.view.Gravity.CENTER));
 
                 } else if (camviewid == 1) {
                     switchcamera.setImageResource(R.drawable.frontcamera_foreground);
@@ -487,7 +511,8 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
                     camviewid = 0;
                     p.cameraviewid = 0;
                     ((FrameLayout) findViewById(R.id.preview)).removeView(preview);
-                    ((FrameLayout) findViewById(R.id.preview)).addView(preview);
+                    ((FrameLayout) findViewById(R.id.preview)).addView(preview, 0,
+                            new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, android.view.Gravity.CENTER));
                 }
 
             }
@@ -594,7 +619,7 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
         }
 
 
-        // ((FrameLayout) findViewById(R.id.preview)).addView(preview);
+
 
         // do we have a camera?
         if (!getPackageManager()
@@ -833,7 +858,8 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
             checkDeviceTime();
         }
         ((FrameLayout) findViewById(R.id.preview)).removeView(preview);
-        ((FrameLayout) findViewById(R.id.preview)).addView(preview);
+        ((FrameLayout) findViewById(R.id.preview)).addView(preview, 0,
+                new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, android.view.Gravity.CENTER));
         mSensorManager.registerListener(this, accelerometer,
                 SensorManager.SENSOR_DELAY_UI);
         mSensorManager.registerListener(this, magnetometer,
@@ -1076,7 +1102,8 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
                     Toast.makeText(getApplicationContext(), "Please capture another photo", Toast.LENGTH_LONG).show();
                     ivCaptureFront.setClickable(true);
                     ((FrameLayout) findViewById(R.id.preview)).removeView(preview);
-                    ((FrameLayout) findViewById(R.id.preview)).addView(preview);
+                    ((FrameLayout) findViewById(R.id.preview)).addView(preview, 0,
+                            new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, android.view.Gravity.CENTER));
                     photoNumber--;
                     textAnimatorView.setText("" + photoNumber);
 //            animateTextView(,3,textAnimatorView);
@@ -1567,16 +1594,18 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
 
 
     //Showing captured Photo  to the view
+    public void onCameraReady(boolean front) { if (mirrorControl != null) { mirrorControl.show(front); mirrorControl.setMirrored(mirrorSelected); } }
+    public boolean isPhotoMirrored() { return p != null && p.isFrontCamera() && mirrorSelected; }
+
     public void gotoPreviewActivity(String photoPath) {
 
         imagePath = photoPath;
 
         Bitmap myBitmap = BitmapFactory.decodeFile(photoPath);
 
-        Matrix matrix = new Matrix();
-        matrix.postRotate(90);
-        Bitmap rotatedBitmap = Bitmap.createBitmap(myBitmap, 0, 0,
-                myBitmap.getWidth(), myBitmap.getHeight(), matrix, true);
+        Bitmap rotatedBitmap;
+        try { rotatedBitmap = com.sky.atc.easyformse.camera.CameraImages.orient(myBitmap, new File(photoPath)); }
+        catch (IOException error) { rotatedBitmap = myBitmap; }
 
         cameraImagePreview.setImageBitmap(rotatedBitmap);
 

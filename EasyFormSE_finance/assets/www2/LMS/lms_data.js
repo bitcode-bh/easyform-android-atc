@@ -148,30 +148,44 @@ var LmsData = (function () {
     function postAction(url, paramsStr, actionType, onSuccess, onFail) {
         var hasQueue = (typeof LMS_State !== 'undefined');
         if (hasQueue && !isOnline()) {
-            LMS_State.enqueueAction(actionType, { url: url, payload: paramsStr }, function () { optimisticOk(onSuccess); });
+            LMS_State.enqueueAction(actionType, { url: url, payload: paramsStr }, function (saved) {
+                if (saved) optimisticOk(onSuccess);
+                else if (onFail) onFail('Unable to save offline action');
+            });
             return;
         }
         var g = new Webservicecall_REST(url, paramsStr,
             function (e) { if (onSuccess) onSuccess(e); },
             function (err) {
                 if (hasQueue && !isOnline()) {
-                    LMS_State.enqueueAction(actionType, { url: url, payload: paramsStr }, function () { optimisticOk(onSuccess); });
+                    LMS_State.enqueueAction(actionType, { url: url, payload: paramsStr }, function (saved) {
+                        if (saved) optimisticOk(onSuccess);
+                        else if (onFail) onFail('Unable to save offline action');
+                    });
                 } else if (onFail) onFail(err);
             });
         g.callOtherDomain();
     }
     // Replay queued actions sequentially (invoked by LMS_State on reconnect).
-    function processOfflineQueue(records) {
-        if (!records || !records.length || typeof LMS_State === 'undefined') return;
+    function processOfflineQueue(records, onDone) {
+        var finished = false;
+        function done() { if (!finished) { finished = true; if (onDone) onDone(); } }
+        if (!records || !records.length || typeof LMS_State === 'undefined') { done(); return; }
         (function next(i) {
-            if (i >= records.length) return;
+            if (i >= records.length) { done(); return; }
             var rec = records[i], pd;
             try { pd = JSON.parse(rec.payload); }
-            catch (e) { LMS_State.removeAction(rec.id, function () { next(i + 1); }); return; }
+            catch (e) { done(); return; }
             var g = new Webservicecall_REST(pd.url, pd.payload,
-                function () { LMS_State.removeAction(rec.id, function () { next(i + 1); }); },
-                function () { if (!isOnline()) return; next(i + 1); });
-            g.callOtherDomain();
+                function (response) {
+                    var result;
+                    try { result = JSON.parse(response.responseText); } catch (e) { done(); return; }
+                    // HTTP success alone does not confirm that the write was saved.
+                    if (!result || !result[0] || String(result[0].status) !== '1') { done(); return; }
+                    LMS_State.removeAction(rec.id, function (removed) { if (removed === false) done(); else next(i + 1); });
+                },
+                function () { done(); });
+            try { g.callOtherDomain(); } catch (e) { done(); }
         })(0);
     }
 

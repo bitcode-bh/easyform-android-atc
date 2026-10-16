@@ -176,7 +176,7 @@ public class ProfilePhotoPlugin extends CordovaPlugin {
                         JSONObject jsonObject1 = new JSONObject();
                         jsonObject1.put("photo_id", photoId);
                         jsonObject1.put("photo_path", imageFilePath);
-                        jsonObject1.put("photo_size", UploadUtils.sizeofFile);
+                        jsonObject1.put("photo_size", UploadUtils.getFileSize(new java.io.File(imageFilePath).length()));
                         jsonArray.put(jsonObject1);
 
                         callbackContext.success(jsonArray.toString());

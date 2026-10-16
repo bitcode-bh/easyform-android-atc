@@ -2424,7 +2424,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                                 var ico_str = 'fa-ban';
                             }
                             else {
-                                var ico_str = 'fa-arrow-circle-down';
+                                var ico_str = 'fa-search';
                             }
 
                             if (search_box == 'true') {
@@ -2438,12 +2438,12 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                             if (QR_Code == 'true') {
                                 var param_qr = "get_qr_and_search_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "')";
-                                var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-qrcode" ' + enable_disable + ' style="margin-right:30px;margin-top:-30px; visibility: visible" onclick="' + param_qr + '" ></i>';
+                                var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-qrcode selection-scanner" ' + enable_disable + ' style="margin-right:30px;margin-top:-30px; visibility: visible" onclick="event.stopPropagation(); ' + param_qr + '" ></i>';
                                 var ddl_width = ""
                             }
                             else if (Barcode == 'true') {
                                 var param_qr = "get_barcode_and_search_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "')";
-                                var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-barcode" ' + enable_disable + ' style="margin-right:30px;margin-top:-30px; visibility: visible" onclick="' + param_qr + '" ></i>';
+                                var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-barcode selection-scanner" ' + enable_disable + ' style="margin-right:30px;margin-top:-30px; visibility: visible" onclick="event.stopPropagation(); ' + param_qr + '" ></i>';
                                 var ddl_width = ""
                             }
                             else {
@@ -2457,12 +2457,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                                 var ddl_param = ""
                             }
                             else {
-                                if (QR_Code == "true" || Barcode == "true") {
-                                    var ddl_param = "get_scanner_option('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "', '" + customer_checksheetid + "', '" + ddl_info_view + "', '" + QR_Code + "', '" + Barcode + "', '" + autofill + "', '" + add_cust_from_search + "')";
-                                }
-                                else {
-                                    var ddl_param = "get_dropdown_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "', '" + customer_checksheetid + "', '" + ddl_info_view + "', '" + autofill + "', '" + add_cust_from_search + "')";
-                                }
+                                var ddl_param = "get_dropdown_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "', '" + customer_checksheetid + "', '" + ddl_info_view + "', '" + autofill + "', '" + add_cust_from_search + "')";
                             }
 
                             if (add_cust_from_search == "true") {
@@ -2490,7 +2485,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                             var view_style = push_data[0].view_style;
                             if (default_value == '' || default_value == null || default_value == undefined) {
-                                newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + '>' + op_str + '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5% !important;"></i></div>';
+                                newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + '>' + op_str + '</select>' + (qr_ico_str || '<i class="fa ' + ico_str + ' form-ico"></i>') + '</div>';
                             }
                             else {
                                 var def_id = default_value[0].id;
@@ -2498,14 +2493,13 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                                 if (def_text == "" || def_text == null || def_text == undefined) {
                                     // default value not found
-                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + '>' + op_str + '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5% !important;"></i></div>';
+                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + '>' + op_str + '</select>' + (qr_ico_str || '<i class="fa ' + ico_str + ' form-ico"></i>') + '</div>';
                                 }
                                 else {
-                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + ' default_value="1">' + op_str + '<option selected="selected" value="' + def_id + '">' + def_text + '</option></select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5% !important;"></i></div>';
+                                    newdiv += '<select ' + multi_str + ' name="0" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000 !important;opacity:1;" view_style="' + view_style + '" disabled="disabled" ' + enable_disable + ' default_value="1">' + op_str + '<option selected="selected" value="' + def_id + '">' + def_text + '</option></select>' + (qr_ico_str || '<i class="fa ' + ico_str + ' form-ico"></i>') + '</div>';
                                 }
                             }
 
-                            newdiv += qr_ico_str;
 
                             //smart-select
                             //var prop_name = jsonObj[i].prop[0].name;
@@ -2696,9 +2690,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                         newdiv += "<div id='div_singleInvoice_cntrl_" + new_id + "'></div>";
                         newdiv += "<input type='hidden' id='hdn_type22_json_len_" + new_id + "' value='" + json_inv.length + "' type22_snglCntrl_type='" + type22_snglCntrl_type + "' type22_que_id='" + jsonObj[i].que_id + "'>";
 
-                        newdiv += "<div id='div_display_" + new_id + "' class='form-div'>";
-
-                        newdiv += "<input type='hidden' id='hdn_hide_blank_" + new_id + "' value='" + hide_blank + "'></div>";
+                        newdiv += "<input type='hidden' id='hdn_hide_blank_" + new_id + "' value='" + hide_blank + "'>";
                         newdiv += "<input type='hidden' id='hdn_jsondata_" + new_id + "' value='" + json_data + "'>";
                         newdiv += "<input type='hidden' id='hdn_inv_row_counter_" + new_id + "' value='0'>";
                         newdiv += "<input type='hidden' id='hdn_inv_tablename_" + new_id + "' value='" + table_name_inv + "'>";
@@ -2751,6 +2743,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
 
                         var control = new MkControls(obj);
                         newdiv += control.build_type_22_invoice();
+                        newdiv += "<div id='div_display_" + new_id + "' class='form-div'></div>";
                         newdiv += '</div>';
 
                         inv_Calc_new_array.push(new_id);
@@ -3503,7 +3496,7 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                 //single invoice control UI changes [18112021]
                 if (type22_snglCntrl_type == 20) { }
                 else {
-                    newdiv += '<span class="align-top d-inline-block" style="margin: 5px 25px;"><button type="button" id="btn_add_row_popup' + btn_add + '" value="Add Record" onclick="' + param + '" style="margin:0px;" class="btn btn-primary">Add</button>';
+                    newdiv += '<span class="align-top d-inline-block" style="margin: 5px 25px;"><button type="button" id="btn_add_row_popup' + btn_add + '" value="Add Record" onclick="' + param + '" style="margin:0px;" class="button button-fill">Add</button>';
                     newdiv += '</span>';
                 }
                 var single_jsonObj_type22 = JSON.stringify(jsonObj_type22);
@@ -3521,8 +3514,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
                 }
             }
             else {
-                var foot_str = '<div class="left"><a href="#" class="link" onclick="popup_items_hide_type22(1)">CANCEL</a></div>';
-                foot_str += '<div class="right"><a href="#" class="link" id="btn_add_row_popup' + btn_add + '" onclick="' + param + '">ADD</a></div>';
+                var foot_str = '<div class="left"><a href="#" class="link button button-fill button-negative" onclick="popup_items_hide_type22(1)">CANCEL</a></div>';
+                foot_str += '<div class="right"><a href="#" class="link button button-fill" id="btn_add_row_popup' + btn_add + '" onclick="' + param + '">ADD</a></div>';
                 $('.foooter-type22').append(foot_str);
                 $("#div_inv_form").append(newdiv);
             }
@@ -3852,8 +3845,8 @@ function read_dynamic_checksheet_main_POST(heading, check_type, step, data, butt
             }
             else {
                 var param = "return submit_popup_data_type20_add()";
-                var foot_str = '<div class="left"><a href="#" class="link" onclick="hide_type20_add_popup()">CANCEL</a></div>';
-                foot_str += '<div class="right"><a href="#" class="link" id="btn_type20_cust_add" onclick="' + param + '">ADD</a></div>';
+                var foot_str = '<div class="left"><a href="#" class="link button button-fill button-negative" onclick="hide_type20_add_popup()">CANCEL</a></div>';
+                foot_str += '<div class="right"><a href="#" class="link button button-fill" id="btn_type20_cust_add" onclick="' + param + '">ADD</a></div>';
                 $('.footer-type20-add').append(foot_str);
                 $("#popup_container_type20_add").empty();
                 $("#popup_container_type20_add").append(newdiv);

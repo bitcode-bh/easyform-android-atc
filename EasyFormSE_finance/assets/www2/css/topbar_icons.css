@@ -2,6 +2,7 @@
    Font Awesome 4 glyphs in a page's top bar are redrawn as thin line icons in
    the Home ink colour, to match the line art used on the Home cards. The <i>
    elements and their handlers are untouched; only what is painted changes. */
+.app-back-icon,
 .navbar .fa.fa-chevron-left:not(.home-search-ico),
 .navbar .fa.fa-search:not(.home-search-ico),
 .navbar .fa.fa-search-plus:not(.home-search-ico),
@@ -33,6 +34,8 @@
 .navbar .fa.fa-th-list:not(.home-search-ico)::before,
 .navbar .fa.fa-remove:not(.home-search-ico)::before,
 .navbar .fa.fa-times:not(.home-search-ico)::before { content: none !important; }
+.app-back-icon { background-color: currentColor; }
+.app-back-icon,
 .navbar .fa.fa-chevron-left { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M15 5l-7 7 7 7%22/%3E%3C/svg%3E"); }
 .navbar .fa.fa-search { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2210.5%22 cy=%2210.5%22 r=%226.5%22/%3E%3Cpath d=%22M15.5 15.5L20 20%22/%3E%3C/svg%3E"); }
 .navbar .fa.fa-search-plus { --tb-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2210.5%22 cy=%2210.5%22 r=%226.5%22/%3E%3Cpath d=%22M15.5 15.5L20 20M10.5 8v5M8 10.5h5%22/%3E%3C/svg%3E"); }

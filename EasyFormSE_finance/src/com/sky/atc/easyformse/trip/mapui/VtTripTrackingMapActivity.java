@@ -61,6 +61,12 @@ import java.util.Locale;
 // gitignored, so an XML layout added here would never reach a clean checkout.
 public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private final java.util.concurrent.ExecutorService pathExecutor = java.util.concurrent.Executors.newSingleThreadExecutor();
+    private boolean pathLoading;
+    private boolean pathCameraFramed;
+    private long loadedTripStartMs;
+    private float loadedPathMeters;
+    private int loadedViolationRuns;
     private GoogleMap map;
     private TextView headerView;
     private LinearLayout detailPanel;
@@ -832,15 +838,52 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         if (map == null) {
             return;
         }
-        List<TrackPathReader.TrackPoint> points;
-        if (pathPointsJson != null && pathPointsJson.length() > 0) {
-            points = TrackPathReader.fromJson(pathPointsJson);
-        } else if (pathMinMs > 0) {
-            points = TrackPathReader.readWindow(pathMinMs, pathMaxMs);
-        } else {
-            TrackPathReader.ActiveTrip trip = TrackPathReader.activeTrip();
-            points = TrackPathReader.read(trip);
-        }
+        if (pathLoading || isFinishing() || isDestroyed()) return;
+        pathLoading = true;
+        final String json = pathPointsJson;
+        final long min = pathMinMs, max = pathMaxMs;
+        pathExecutor.execute(new Runnable() {
+            @Override public void run() {
+                List<TrackPathReader.TrackPoint> points;
+                long start = min;
+                if (json != null && json.length() > 0) {
+                    points = TrackPathReader.fromJson(json);
+                } else if (min > 0) {
+                    points = TrackPathReader.readWindow(min, max);
+                } else {
+                    TrackPathReader.ActiveTrip trip = TrackPathReader.activeTrip();
+                    points = TrackPathReader.read(trip);
+                    if (trip != null) {
+                        try { start = Long.parseLong(trip.minMilli); } catch (NumberFormatException ignored) { }
+                    }
+                }
+                final List<TrackPathReader.TrackPoint> loaded = points;
+                final long tripStart = start;
+                final float meters = sumPathMeters(points);
+                final int violations = countViolationRuns(points);
+                runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                        pathLoading = false;
+                        if (isFinishing() || isDestroyed() || map == null) return;
+                        loadedTripStartMs = tripStart;
+                        loadedPathMeters = meters;
+                        loadedViolationRuns = violations;
+                        renderCoveredPath(loaded);
+                        // The initial camera fit runs before the worker returns.
+                        // Fit once after route data arrives; later polls preserve
+                        // any zoom or pan chosen by the user.
+                        if (!pathCameraFramed && !loaded.isEmpty()
+                                && (pathMinMs > 0 || routeOverlay)) {
+                            frameCamera();
+                            pathCameraFramed = true;
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void renderCoveredPath(List<TrackPathReader.TrackPoint> points) {
         lastPathPoints.clear();
         lastPathPoints.addAll(points);
         for (int i = 0; i < pathOverlays.size(); i++) {
@@ -914,20 +957,13 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         long startMs = pathMinMs;
         long endMs = pathMaxMs > 0 ? pathMaxMs : System.currentTimeMillis();
         if (startMs <= 0 && !lastPathPoints.isEmpty()) {
-            TrackPathReader.ActiveTrip trip = TrackPathReader.activeTrip();
-            if (trip != null) {
-                try {
-                    startMs = Long.parseLong(trip.minMilli);
-                } catch (NumberFormatException ignored) {
-                    startMs = 0;
-                }
-            }
+            startMs = loadedTripStartMs;
         }
 
         statsTitle.setText(pathMinMs > 0 && pathMaxMs <= 0 ? "LIVE TRIP" : "TRIP");
-        statsDistance.setText(formatDistanceKm(sumPathMeters(lastPathPoints)));
+        statsDistance.setText(formatDistanceKm(loadedPathMeters));
         statsTime.setText(formatDuration(startMs, endMs));
-        statsViolations.setText(String.valueOf(countViolationRuns(lastPathPoints)));
+        statsViolations.setText(String.valueOf(loadedViolationRuns));
         statsCard.setVisibility(View.VISIBLE);
         statsCard.post(new Runnable() {
             @Override
@@ -1012,7 +1048,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         if (map == null) {
             return;
         }
-        if (pathMinMs > 0 && !lastPathPoints.isEmpty()) {
+        if ((pathMinMs > 0 || routeOverlay) && !lastPathPoints.isEmpty()) {
             if (lastPathPoints.size() == 1) {
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                         lastPathPoints.get(0).position, MapConstants.SITE_ZOOM));
@@ -1166,6 +1202,8 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
 
     @Override
     protected void onDestroy() {
+        pathHandler.removeCallbacks(pathPoll);
+        pathExecutor.shutdownNow();
         super.onDestroy();
         if (locationReceiver != null) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);

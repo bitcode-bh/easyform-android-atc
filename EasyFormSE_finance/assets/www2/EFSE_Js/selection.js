@@ -1,5 +1,13 @@
 
 var value_counter = [];
+var module_navigation_generation = 0;
+var module_list_request = null;
+var module_navigation_uses_online = false;
+
+function module_navigation_context() {
+    return JSON.stringify([storage.getItem('id_Array'), storage.getItem('cust_flow_Array'),
+        storage.getItem('user_id'), storage.getItem('company_id'), localStorage.getItem('role_id_array')]);
+}
 
 function get_counter_for_online_flow() {
     try {
@@ -242,6 +250,9 @@ function get_udf_pid() {
 }
 
 function get_data_from_ufm() {
+    var generation = ++module_navigation_generation;
+    var context = module_navigation_context();
+    if (module_list_request) { module_list_request.cancel(); module_list_request = null; }
     try {
         var p_id = get_udf_pid();
         var role_id_array = localStorage.getItem('role_id_array');
@@ -253,8 +264,16 @@ function get_data_from_ufm() {
             p: "1"
         });
 
-        cordova.exec(SuccessCallBack_onload_get_data_from_ufm, get_data_from_ufm_FailCallBack, 'SqlitePlugin', 'showValues', q_jsonobj);
+        cordova.exec(function (e) {
+            if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
+            SuccessCallBack_onload_get_data_from_ufm(e);
+        }, function (e) {
+            if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
+            get_data_from_ufm_FailCallBack(e);
+        }, 'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
+        button_clicked = 0;
+        loading_hide();
         alert1(e + "get_data_from_ufm");
     }
 }
@@ -286,9 +305,19 @@ function SuccessCallBack_onload_get_data_from_ufm(e) {
                     status_string += ' (ufm.id=' + id + ' and tm.status in(' + status + ')) or';
                 }
             }
-            onload_get_counter_of_module_flow_new(status_string);
+            // Show the available actions before calculating optional task badges.
+            value_counter = [];
+            get_list_of_modules(function () {
+                onload_get_counter_of_module_flow_new(status_string);
+            });
         }
         else {
+            // Online module rows are not necessarily downloaded into the local UDF table.
+            // A selected submenu must fetch its children even when home features are enabled.
+            if (get_udf_pid() != 0 || module_navigation_uses_online) {
+                get_list_of_modules_online();
+                return;
+            }
 
             // when no flow assign to app user (head role) will display only featured options
             var KYFF = localStorage.getItem('KYFF');
@@ -343,6 +372,8 @@ function SuccessCallBack_onload_get_data_from_ufm(e) {
                         // signed in against a tenant that has no work for them), so just stop and
                         // leave the page usable -- Home's own dashboard/navbar/tabbar still render,
                         // and the side menu (logout) stays reachable.
+                        button_clicked = 0;
+                        loading_hide();
                         enable_back_button();
                         return;
                     }
@@ -354,17 +385,25 @@ function SuccessCallBack_onload_get_data_from_ufm(e) {
                 }
             }
 
+            button_clicked = 0;
+            loading_hide();
             enable_back_button();
         }
     } catch (e) {
+        button_clicked = 0;
+        loading_hide();
         alert1(e + "SuccessCallBack_onload_get_data_from_ufm");
     }
 
 }
 function get_data_from_ufm_FailCallBack(e) {
+    button_clicked = 0;
+    loading_hide();
     alert1(e + "get_data_from_ufm_FailCallBack");
 }
 function onload_get_counter_of_module_flow_new(status_string) {
+    var generation = module_navigation_generation;
+    var context = module_navigation_context();
     try {
         //var query = "select ufm.id,max(ufm.flow_id) as flow_id,max(ufm.p_id) as p_id ,ufm.type,ufm.flow_name,ufm.level_position, ufm.type, sum(case when (tm.tid is not null or tm.tid !=0) and "
         //		+ status_string
@@ -378,9 +417,11 @@ function onload_get_counter_of_module_flow_new(status_string) {
             p: "1"
         });
 
-        cordova.exec(SuccessCallBack_onload_get_counter_of_module_flow,
-            get_flow_counter_FailCallBack, 'SqlitePlugin', 'showValues',
-            q_jsonobj);
+        cordova.exec(function (e) {
+            if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
+            SuccessCallBack_onload_get_counter_of_module_flow(e);
+        }, function () { /* Counts are optional; the module list is already usable. */ },
+            'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
         alert1(e + "_onload_get_counter_of_module_flow_new");
     }
@@ -390,6 +431,7 @@ function onload_get_counter_of_module_flow_new(status_string) {
 function SuccessCallBack_onload_get_counter_of_module_flow(e) {
     try {
         var myArray = JSON.parse(e);
+        value_counter = [];
         if (myArray.length > 0) {
             for (var i = 0; i < myArray.length; i++) {
                 var id = myArray[i].id;
@@ -413,8 +455,7 @@ function SuccessCallBack_onload_get_counter_of_module_flow(e) {
             }
             set_count_value_to_module();
         } else {
-            alert1("No Module found ! Please go back...");
-            onload_get_counter_of_module_flow_new("here");
+            // An empty badge result must not restart navigation or issue invalid SQL.
         }
     } catch (e) {
         alert1(e + "SuccessCallBack_get_flow_module_counter");
@@ -449,7 +490,9 @@ function set_count_value_to_module() {
                 value_counter[i].count = count;
             }
         }
-        get_list_of_modules();
+        for (var k = 0; k < value_counter.length; k++) {
+            $('#offline_circle_' + value_counter[k].id).text(value_counter[k].count);
+        }
     } catch (e) {
         alert1(e + "_set_count_value_to_module");
     }
@@ -457,7 +500,9 @@ function set_count_value_to_module() {
 
 // get list of modules
 var featured_options_display = 0;
-function get_list_of_modules() {
+function get_list_of_modules(onRendered) {
+    var generation = module_navigation_generation;
+    var context = module_navigation_context();
     try {
 
         var id_Array = JSON.parse(storage.getItem('id_Array'));
@@ -571,11 +616,19 @@ function get_list_of_modules() {
             p: "1"
         });
         //alert1("query: " + query);
-        cordova.exec(SuccessCallBack_get_modules, showValuesFailCallBack, 'SqlitePlugin', 'showValues', q_jsonobj);
+        cordova.exec(function (e) {
+            if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
+            SuccessCallBack_get_modules(e);
+            if (onRendered && generation === module_navigation_generation && context === module_navigation_context()) onRendered();
+        }, function (e) {
+            if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
+            loading_hide(); button_clicked = 0;
+            showValuesFailCallBack(e);
+        }, 'SqlitePlugin', 'showValues', q_jsonobj);
 
     } catch (e) {
         //alert1(e + '_get_list_of_modules()');
-        get_list_of_modules();
+        button_clicked = 0;
         loading_hide();
     }
 }
@@ -757,6 +810,7 @@ function SuccessCallBack_get_modules(e) {
 
                             if (counter == 'true') {
                                 if (survey_mode != 'online') {
+                                    var count = '';
                                     for (var k = 0; k < value_counter.length; k++) {
                                         var id_temp = value_counter[k].id;
                                         if (id_count == id_temp) {
@@ -764,7 +818,7 @@ function SuccessCallBack_get_modules(e) {
                                             break;
                                         }
                                     }
-                                    tbl_str += '<span class="offline_counter badge mkbadge button button-fill" style="position: absolute; top: 10px; right: 4px; font-size:12px; width: 28px !important; height: 28px!important; line-height: 28px!important; color: white">' + count + '</span>';
+                                    tbl_str += '<span id="offline_circle_' + id_count + '" class="offline_counter badge mkbadge button button-fill" style="position: absolute; top: 10px; right: 4px; font-size:12px; width: 28px !important; height: 28px!important; line-height: 28px!important; color: white">' + count + '</span>';
                                     tbl_str += '<span class="offline_loader" style="position: absolute;top: 10px;right: 10px;display:none;"><img src="images/ajax-loader.gif" style="width:20px; height:20px"></span>';
                                 }
                                 else {
@@ -845,11 +899,11 @@ function SuccessCallBack_get_modules(e) {
 
                             if (icon_base64.indexOf("data:image") > -1) {
                                 //--base64 icon                              
-                                var list_item = '<li class="cls_task_ico" onclick=' + param + ' style="background-color:' + light_theme_color + '" udf_id="' + myArray[0].id + '" udf_name="' + udf_name + '" chart_click_json="' + chart_click_json + '"><a class="item-link item-content" style="padding-left:7px"><div class="item-media"><img src="' + icon_base64 + '"></div><div class="item-inner"><div class="item-title-row"><div class="item-title">' + short_udf_name + '</div>';
+                                var list_item = '<li class="cls_task_ico app-listing-row" onclick=' + param + ' style="background-color:' + light_theme_color + '" udf_id="' + myArray[0].id + '" udf_name="' + udf_name + '" chart_click_json="' + chart_click_json + '"><a class="item-link item-content" style="padding-left:7px"><div class="item-media"><img src="' + icon_base64 + '"></div><div class="item-inner"><div class="item-title-row"><div class="item-title">' + short_udf_name + '</div>';
                             }
                             else {
                                 //--FA icon
-                                var list_item = '<li class="cls_task_ico" onclick=' + param + ' style="background-color:' + light_theme_color + '" udf_id="' + myArray[0].id + '" udf_name="' + udf_name + '" chart_click_json="' + chart_click_json + '"><a class="item-link item-content"><div class="item-media"><i class="fa fa-' + icon_base64 + ' cls_task_ico"></i></div><div class="item-inner"><div class="item-title-row"><div class="item-title">' + short_udf_name + '</div>';
+                                var list_item = '<li class="cls_task_ico app-listing-row" onclick=' + param + ' style="background-color:' + light_theme_color + '" udf_id="' + myArray[0].id + '" udf_name="' + udf_name + '" chart_click_json="' + chart_click_json + '"><a class="item-link item-content"><div class="item-media"><i class="fa fa-' + icon_base64 + ' cls_task_ico"></i></div><div class="item-inner"><div class="item-title-row"><div class="item-title">' + short_udf_name + '</div>';
                             }
                             list_item += '<div class="item-after">';
 
@@ -864,6 +918,7 @@ function SuccessCallBack_get_modules(e) {
 
                             if (counter == 'true') {
                                 if (survey_mode != 'online') {
+                                    var count = '';
                                     for (var k = 0; k < value_counter.length; k++) {
                                         var id_temp = value_counter[k].id;
                                         if (id_count == id_temp) {
@@ -874,7 +929,7 @@ function SuccessCallBack_get_modules(e) {
 
                                     // put counter badge
                                     //list_item += '<span class="mkbadge button button-fill offline_counter">' + count + '</span><span class="offline_loader" style="display:none;"><img src="images/ajax-loader.gif" style="width:28px; height:28px"></span>';
-                                    list_item += '<span class="mkbadge button button-fill offline_counter cls_task_ico">' + count + '</span>';
+                                    list_item += '<span id="offline_circle_' + id_count + '" class="mkbadge button button-fill offline_counter cls_task_ico">' + count + '</span>';
                                 }
                                 else {
                                     if (myArray[0].type == 'Flow') {
@@ -1014,9 +1069,8 @@ function compare_time_for_online_count() {
 // module click
 function redirect_on_module_click(flow_name, id, flow_id, type, role_id, flag_direction, tab_index) {
     try {
-        loading();
-
         if (button_clicked != 1) {
+            loading();
             button_clicked = 1;
             setTimeout(function () {
                 button_clicked = 0;
@@ -1436,7 +1490,7 @@ function onsuccess_check_for_new_user_notifications(e) {
 
 //        localStorage.setItem('new_notification', 'false');
 //        $(".notification-badge").css("opacity", "0");
-//        $("#div_notification_container").empty();
+//        $("#notification_list").empty();
 
 //        var status = myArray[0].status;
 //        if (status == 1) {
@@ -1467,7 +1521,7 @@ function onsuccess_check_for_new_user_notifications(e) {
 //                str += '<div class="card-footer">' + time + '</div>';
 //                str += '</div>';
 
-//                $("#div_notification_container").append(str);
+//                $("#notification_list").append(str);
 //                //div.insertAdjacentHTML('beforeend', str);
 //            }
 //        }
@@ -1483,7 +1537,7 @@ function onsuccess_check_for_new_user_notifications(e) {
 //            str += '<div class="card-content card-content-padding">No Record Found</div>';
 //            //str += '<div class="card-footer"></div>';
 //            str += '</div>';
-//            $("#div_notification_container").append(str);
+//            $("#notification_list").append(str);
 //            //}
 //        }
 //        else {
@@ -1525,7 +1579,7 @@ function onsuccess_get_user_notifications(e) {
 
         var t_offset = limit_range - default_range;
         if (t_offset == 0) {
-            $("#div_notification_container").empty();
+            $("#notification_list").empty();
         }
        
         var status = myArray[0].status;
@@ -1556,32 +1610,17 @@ function onsuccess_get_user_notifications(e) {
                 var isRead = message[i].is_read == 1 || message[i].status == "read" || message[i].status == 1;
                 var readClass = isRead ? "read" : "unread";
                 
-                // Determine icon and color based on title/message content to match mockup variety
-                var iconClass = "fa-solid fa-bell";
-                var iconBgClass = "icon-grey";
-                var contentLower = (title + " " + msg).toLowerCase();
-                
-                if (contentLower.includes("permit")) { iconClass = "fa-regular fa-clipboard"; iconBgClass = "icon-blue"; }
-                else if (contentLower.includes("task") || contentLower.includes("assign")) { iconClass = "fa-solid fa-clipboard-list"; iconBgClass = "icon-green"; }
-                else if (contentLower.includes("alert") || contentLower.includes("warn") || contentLower.includes("safety")) { iconClass = "fa-solid fa-triangle-exclamation"; iconBgClass = "icon-orange"; }
-                else if (contentLower.includes("report")) { iconClass = "fa-regular fa-file-lines"; iconBgClass = "icon-purple"; }
-                else if (contentLower.includes("sync") || contentLower.includes("upload")) { iconClass = "fa-solid fa-cloud-arrow-up"; iconBgClass = "icon-teal"; }
-                else { iconClass = "fa-solid fa-circle-info"; iconBgClass = "icon-grey"; }
-
-                var str = '<div class="notification-card ' + readClass + '" onclick="close_notification_popup(this)">';
-                str += '  <div class="notification-indicator"></div>';
-                str += '  <div class="notification-icon ' + iconBgClass + '"><i class="' + iconClass + '"></i></div>';
+                var str = '<li class="app-listing-row"><button type="button" class="notification-card ' + readClass + '" onclick="close_notification_popup(this)">';
                 str += '  <div class="notification-content">';
                 str += '    <div class="notification-header">';
-                str += '      <div class="notification-title">' + title + '</div>';
+                str += '      <div class="notification-title app-listing-title">' + title + '</div>';
                 str += '      <div class="notification-time">' + time + '</div>';
                 str += '    </div>';
                 str += '    <div class="notification-message">' + msg + '</div>';
                 str += '  </div>';
-                str += '  <div class="notification-chevron"><i class="fa-solid fa-chevron-right"></i></div>';
-                str += '</div>';
+                str += '</button></li>';
 
-                $("#div_notification_container").append(str);
+                $("#notification_list").append(str);
             }
         }
         else if (status == 2) {
@@ -1589,12 +1628,11 @@ function onsuccess_get_user_notifications(e) {
                 $("#div_notification_container").unbind('scroll');
             }
             else {
-                var str = '<div class="notification-empty-state">';
-                str += '<i class="fa-regular fa-bell"></i>';
+                var str = '<li class="notification-empty-state">';
                 str += '<div class="title">No notifications yet</div>';
                 str += '<div class="subtitle">You\'re all caught up!</div>';
-                str += '</div>';
-                $("#div_notification_container").append(str);
+                str += '</li>';
+                $("#notification_list").append(str);
             }           
         }
         else {
@@ -1606,6 +1644,11 @@ function onsuccess_get_user_notifications(e) {
     catch (e) {
         alert1(e + '_onsuccess_get_user_notifications()');
     }
+}
+
+function close_notification_popup() {
+    myApp.closeModal('.popup-notifications');
+    $('.popup-notifications').hide();
 }
 
 function numFormatter(num) {
@@ -1729,6 +1772,9 @@ function onsuccess_get_download_counter_selection(e) {
 
 
 function get_list_of_modules_online() {
+    module_navigation_uses_online = true;
+    var generation = module_navigation_generation;
+    var context = module_navigation_context();
     try {
         loading();
 
@@ -1740,6 +1786,17 @@ function get_list_of_modules_online() {
         var _home_idArr0 = JSON.parse(storage.getItem('id_Array'));
         var _home_isTop = (_home_idArr0 == '' || _home_idArr0 == null || _home_idArr0 == undefined || (_home_idArr0.length || 0) === 0);
         var _home_cacheKey = 'home_modules_' + module_layout + '_' + JSON.parse(storage.getItem('company_id')) + '_' + storage.getItem('user_id');
+        if (get_udf_pid() == 0) {
+            $('#btn_page_back').hide();
+            $('#div_level').hide();
+            $('#lbl_last_flow').text('');
+            $('#menu_img_profile').parent('a').show();
+            $('#spn_Username').show();
+        } else {
+            $('#btn_page_back').show();
+            $('#menu_img_profile').parent('a').hide();
+            $('#spn_Username').hide();
+        }
         var _home_cached = _home_isTop ? localStorage.getItem(_home_cacheKey) : null;
         if (_home_cached) {
             // show cached list immediately; keep it visible while the fetch refreshes it silently (no blank, no spinner)
@@ -1802,6 +1859,9 @@ function get_list_of_modules_online() {
         var getdata = new Webservicecall_REST(common_global_wcf_url + 'WCF_UserDefineFlowMaster_With_MultiRole_Port', JSON.stringify(param_obj), function (e) {
 
             try {
+                if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
+                module_list_request = null;
+                button_clicked = 0;
                 var responseText = JSON.parse(e.responseText);
                 var status = responseText[0].status;
                 if (status == 1) {
@@ -2008,11 +2068,11 @@ function get_list_of_modules_online() {
 
                                     if (icon_base64.indexOf("data:image") > -1) {
                                         //--base64 icon                              
-                                        var list_item = '<li class="cls_task_ico" onclick=' + param + ' style="background-color:' + light_theme_color + '" udf_id="' + myArray[0].id + '" udf_name="' + udf_name + '" chart_click_json="' + chart_click_json + '"><a class="item-link item-content" style="padding-left:7px"><div class="item-media"><img src="' + icon_base64 + '"></div><div class="item-inner"><div class="item-title-row"><div class="item-title">' + short_udf_name + '</div>';
+                                        var list_item = '<li class="cls_task_ico app-listing-row" onclick=' + param + ' style="background-color:' + light_theme_color + '" udf_id="' + myArray[0].id + '" udf_name="' + udf_name + '" chart_click_json="' + chart_click_json + '"><a class="item-link item-content" style="padding-left:7px"><div class="item-media"><img src="' + icon_base64 + '"></div><div class="item-inner"><div class="item-title-row"><div class="item-title">' + short_udf_name + '</div>';
                                     }
                                     else {
                                         //--FA icon
-                                        var list_item = '<li class="cls_task_ico" onclick=' + param + ' style="background-color:' + light_theme_color + '" udf_id="' + myArray[0].id + '" udf_name="' + udf_name + '" chart_click_json="' + chart_click_json + '"><a class="item-link item-content"><div class="item-media"><i class="fa fa-' + icon_base64 + ' cls_task_ico"></i></div><div class="item-inner"><div class="item-title-row"><div class="item-title">' + short_udf_name + '</div>';
+                                        var list_item = '<li class="cls_task_ico app-listing-row" onclick=' + param + ' style="background-color:' + light_theme_color + '" udf_id="' + myArray[0].id + '" udf_name="' + udf_name + '" chart_click_json="' + chart_click_json + '"><a class="item-link item-content"><div class="item-media"><i class="fa fa-' + icon_base64 + ' cls_task_ico"></i></div><div class="item-inner"><div class="item-title-row"><div class="item-title">' + short_udf_name + '</div>';
                                     }
                                     list_item += '<div class="item-after">';
 
@@ -2128,9 +2188,18 @@ function get_list_of_modules_online() {
 
             }
             catch (e) {
+                loading_hide(); button_clicked = 0;
                 alert1(e + "_get_list_of_modules_online_inner()");
             }
-        }, onfail);
+        }, function () {
+            if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
+            module_list_request = null;
+            button_clicked = 0;
+            loading_hide();
+            enable_back_button();
+            alert1('Could not load modules. Please check your connection and try again.');
+        }, null, 30000, null, { attempts: 0, completed: false, maxAttempts: 1 });
+        module_list_request = getdata;
         getdata.callOtherDomain();
     }
     catch (e) {

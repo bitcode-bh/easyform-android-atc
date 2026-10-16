@@ -1,642 +1,297 @@
 package com.sky.atc.easyformse;
 
-import static com.sky.atc.easyformse.DrawingViewEditphoto.originalBitmap;
-import static com.sky.atc.easyformse.sqlitewraper.mainactivity;
-
-import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.app.Dialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
+import android.content.res.Configuration;
+import android.graphics.*;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.Settings;
-import android.text.Html;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
-import android.view.View;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.Toast;
-
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import android.os.*;
+import android.view.*;
+import android.widget.*;
 import androidx.exifinterface.media.ExifInterface;
-import com.sky.atc.easyformse.datautils.MySharedPreferences;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import com.sky.atc.easyformse.annotation.AnnotationDocument;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
 
+/** Keeps the existing photo_path input and status result contract. */
 public class EditPhotoActivity extends Activity {
+    private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final AnnotationDocument document = new AnnotationDocument();
+    private FrameLayout root;
+    private LinearLayout toolbar;
+    private DrawingViewEditphoto drawing;
+    private Bitmap preview;
+    private volatile File source;
+    private volatile boolean downloaded, destroyed;
+    private boolean saving, loaded;
+    private int selectedColor, tint = Color.rgb(8, 12, 24);
+    private View controlTint;
+    private int controlArea;
+    private float drawWidth, eraseWidth;
+    private int bottomInset;
+    private PopupWindow panel;
+    private static final int[] COMMON_COLORS = {Color.RED, 0xffffca28, 0xff43a047, 0xff2196f3, Color.WHITE, Color.BLACK};
+    private static final String[] COLOR_NAMES = {"Red", "Yellow", "Green", "Blue", "White", "Black"};
+    private final Runnable persistSettings = this::writeSettings;
+    private ProgressBar progress;
+    private final List<ImageButton> buttons = new ArrayList<>();
+    private ImageButton undo, redo, color, draw, erase;
+    private final Runnable hidePanel = () -> { if (panel != null) panel.dismiss(); };
 
-    private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
-    private ImageView imageView;
-    ImageButton mButtonSave;
-    private LinearLayout layColor, layBrush, layErase;
-    ImageView mImageView_edit;
-    ImageButton btnColor, btnBrush, btnErase;
-    LinearLayout mLinearLayoutBtn;
-    Bundle Extras;
-    String photo_path;
-    private Matrix matrix = new Matrix();
-    private float scale = 1f;
-    private ScaleGestureDetector scaleDetector;
-    String themecolor;
-
-    MySharedPreferences pref;
-    DrawingViewEditphoto mydrawingView;
-    Uri image_file;
-    Bitmap bmp;
-    int ret;
-    Bitmap alteredBitmap;
-   static Bitmap mutableBitmap;
-    private Bitmap lastBitmap;
-    B_new b;
-    FrameLayout mLayoutpaint;
-    SeekBar seekBar;
-    Runnable mRunnable;
-    Handler mHandler = new Handler();
-    int size = 1;
-    float lastX = 0f, lastY = 0f;
-    int mode = 0;
-    private float minScale = 0.8f, maxScale = 5f;
-
-    @SuppressLint("MissingInflatedId")
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.edit_photo);
-
-        pref = sqlitewraper.getSecureShared("MyPref");
-        b = new B_new();
-        imageView = findViewById(R.id.imageView);
-        mButtonSave = findViewById(R.id.btnSave);
-        mLinearLayoutBtn = findViewById(R.id.liner_savebtn);
-        layColor = findViewById(R.id.layColor);
-        layBrush = findViewById(R.id.layBrush);
-        layErase = findViewById(R.id.layErase);
-        mLayoutpaint = findViewById(R.id.ChoosenImageView_lay);
-        btnColor = findViewById(R.id.btnColor);
-        btnBrush = findViewById(R.id.btnBrush);
-        btnErase = findViewById(R.id.btnErase);
-        seekBar = findViewById(R.id.seekBar1);
-        mImageView_edit = findViewById(R.id.img_edit);
-        mImageView_edit.setVisibility(View.GONE);
-        themecolor = pref.getString("themecolor", "");
-        if (themecolor.equalsIgnoreCase("")) {
-        } else {
-            mLinearLayoutBtn.setBackgroundColor(Color.parseColor("#000000"));
-        }
-
-
-
-        Extras = getIntent().getExtras();
-        if (Extras != null) {
-
-            photo_path = Extras.getString("photo_path");
-//            photo_path = "https://atcmwfm.americantower.com/UploadFile_After_05222019/ReferencePhotos/Correcr%20ODC%20Earthing.png";
-
-
-        }
-        if (checkCameraPermission()) {
-
-        } else {
-            requestCameraPermission();
-        }
-        init();
-        scaleDetector = new ScaleGestureDetector(this, new ScaleListener());
-
-//        imageView.setOnTouchListener((v, event) -> {
-//
-//            // Always pass event to scale detector
-//            scaleDetector.onTouchEvent(event);
-//
-//            if (event.getPointerCount() > 1) {
-//
-//                switch (event.getActionMasked()) {
-//
-//                    case MotionEvent.ACTION_POINTER_DOWN:
-//                        lastX = event.getX(0);
-//                        lastY = event.getY(0);
-//                        mode = 2; // ZOOM MODE
-//                        break;
-//
-//                    case MotionEvent.ACTION_MOVE:
-//                        if (mode == 2) {
-//                            float dx = event.getX(0) - lastX;
-//                            float dy = event.getY(0) - lastY;
-//
-//                            dx /= scale;
-//                            dy /= scale;
-//
-//                            matrix.postTranslate(dx, dy);
-//                            fixTranslation();
-//                            imageView.setImageMatrix(matrix);
-//
-//                            lastX = event.getX(0);
-//                            lastY = event.getY(0);
-//                        }
-//                        break;
-//
-//                    case MotionEvent.ACTION_POINTER_UP:
-//                    case MotionEvent.ACTION_UP:
-//                        mode = 0;
-//                        break;
-//                }
-//
-//                return true; // 👈 consume ONLY 2 finger gestures
-//            }
-//
-//            // 🟢 ONE FINGER → allow DrawingView to handle
-//            return false;
-//        });
-
-
-
-
-        mButtonSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                save_bitmap();
-            }
+    @Override protected void onCreate(Bundle state) {
+        super.onCreate(state);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        immersive();
+        android.content.SharedPreferences preferences = getSharedPreferences("annotation_editor", MODE_PRIVATE);
+        selectedColor = preferences.getInt("color", Color.RED);
+        drawWidth = preferences.getFloat("draw_width", 6);
+        eraseWidth = preferences.getFloat("erase_width", 20);
+        boolean commonColor = false;
+        for (int value : COMMON_COLORS) if (value == selectedColor) commonColor = true;
+        if (!commonColor) selectedColor = Color.RED;
+        controlArea = getResources().getDimensionPixelSize(R.dimen.camera_control_area_bottom);
+        root = new FrameLayout(this); root.setBackgroundColor(tint); setContentView(root);
+        progress = new ProgressBar(this);
+        FrameLayout.LayoutParams loading = new FrameLayout.LayoutParams(dp(48), dp(48), Gravity.CENTER);
+        root.addView(progress, loading);
+        View topTint = new View(this); topTint.setBackgroundResource(R.color.camera_overlay_tint);
+        root.addView(topTint, new FrameLayout.LayoutParams(-1, getResources().getDimensionPixelSize(R.dimen.camera_control_area_top), Gravity.TOP));
+        controlTint = new View(this); controlTint.setBackgroundResource(R.color.camera_overlay_tint);
+        root.addView(controlTint, new FrameLayout.LayoutParams(-1, controlArea, Gravity.BOTTOM));
+        toolbar = new LinearLayout(this); toolbar.setOrientation(LinearLayout.HORIZONTAL);
+        toolbar.setPadding(0, 0, 0, 0); toolbar.setElevation(0);
+        FrameLayout.LayoutParams bar = new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM);
+        bar.setMargins(dp(6), 0, dp(6), dp(18)); root.addView(toolbar, bar);
+        toolbar.setBackgroundColor(Color.TRANSPARENT); buildToolbar(); setBusy(true);
+        root.setOnApplyWindowInsetsListener((view, insets) -> {
+            bottomInset = insets.getStableInsetBottom();
+            if (Build.VERSION.SDK_INT >= 29) bottomInset = Math.max(bottomInset, insets.getMandatorySystemGestureInsets().bottom);
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) toolbar.getLayoutParams();
+            params.bottomMargin = bottomInset + dp(18); toolbar.setLayoutParams(params);
+            layoutControlArea(); return insets;
         });
-        mLinearLayoutBtn.setVisibility(View.VISIBLE);
-//        mImageView_edit.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//
-//                GetColor color2 = new GetColor();
-//                color2.setColorValue(-54784);
-//
-//                mydrawingView = new DrawingViewEditphoto(EditPhotoActivity.this, mutableBitmap);
-//                mydrawingView.setBackgroundColor(Color.TRANSPARENT);
-//                b.setMutableBitmap(mutableBitmap);
-//                b.setB(mutableBitmap);
-//
-//                mLayoutpaint.addView(mydrawingView);
-//            }
-//        });
-
-        btnErase.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final DrawingView mDrawingView2 = new DrawingView(EditPhotoActivity.this,
-                        alteredBitmap);
-                AlertDialog.Builder eraseDialog = new AlertDialog.Builder(
-                        EditPhotoActivity.this);
-                eraseDialog.setIcon(R.drawable.eraser);
-                eraseDialog.setTitle(Html
-                        .fromHtml("<font color='#337ab7'>Erase Drowing</font>"));
-                eraseDialog.setMessage("Are You Sure You Want To Erase ?");
-                eraseDialog.setPositiveButton("Yes",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog,
-                                                int which) {
-                                // System.out.println("eraseAll() Method Call");
-                                alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
-                                mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
-                                mydrawingView.eraseAll();
-                                mydrawingView.resetZoom();
-
-                            }
-                        });
-                eraseDialog.setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog,
-                                                int which) {
-                                dialog.cancel();
-                            }
-                        });
-                eraseDialog.show();
-            }
-        });
-
-        btnBrush.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                seekBar.setProgress(GetColor.getDefaultBrushSize());
-                seekBar.setMax(20);
-                seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                        // TODO Auto-generated method stub
-                        mHandler.postDelayed(mRunnable, 2500);
-                    }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-                        // TODO Auto-generated method stub
-
-                    }
-
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar,
-                                                  int progress, boolean fromUser) {
-                        // TODO Auto-generated method stub
-                        seekBar.setVisibility(View.VISIBLE);
-                        seekBar.removeCallbacks(mRunnable);
-                        seekBar.postDelayed(mRunnable, 2500);
-                        GetColor getColor = new GetColor();
-                        GetColor.setStrockWidth(progress);
-                        getColor.setDefaultBrushSize(getColor
-                                .getStrockWidth());
-                        size = progress;
-                    }
-                });
-                Toast.makeText(getApplicationContext(),
-                                "Selected Size Is : " + size, Toast.LENGTH_SHORT)
-                        .show();
-                mRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        // TODO Auto-generated method stub
-                        seekBar.setVisibility(View.INVISIBLE);
-                        seekBar.setVisibility(View.GONE);
-                    }
-                };
-
-                if (seekBar.getVisibility() == View.GONE)
-                    seekBar.setVisibility(View.VISIBLE);
-                else if (seekBar.getVisibility() == View.VISIBLE)
-                    seekBar.setVisibility(View.GONE);
-
-            }
-        });
-        btnColor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-
-                HSVColorPickerDialog cpd = new HSVColorPickerDialog(
-                        EditPhotoActivity.this, 0xFF4488CC,
-                        new HSVColorPickerDialog.OnColorSelectedListener() {
-                            @Override
-                            public void colorSelected(Integer color) {
-                                // Do something with the selected color
-                                System.out.print("color" + color);
-                                GetColor colorpaint = new GetColor();
-                                colorpaint.setColorValue(color);
-                                colorpaint.setDefaultColor(colorpaint
-                                        .getColorValue());
-                                // colorpaint.setDefaultColor(colorpaint.getDefaultColor());
-                                Toast.makeText(getApplicationContext(),
-                                        "Brush Color Selected",
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                cpd.setTitle("Pick a color");
-                cpd.show();
-
-            }
-        });
+        root.requestApplyInsets();
+        String path = getIntent().getStringExtra("photo_path");
+        if (path == null || path.trim().isEmpty()) { failLoad("No image was supplied."); return; }
+        worker.execute(() -> load(path));
     }
-    public void init()
-    {
+    private void layoutControlArea() {
+        FrameLayout.LayoutParams tintParams = (FrameLayout.LayoutParams) controlTint.getLayoutParams();
+        tintParams.height = controlArea + bottomInset; controlTint.setLayoutParams(tintParams);
+        if (drawing != null) {
+            FrameLayout.LayoutParams imageParams = (FrameLayout.LayoutParams) drawing.getLayoutParams();
+            imageParams.bottomMargin = 0; drawing.setLayoutParams(imageParams);
+        }
+    }
+    private void immersive() {
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+    @Override public void onWindowFocusChanged(boolean focus) { super.onWindowFocusChanged(focus); if (focus) immersive(); }
+    private int dp(float value) { return Math.round(value * getResources().getDisplayMetrics().density); }
+    private GradientDrawable glass(int value, int alpha) {
+        GradientDrawable shape = new GradientDrawable(); shape.setColor((value & 0xffffff) | (alpha << 24));
+        shape.setCornerRadius(dp(26)); shape.setStroke(dp(1), 0x55ffffff); return shape;
+    }
+    private void buildToolbar() {
+        toolbar.removeAllViews(); buttons.clear();
+        float available = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density - 12;
+        boolean compact = available < 8 * 48;
+        LinearLayout tools = toolbar;
+        if (compact) {
+            HorizontalScrollView scroll = new HorizontalScrollView(this); scroll.setHorizontalScrollBarEnabled(false);
+            tools = new LinearLayout(this); scroll.addView(tools);
+            toolbar.addView(scroll, new LinearLayout.LayoutParams(0, -2, 1));
+        }
+        boolean labels = false;
+        undo = tool(tools, R.drawable.annotation_undo, "Undo", labels, compact, () -> { document.undo(); drawing.historyChanged(); });
+        redo = tool(tools, R.drawable.annotation_redo, "Redo", labels, compact, () -> { document.redo(); drawing.historyChanged(); });
+        color = tool(tools, R.drawable.annotation_color, "Color", labels, compact, this::showColors);
+        draw = tool(tools, R.drawable.annotation_draw, "Draw", labels, compact, () -> select(DrawingViewEditphoto.Tool.DRAW));
+        erase = tool(tools, R.drawable.annotation_erase, "Eraser", labels, compact, () -> select(DrawingViewEditphoto.Tool.ERASE));
+        tool(tools, R.drawable.annotation_thickness, "Thickness", labels, compact, this::showThickness);
+        tool(tools, R.drawable.annotation_clear, "Clear", labels, compact, () -> confirm("Clear all annotations?", "This will remove all drawings from the image. You can undo this action.", "Clear All", () -> { document.clear(); drawing.historyChanged(); }));
+        ImageButton save = tool(toolbar, R.drawable.annotation_save, "Save", labels, compact, this::save);
+        updateTools();
+    }
+    private ImageButton tool(LinearLayout parent, int icon, String label, boolean labels, boolean fixed, Runnable action) {
+        LinearLayout cell = new LinearLayout(this); cell.setOrientation(LinearLayout.VERTICAL); cell.setGravity(Gravity.CENTER); cell.setMinimumWidth(dp(48));
+        parent.addView(cell, fixed ? new LinearLayout.LayoutParams(dp(48), -2) : new LinearLayout.LayoutParams(0, -2, 1));
+        ImageButton button = new ImageButton(this); button.setPadding(dp(10), dp(10), dp(10), dp(10));
+        if (icon != 0) button.setImageResource(icon);
+        button.setColorFilter(Color.WHITE); button.setAlpha(1f);
+        button.setContentDescription(label); button.setBackgroundColor(Color.TRANSPARENT);
+        cell.addView(button, new LinearLayout.LayoutParams(dp(48), dp(48)));
+        button.setOnClickListener(v -> { if (loaded && !saving) action.run(); }); buttons.add(button);
+        if (labels) { TextView text = new TextView(this); text.setText(label); text.setTextSize(11); text.setTextColor(Color.WHITE); text.setPadding(0, dp(4), 0, 0); cell.addView(text); }
+        return button;
+    }
+    private GradientDrawable circle(int value) { GradientDrawable drawable = new GradientDrawable(); drawable.setShape(GradientDrawable.OVAL); drawable.setColor(value); drawable.setStroke(dp(1), 0x55ffffff); return drawable; }
+    private void updateTools() {
+        if (color == null) return;
+        color.setContentDescription(String.format(Locale.ROOT, "Color #%06X", selectedColor & 0xffffff));
+        if (drawing != null) {
+            undo.setEnabled(!saving && document.canUndo()); undo.setAlpha(1f);
+            redo.setEnabled(!saving && document.canRedo()); redo.setAlpha(1f);
+            draw.setSelected(drawing.getTool() == DrawingViewEditphoto.Tool.DRAW);
+            draw.setContentDescription(draw.isSelected() ? "Draw, selected" : "Draw");
+            erase.setSelected(drawing.getTool() == DrawingViewEditphoto.Tool.ERASE);
+            erase.setContentDescription(erase.isSelected() ? "Eraser, selected" : "Eraser");
+        }
+    }
+    private void setBusy(boolean busy) {
+        progress.setVisibility(busy ? View.VISIBLE : View.GONE);
+        for (ImageButton button : buttons) { button.setEnabled(!busy); button.setAlpha(1f); }
+        if (drawing != null) drawing.setEnabled(!busy); if (!busy) updateTools();
+    }
+    private void select(DrawingViewEditphoto.Tool tool) {
+        if (drawing.getTool() == tool) { showThickness(); return; }
+        hidePanel.run(); drawing.setTool(tool); drawing.setThickness(tool == DrawingViewEditphoto.Tool.ERASE ? eraseWidth : drawWidth); updateTools();
+    }
+    private void load(String path) {
+        Bitmap bitmap = null;
         try {
-            if (photo_path.startsWith("https://")) {
-                new Thread(() -> {
-                    try {
-                        URL url = new URL(photo_path);
-                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                        connection.setDoInput(true);
-                        connection.connect();
-                        InputStream input = connection.getInputStream();
-                        bmp = BitmapFactory.decodeStream(input);
-
-                        alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
-                        mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
-                        lastBitmap = mutableBitmap;
-
-
-                        runOnUiThread(() -> {
-                            //imageView.setImageBitmap(alteredBitmap);
-
-                            if (mydrawingView == null) {
-                                mydrawingView = new DrawingViewEditphoto(EditPhotoActivity.this, mutableBitmap);
-                                mydrawingView.setBackgroundColor(Color.TRANSPARENT);
-                                mLayoutpaint.addView(mydrawingView);
-                            }
-                        });
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }).start();
-            } else {
-                showImage(photo_path);
-            }
-
-        } catch (Exception e) {
-
+            File file;
+            if (path.startsWith("https://") || path.startsWith("content://")) {
+                file = File.createTempFile("annotation-source-", ".image", getCacheDir()); source = file; downloaded = true;
+                URLConnection connection = path.startsWith("https://") ? new URL(path).openConnection() : null;
+                if (connection != null) { connection.setConnectTimeout(15000); connection.setReadTimeout(30000); }
+                try (InputStream input = connection != null ? connection.getInputStream() : getContentResolver().openInputStream(Uri.parse(path)); OutputStream output = new FileOutputStream(file)) {
+                    if (input == null) throw new IOException("Image unavailable");
+                    byte[] buffer = new byte[16384]; int count; long total = 0; long deadline = SystemClock.elapsedRealtime() + 45000;
+                    while ((count = input.read(buffer)) != -1) { if (destroyed || SystemClock.elapsedRealtime() > deadline) throw new IOException("Image loading canceled or timed out"); total += count; if (total > 64L * 1024 * 1024) throw new IOException("Image file is too large"); output.write(buffer, 0, count); }
+                } finally { if (connection instanceof HttpURLConnection) ((HttpURLConnection) connection).disconnect(); }
+            } else file = new File(path.startsWith("file://") ? Uri.parse(path).getPath() : path);
+            source = file;
+            BitmapFactory.Options bounds = new BitmapFactory.Options(); bounds.inJustDecodeBounds = true; BitmapFactory.decodeFile(file.getPath(), bounds);
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw new IOException("Unsupported image");
+            BitmapFactory.Options options = new BitmapFactory.Options(); options.inSampleSize = 1;
+            while (Math.max(bounds.outWidth, bounds.outHeight) / options.inSampleSize > 2048) options.inSampleSize *= 2;
+            bitmap = orient(BitmapFactory.decodeFile(file.getPath(), options), file);
+            final Bitmap ready = bitmap;
+            handler.post(() -> {
+                if (destroyed) { ready.recycle(); return; }
+                preview = ready;
+                toolbar.setBackgroundColor(Color.TRANSPARENT);
+                drawing = new DrawingViewEditphoto(this, ready, document);
+                drawing.setColor(selectedColor); drawing.setThickness(drawWidth);
+                if (getIntent().getBooleanExtra("view_only", false)) drawing.setTool(DrawingViewEditphoto.Tool.NAVIGATE);
+                drawing.onChange(this::updateTools); root.addView(drawing, 0, new FrameLayout.LayoutParams(-1, -1));
+                layoutControlArea(); loaded = true; setBusy(false);
+            });
+        } catch (Exception | OutOfMemoryError error) {
+            if (bitmap != null && !bitmap.isRecycled()) bitmap.recycle();
+            handler.post(() -> failLoad("Unable to open this image. Please try a smaller or valid image."));
         }
     }
-    private void fixTranslation() {
-        float[] values = new float[9];
-        matrix.getValues(values);
-
-        float transX = values[Matrix.MTRANS_X];
-        float transY = values[Matrix.MTRANS_Y];
-        float currentScale = values[Matrix.MSCALE_X];
-
-        Drawable d = imageView.getDrawable();
-        if (d == null) return;
-
-        int imgWidth = (int) (d.getIntrinsicWidth() * currentScale);
-        int imgHeight = (int) (d.getIntrinsicHeight() * currentScale);
-
-        int viewWidth = imageView.getWidth();
-        int viewHeight = imageView.getHeight();
-
-        float minTransX, maxTransX, minTransY, maxTransY;
-
-        if (imgWidth > viewWidth) {
-            minTransX = viewWidth - imgWidth;
-            maxTransX = 0;
-        } else {
-            // Center horizontally if image smaller than view
-            minTransX = maxTransX = (viewWidth - imgWidth) / 2f;
-        }
-
-        if (imgHeight > viewHeight) {
-            minTransY = viewHeight - imgHeight;
-            maxTransY = 0;
-        } else {
-            // Center vertically if image smaller than view
-            minTransY = maxTransY = (viewHeight - imgHeight) / 2f;
-        }
-
-        float newTransX = Math.min(Math.max(transX, minTransX), maxTransX);
-        float newTransY = Math.min(Math.max(transY, minTransY), maxTransY);
-
-        matrix.postTranslate(newTransX - transX, newTransY - transY);
-    }
-
-
-    public void showImage(String photo_path) {
-        try {
-            File imgFile = new File(photo_path);
-            if (imgFile.exists()) {
-                image_file = Uri.fromFile(imgFile);
-
-                bmp = BitmapFactory.decodeFile(photo_path);
-
-                ExifInterface ei = new ExifInterface(imgFile.getAbsolutePath());
-                bmp = imageOreintationValidator(bmp, imgFile.getAbsolutePath());
-
-                alteredBitmap = Bitmap.createScaledBitmap(bmp, 720, 1080, true);
-                mutableBitmap = alteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
-                lastBitmap = mutableBitmap;
-                runOnUiThread(() -> {
-                  //  imageView.setImageBitmap(mutableBitmap);
-
-                    if (mydrawingView == null) {
-                        mydrawingView = new DrawingViewEditphoto(EditPhotoActivity.this, mutableBitmap);
-                        mydrawingView.setBackgroundColor(Color.TRANSPARENT);
-                        mLayoutpaint.addView(mydrawingView);
-                    }
-                });
-
-            }
-        } catch (Exception e) {
-
-        }
-    }
-
-    int rot = 0;
-
-    private Bitmap imageOreintationValidator(Bitmap bitmap, String path) {
-
-        if (!camera_new.isCropMode) {
-
-            ExifInterface ei;
+    private int darker(int value) { return Color.rgb((int)(Color.red(value) * .65), (int)(Color.green(value) * .65), (int)(Color.blue(value) * .65)); }
+    static Bitmap orient(Bitmap bitmap, File file) throws IOException { return com.sky.atc.easyformse.camera.CameraImages.orient(bitmap,file); }
+    private void failLoad(String message) { if (destroyed) return; com.sky.atc.easyformse.camera.AppCameraDialog.show(this,"Unable to open image",message,"OK",false,()->{setResult(RESULT_CANCELED);finish();}); }
+    private void save() {
+        if (saving || !loaded) return;
+        hidePanel.run(); saving = true; setBusy(true);
+        final List<AnnotationDocument.Command> commands = document.snapshot();
+        worker.execute(() -> {
+            Bitmap full = null, layer = null; File output = null;
             try {
-                ei = new ExifInterface(path);
-                int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                        ExifInterface.ORIENTATION_NORMAL);
-                switch (orientation) {
-                    case ExifInterface.ORIENTATION_ROTATE_90:
-                        bitmap = rotateImage(bitmap, 90);
-                        rot++;
-                        break;
-                    case ExifInterface.ORIENTATION_ROTATE_180:
-                        bitmap = rotateImage(bitmap, 180);
-                        rot++;
-                        break;
-                    case ExifInterface.ORIENTATION_ROTATE_270:
-                        bitmap = rotateImage(bitmap, 270);
-                        rot++;
-                        break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return bitmap;
-    }
-
-    public static Bitmap rotateImage(Bitmap source, float angle) {
-
-        Bitmap retVal = source;
-        if (!camera_new.isCropMode) {
-
-            try {
-                Matrix matrix = new Matrix();
-                matrix.postRotate(angle);
-
-                retVal = Bitmap.createBitmap(source, 0, 0, source.getWidth(),
-                        source.getHeight(), matrix, true);
-            } catch (Exception e) {
-
-
-                final Writer result = new StringWriter();
-                final PrintWriter printWriter = new PrintWriter(result);
-                String stacktrace = result.toString();
-                printWriter.close();
-
-                retVal = source;
-
-            }
-        }
-        return retVal;
-
-    }
-
-    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        //        @Override
-//        public boolean onScale(ScaleGestureDetector detector) {
-//            scale *= detector.getScaleFactor();
-//            scale = Math.max(0.8f, Math.min(scale, 8.0f));
-//            matrix.setScale(scale, scale);
-//            imageView.setImageMatrix(matrix);
-//
-//
-//            return true;
-//        }
-        public boolean onScale(ScaleGestureDetector detector) {
-            float scaleFactor = detector.getScaleFactor();
-            float newScale = scale * scaleFactor;
-
-            if (newScale < minScale) scaleFactor = minScale / scale;
-            if (newScale > maxScale) scaleFactor = maxScale / scale;
-
-            scale *= scaleFactor;
-            matrix.postScale(scaleFactor, scaleFactor, detector.getFocusX(), detector.getFocusY());
-            fixTranslation();
-            imageView.setImageMatrix(matrix);
-            return true;
-        }
-    }
-
-    void save_bitmap() {
-        Bitmap b_n = mydrawingView.getFinalBitmap();
-        try {
-            File file = null;
-            if (!Environment.getExternalStorageState().equals(
-                    Environment.MEDIA_MOUNTED)) {
-                // handle case of no SDCARD present
-                Toast.makeText(getApplicationContext(),
-                                "Opps ? SD Card Not Present..", Toast.LENGTH_SHORT)
-                        .show();
-
-            } else {
-                String dir = Environment.getExternalStorageDirectory()
-                        + File.separator + "myDirectory";
-                // create folder
-                File folder = new File(dir); // folder name
-                folder.mkdirs();
-                // create file
-                String name = "IMG" + System.currentTimeMillis() + ".jpeg";
-                file = new File(dir, name);
-            }
-            b_n = Bitmap.createScaledBitmap(b_n, mutableBitmap.getWidth(),
-                    mutableBitmap.getHeight(), true);
-
-            FileOutputStream out = new FileOutputStream(file.getAbsolutePath());
-
-
-            b_n.compress(Bitmap.CompressFormat.JPEG, Integer.valueOf(100), out);
-
-
-            out.flush();
-            out.close();
-
-            Bundle b = new Bundle();
-
-            String path = file.getAbsolutePath();
-            File filelenght = new File(path);
-            long lengthoffile = filelenght.length();
-            lengthoffile = lengthoffile / 1024;
-
-            int filesize = Integer.parseInt("5") * 1000;
-            if (lengthoffile < filesize) {
-                b.putString("status", file.getAbsolutePath());
-                Intent intent = new Intent();
-                intent.putExtras(b);
-                if (getParent() == null) {
-
-                    setResult(RESULT_OK, intent);
-                } else {
-                    getParent().setResult(Activity.RESULT_OK, intent);
-                }
-                pref.putString("photo_path", file.getAbsolutePath());
-                pref.commit();
-                finish();
-            } else {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(EditPhotoActivity.this, "File size is too big ! \n File size must be less than " + 5 + "MB!", Toast.LENGTH_LONG).show();
-                    }
+                BitmapFactory.Options options = new BitmapFactory.Options(); options.inMutable = true; options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                full = orient(BitmapFactory.decodeFile(source.getPath(), options), source);
+                layer = Bitmap.createBitmap(full.getWidth(), full.getHeight(), Bitmap.Config.ARGB_8888);
+                DrawingViewEditphoto.render(new Canvas(layer), commands, full.getWidth(), full.getHeight());
+                new Canvas(full).drawBitmap(layer, null, new RectF(0, 0, full.getWidth(), full.getHeight()), null);
+                File folder = new File(getFilesDir(), "annotated_photos"); if (!folder.isDirectory() && !folder.mkdirs()) throw new IOException("Unable to create output folder");
+                output = File.createTempFile("IMG-", ".jpeg", folder);
+                try (OutputStream stream = new FileOutputStream(output)) { if (!full.compress(Bitmap.CompressFormat.JPEG, 100, stream)) throw new IOException("Unable to encode image"); }
+                // Preserve the existing caller's 5 MB upload contract; never silently resize.
+                if (output.length() >= 5000L * 1024) throw new IOException("Image exceeds the existing 5 MB upload limit. Original resolution was preserved.");
+                final File saved = output;
+                handler.post(() -> {
+                    if (destroyed) { saved.delete(); return; }
+                    com.sky.atc.easyformse.datautils.MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
+                    pref.putString("photo_path", saved.getAbsolutePath()); pref.commit();
+                    Intent result = new Intent().putExtra("status", saved.getAbsolutePath()); setResult(RESULT_OK, result);
+                    saving = false; finish();
                 });
-
-            }
-
-        } catch (Exception e) {
-            Bundle b = new Bundle();
-            b.putString("result", e.toString());
-            Intent intent = new Intent();
-            intent.putExtras(b);
-            setResult(RESULT_CANCELED, intent);
-            finish();
+            } catch (Exception | OutOfMemoryError error) {
+                if (output != null) output.delete();
+                final String message = error instanceof OutOfMemoryError ? "Not enough memory to save at original resolution." : error.getMessage();
+                handler.post(() -> { if (!destroyed) { saving = false; setBusy(false); com.sky.atc.easyformse.camera.AppCameraDialog.show(this,"Unable to save image",message,"OK",false,()->{}); } });
+            } finally { if (layer != null) layer.recycle(); if (full != null) full.recycle(); }
+        });
+    }
+    private void showPanel(View content, int height) {
+        hidePanel.run(); panel = new PopupWindow(content, Math.min(root.getWidth() - dp(24), dp(340)), dp(height), true);
+        panel.setBackgroundDrawable(glass(darker(tint), 245)); panel.setOutsideTouchable(true); panel.setElevation(dp(8));
+        panel.setOnDismissListener(() -> handler.removeCallbacks(hidePanel));
+        panel.showAtLocation(root, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, bottomInset + toolbar.getHeight() + dp(24));
+    }
+    private LinearLayout panelBody(String title) {
+        LinearLayout body = new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL); body.setPadding(dp(16), dp(12), dp(16), dp(12));
+        TextView heading = text(title, 16); body.addView(heading); return body;
+    }
+    private TextView text(String value, int size) { TextView view = new TextView(this); view.setText(value); view.setTextColor(Color.WHITE); view.setTextSize(size); return view; }
+    private void showThickness() {
+        boolean erasing = drawing.getTool() == DrawingViewEditphoto.Tool.ERASE;
+        LinearLayout body = panelBody(erasing ? "Eraser thickness" : "Draw thickness");
+        StrokePreview sample = new StrokePreview(this); body.addView(sample, new LinearLayout.LayoutParams(-1, dp(32)));
+        SeekBar slider = new SeekBar(this); slider.setMax(63); slider.setProgress(Math.round(erasing ? eraseWidth : drawWidth) - 1);
+        body.addView(slider); slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            public void onProgressChanged(SeekBar bar, int value, boolean user) { if (erasing) eraseWidth = value + 1; else drawWidth = value + 1; drawing.setThickness(value + 1); sample.invalidate(); remember(); }
+            public void onStartTrackingTouch(SeekBar bar) { handler.removeCallbacks(hidePanel); }
+            public void onStopTrackingTouch(SeekBar bar) { handler.postDelayed(hidePanel, 4000); }
+        });
+        showPanel(body, 142); handler.removeCallbacks(hidePanel); handler.postDelayed(hidePanel, 8000);
+    }
+    private class StrokePreview extends View {
+        final Paint brush = new Paint(Paint.ANTI_ALIAS_FLAG);
+        StrokePreview(android.content.Context context) { super(context); }
+        @Override protected void onDraw(Canvas canvas) { brush.setColor(drawing.getTool() == DrawingViewEditphoto.Tool.ERASE ? Color.WHITE : selectedColor); brush.setStrokeCap(Paint.Cap.ROUND); brush.setStrokeWidth(dp(drawing.getTool() == DrawingViewEditphoto.Tool.ERASE ? eraseWidth : drawWidth)); canvas.drawLine(dp(24), getHeight()/2f, getWidth()-dp(24), getHeight()/2f, brush); }
+    }
+    private void setColor(int value) {
+        selectedColor = value; drawing.setColor(value); updateTools(); remember();
+    }
+    private void remember() { handler.removeCallbacks(persistSettings); handler.postDelayed(persistSettings, 250); }
+    private void writeSettings() {
+        getSharedPreferences("annotation_editor", MODE_PRIVATE).edit().putInt("color", selectedColor).putFloat("draw_width", drawWidth).putFloat("erase_width", eraseWidth).apply();
+    }
+    private void showColors() {
+        hidePanel.run();
+        LinearLayout row = new LinearLayout(this); row.setGravity(Gravity.CENTER);
+        for (int i = 0; i < COMMON_COLORS.length; i++) {
+            final int value = COMMON_COLORS[i];
+            FrameLayout target = new FrameLayout(this);
+            row.addView(target, new LinearLayout.LayoutParams(0, dp(48), 1));
+            View dot = new View(this); GradientDrawable shape = circle(value);
+            shape.setStroke(dp(selectedColor == value ? 2 : 1), selectedColor == value ? Color.WHITE : 0x88999999);
+            dot.setBackground(shape); target.addView(dot, new FrameLayout.LayoutParams(dp(20), dp(20), Gravity.CENTER));
+            target.setContentDescription(COLOR_NAMES[i] + (selectedColor == value ? ", selected" : ""));
+            target.setOnClickListener(v -> { setColor(value); hidePanel.run(); });
         }
+        panel = new PopupWindow(row, Math.min(root.getWidth() - dp(24), dp(288)), dp(48), true);
+        panel.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+        panel.setOutsideTouchable(true); panel.setElevation(0);
+        panel.showAtLocation(root, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, bottomInset + toolbar.getHeight() + dp(22));
     }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent();
-        setResult(RESULT_CANCELED, intent);
-        finish();
+    private void confirm(String title, String message, String positive, Runnable action) {
+        hidePanel.run(); com.sky.atc.easyformse.camera.AppCameraDialog.show(this,title,message,positive,true,action);
     }
-
-    void requestCameraPermission () {
-        ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, CAMERA_PERMISSION_REQUEST_CODE);
+    @Override public void onBackPressed() {
+        if (saving) return;
+        if (document.isDirty()) confirm("Discard annotations?", "Your unsaved drawings will be lost.", "Discard", () -> { setResult(RESULT_CANCELED); finish(); });
+        else { setResult(RESULT_CANCELED); finish(); }
     }
-
-    boolean checkCameraPermission () {
-        return (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) +
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) == PackageManager.PERMISSION_GRANTED;
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-
-               // init();
-            } else {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) +
-                        ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)  {
-
-                    showMessageOKCancel("You need to allow access file and media permissions",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
-                                    mainactivity.startActivity(intent);
-                                    finish();
-                                }
-                            });
-
-                }
-            }
-        }
-    }
-
-    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
-        new AlertDialog.Builder(EditPhotoActivity.this)
-                .setMessage(message)
-                .setPositiveButton("OK", okListener)
-                .setCancelable(false)
-                .create()
-                .show();
+    @Override public void onConfigurationChanged(Configuration config) { super.onConfigurationChanged(config); hidePanel.run(); buildToolbar(); setBusy(!loaded || saving); }
+    @Override protected void onDestroy() {
+        destroyed = true; hidePanel.run(); handler.removeCallbacks(hidePanel); handler.removeCallbacks(persistSettings); writeSettings(); worker.shutdown();
+        if (drawing != null) drawing.release(); if (preview != null) preview.recycle();
+        // Delete downloaded sources only after queued save/load work has finished.
+        if (downloaded) new Thread(() -> { try { worker.awaitTermination(60, TimeUnit.SECONDS); } catch (InterruptedException error) { Thread.currentThread().interrupt(); } if (worker.isTerminated() && source != null) source.delete(); }, "annotation-cleanup").start();
+        super.onDestroy();
     }
 }

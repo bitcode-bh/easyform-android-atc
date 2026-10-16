@@ -1,5 +1,6 @@
 ﻿// call on capture button
 function CaptureClick(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode) {
+    if (aiPhotoPending) { alert1("Please wait for the current AI photo check to finish."); return; }
     try {
         // storage.setItem('crash_status', JSON.stringify('1'));
         storage.setItem('img_id', JSON.stringify(item_id));
@@ -262,6 +263,7 @@ function capture_Photo() {
                 checksheetID: check_type,
                 serverTaskId: server_task_id,
                 info: info_arry,
+                site_id: JSON.parse(storage.getItem('siteid')) || '',
                 max_file_size: max_file_size,
                 model_name: model_name,
                 prompt_text: prompt_text,
@@ -283,6 +285,7 @@ function capture_Photo() {
                 camera_type: camera_type,
                 camera_edit: camera_edit,
                 info: info_arry,
+                site_id: JSON.parse(storage.getItem('siteid')) || '',
                 max_file_size: max_file_size,
                 model_name: model_name,
                 prompt_text: prompt_text,
@@ -1176,6 +1179,7 @@ var glob_curr_form_flag;
 ///customer camera click
 
 function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, target_div, ref_class) {
+    if (aiPhotoPending) { alert1("Please wait for the current AI photo check to finish."); return; }
     try {
         $("#img_full_type7").attr("src", "");
         $("#div_bottom_div_type7").empty();
@@ -1222,7 +1226,7 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                     }
 
                     if (attempt >= max_attempt) {
-                        alert("You have reached max limit to capture this photo");
+                        alert1("Maximum retry limit reached.");
                         return false;
                     }
                 }
@@ -1441,6 +1445,7 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                 photo_type: photo_type,
                 flowParamData: flowParamData,
                 info: info_arry,
+                site_id: JSON.parse(storage.getItem('siteid')) || '',
                 max_file_size: max_file_size,
                 model_name: model_name,
                 prompt_text: prompt_text,
@@ -1455,7 +1460,12 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
                 else {
                     loading();
                 }
-                cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
+                if (photo_type == "AI") {
+                    const aiCallbacks = create_ai_photo_handlers(img_div, onsuccess_CaptureClick_Customer, onfail_customer_camera);
+                    cordova.exec(aiCallbacks.success, aiCallbacks.error, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
+                } else {
+                    cordova.exec(onsuccess_CaptureClick_Customer, onfail_customer_camera, 'UploadPhotoPlugin', 'anAction', q_jsonobj);
+                }
             }
             else if (photo_type == "Attendance") {
                 verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, photo_type, img_latlong, width, height, quality, null_img, burstmode, ref_class, q_jsonobj)
@@ -1645,123 +1655,7 @@ function onsuccess_CaptureClick_Customer(e) {
     }
 
 
-    // autofill AI text to below textbox derived from image response - mk - 28072025
-    var img_div = JSON.parse(storage.getItem('img_div_id'));
-    var target_class = $("#" + img_div + "").attr('target_class');
-    if (target_class == "" || target_class == null || target_class == undefined) {
-        if (photo_type == "AI") {
-            let responsetext = response[0].responsetext;
-            responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
-            try {
-
-                try {
-                    var responsetext_new = responsetext.replaceAll('\n', '');
-                    responsetext_new = responsetext_new.match(/\{(.*?)\}/);     // extract inner string { }
-                    responsetext_new = responsetext_new[0];
-                    var responseJSON = JSON.parse(responsetext_new);
-                }
-                catch (e) {
-                    // response with Result key
-                    var responsetext_new = responsetext.replaceAll('\n', '');
-                    var responseJSON = JSON.parse(responsetext_new);
-                }
-
-                // response is in JSON
-                $.each(responseJSON, function (key, value) {
-
-                    if (typeof value == 'object') {
-                        value = value.Result;
-                    }
-                    else {
-                        try {
-                            value = JSON.parse(value);
-                            value = value.Result;
-                        }
-                        catch (e) {
-                            value = value;
-                        }
-                    }
-
-                    let qid_class = key;
-                    $("." + qid_class + "").show();
-                    $("." + qid_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
-                    let where_box_id = $("." + qid_class + " :input").attr("id");
-                    let tagName = $("#" + where_box_id + "").prop("tagName");
-                    if (tagName == "TEXTAREA") {
-                        $("#" + where_box_id + "").val(value);
-                    }
-                    else {
-                        if (where_box_id.indexOf("rdo_") > -1) {
-                            // radio autoselect
-                            $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').prop('checked', true);
-                            var onchange_avail = $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').attr("onchange");
-                            if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
-                            else {
-                                setTimeout(function () {
-                                    $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').trigger("onchange");
-                                }, 1000);
-                            }
-                        }
-                        else {
-                            // textbox autofill
-                            let $input = $("#" + where_box_id + "");
-                            let $textarea = '<textarea cols="20" rows="1" class="form-ele" id="' + where_box_id + '" value=\'' + value + '\' style="overflow:hidden; resize:none; width: 100% !important; background-color: #ddd; border-radius: 5px; padding: 5px;" disabled="disabled">' + value + '</textarea>';
-                            $input.replaceWith($textarea);
-
-                            let t_textarea = document.getElementById(where_box_id);
-                            t_textarea.style.height = "auto";
-                            t_textarea.style.height = t_textarea.scrollHeight + 4 + "px";
-                        }
-                    }
-                });
-
-            }
-            catch (e) {
-                alert("Response is not in JSON structure!" + responsetext);
-            }
-        }
-    }
-    else {
-        let responsetext = response[0].responsetext;
-        responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
-
-        try {
-            // JSON string with Result key in response
-            let t_responsetext = JSON.parse(responsetext);
-            responsetext = t_responsetext.Result;
-        } catch (e) {
-            // simple string
-        }
-
-        $("." + target_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
-        let where_box_id = $("." + target_class + " :input").attr("id");
-        let tagName = $("#" + where_box_id + "").prop("tagName");
-        if (tagName == "TEXTAREA") {
-            $("#" + where_box_id + "").val(responsetext);
-        }
-        else {
-            if (where_box_id.indexOf("rdo_") > -1) {
-                // radio autoselect
-                $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').prop('checked', true);
-                var onchange_avail = $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').attr("onchange");
-                if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
-                else {
-                    setTimeout(function () {
-                        $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').trigger("onchange");
-                    }, 1000);
-                }
-            }
-            else {
-                // textbox found hence convert it to textarea run time - mk - 26072025
-                let $input = $("#" + where_box_id + "");
-                let $textarea = '<textarea cols="20" rows="2" class="form-ele" id="' + where_box_id + '" onkeydown="ResizeBox(event)" value=\'' + responsetext + '\' style="resize:vertical !important; width: 100% !important;" disabled="disabled">' + responsetext + '</textarea>';
-                $input.replaceWith($textarea);
-
-                let t_textarea = document.getElementById(where_box_id);
-                t_textarea.style.height = t_textarea.scrollHeight + "px";
-            }
-        }
-    }
+    apply_ai_photo_validation(img_div, response[0].responsetext);
 
     if (photo_type == "AI") {
         hide_AI_loader();
@@ -1797,7 +1691,7 @@ function onsuccess_CaptureClick_Customer(e) {
 function onfail_customer_camera(e) {
     loading_hide();
     hide_AI_loader();
-    //alert1(e + "_onfail_customer_camera")
+    if (e && e !== "Fail") alert1(String(e));
 }
 
 
@@ -2482,27 +2376,72 @@ function onsuccess_CaptureClick_Customer_photo_clone(e) {
     }
 }
 
-show_AI_loader = () => {
-    //let img_div = JSON.parse(storage.getItem('img_div_id'));
-    //let t_new_id = img_div.replace('cbtn_', '');
-
-    //if ($("#div_cbtn_" + t_new_id).parent("li").hasClass("w-50-50")) {
-    //    // 50-50 structure
-    //    $("#" + img_div).before('<div class="ai-loader" style="margin-left: 47px"><span> AI</span></div>');
-    //}
-    //else {
-    //    // 100% structure
-    //    $("#" + img_div).before('<div class="ai-loader"><span> AI</span></div>');
-    //}
-
-    // simple ant path animation
-    let img_div = JSON.parse(storage.getItem('img_div_id'));
-    $("#" + img_div).parent('div.item-input-field').addClass("marching-ants");
+show_AI_loader = (node) => {
+    node = node || document.getElementById(JSON.parse(storage.getItem('img_div_id')));
+    if (!node) return;
+    const image = $(node);
+    if (!image.parent().hasClass('ai-photo-progress')) image.wrap('<span class="ai-photo-progress"></span>');
+    image.parent().addClass('marching-ants'); image.attr('aria-busy', 'true');
+    const fitOverlay = () => {
+        const wrapper = node.parentElement;
+        if (!wrapper || !wrapper.classList.contains('ai-photo-progress')) return;
+        const bounds = node.getBoundingClientRect(), parent = wrapper.getBoundingClientRect();
+        let width = bounds.width, height = bounds.height;
+        if (node.naturalWidth && node.naturalHeight) {
+            const scale = Math.min(width / node.naturalWidth, height / node.naturalHeight);
+            width = node.naturalWidth * scale; height = node.naturalHeight * scale;
+        }
+        wrapper.style.setProperty('--ai-thumb-left', (bounds.left - parent.left + (bounds.width-width)/2) + 'px');
+        wrapper.style.setProperty('--ai-thumb-top', (bounds.top - parent.top + (bounds.height-height)/2) + 'px');
+        wrapper.style.setProperty('--ai-thumb-width', width + 'px'); wrapper.style.setProperty('--ai-thumb-height', height + 'px');
+    };
+    node.addEventListener('load', fitOverlay, { once: true }); requestAnimationFrame(fitOverlay);
+}
+hide_AI_loader = (node) => {
+    node = node || (aiPhotoPending && aiPhotoPending.node) || document.getElementById(JSON.parse(storage.getItem('img_div_id')));
+    if (!node) return;
+    const image = $(node); image.removeAttr('aria-busy');
+    if (image.parent().hasClass('ai-photo-progress')) image.unwrap();
 }
 
-hide_AI_loader = () => {
-    $(".ai-loader").remove();
-    $('div.item-input-field').removeClass("marching-ants");
+// Apply the complete server decision through the form's existing change handlers.
+function apply_ai_photo_validation(imgId, text) {
+    if (typeof text !== 'string' || !text.trim()) return;
+    const decode = value => {
+        if (typeof value !== 'string') return value;
+        const trimmed = value.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+        try { return JSON.parse(trimmed); } catch (error) { return trimmed; }
+    };
+    const target = $('#' + imgId).attr('target_class');
+    const result = decode(text);
+    const apply = (className, value) => {
+        value = decode(value);
+        if (value && typeof value === 'object') value = value.Result;
+        if (value == null || typeof value === 'object' || !className) return;
+        const question = $('.' + className);
+        const input = question.find(':input').first();
+        if (!input.length) return; // Optional question may not be present in this form.
+        question.show().find('.list-block').css('background', '#C2DDF0');
+        if (input.is('input[type="radio"]')) {
+            question.find('input[type="radio"]').filter(function () { return this.value === String(value); }).prop('checked', true).trigger('change');
+        } else if (input.is('textarea')) {
+            input.val(String(value)).trigger('change');
+        } else {
+            const textarea = $('<textarea>', {cols: 20, rows: 1, class: 'form-ele', id: input.attr('id'), disabled: true, onkeydown: 'ResizeBox(event)'});
+            textarea.css({resize: 'vertical', width: '100%', backgroundColor: '#ddd', borderRadius: '5px', padding: '5px'}).val(String(value));
+            input.replaceWith(textarea); textarea.trigger('change');
+            textarea[0].style.height = (textarea[0].scrollHeight + 4) + 'px';
+        }
+    };
+    if (target) {
+        apply(target, Array.isArray(result) && result.length === 1 ? result[0] : result);
+    } else {
+        const entries = Array.isArray(result) ? result : [result];
+        entries.forEach(entry => {
+            entry = decode(entry);
+            if (entry && typeof entry === 'object') Object.keys(entry).forEach(key => apply(key, entry[key]));
+        });
+    }
 }
 
 // get last valid AI photo entry
@@ -2532,7 +2471,7 @@ check_AI_photo_entry = (Type7_AI_photo_Array) => {
         var t_row_index_no = 0;
     }
 
-    var query = "select * from p_master p where p.pid in (select max(pid) from p_master where tid = '" + t_id + "' and checksheetid = '" + check_type + "' and p_key = '" + step + "' and que_id in (" + qid_array + ") and Ph_id = '" + type22_img_que_id + "' and it_id = '" + t_row_index_no + "' group by que_id) order by que_id";
+    var query = "select p.*, latest.attempt from p_master p join (select max(pid) AS pid, count(*) AS attempt from p_master where tid = '" + t_id + "' and checksheetid = '" + check_type + "' and p_key = '" + step + "' and que_id in (" + qid_array + ") and Ph_id = '" + type22_img_que_id + "' and it_id = '" + t_row_index_no + "' group by que_id) latest on p.pid = latest.pid order by p.que_id";
     var q_jsonobj = [];
     q_jsonobj.push({
         data: query,
@@ -2548,7 +2487,6 @@ check_AI_photo_entry = (Type7_AI_photo_Array) => {
                 let que_id = myArray[p].que_id;
                 let p_url = myArray[p].p_url;
                 let responsetext = myArray[p].ai_photo_response;
-                responsetext = responsetext.substring(0, 500);    // truncate string to 500 char
 
                 let img_div = "cbtn_0_" + check_type + "_" + que_id;
                 $("#" + img_div).attr("src", p_url);
@@ -2567,115 +2505,8 @@ check_AI_photo_entry = (Type7_AI_photo_Array) => {
                 index = parseInt(index);
                 jsonObj_old[index].ans = answer;
 
-                var target_class = $("#" + img_div + "").attr('target_class');
-                if (target_class == "" || target_class == null || target_class == undefined) {
-                    try {
-
-                        try {
-                            var responsetext_new = responsetext.replaceAll('\n', '');
-                            responsetext_new = responsetext_new.match(/\{(.*?)\}/);     // extract inner string { }
-                            responsetext_new = responsetext_new[0];
-                            var responseJSON = JSON.parse(responsetext_new);
-                        }
-                        catch (e) {
-                            // response with Result key
-                            var responsetext_new = responsetext.replaceAll('\n', '');
-                            var responseJSON = JSON.parse(responsetext_new);
-                        }
-
-                        // response is in JSON
-                        $.each(responseJSON, function (key, value) {
-
-                            if (typeof value == 'object') {
-                                value = value.Result;
-                            }
-                            else {
-                                try {
-                                    value = JSON.parse(value);
-                                    value = value.Result;
-                                }
-                                catch (e) {
-                                    value = value;
-                                }
-                            }
-
-                            let qid_class = key;
-                            $("." + qid_class + "").show();
-                            $("." + qid_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
-                            let where_box_id = $("." + qid_class + " :input").attr("id");
-                            let tagName = $("#" + where_box_id + "").prop("tagName");
-                            if (tagName == "TEXTAREA") {
-                                $("#" + where_box_id + "").val(value);
-                            }
-                            else {
-                                if (where_box_id.indexOf("rdo_") > -1) {
-                                    // radio autoselect
-                                    $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').prop('checked', true);
-                                    var onchange_avail = $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').attr("onchange");
-                                    if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
-                                    else {
-                                        setTimeout(function () {
-                                            $('div.' + qid_class + ' input[type="radio"][value="' + value + '"]').trigger("onchange");
-                                        }, 1000);
-                                    }
-                                }
-                                else {
-                                    // textbox autofill
-                                    let $input = $("#" + where_box_id + "");
-                                    let $textarea = '<textarea cols="20" rows="1" class="form-ele" id="' + where_box_id + '" value=\'' + value + '\' style="overflow:hidden; resize:none; width: 100% !important; background-color: #ddd; border-radius: 5px; padding: 5px;" disabled="disabled">' + value + '</textarea>';
-                                    $input.replaceWith($textarea);
-
-                                    let t_textarea = document.getElementById(where_box_id);
-                                    t_textarea.style.height = "auto";
-                                    t_textarea.style.height = t_textarea.scrollHeight + 4 + "px";
-                                }
-                            }
-                        });
-
-                    }
-                    catch (e) {
-                        alert("Response is not in JSON structure!" + responsetext);
-                    }
-                }
-                else {
-
-                    try {
-                        // JSON string with Result key in response
-                        let t_responsetext = JSON.parse(responsetext);
-                        responsetext = t_responsetext.Result;
-                    } catch (e) {
-                        // simple string
-                    }
-
-                    $("." + target_class + ".cntrl_main_div").find(".list-block").css("background", "#C2DDF0");
-                    let where_box_id = $("." + target_class + " :input").attr("id");
-                    let tagName = $("#" + where_box_id + "").prop("tagName");
-                    if (tagName == "TEXTAREA") {
-                        $("#" + where_box_id + "").val(responsetext);
-                    }
-                    else {
-                        if (where_box_id.indexOf("rdo_") > -1) {
-                            // radio autoselect
-                            $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').prop('checked', true);
-                            var onchange_avail = $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').attr("onchange");
-                            if (onchange_avail == '' || onchange_avail == null || onchange_avail == undefined) { }
-                            else {
-                                setTimeout(function () {
-                                    $('div.' + target_class + ' input[type="radio"][value="' + responsetext + '"]').trigger("onchange");
-                                }, 1000);
-                            }
-                        }
-                        else {
-                            // textbox found hence convert it to textarea run time - mk - 26072025
-                            let $input = $("#" + where_box_id + "");
-                            let $textarea = '<textarea cols="20" rows="2" class="form-ele" id="' + where_box_id + '" onkeydown="ResizeBox(event)" value=\'' + responsetext + '\' style="resize:vertical !important; width: 100% !important;" disabled="disabled">' + responsetext + '</textarea>';
-                            $input.replaceWith($textarea);
-
-                            let t_textarea = document.getElementById(where_box_id);
-                            t_textarea.style.height = t_textarea.scrollHeight + "px";
-                        }
-                    }
-                }
+                $("#" + img_div).attr('attempt', myArray[p].attempt);
+                apply_ai_photo_validation(img_div, responsetext);
 
 
             }
@@ -2686,4 +2517,38 @@ check_AI_photo_entry = (Type7_AI_photo_Array) => {
 
     }, 'SqlitePlugin', 'showValues', q_jsonobj);
 
+}
+// A capture and its asynchronous result stay bound to the original form/photo.
+var aiPhotoPending = null;
+function ai_photo_context_key() {
+    const data = typeof curr_survey_data === 'object' ? curr_survey_data : {};
+    return JSON.stringify([data.t_id, data.step, data.check_type, typeof glob_curr_form_flag === 'undefined' ? null : glob_curr_form_flag]);
+}
+function create_ai_photo_handlers(imgId, onSuccess, onError) {
+    const node = document.getElementById(imgId);
+    const job = { node: node, previousSrc: node && node.src, context: ai_photo_context_key(), complete: false };
+    aiPhotoPending = job;
+    const current = () => !!node && document.getElementById(imgId) === node && ai_photo_context_key() === job.context;
+    const finish = () => {
+        job.complete = true; if (node) hide_AI_loader(node);
+        if (aiPhotoPending === job) aiPhotoPending = null;
+    };
+    return {
+        success: response => {
+            if (job.complete) return;
+            let photo;
+            try {
+                photo = JSON.parse(response)[0];
+                if (!photo || typeof photo.photo_path !== 'string' || !photo.photo_path.trim()) throw new Error('Missing photo');
+                if (photo.phase !== 'captured' && (!(Number(photo.photo_id) > 0) || typeof photo.responsetext !== 'string' || !photo.responsetext.trim())) throw new Error('Missing validation');
+            }
+            catch (error) { finish(); if (current()) { if (node) node.src = job.previousSrc; onError('AI returned an unreadable result. Please try again.'); } return; }
+            if (photo && photo.phase === 'captured') {
+                if (current() && node) { node.src = photo.photo_path; show_AI_loader(node); }
+                return;
+            }
+            finish(); if (current()) onSuccess(response);
+        },
+        error: error => { if (job.complete) return; finish(); if (current()) { if (node) node.src = job.previousSrc; onError(error); } }
+    };
 }

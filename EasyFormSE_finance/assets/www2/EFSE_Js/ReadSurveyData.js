@@ -2779,7 +2779,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                     var ico_str = 'fa-ban';
                                 }
                                 else {
-                                    var ico_str = 'fa-arrow-circle-down';
+                                    var ico_str = 'fa-search';
                                 }
 
                                 if (search_box == 'true') {
@@ -2811,12 +2811,12 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                                 if (QR_Code == 'true') {
                                     var param_qr = "get_qr_and_search_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "')";
-                                    var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-qrcode" ' + enable_disable + ' style="margin-right:30px;margin-top:-10%;" onclick="' + param_qr + '" ></i>';
+                                    var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-qrcode selection-scanner" ' + enable_disable + ' style="margin-right:30px;margin-top:-10%;" onclick="event.stopPropagation(); ' + param_qr + '" ></i>';
                                     var ddl_width = ""
                                 }
                                 else if (Barcode == 'true') {
                                     var param_qr = "get_barcode_and_search_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "')";
-                                    var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-barcode" ' + enable_disable + ' style="margin-right:30px;margin-top:-10%;" onclick="' + param_qr + '" ></i>';
+                                    var qr_ico_str = '<i id="btn20_QR_' + new_id + '" class="fa form-ico fa-barcode selection-scanner" ' + enable_disable + ' style="margin-right:30px;margin-top:-10%;" onclick="event.stopPropagation(); ' + param_qr + '" ></i>';
                                     var ddl_width = ""
                                 }
                                 else {
@@ -2830,12 +2830,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                     var ddl_param = ""
                                 }
                                 else {
-                                    if (QR_Code == "true" || Barcode == "true") {
-                                        var ddl_param = "get_scanner_option('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "', '" + customer_checksheetid + "', '" + ddl_info_view + "', '" + QR_Code + "', '" + Barcode + "', '" + autofill + "', '" + add_cust_from_search + "')";
-                                    }
-                                    else {
-                                        var ddl_param = "get_filled_dropdown_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "', '" + customer_checksheetid + "', '" + ddl_info_view + "', '" + autofill + "', '" + add_cust_from_search + "')";
-                                    }
+                                    var ddl_param = "get_filled_dropdown_data('" + new_id + "', '" + TableName + "', '" + JoinTableName + "','" + Checksheet_id + "', '" + customer_checksheetid + "', '" + ddl_info_view + "', '" + autofill + "', '" + add_cust_from_search + "')";
                                 }
 
                                 if (add_cust_from_search == "true") {
@@ -2845,7 +2840,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                     var disp_type20_ddl = "";
                                 }
 
-                                newdiv += '<div class="item-input item-input-field form-div" style="' + ddl_width + disp_type20_ddl + '" onclick="' + ddl_param + '" ' + enable_disable + '><img id="ddl_loading_' + new_id + '" src="images/loading_type20.gif" style="position: absolute; left: 50%; top: 7px; display:none">';
+                                newdiv += '<div class="item-input item-input-field form-div type20-ddl-outer" style="' + ddl_width + disp_type20_ddl + '" onclick="' + ddl_param + '" ' + enable_disable + '><img id="ddl_loading_' + new_id + '" src="images/loading_type20.gif" style="position: absolute; left: 50%; top: 7px; display:none">';
 
                                 var multi_select = push_data[0].multi_select;
                                 if (multi_select == "true") {
@@ -2864,7 +2859,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                         }
                                     }
 
-                                    newdiv += '</select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5%;"></i></div>';
+                                    newdiv += '</select>' + (qr_ico_str || '<i class="fa ' + ico_str + ' form-ico"></i>') + '</div>';
                                 }
                                 else {
                                     var ios_device = localStorage.getItem('ios_device');
@@ -2877,10 +2872,9 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                                     var view_style = push_data[0].view_style;
                                     newdiv += '<select name="1" id="ddl_search_type20_' + new_id + '" style="width:96%; display:inline-block;color:#000;opacity:1;" view_style="' + view_style + '" disabled="disabled" '
-                                        + enable_disable + '>' + op_str + '<option selected="selected" value="' + ans_id + '" value1="' + ans_id + '">' + ans_value + '</option></select><i class="fa ' + ico_str + ' form-ico" style="margin-top:-8.5%;"></i></div>';
+                                        + enable_disable + '>' + op_str + '<option selected="selected" value="' + ans_id + '" value1="' + ans_id + '">' + ans_value + '</option></select>' + (qr_ico_str || '<i class="fa ' + ico_str + ' form-ico"></i>') + '</div>';
                                 }
 
-                                newdiv += qr_ico_str;
 
                                 //smart-select
                                 //newdiv += '<a href="#" class="item-link smart-select" data-searchbar="true" data-back-on-select = "true" data-searchbar-placeholder="Search ' + prop_name + '..." style="text-decoration: none;">';
@@ -3132,7 +3126,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                         newdiv += "<div id='div_singleInvoice_cntrl_" + new_id + "'></div>";
                         newdiv += "<input type='hidden' id='hdn_type22_json_len_" + new_id + "' value='" + json_inv.length + "' type22_snglCntrl_type='" + type22_snglCntrl_type + "' type22_que_id='" + jsonObj[i].que_id + "'>";
 
-                        newdiv += "<div id='div_display_" + new_id + "' class='form-div' style='width:98% !important;'>";
+                        newdiv += "<div id='div_display_" + new_id + "' class='form-div'>";
 
                         newdiv += "<input type='hidden' id='hdn_hide_blank_" + new_id + "' value='" + hide_blank + "'>";
                         newdiv += "<input type='hidden' id='hdn_jsondata_" + new_id + "' value='" + JSON.stringify(json_inv) + "'>";
@@ -3170,6 +3164,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
 
                         var num_row = json_inv.length;
                         type22_new_id = new_id;
+                        var invoice_action_data = '';
 
                         if (temp_inv_display_flag == 0) {
                             // Table View
@@ -3241,11 +3236,11 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                     }
                                 }
 
-                                table_div_data += "<td style='padding:7px 10px; border:1px solid #ccc; " + dis_none + "'><i class='fa fa-pencil' id='btn_edit_td_"
-                                    + new_id + '_' + it_id + "' onclick='" + param1 + "' alt='" + JSON.stringify(btn_json) + "' style='display:" + img_view + "' " + enable_disable + "></i></td>";
-                                table_div_data += "<td style='padding:7px 10px; border:1px solid #ccc; " + dis_none + "'><i class='fa fa-remove' id='btn_delete_td_"
+                                table_div_data += "<td style='padding:7px 10px; border:1px solid #ccc; " + dis_none + "'><button type='button' class='button' aria-label='Edit item' id='btn_edit_td_"
+                                    + new_id + '_' + it_id + "' onclick='" + param1 + "' alt='" + JSON.stringify(btn_json) + "' style='display:" + img_view + "' " + enable_disable + "><i class='fa fa-pencil' aria-hidden='true'></i></button></td>";
+                                table_div_data += "<td style='padding:7px 10px; border:1px solid #ccc; " + dis_none + "'><button type='button' class='button color-red' aria-label='Remove item' id='btn_delete_td_"
                                     + new_id + '_' + it_id + "' onclick='" + param_delete + "' style='display:" + img_view
-                                    + "' " + enable_disable + "></i><input type='hidden' id='hdn_tr_delete_" + new_id + "_" + it_id + " value='0'></td>";
+                                    + "' " + enable_disable + "><i class='fa fa-trash' aria-hidden='true'></i></button><input type='hidden' id='hdn_tr_delete_" + new_id + "_" + it_id + " value='0'></td>";
 
                                 for (p = 0; p < num_row; p++) {
                                     var th_column_id = json_inv[p].id;
@@ -3506,15 +3501,16 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                     var disp_btn = "display:none;";
                                 }
 
-                                table_div_data += '<div class="item-input item-input-field form-div" style="' + disp_btn + '">';
+                                invoice_action_data += '<div class="item-input item-input-field form-div array-field" style="' + disp_btn + '">';
                                 if (add_button == "false") { }              //hide add record button [21102021]
                                 else {
-                                    table_div_data += '<a id="btn_add_row_' + new_id + '" onclick="' + param2 + '" style="display:' + img_view
+                                    invoice_action_data += '<a id="btn_add_row_' + new_id + '" onclick="' + param2 + '" style="display:' + img_view
                                         + ', margin-bottom:10px; width:auto;" data-popup=".popup-type22" class="button button-fill button-raised form-btn open-popup" ' + enable_disable + '>' + type22_button_str + '</a>';
                                 }
-                                table_div_data += '</div>';
+                                invoice_action_data += '</div>';
                             }
 
+                            table_div_data = invoice_action_data + table_div_data;
                             $("#div_display_" + new_id + "").append(table_div_data);
                             newdiv += table_div_data;
                         }
@@ -4314,16 +4310,17 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                                     var disp_btn = "display:none;";
                                 }
 
-                                list_div_data += '<div class="item-input item-input-field form-div" style="' + disp_btn + '">';
+                                invoice_action_data += '<div class="item-input item-input-field form-div array-field" style="' + disp_btn + '">';
                                 if (add_button == "false") { }              //hide add record button [21102021]
                                 else {
 
-                                    list_div_data += '<a id="btn_add_row_' + new_id + '" onclick="' + param2 + '" style="display:' + img_view
+                                    invoice_action_data += '<a id="btn_add_row_' + new_id + '" onclick="' + param2 + '" style="display:' + img_view
                                         + ', margin-bottom:10px; width:auto;" data-popup=".popup-type22" class="button button-fill button-raised form-btn open-popup" ' + enable_disable + '>' + type22_button_str + '</a>';
                                 }
-                                list_div_data += '</div>';
+                                invoice_action_data += '</div>';
                             }
 
+                            list_div_data = invoice_action_data + list_div_data;
                             $("#div_display_" + new_id + "").append(list_div_data);
                             newdiv += list_div_data;
                         }
@@ -5269,7 +5266,7 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
                 var param = "return submit_popup_data('" + json_inv + "', '" + btn_add + "', 'readsurvey')";
                 if (type22_snglCntrl_type == 20) { }
                 else {
-                    newdiv += '<span style="margin: 5px 25px;vertical-align:top;display:inline-block"><button type="button" id="btn_add_row_popup' + btn_add + '" value="Add Record" onclick="' + param + '" style="margin:0px;" class="btn btn-primary">Add</button>';
+                    newdiv += '<span style="margin: 5px 25px;vertical-align:top;display:inline-block"><button type="button" id="btn_add_row_popup' + btn_add + '" value="Add Record" onclick="' + param + '" style="margin:0px;" class="button button-fill">Add</button>';
                     newdiv += '</span>';
                 }
 
@@ -5285,8 +5282,8 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
             else {
                 var param = 'return validate_and_submit_surveydata_main("' + json_inv + '","4","' + "" + '")';
 
-                var foot_str = "<div class='left'><a class='link' onclick='popup_items_hide_type22(1)'>CANCEL</a></div>";
-                foot_str += "<div class='right'><a class='link' id='btn_add_row_popup" + btn_add + "' onclick='" + param + "'>ADD</a></div>";
+                var foot_str = "<div class='left'><a class='link button button-fill button-negative' onclick='popup_items_hide_type22(1)'>CANCEL</a></div>";
+                foot_str += "<div class='right'><a class='link button button-fill' id='btn_add_row_popup" + btn_add + "' onclick='" + param + "'>ADD</a></div>";
                 $('.foooter-type22').append(foot_str);
 
                 $("#div_inv_form").append(newdiv);
@@ -5443,8 +5440,8 @@ function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, 
             }
             else {
                 var param = "return submit_popup_data_type20_add()";
-                var foot_str = '<div class="left"><a href="#" class="link" onclick="hide_type20_add_popup()">CANCEL</a></div>';
-                foot_str += '<div class="right"><a href="#" class="link" id="btn_type20_cust_add" onclick="' + param + '">ADD</a></div>';
+                var foot_str = '<div class="left"><a href="#" class="link button button-fill button-negative" onclick="hide_type20_add_popup()">CANCEL</a></div>';
+                foot_str += '<div class="right"><a href="#" class="link button button-fill" id="btn_type20_cust_add" onclick="' + param + '">ADD</a></div>';
                 $('.footer-type20-add').append(foot_str);
                 $("#popup_container_type20_add").empty();
                 $("#popup_container_type20_add").append(newdiv);

@@ -192,7 +192,7 @@ public class CustomJitsiMeetViewModel extends ViewModel {
                     mOtherData.getClickAction() + "",
                     mOtherData.getWebPush().toString() + "",
                     mUserData.getDeviceType() + "",
-                    fcmIds.get(0) + "",
+                    mUserData.getFCMToken() + "",
                     mUserData.getUserid() + "",mOtherData.getServer_task_id() + "", "jitsiMeet", "", "", screenShear,"",""
             );
             callNotificationApi(data, false, fcmIds, fcmIosIds);
@@ -317,7 +317,7 @@ public class CustomJitsiMeetViewModel extends ViewModel {
                     mOtherData.getClickAction() + "",
                     mOtherData.getWebPush().toString() + "",
                     mUserData.getDeviceType() + "",
-                    fcmIds.get(0) + "",
+                    mUserData.getFCMToken() + "",
                     mUserData.getUserid() + "", mOtherData.getServer_task_id() + "", "jitsiMeet", keyType, jsonData, false, "",""
             );
             callNotificationApi(data, false, fcmIds, fcmIosIds);
@@ -629,7 +629,7 @@ public class CustomJitsiMeetViewModel extends ViewModel {
                     mOtherData.getClickAction() + "",
                     mOtherData.getWebPush().toString() + "",
                     mUserData.getDeviceType() + "",
-                    fcmIds.get(0) + "",
+                    mUserData.getFCMToken() + "",
                     mUserData.getUserid() + "", mOtherData.getServer_task_id() + "", "jitsiMeet", "stopcall", "", false, "",""
             );
             callNotificationApi(data, false, fcmIds, fcmIosIds);
@@ -714,7 +714,7 @@ public class CustomJitsiMeetViewModel extends ViewModel {
                     mOtherData.getClickAction() + "",
                     mOtherData.getWebPush().toString() + "",
                     mUserData.getDeviceType() + "",
-                    fcmIds.get(0) + "",
+                    mUserData.getFCMToken() + "",
                     mUserData.getUserid() + "", mOtherData.getServer_task_id() + "", "jitsiMeet", "PhotoId", mJsonArray.toString(), false, "",""
             );
             callNotificationApi(data, false, fcmIds, fcmIosIds);
@@ -965,7 +965,7 @@ public class CustomJitsiMeetViewModel extends ViewModel {
                     mOtherData.getClickAction() + "",
                     mOtherData.getWebPush().toString() + "",
                     mUserData.getDeviceType() + "",
-                    fcmIds.get(0) + "",
+                    mUserData.getFCMToken() + "",
                     mUserData.getUserid() + "", mOtherData.getServer_task_id() + "", "jitsiMeet", "jitsiMeet", "photosave", false, "",""
             );
             callNotificationApi(data, false, fcmIds, fcmIosIds);

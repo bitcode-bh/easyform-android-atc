@@ -142,25 +142,3 @@ function get_full_view_image_type40_F7(t_obj) {
     open_pinch_zoom_div(t_src);
 
 }
-
-function open_pinch_zoom_div(t_src) {
-    $(".pinch-zoom-container").remove();
-    $(".pinch_close").remove();
-    let zoom_str = '<div class="pinch-zoom"><i id="pinch_close" class="fa fa-times-circle text-danger" onclick="close_zoom()"></i><img src = "' + t_src + '" /></div>';
-    $("body").prepend(zoom_str);
-
-    new PinchZoom.default(document.querySelector('.pinch-zoom'), {
-        minZoom: 1,
-        maxZoom: 4
-    });
-
-    // set image to middle dynamically
-    let container_height = $(".pinch-zoom-container").height();
-    let photo_height = $(".pinch-zoom img").height();
-    let middle_height = (container_height - photo_height) / 2;
-    $(".pinch-zoom img").css({ 'position': 'absolute', 'top': middle_height + 'px' });
-
-    //$("body").prepend('<i id="pinch_close" class="fa fa-times-circle" onclick="close_zoom()"></i>');
-
-}
-

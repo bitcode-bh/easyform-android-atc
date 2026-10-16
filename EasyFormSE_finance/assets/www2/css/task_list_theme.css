@@ -1,0 +1,52 @@
+/* Task-list surface continues into the system navigation area. */
+body.task-list-screen,
+.task-list-screen .view-main .page,
+.task-list-screen .view-main .page-content {
+    background: #fcfcfc;
+}
+
+.task-list-screen #btn_Create_Task {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50%;
+    border: 0;
+    background: var(--app-action-blue, #2a3086) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(42, 48, 134, .22);
+}
+.task-list-screen #btn_Create_Task svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: #fff;
+    pointer-events: none;
+}
+.task-list-screen #btn_Create_Task.active-state,
+.task-list-screen #btn_Create_Task:active {
+    background: #20256c !important;
+}
+.task-list-screen #btn_Create_Task:focus-visible {
+    outline: 2px solid var(--app-action-blue, #2a3086);
+    outline-offset: 3px;
+}
+
+/* Bucket selection follows the existing active tab without changing its size. */
+.task-list-screen .view-main .toolbar.tabbar {
+    background: #fcfcfc !important;
+}
+.task-list-screen .view-main .toolbar.tabbar::before,
+.task-list-screen #div_tab_bar > .tab-link-highlight {
+    display: none !important;
+}
+.task-list-screen #div_tab_bar > a.tab-link {
+    border-bottom: 0 !important;
+}
+.task-list-screen #div_tab_bar > a.tab-link.active {
+    color: var(--app-action-blue, #2a3086) !important;
+    font-weight: 600;
+}
+.task-list-screen #div_tab_bar > a.tab-link:focus-visible {
+    outline: 2px solid var(--app-action-blue, #2a3086);
+    outline-offset: -3px;
+}

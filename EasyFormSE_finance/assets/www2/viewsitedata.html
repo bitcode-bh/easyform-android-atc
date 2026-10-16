@@ -836,10 +836,10 @@
                                             <div class="item-content swipeout-content">
                                             </div>
                                             <div class="swipeout-actions-left">
-                                                <a href="#" onclick="resolve_crash_status_issue()" class="swipeout-close" style="background: grey;">Resolve Crash</a>
+                                                <a href="#" onclick="resolve_crash_status_issue()" class="swipeout-close" style="background: var(--app-action-blue, #2a3086);">Resolve Crash</a>
                                             </div>
                                             <div class="swipeout-actions-right">
-                                                <a href="#" onclick="view_database()" class="swipeout-close" style="left: 0; background: grey; margin-left: 2px;">Database</a>
+                                                <a href="#" onclick="view_database()" class="swipeout-close" style="left: 0; background: var(--app-action-blue, #2a3086); margin-left: 2px;">Database</a>
                                             </div>
 
                                         </li>
@@ -884,7 +884,7 @@
                                 </div>
                                 <div class="right">
                                     <!--<a href="#" class="open-panel link icon-only"><i class="icon icon-bars"></i></a>-->
-                                    <a href="#" id="btn_refresh" class="open-panel link icon-only" onclick="location.reload()" style="display:none"><i class="icon fa fa-refresh"></i></a>
+                                    <a href="#" id="btn_refresh" class="open-panel link icon-only" onclick="location.reload()" title="Clear filled data" aria-label="Clear filled data" style="display:none"><i class="icon fa fa-eraser" style="font-size:24px" aria-hidden="true"></i></a>
                                     <a href="#" id="btn_advanced_search" class="link icon-only open-popup" style="display:none" data-popup=".popup-advance-search-online" onclick="advance_column_search('btn_click');return false;"><i class="fa fa fa-search-plus" style="color: white"></i></a>
                                     <a href="#" class="link open-popover" data-popover=".popover-language"><i class="fa fa-globe"></i></a>
                                     <spna id="spn_language"></spna>
@@ -1164,31 +1164,33 @@
                             <div class="navbar-inner">
                                 <div class="left"><a onclick='close_type20_dropdown_popup()' class="back link icon-only"><i class="fa fa-chevron-left"></i></a></div>
                                 <!--commented coz added create btn when no data found on search [FT -- 01022024]-->
-                                <div class="" style="padding-left:100px;"><a id="ddl_cust_creation" class="back link icon-only" style="display: none;"><i class="fa fa-plus" style="color: #fff; font-size: 22px;"></i></a></div>
-                                <div class="right"><a id="dd_listview_icon" class="back link icon-only" onclick="open_popup_for_listview_type20()"><i class="fa fa-th-list" style="color: #fff; font-size: 22px;margin-left:20px;"></i></a></div>
+                                <form id="F7_type20_ddl_Search" data-search-list=".list-block-search" data-search-in=".item-title" class="searchbar searchbar-init">
+                                    <div class="searchbar-input home-search-pill"><i class="fa fa-search home-search-ico" aria-hidden="true"></i>
+                                        <input type="search" class="home-search-input" placeholder="Search" aria-label="Search options"><a href="#" class="searchbar-clear" aria-label="Clear search" onclick="$('.no-record').remove();"></a>
+                                    </div>
+                                    <a href="#" class="searchbar-cancel">Cancel</a>
+                                    <!--<a href="#" id="btn_search_cust_add" class="searchbar-add" style="display:none;"><i class="fa fa-plus" style="color:#fff;font-size:25px;margin-left: 10px;"></i></a>-->
+                                </form>
+                                <div class="right"><a id="ddl_cust_creation" class="back link icon-only" style="display: none;"><i class="fa fa-plus" style="color: #fff; font-size: 22px;"></i></a><a id="dd_listview_icon" class="back link icon-only" onclick="open_popup_for_listview_type20()"><i class="fa fa-th-list" style="color: #fff; font-size: 22px;margin-left:20px;"></i></a></div>
+
                                 <!--<div class="right"><a href="#" class="link" onclick='myApp.closeModal(".popup-type20-dropdown");'>CLOSE</a></div>-->
                             </div>
                         </div>
 
 
-                        <form id="F7_type20_ddl_Search" data-search-list=".list-block-search" data-search-in=".item-title" class="searchbar searchbar-init">
-                            <div class="searchbar-input">
-                                <input type="search" placeholder="Search"><a href="#" class="searchbar-clear" onclick="$('.no-record').remove();"></a>
-                            </div>
-                            <a href="#" class="searchbar-cancel">Cancel</a>
-                            <!--<a href="#" id="btn_search_cust_add" class="searchbar-add" style="display:none;"><i class="fa fa-plus" style="color:#fff;font-size:25px;margin-left: 10px;"></i></a>-->
-                        </form>
+
 
                         <!-- Search Bar overlay -->
                         <div class="searchbar-overlay"></div>
 
-                        <div class="page-content" id="ddl_list">
+                        <div class="page-content app-listing-window" id="ddl_list" data-listing-scroll>
                             <div class="content-block searchbar-not-found">
                                 <div class="content-block-inner" style="text-align: center;">Fetching Data...</div>
                             </div>
 
                             <div class="list-block list-block-search searchbar-found">
-                                <ul id="type20_ddl_list"></ul>
+
+                                <ul id="type20_ddl_list" class="app-listing" role="listbox" aria-label="Options"></ul>
                             </div>
                         </div>
                         <!--                        <div class="toolbar toolbar-bottom " style="background-color: white; border-top: solid 0.5px #c8c7cc; height: 40px;">
