@@ -61,7 +61,7 @@ public class SpeedViolation {
     private static long detectedMilli;
     private static SQLiteDatabase database = sqlitewraper.getDatabase();
     private static  float lastMaxSpeed;
-    private static  float lastMaxMilli;
+    private static long lastMaxMilli;
     private static  long savedMilli;
     private static double detectedStartLat = 0.0;
     private static double detectedStartLon = 0.0;
@@ -94,55 +94,19 @@ public class SpeedViolation {
                                     "select speed,speed_violation_time,normal_acc,normal_deacc,hard_acc,hard_deacc,gap_milli from Thresold_New WHERE vehicle_type =" + "'" + vehicaletype + "'" , null);
 
 
-                    if(a_t2.getCount() > 0)
-                    {
-                        a_t2.moveToFirst();
-                        String newspeed,speed_violation_time, normal_acc, normal_deacc, hard_acc, hard_deacc, gap_milli;
-                        newspeed = a_t2.getString(0);
-                        speed_violation_time = a_t2.getString(1);
-                        normal_acc = a_t2.getString(2);
-                        normal_deacc = a_t2.getString(3);
-                        hard_acc = a_t2.getString(4);
-                        hard_deacc = a_t2.getString(5);
-                        gap_milli = a_t2.getString(6);
+                    try {
+                        if(a_t2.getCount() > 0)
+                        {
+                            a_t2.moveToFirst();
+                            String newspeed,speed_violation_time, normal_acc, normal_deacc, hard_acc, hard_deacc, gap_milli;
+                            newspeed = a_t2.getString(0);
+                            speed_violation_time = a_t2.getString(1);
+                            normal_acc = a_t2.getString(2);
+                            normal_deacc = a_t2.getString(3);
+                            hard_acc = a_t2.getString(4);
+                            hard_deacc = a_t2.getString(5);
+                            gap_milli = a_t2.getString(6);
 
-
-                        pref.putString("speed_limit", newspeed);
-                        pref.putString("normal_acc", normal_acc);
-                        pref.putString("normal_deacc", normal_deacc);
-                        pref.putString("hard_acc", hard_acc);
-                        pref.putString("hard_deacc", hard_deacc);
-                        pref.putString("gap_milli", gap_milli);
-                        pref.commit();
-
-                        MySharedPreferences editor = sqlitewraper.getSecureShared("pre1");
-                        editor.putString("speedviolation", speed_violation_time);
-                        editor.commit();
-
-                        a_t2.close();
-                    }
-
-                    else {
-                        Cursor a_t3 = database
-                                .rawQuery(
-                                        "select speed,normal_acc,normal_deacc,hard_acc,hard_deacc,gap_milli from Thresold",
-                                        null);
-                        a_t3.moveToFirst();
-
-                        if (a_t3.getCount() > 0) {
-
-                            String newspeed, normal_acc, normal_deacc, hard_acc, hard_deacc, gap_milli;
-                            newspeed = a_t3.getString(0);
-                            normal_acc = a_t3.getString(1);
-                            normal_deacc = a_t3.getString(2);
-                            hard_acc = a_t3.getString(3);
-                            hard_deacc = a_t3.getString(4);
-                            gap_milli = a_t3.getString(5);
-
-                            // String isact_track = d.getFeatureFlag("isact_track");
-
-
-                            pref = sqlitewraper.getSecureShared("MyPref");
 
                             pref.putString("speed_limit", newspeed);
                             pref.putString("normal_acc", normal_acc);
@@ -151,11 +115,48 @@ public class SpeedViolation {
                             pref.putString("hard_deacc", hard_deacc);
                             pref.putString("gap_milli", gap_milli);
                             pref.commit();
-                            a_t3.close();
+
+                            MySharedPreferences editor = sqlitewraper.getSecureShared("pre1");
+                            editor.putString("speedviolation", speed_violation_time);
+                            editor.commit();
+
 
                         }
 
-                    }
+                        else {
+                            Cursor a_t3 = database
+                                    .rawQuery(
+                                            "select speed,normal_acc,normal_deacc,hard_acc,hard_deacc,gap_milli from Thresold",
+                                            null);
+                            try {
+                            a_t3.moveToFirst();
+
+                            if (a_t3.getCount() > 0) {
+
+                                String newspeed, normal_acc, normal_deacc, hard_acc, hard_deacc, gap_milli;
+                                newspeed = a_t3.getString(0);
+                                normal_acc = a_t3.getString(1);
+                                normal_deacc = a_t3.getString(2);
+                                hard_acc = a_t3.getString(3);
+                                hard_deacc = a_t3.getString(4);
+                                gap_milli = a_t3.getString(5);
+
+                                // String isact_track = d.getFeatureFlag("isact_track");
+
+
+                                pref = sqlitewraper.getSecureShared("MyPref");
+
+                                pref.putString("speed_limit", newspeed);
+                                pref.putString("normal_acc", normal_acc);
+                                pref.putString("normal_deacc", normal_deacc);
+                                pref.putString("hard_acc", hard_acc);
+                                pref.putString("hard_deacc", hard_deacc);
+                                pref.putString("gap_milli", gap_milli);
+                                pref.commit();
+                            }
+                            } finally { a_t3.close(); }
+                        }
+                    } finally { a_t2.close(); }
 
 
 

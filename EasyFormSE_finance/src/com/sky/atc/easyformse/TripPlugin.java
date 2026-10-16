@@ -268,6 +268,7 @@ public class TripPlugin extends CordovaPlugin {
 
             } catch (Exception e) {
                 e.printStackTrace();
+                this.callbackContext.error("Unable to open the trip screen");
             }
 
         } catch (Exception e) {
