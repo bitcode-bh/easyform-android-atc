@@ -50,6 +50,8 @@ import androidx.core.app.NotificationManagerCompat;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
+import com.sky.atc.easyformse.trip.engine.DrivingContext;
+import com.sky.atc.easyformse.trip.engine.HeldEventStore;
 import com.sky.atc.easyformse.attendance.newattendanceutils.AttendanceUtil;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.trip.SpeedViolation;
@@ -165,6 +167,8 @@ public class activity_recognize extends BroadcastReceiver {
             int confidence = detectedActivity.getConfidence();
             String mostProbableName = getActivityName(detectedActivity
                     .getType());
+            DrivingContext.onActivity(contextActivity(detectedActivity.getType()), confidence,
+                    System.currentTimeMillis());
 
 //            if (TEST_MODE && !mostProbableName.equalsIgnoreCase("V")) {
 //                mostProbableName = "V";
@@ -257,29 +261,14 @@ public class activity_recognize extends BroadcastReceiver {
                                         Log.d("DrivingAlert", "Continuous Driving Started");
                                     }
 
-                                    if(!normal_acc.equalsIgnoreCase("0") || !normal_deacc.equalsIgnoreCase("0") || !hard_acc.equalsIgnoreCase("0") || !hard_deacc.equalsIgnoreCase("0")) {
-                                        if (tripStatus() > 0) {
-                                            boolean check1 = isMyServiceRunning(
-                                                    sqlitewraper.context,
-                                                    newfused_accel.class.getName());
-                                            if (!check1) {
-                                                //start the acc/deacc service for calculation
-                                                Intent i = new Intent(sqlitewraper.context, newfused_accel.class);
-                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                    sqlitewraper.context.startForegroundService(i);
-                                                } else {
-                                                    sqlitewraper.context.startService(i);
-                                                }
-                                            }
-                                        } else {
-                                            //stop newfused_accel service if trip is stopped
-                                            boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                                                    newfused_accel.class.getName());
-                                            if (check12) {
-                                                Intent i12 = new Intent(sqlitewraper.context, newfused_accel.class);
-                                                sqlitewraper.context.stopService(i12);
-                                            }
-                                        }
+                                    // Harsh acceleration and braking are no longer tracked, so the
+                                    // newfused_accel service (its own 1-second GPS request) never
+                                    // starts. One left running by an older version is stopped.
+                                    boolean check12 = isMyServiceRunning(sqlitewraper.context,
+                                            newfused_accel.class.getName());
+                                    if (check12) {
+                                        Intent i12 = new Intent(sqlitewraper.context, newfused_accel.class);
+                                        sqlitewraper.context.stopService(i12);
                                     }
                                 }
 
@@ -685,6 +674,18 @@ public class activity_recognize extends BroadcastReceiver {
     }
 
     //define the activity
+    private static DrivingContext.Activity contextActivity(int type) {
+        switch (type) {
+            case DetectedActivity.IN_VEHICLE: return DrivingContext.Activity.VEHICLE;
+            case DetectedActivity.ON_BICYCLE: return DrivingContext.Activity.BICYCLE;
+            case DetectedActivity.ON_FOOT:
+            case DetectedActivity.WALKING:
+            case DetectedActivity.RUNNING: return DrivingContext.Activity.ON_FOOT;
+            case DetectedActivity.STILL: return DrivingContext.Activity.STILL;
+            default: return DrivingContext.Activity.UNKNOWN;
+        }
+    }
+
     private String getActivityName(int type) {
         switch (type) {
             case DetectedActivity.IN_VEHICLE:
@@ -917,21 +918,14 @@ public class activity_recognize extends BroadcastReceiver {
 
     public void stopaccelrationservice()
     {
-        // stop the newfused_accel service as user is not in vehicle
-        if(normal_acc != null || normal_deacc != null || hard_acc != null || hard_deacc != null) {
-
-            if (!normal_acc.equalsIgnoreCase("0") || !normal_deacc.equalsIgnoreCase("0") ||
-                    !hard_acc.equalsIgnoreCase("0") || !hard_deacc.equalsIgnoreCase("0")) {
-                {
-                    boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                            newfused_accel.class.getName());
-                    if (check12) {
-                        Intent i12 = new Intent(sqlitewraper.context,
-                                newfused_accel.class);
-                        sqlitewraper.context.stopService(i12);
-                    }
-                }
-            }
+        // Harsh acceleration and braking are no longer tracked: stop the service if an older
+        // version left it running.
+        boolean check12 = isMyServiceRunning(sqlitewraper.context,
+                newfused_accel.class.getName());
+        if (check12) {
+            Intent i12 = new Intent(sqlitewraper.context,
+                    newfused_accel.class);
+            sqlitewraper.context.stopService(i12);
         }
     }
 
@@ -940,6 +934,19 @@ public class activity_recognize extends BroadcastReceiver {
         long currentTime = System.currentTimeMillis();
         long drivingStart = pref.getLong(KEY_DRIVING_START, 0);
         boolean alertSent = pref.getBoolean(KEY_DRIVING_ALERT, false);
+        long lastVehicle = pref.getLong(KEY_DRIVING_LAST_VEHICLE, 0);
+
+        // A session left over from an earlier drive is not continuous driving. Activity
+        // recognition only runs during trips, so the reset in resetDrivingTimer() never ran
+        // between trips, and the next trip inherited the old start time and alerted at once.
+        DRIVING_RESET_GRACE_PERIOD = parseTimeToMillis(continuous_driving_reset_alert_time, 15 * 60 * 1000L);
+        if (DRIVING_RESET_GRACE_PERIOD <= 0) DRIVING_RESET_GRACE_PERIOD = 15 * 60 * 1000L;   // "00:00" would reset every time
+        if (drivingStart != 0 && (lastVehicle == 0 || currentTime - lastVehicle >= DRIVING_RESET_GRACE_PERIOD)) {
+            Log.d("DrivingAlert", "Stale driving session discarded");
+            drivingStart = 0;
+            pref.putLong(KEY_DRIVING_START, 0);
+            pref.putBoolean(KEY_DRIVING_ALERT, false);
+        }
 
         // Always update the last seen vehicle timestamp when driving is detected
         pref.putLong(KEY_DRIVING_LAST_VEHICLE, currentTime);
@@ -962,6 +969,20 @@ public class activity_recognize extends BroadcastReceiver {
             // Capture final telematics for the event
             long endTime = System.currentTimeMillis();
             
+            // Only driving on a live trip counts; otherwise the session is kept on the phone
+            // for review and closed without an alert.
+            DrivingContext.Context drivingContext = DrivingContext.current(tripStatus() > 0,
+                    pref.getString("vehicle_type", "Private-2W"), endTime);
+            if (!DrivingContext.counts(drivingContext)) {
+                HeldEventStore.hold(sqlitewraper.getDatabase(), "continuous_driving", drivingContext,
+                        null, drivingStart, endTime, String.valueOf(duration));
+                pref.putLong(KEY_DRIVING_START, 0);
+                pref.putLong(KEY_DRIVING_LAST_VEHICLE, 0);
+                pref.putBoolean(KEY_DRIVING_ALERT, false);
+                pref.commit();
+                return;
+            }
+
             // Insert ONE event for the continuous driving session
             boolean isInserted = insertIntoEvents(
                     String.valueOf(drivingStart),

@@ -65,7 +65,16 @@ import com.google.android.gms.location.LocationServices;
 import com.sky.atc.easyformse.datautils.DataUtils;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.location.SpeedCalculation;
+import com.sky.atc.easyformse.trip.SpeedViolation;
 import com.sky.atc.easyformse.trip.TripMapUtils;
+import com.sky.atc.easyformse.trip.engine.DrivingContext;
+import com.sky.atc.easyformse.trip.engine.Fix;
+import com.sky.atc.easyformse.trip.engine.HeldEventStore;
+import com.sky.atc.easyformse.trip.engine.MotionFeatureLogger;
+import com.sky.atc.easyformse.trip.engine.FixValidator;
+import com.sky.atc.easyformse.trip.engine.PositionEstimator;
+import com.sky.atc.easyformse.trip.engine.TripDistanceMeter;
+import com.sky.atc.easyformse.trip.engine.TripEngineStore;
 
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
@@ -77,13 +86,8 @@ import java.util.TimerTask;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.media.AudioManager;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Service providing the guts of the location polling engine. Uses a WakeLock to
@@ -152,17 +156,54 @@ public class newfused extends Service implements LocationListener {
     private boolean simCallActive = false;
     private boolean whatsappCallActive = false;
 
-    // Sensor Fusion
-    private SensorManager sensorManager;
-    private Sensor accelerometer, gyroscope;
-    private SensorEventListener sensorListener;
-    private KalmanFilter2D kalmanFilter;
-    private Handler fusionHandler = new Handler(Looper.getMainLooper());
-    private Runnable fusionLoop;
-    private final Queue<IMUSample> imuQueue = new ConcurrentLinkedQueue<>();
+    // Trip engine (ported from OG Trip Tracker): trusted-fix checks, position smoothing and the
+    // distance meter. It replaces the IMU Kalman filter, which assumed a flat, forward-facing phone
+    // and kept the motion sensors at full rate all day.
+    private final PositionEstimator positionEstimator = new PositionEstimator();
+    private final TripDistanceMeter distanceMeter = new TripDistanceMeter();
+    private Fix lastTrustedFix = null;
+    private long lastEstimatorFixMs = 0L;
+    private float lastBearingDeg = Float.NaN;
+    private String meterTid = null;
+    private long meterSavedMs = 0L;
+    private String liveTid = null;
+    private long liveTidCheckedMs = 0L;
+    private String vehicleType = "Private-2W";
+    // Bike-vs-car training data, collected on live trips only (see MotionFeatureLogger).
+    private MotionFeatureLogger featureLogger;
+    private long lastForwardElapsedMs = 0L;
+    private static final long METER_SAVE_MS = 15_000L;
+    private static final long LIVE_TRIP_CACHE_MS = 10_000L;
+    // Fixes go to loc_change (300 m track points, location log, ETA) at today's rate, even when
+    // the GPS runs faster while driving.
+    private static final long FORWARD_INTERVAL_MS = 4_500L;
+
+    // GPS rate on a live trip, OG Trip Tracker's own profile: a fix every second from 15 km/h,
+    // every 2 s from walking pace (so slow hill roads and hairpins keep their shape), today's
+    // 5-second rate when stopped or off trip. Up immediately; down only after holding a while.
+    private static final int RATE_IDLE = 0;      // 5 s, 10 m filter (today's rate)
+    private static final int RATE_CRUISE = 1;    // 2 s, no distance filter
+    private static final int RATE_DRIVE = 2;     // 1 s, no distance filter
+    private int gpsRate = RATE_IDLE;
+    private int pendingLowerRate = -1;
+    private long lowerSinceMs = 0L;
+    private static final float DRIVE_SPEED_MPS = 4.2f;    // 15 km/h
+    private static final float CRUISE_SPEED_MPS = 0.5f;   // walking pace
+    private static final long SLOWER_HOLD_MS = 30_000L;
+    private static final long IDLE_HOLD_MS = 60_000L;
+
+    // Call while driving: the speed must stay over the limit this long on trusted fixes.
+    private static final long CALL_SUSTAIN_MS = 10_000L;
+    private static final long CALL_GAP_MS = 10_000L;
+    private long callOverSinceMs = 0L;
+    private long callLastTrustedMs = 0L;
+    private float callSpeedLimitKmh = 15f;
+    private long callLimitLoadedMs = 0L;
+    private boolean callHandsFree = false;
+    private DrivingContext.Context callContext = DrivingContext.Context.UNKNOWN;
+
     private Location lastAcceptedLocation = null;
     private static Location lastvalidfortripend = null;
-    private static final int MAX_IMU_QUEUE_SIZE = 500;
     @SuppressLint("InvalidWakeLockTag")
     synchronized private static PowerManager.WakeLock getLock(Context context) {
         if (lockStatic == null) {
@@ -203,7 +244,9 @@ public class newfused extends Service implements LocationListener {
         startServUpdateTask();
         registerCallListener();
        // registerWhatsAppCallReceiver();
-        initSensorFusion();
+        if (featureLogger == null) {
+            featureLogger = new MotionFeatureLogger(getApplicationContext(), database);
+        }
         boolean isuploadlastentry = pref.getBoolean("isuploadlastentry",false);
 //        check location and upload in server
         if(!isuploadlastentry) {
@@ -358,7 +401,11 @@ public class newfused extends Service implements LocationListener {
         if (timer != null) {
             timer.cancel();
         }
-        imuQueue.clear();
+        saveTripDistance();
+        if (featureLogger != null) {
+            featureLogger.stop();
+            featureLogger = null;
+        }
         quite();
         unregisterphonestate();
         if (whatsappCallReceiver != null) {
@@ -370,77 +417,6 @@ public class newfused extends Service implements LocationListener {
             }
 
             whatsappCallReceiver = null;
-        }
-
-        if (fusionHandler != null && fusionLoop != null) {
-            fusionHandler.removeCallbacks(fusionLoop);
-        }
-        if (sensorManager != null && sensorListener != null) {
-            sensorManager.unregisterListener(sensorListener);
-        }
-    }
-
-    private void initSensorFusion() {
-        if (sensorManager != null && sensorListener != null) {
-            return; // Prevent duplicate registration on multiple onStartCommand calls
-        }
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        if (sensorManager == null) return;
-        // Use LINEAR_ACCELERATION (gravity removed) if available, otherwise fallback to ACCELEROMETER
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        if (accelerometer == null) {
-            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        }
-        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        sensorListener = new SensorEventListener() {
-            private float[] lastAccel = new float[3];
-            private float[] lastGyro = new float[3];
-
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER ||
-                        event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-                    System.arraycopy(event.values, 0, lastAccel, 0, 3);
-                } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-                    System.arraycopy(event.values, 0, lastGyro, 0, 3);
-                }
-                // Prevent memory leak if GPS is off: drop oldest if queue exceeds limit
-                while (imuQueue.size() >= MAX_IMU_QUEUE_SIZE) {
-                    imuQueue.poll();
-                }
-                imuQueue.offer(new IMUSample(lastAccel.clone(), lastGyro.clone(), event.timestamp));
-            }
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-        };
-        if (accelerometer != null) {
-            sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        }
-        if (gyroscope != null) {
-            sensorManager.registerListener(sensorListener, gyroscope, SensorManager.SENSOR_DELAY_FASTEST);
-        }
-    }
-
-    /**
-     * IMU data is used as the Kalman prediction input when a new GPS/Fused
-     * location arrives. We intentionally do NOT generate a synthetic
-     * location every second from the Kalman state. Doing that can create
-     * duplicate/artificial trip locations and incorrect speed calculations.
-     */
-    private void predictKalmanFromPendingImu() {
-        if (kalmanFilter == null || !kalmanFilter.isInitialized() || imuQueue.isEmpty()) {
-            return;
-        }
-        IMUSample sample;
-        while ((sample = imuQueue.poll()) != null) {
-            try {
-                float[] gyroData = (sample.gyro != null && sample.gyro.length == 3) ? sample.gyro : new float[3];
-                if (sample.accel != null && sample.accel.length == 3) {
-                    kalmanFilter.predict(sample.accel, gyroData, sample.timestamp);
-                }
-            } catch (Exception e) {
-                Log.e("KALMAN", "IMU prediction failed", e);
-            }
         }
     }
 
@@ -474,19 +450,15 @@ public class newfused extends Service implements LocationListener {
     }
 
     /**
-     * Single location processing pipeline:
-     * raw GPS/Fused -> validation -> IMU prediction -> GPS Kalman correction
-     * -> filtered location -> speed calculation -> trip processing.
+     * Single location processing pipeline (trip engine ported from OG Trip Tracker):
+     * raw fix -> mock and sanity checks -> trusted-fix checks -> position smoothing
+     * -> distance meter, speed violation and call checks (trusted fixes only)
+     * -> loc_change at today's rate for track points, the location log and ETA.
      */
     void processLocation(Location location) {
         if (location == null) {
             return;
         }
-
-        double rawLat = location.getLatitude();
-        double rawLon = location.getLongitude();
-        float accuracy = location.getAccuracy();
-
 
         try {
             boolean isMock = isMockAvailable(location);
@@ -497,80 +469,195 @@ public class newfused extends Service implements LocationListener {
                 Log.d("LOCATION_FILTER", "Rejected mock location");
                 return;
             }
-            if (kalmanFilter == null) {
-                kalmanFilter = new KalmanFilter2D();
-            }
+
+            Fix fix = Fix.from(location);
+            String tid = liveTripTid();
+            // Before the duplicate filter below, which drops most fixes while stopped.
+            updateSamplingProfile(fix, tid != null);
 
             if (isBadTripLocation(location)) {
-
                 return;
             }
 
-            if (!kalmanFilter.isInitialized()) {
-                kalmanFilter.init(rawLat, rawLon, location.getBearing());
-                imuQueue.clear();
+            FixValidator.Reason quality = FixValidator.validate(fix, lastTrustedFix);
+            boolean trusted = quality == FixValidator.Reason.OK;
+            if (quality == FixValidator.Reason.IMPOSSIBLE_SPEED) {
+                Log.d("LOCATION_FILTER", "Rejected impossible speed " + fix.speedMps);
+                return;
+            }
+
+            // Speed: the GPS's own Doppler reading. Distance over time is only a fallback for
+            // providers that report no speed.
+            float speedMps;
+            if (fix.hasSpeed()) {
+                speedMps = fix.speedMps;
             } else {
-                predictKalmanFromPendingImu();
-                kalmanFilter.update(location);
+                float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(location);
+                if (manualSpeed == 10000) {
+                    return;
+                }
+                speedMps = manualSpeed;
+                trusted = false;
             }
+
+            if (!Float.isNaN(fix.bearingDeg) && speedMps >= 2f) {
+                lastBearingDeg = fix.bearingDeg;
+            }
+            long nowMs = System.currentTimeMillis();
+            if (lastEstimatorFixMs > 0L) {
+                positionEstimator.predict(speedMps, lastBearingDeg, (nowMs - lastEstimatorFixMs) / 1000f);
+            }
+            PositionEstimator.Result placed = positionEstimator.correct(
+                    fix.lat, fix.lng, fix.accuracyM, speedMps, nowMs);
+            lastEstimatorFixMs = nowMs;
+            if (placed == PositionEstimator.Result.REJECTED_OUTLIER) {
+                trusted = false;
+            }
+
             Location filteredLocation = new Location(location);
-
-            if (kalmanFilter != null && kalmanFilter.isInitialized()) {
-                double[] pos = kalmanFilter.getPosition();
-
-                if (pos != null && pos.length >= 2 &&
-                        Double.isFinite(pos[0]) &&
-                        Double.isFinite(pos[1]) &&
-                        pos[0] >= -90.0 && pos[0] <= 90.0 &&
-                        pos[1] >= -180.0 && pos[1] <= 180.0 &&
-                        !(pos[0] == 0.0 && pos[1] == 0.0)) {
-
-                    filteredLocation.setLatitude(pos[0]);
-                    filteredLocation.setLongitude(pos[1]);
-                }
+            if (positionEstimator.isReady()) {
+                filteredLocation.setLatitude(positionEstimator.latitude());
+                filteredLocation.setLongitude(positionEstimator.longitude());
             }
+            filteredLocation.setSpeed(speedMps);
 
-
-            float[] kalmanCorrection = new float[1];
-
-            Location.distanceBetween(
-                    rawLat,
-                    rawLon,
-                    filteredLocation.getLatitude(),
-                    filteredLocation.getLongitude(),
-                    kalmanCorrection
-            );
-
-            // Reject Kalman output if correction is implausibly large (> 100m)
-            // Indicates filter state corruption (e.g., from mock locations)
-            if (kalmanCorrection[0] > 100f) {
-                Log.w("LOCATION_FILTER", "Kalman diverged (" + kalmanCorrection[0] + "m). Resetting.");
-                filteredLocation.setLatitude(rawLat);
-                filteredLocation.setLongitude(rawLon);
-                // Re-initialize filter to clear corrupted state
-                if (kalmanFilter != null) {
-                    kalmanFilter.init(rawLat, rawLon, location.getBearing());
-                    imuQueue.clear();
-                }
+            if (trusted) {
+                lastTrustedFix = fix;
+                DrivingContext.onSpeed(speedMps * 3.6, nowMs);
             }
-            // Initialize or update Kalman Filter
-
-
             lastAcceptedLocation = new Location(filteredLocation);
             lastvalidfortripend = new Location(filteredLocation); // use for trip end time
             latestLocation = new Location(filteredLocation);
-            checkCallTimeSpeed(filteredLocation);
 
-
-            float manualSpeed = SpeedCalculation.calculateSpeedBetweenPoints(filteredLocation);
-            if (manualSpeed != 10000) {
-
-                onLocationUpdate(filteredLocation, manualSpeed);
+            if (tid != null) {
+                measureTripDistance(tid, filteredLocation, fix, trusted);
+                if (trusted) {
+                    SpeedViolation.onSpeedViolationOccured(speedMps,
+                            filteredLocation.getLatitude(), filteredLocation.getLongitude(),
+                            filteredLocation.getProvider() == null ? "fused" : filteredLocation.getProvider(),
+                            "2", fix.accuracyM, String.valueOf(nowMs), String.valueOf(speedMps));
+                }
+            } else if (meterTid != null) {
+                saveTripDistance();
+                meterTid = null;
+            }
+            checkCallTimeSpeed(speedMps, trusted);
+            if (featureLogger != null) {
+                featureLogger.onFix(tid, vehicleType, trusted ? speedMps * 3.6 : -1, fix.bearingDeg, nowMs);
             }
 
+            long nowElapsed = SystemClock.elapsedRealtime();
+            if (lastForwardElapsedMs == 0L || nowElapsed - lastForwardElapsedMs >= FORWARD_INTERVAL_MS) {
+                lastForwardElapsedMs = nowElapsed;
+                onLocationUpdate(filteredLocation, speedMps);
+            }
 
         } catch (Exception e) {
             Log.e("LOCATION_FILTER", "Location processing error", e);
+        }
+    }
+
+    /** The live trip's tid, or null when no trip is running. Reused for a few seconds. */
+    private String liveTripTid() {
+        long now = System.currentTimeMillis();
+        if (now - liveTidCheckedMs < LIVE_TRIP_CACHE_MS) {
+            return liveTid;
+        }
+        liveTidCheckedMs = now;
+        Cursor c = null;
+        try {
+            database = sqlitewraper.getDatabase();
+            c = database.rawQuery("select tid from lat_plug where trip_status = 0 order by _id desc limit 1", null);
+            liveTid = c.moveToFirst() ? c.getString(0) : null;
+            if (pref != null) vehicleType = pref.getString("vehicle_type", "Private-2W");
+        } catch (Exception e) {
+            Log.e("TRIP_ENGINE", "live trip lookup failed", e);
+        } finally {
+            if (c != null) c.close();
+        }
+        return liveTid;
+    }
+
+    /** Adds this fix to the live trip's distance and saves the total every few seconds. */
+    private void measureTripDistance(String tid, Location filtered, Fix fix, boolean trusted) {
+        if (!tid.equals(meterTid)) {
+            saveTripDistance();
+            meterTid = tid;
+            distanceMeter.reset();
+            distanceMeter.resume(TripEngineStore.loadDistance(sqlitewraper.getDatabase(), tid));
+            meterSavedMs = System.currentTimeMillis();
+        }
+        distanceMeter.add(filtered.getLatitude(), filtered.getLongitude(), fix.accuracyM, fix.timeMs, trusted);
+        if (System.currentTimeMillis() - meterSavedMs >= METER_SAVE_MS) {
+            saveTripDistance();
+        }
+    }
+
+    private void saveTripDistance() {
+        if (meterTid == null) return;
+        TripEngineStore.saveDistance(sqlitewraper.getDatabase(), meterTid,
+                distanceMeter.totalMeters(), distanceMeter.gaps());
+        meterSavedMs = System.currentTimeMillis();
+    }
+
+    /**
+     * Picks the GPS rate for a live trip from the latest fix (see RATE_*). A call on a live trip
+     * always gets the 1-second rate so its speed is known quickly.
+     */
+    private void updateSamplingProfile(Fix fix, boolean tripLive) {
+        boolean callActive = simCallActive || whatsappCallActive;
+        boolean usable = fix.accuracyM > 0f && fix.accuracyM <= 50f && fix.hasSpeed();
+        int target;
+        if (!tripLive) {
+            target = RATE_IDLE;
+        } else if (callActive) {
+            target = RATE_DRIVE;
+        } else if (!usable) {
+            return;   // no trustworthy speed: keep the current rate
+        } else if (fix.speedMps >= DRIVE_SPEED_MPS) {
+            target = RATE_DRIVE;
+        } else if (fix.speedMps >= CRUISE_SPEED_MPS) {
+            target = RATE_CRUISE;
+        } else {
+            target = RATE_IDLE;
+        }
+
+        if (target >= gpsRate || !tripLive) {
+            pendingLowerRate = -1;
+            lowerSinceMs = 0L;
+            if (target != gpsRate) setGpsRate(target);
+            return;
+        }
+        // Lower than now: wait until the slower speed has held, then step down to the fastest
+        // rate seen while waiting.
+        long now = System.currentTimeMillis();
+        if (lowerSinceMs == 0L) lowerSinceMs = now;
+        pendingLowerRate = Math.max(pendingLowerRate, target);
+        long hold = pendingLowerRate == RATE_IDLE ? IDLE_HOLD_MS : SLOWER_HOLD_MS;
+        if (now - lowerSinceMs >= hold) {
+            int next = pendingLowerRate;
+            pendingLowerRate = -1;
+            lowerSinceMs = 0L;
+            setGpsRate(next);
+        }
+    }
+
+    private void setGpsRate(int rate) {
+        gpsRate = rate;
+        Log.d("TRIP_ENGINE", "GPS rate " + (rate == RATE_DRIVE ? "1 s" : rate == RATE_CRUISE ? "2 s" : "5 s"));
+        restartLocationUpdates();
+    }
+
+    private void restartLocationUpdates() {
+        if (fusedLocationClient == null || locationCallback == null) return;
+        try {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+            locationRequest = gpsRate == RATE_DRIVE ? createDrivingLocationRequest()
+                    : gpsRate == RATE_CRUISE ? createCruiseLocationRequest()
+                    : createLocationRequestNew();
+            startLocationUpdates();
+        } catch (Exception e) {
+            Log.e("TRIP_ENGINE", "GPS rate change failed", e);
         }
     }
 
@@ -698,52 +785,128 @@ public class newfused extends Service implements LocationListener {
         return locationRequest;
     }
 
-    private void checkCallTimeSpeed(Location location)
+    /** Slow movement on a live trip: a fix every 2 seconds with no distance filter (OG's cruise rate). */
+    protected LocationRequest createCruiseLocationRequest() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(2000);
+        locationRequest.setFastestInterval(1500);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setSmallestDisplacement(0);
+
+        return locationRequest;
+    }
+
+    /** Driving on a live trip: a fix every second with no distance filter (OG's own profile). */
+    protected LocationRequest createDrivingLocationRequest() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(1000);
+        locationRequest.setFastestInterval(1000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setSmallestDisplacement(0);
+
+        return locationRequest;
+    }
+
+    /**
+     * Call while driving. A call only counts once the speed has stayed over the call speed limit
+     * for CALL_SUSTAIN_MS on trusted fixes, so one GPS spike can't flag a call.
+     */
+    private void checkCallTimeSpeed(float speedMps, boolean trusted)
     {
-        if (whatsappCallActive || simCallActive  )  {
+        if (!(whatsappCallActive || simCallActive)) {
+            return;
+        }
+        if (!trusted) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        if (callLastTrustedMs > 0L && now - callLastTrustedMs > CALL_GAP_MS) {
+            callOverSinceMs = 0L;   // a gap in GPS breaks the run
+        }
+        callLastTrustedMs = now;
 
-            float currentSpeed = location.getSpeed() ;
-//            Log.d("WHATSAPP_CALL",
-//                    "simCallActive =" + simCallActive +  " whatsappCallActive =" + whatsappCallActive +
-//                             " speedViolation=" + speedViolation +
-//                            " speed=" + currentSpeed);
-//            Log.d("WHATSAPP_CALL", "currentSpeed " + currentSpeed);
-            String vehicaletype = pref.getString("vehicle_type","Private-2W");
-            String call_event_speed_limit = "";
-            android.database.Cursor a_t2 = database
-                    .rawQuery(
-                            "select call_event_speed_limit from Thresold_New WHERE vehicle_type =" + "'" + vehicaletype + "'" , null);
-
-
-            if(a_t2.getCount() > 0)
-            {
-                a_t2.moveToFirst();
-                call_event_speed_limit = a_t2.getString(0);
-                a_t2.close();
-            }
-
-            if(call_event_speed_limit == null || call_event_speed_limit.equalsIgnoreCase("") || call_event_speed_limit.equalsIgnoreCase("null") || call_event_speed_limit.equalsIgnoreCase("0"))
-            {
-                CALL_SPEED_LIMIT = 15 ;  // call speed default is 15 km/h
-            }
-            else {
-                CALL_SPEED_LIMIT = Float.parseFloat(call_event_speed_limit) ;
-            }
-
-            float fact = (float) 18 / 5;
-            float ac_speed = currentSpeed * fact;
-
-            if (ac_speed > CALL_SPEED_LIMIT) {
+        float ac_speed = speedMps * 3.6f;
+        if (ac_speed > callSpeedLimit()) {
+            if (callOverSinceMs == 0L) callOverSinceMs = now;
+            if (!speedViolation && now - callOverSinceMs >= CALL_SUSTAIN_MS) {
                 Log.d("CALL", "speedViolation ");
                 speedViolation = true;
-
+                callHandsFree = isHandsFreeCall();
+                callContext = DrivingContext.current(liveTripTid() != null,
+                        pref.getString("vehicle_type", "Private-2W"), now);
             }
-            if (currentSpeed > maxSpeedDuringCall) {
-                maxSpeedDuringCall = currentSpeed;
-                maxSpeedMilli = System.currentTimeMillis();
+        } else {
+            callOverSinceMs = 0L;
+        }
+        if (speedMps > maxSpeedDuringCall) {
+            maxSpeedDuringCall = speedMps;
+            maxSpeedMilli = now;
+        }
+    }
+
+    /** The vehicle type's call speed limit in km/h (15 when none is set), read every few minutes. */
+    private float callSpeedLimit() {
+        long now = System.currentTimeMillis();
+        if (now - callLimitLoadedMs < 5 * 60 * 1000L) {
+            return callSpeedLimitKmh;
+        }
+        callLimitLoadedMs = now;
+        String vehicaletype = pref.getString("vehicle_type","Private-2W");
+        String call_event_speed_limit = "";
+        Cursor a_t2 = null;
+        try {
+            a_t2 = database.rawQuery(
+                    "select call_event_speed_limit from Thresold_New WHERE vehicle_type = ?", new String[]{vehicaletype});
+            if (a_t2.moveToFirst()) {
+                call_event_speed_limit = a_t2.getString(0);
             }
+        } catch (Exception e) {
+            Log.e("CALL", "call limit lookup failed", e);
+        } finally {
+            if (a_t2 != null) a_t2.close();
+        }
+        float limit = 15f;   // call speed default is 15 km/h
+        try {
+            if (call_event_speed_limit != null && !call_event_speed_limit.equalsIgnoreCase("")
+                    && !call_event_speed_limit.equalsIgnoreCase("null") && !call_event_speed_limit.equalsIgnoreCase("0")) {
+                limit = Float.parseFloat(call_event_speed_limit);
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        CALL_SPEED_LIMIT = limit;
+        callSpeedLimitKmh = limit;
+        return limit;
+    }
 
+    private void resetCallRun() {
+        callOverSinceMs = 0L;
+        callLastTrustedMs = 0L;
+        callHandsFree = false;
+        callContext = DrivingContext.Context.UNKNOWN;
+    }
 
+    /** A call connected: start a fresh run and, on a live trip, switch to 1-second fixes now. */
+    private void onCallStarted() {
+        resetCallRun();
+        if (gpsRate != RATE_DRIVE && liveTripTid() != null) {
+            pendingLowerRate = -1;
+            lowerSinceMs = 0L;
+            setGpsRate(RATE_DRIVE);
+        }
+    }
+
+    /**
+     * True when call audio goes to a car kit, headset or the speaker. Recorded on the call event
+     * so the policy can decide whether hands-free calls count.
+     */
+    @SuppressWarnings("deprecation")
+    private boolean isHandsFreeCall() {
+        try {
+            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if (am == null) return false;
+            return am.isBluetoothScoOn() || am.isBluetoothA2dpOn() || am.isSpeakerphoneOn() || am.isWiredHeadsetOn();
+        } catch (Exception e) {
+            return false;
         }
     }
     private void onLocationUpdate(Location location, float manualSpeed) {
@@ -816,10 +979,9 @@ public class newfused extends Service implements LocationListener {
         loc_change.putExtra("time", timemilli);
         loc_change.putExtra("gps_speed",gps_speed);
 
-        //if speed is less than 118 km/h than process the location for further clculations
-        if (location.getSpeed() < 33) {
-            WakefulIntentService.sendWakefulWork(sqlitewraper.context, loc_change);
-        }
+        // Fixes above 118 km/h used to be dropped here, so highway speeding left no trace.
+        // FixValidator now rejects only impossible speeds (above about 270 km/h).
+        WakefulIntentService.sendWakefulWork(sqlitewraper.context, loc_change);
 
         Intent i = new Intent();
         i.setAction("Location");
@@ -1078,6 +1240,7 @@ public class newfused extends Service implements LocationListener {
                     speedViolation = false;
                     maxSpeedDuringCall = 0f;
                     maxSpeedMilli = 0L;
+                    onCallStarted();
 
                     if (latestLocation != null) {
                         callStartLocation = new Location(latestLocation);
@@ -1164,6 +1327,7 @@ public class newfused extends Service implements LocationListener {
 
      maxSpeedDuringCall = 0;
      maxSpeedMilli = 0;
+     resetCallRun();
 
      lastCallState = -1;
  }
@@ -1172,6 +1336,12 @@ public class newfused extends Service implements LocationListener {
     {
         try{
             long currentTime = System.currentTimeMillis();
+            // Only a call while driving counts; others are kept on the phone for review.
+            if (!DrivingContext.counts(callContext)) {
+                HeldEventStore.hold(database, "Call", callContext, gettid(), callstarttime, currentTime,
+                        "{\"maxSpeedDuringCall\":" + maxSpeedDuringCall + ",\"handsfree\":" + callHandsFree + "}");
+                return false;
+            }
             ContentValues c = new ContentValues();
             c.put("username", d.getusername());
             c.put("Event_type", "Call");
@@ -1195,6 +1365,8 @@ public class newfused extends Service implements LocationListener {
 //            maxViolation.put("callStartSpeed", callStartSpeed);
             maxViolation.put("maxSpeedDuringCall", maxSpeedDuringCall);
             maxViolation.put("maxSpeedTime", maxSpeedMilli);
+            maxViolation.put("handsfree", callHandsFree);
+            maxViolation.put("context", DrivingContext.label(callContext));
 
             c.put("maxviolation",maxViolation.toString());
 
@@ -1383,6 +1555,8 @@ public class newfused extends Service implements LocationListener {
 
         maxSpeedMilli = 0L;
 
+        onCallStarted();
+
         callStartLocation = null;
 
         callEndLocation = null;
@@ -1475,6 +1649,8 @@ public class newfused extends Service implements LocationListener {
         maxSpeedDuringCall = 0f;
 
         maxSpeedMilli = 0L;
+
+        resetCallRun();
     }
 
 

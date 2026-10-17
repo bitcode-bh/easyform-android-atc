@@ -558,8 +558,8 @@ public class loc_change extends WakefulIntentService {
 						long temp = database.insert("track_master", null, args);
 					}
 
-					//for speed violation calculation
-                    SpeedViolation.onSpeedViolationOccured(Float.parseFloat(speed),lat,lon,provider,tripflag,acc,date1,gps_speed);
+					//speed violation is checked in newfused on every trusted fix, not only on the
+					//points kept here every 300 m
                     //Broadcast Location update in TripMapBackgroundActivity.java
 					LocationOutageUtils.sendLocationToBackgrounMap(lat,lon);
 
