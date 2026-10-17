@@ -292,7 +292,6 @@
             android:label="@string/app_name"
             android:screenOrientation="portrait" />
         <receiver android:name=".LocationReceiver_network" />
-        <receiver android:name=".touch_current" /> <!-- Comware location poller SDK -->
         <receiver android:name="commonsware.cwac.LocationPoller" />
 
         <service android:name="commonsware.cwac.LocationPollerService" android:exported="false"/>
@@ -386,11 +385,8 @@
 
 
         <service android:name=".loc_change" />
-        <service android:name=".newfused_accel" />
-        <service android:name=".newfused_gps" />
         <service android:name=".newfused" />
         <service android:name=".resume_wake" />
-        <service android:name=".newfused_accel_accelerometer"/>
         <service android:name=".MyFirebaseMessagingService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -587,17 +583,6 @@
 <!--            <intent-filter>-->
 <!--                <action android:name="android.service.notification.NotificationListenerService" />-->
 <!--            </intent-filter>-->
-<!--        </service>-->
-<!--        <service-->
-<!--            android:name=".VoipNotificationService"-->
-<!--            android:label="VoIP Call Detection"-->
-<!--            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"-->
-<!--            android:exported="true">-->
-
-<!--            <intent-filter>-->
-<!--                <action android:name="android.service.notification.NotificationListenerService" />-->
-<!--            </intent-filter>-->
-
 <!--        </service>-->
 
     </application>

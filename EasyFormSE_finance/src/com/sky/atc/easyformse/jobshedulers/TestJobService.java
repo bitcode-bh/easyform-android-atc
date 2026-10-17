@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 import com.sky.atc.easyformse.Activity_recognition;
 import com.sky.atc.easyformse.newfused;
-import com.sky.atc.easyformse.newfused_gps;
 import com.sky.atc.easyformse.sqlitewraper;
 
 import net.sqlcipher.database.SQLiteDatabase;

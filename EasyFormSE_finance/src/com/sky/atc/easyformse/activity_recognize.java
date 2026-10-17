@@ -261,15 +261,6 @@ public class activity_recognize extends BroadcastReceiver {
                                         Log.d("DrivingAlert", "Continuous Driving Started");
                                     }
 
-                                    // Harsh acceleration and braking are no longer tracked, so the
-                                    // newfused_accel service (its own 1-second GPS request) never
-                                    // starts. One left running by an older version is stopped.
-                                    boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                                            newfused_accel.class.getName());
-                                    if (check12) {
-                                        Intent i12 = new Intent(sqlitewraper.context, newfused_accel.class);
-                                        sqlitewraper.context.stopService(i12);
-                                    }
                                 }
 
                             }
@@ -412,8 +403,8 @@ public class activity_recognize extends BroadcastReceiver {
 
                         }
 
-//                stop the newfused_accel service as user is not in vehicle
-                        stopaccelrationservice();
+
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -439,8 +430,8 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.putLong("event_start", time_c);
                         pref.commit();
 
-                        //stop the newfused_accel service as user is not in vehicle
-                        stopaccelrationservice();
+
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -464,9 +455,9 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.putLong("event_start", time_c);
                         pref.commit();
 
-                        //stop the newfused_accel service as user is not in vehicle
 
-                        stopaccelrationservice();
+
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -489,8 +480,8 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.putLong("event_start", time_c);
                         pref.commit();
 
-                        //stop the newfused_accel service as user is not in vehicle
-                        stopaccelrationservice();
+
+
                     } catch (Exception e) {
 
                     }
@@ -513,9 +504,9 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.putLong("event_start", time_c);
                         pref.commit();
 
-                        //stop the newfused_accel service as user is not in vehicle
 
-                        stopaccelrationservice();
+
+
                     } catch (Exception e) {
 
                     }
@@ -579,7 +570,7 @@ public class activity_recognize extends BroadcastReceiver {
                 }
                 }
                 else {
-                    stopaccelrationservice();
+
                 }
             }
         } else if (intent.getAction() != null && intent.getAction().equals("ALARM_ACTION")) {
@@ -913,19 +904,6 @@ public class activity_recognize extends BroadcastReceiver {
             return isInserted;
         } catch (Exception e) {
             return false;
-        }
-    }
-
-    public void stopaccelrationservice()
-    {
-        // Harsh acceleration and braking are no longer tracked: stop the service if an older
-        // version left it running.
-        boolean check12 = isMyServiceRunning(sqlitewraper.context,
-                newfused_accel.class.getName());
-        if (check12) {
-            Intent i12 = new Intent(sqlitewraper.context,
-                    newfused_accel.class);
-            sqlitewraper.context.stopService(i12);
         }
     }
 

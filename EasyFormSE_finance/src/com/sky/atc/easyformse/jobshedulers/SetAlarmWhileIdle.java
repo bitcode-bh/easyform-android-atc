@@ -17,7 +17,6 @@ import android.util.Log;
 import com.sky.atc.easyformse.Activity_recognition;
 import com.sky.atc.easyformse.datautils.DataUtils;
 import com.sky.atc.easyformse.newfused;
-import com.sky.atc.easyformse.newfused_gps;
 import com.sky.atc.easyformse.sqlitewraper;
 
 import net.sqlcipher.database.SQLiteDatabase;

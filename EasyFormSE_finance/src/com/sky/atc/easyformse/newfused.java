@@ -117,7 +117,6 @@ public class newfused extends Service implements LocationListener {
     String lat_check;
     //Editor editor;
     int check = 0;
-    private BroadcastReceiver whatsappCallReceiver;
 
     NotificationChannel mChannel = null;
     String CHANNEL_ID = "my_channel_01";
@@ -157,7 +156,6 @@ public class newfused extends Service implements LocationListener {
     private boolean speedViolation ;
     private boolean callEventInserted = false;
     private boolean simCallActive = false;
-    private boolean whatsappCallActive = false;
 
     // Trip engine (ported from OG Trip Tracker): trusted-fix checks, position smoothing and the
     // distance meter. It replaces the IMU Kalman filter, which assumed a flat, forward-facing phone
@@ -259,7 +257,6 @@ public class newfused extends Service implements LocationListener {
         checkServicemilli();
         startServUpdateTask();
         registerCallListener();
-       // registerWhatsAppCallReceiver();
         if (featureLogger == null) {
             featureLogger = new MotionFeatureLogger(getApplicationContext(), database);
             featureLogger.setTerrain(terrain);
@@ -427,16 +424,6 @@ public class newfused extends Service implements LocationListener {
         }
         quite();
         unregisterphonestate();
-        if (whatsappCallReceiver != null) {
-
-            try {
-                unregisterReceiver(whatsappCallReceiver);
-            } catch (Exception e) {
-                Log.e("WHATSAPP_CALL", "Receiver unregister error", e);
-            }
-
-            whatsappCallReceiver = null;
-        }
     }
 
 
@@ -712,7 +699,7 @@ public class newfused extends Service implements LocationListener {
      * always gets the 1-second rate so its speed is known quickly.
      */
     private void updateSamplingProfile(Fix fix, boolean tripLive) {
-        boolean callActive = simCallActive || whatsappCallActive;
+        boolean callActive = simCallActive;
         boolean usable = fix.accuracyM > 0f && fix.accuracyM <= 50f && fix.hasSpeed();
         int target;
         if (!tripLive) {
@@ -920,7 +907,7 @@ public class newfused extends Service implements LocationListener {
      */
     private void checkCallTimeSpeed(float speedMps, boolean trusted)
     {
-        if (!(whatsappCallActive || simCallActive)) {
+        if (!simCallActive) {
             return;
         }
         if (!trusted) {
@@ -1553,215 +1540,6 @@ public class newfused extends Service implements LocationListener {
 
         }
     }
-
-    @SuppressLint("WrongConstant")
-    private void registerWhatsAppCallReceiver() {
-
-        if (whatsappCallReceiver != null) {
-            return;
-        }
-
-        whatsappCallReceiver =
-                new BroadcastReceiver() {
-
-                    @Override
-                    public void onReceive(
-                            Context context,
-                            Intent intent) {
-
-                        if (intent == null) {
-                            return;
-                        }
-
-                        String action = intent.getAction();
-                        Log.d("WHATSAPP_CALL",
-                                "action = "
-                                        + action);
-                        if (VoipNotificationService.ACTION_WHATSAPP_CALL.equals(action)) {
-                            String state = intent.getStringExtra(VoipNotificationService.EXTRA_CALL_STATE);
-
-                            Log.d("WHATSAPP_CALL",
-                                    "newfused received = "
-                                            + state);
-
-                            if (VoipNotificationService.CALL_STARTED.equals(state)) {
-
-                                handleWhatsAppCallStart();
-
-                            } else if (VoipNotificationService.CALL_ENDED.equals(state)) {
-
-                                handleWhatsAppCallEnd();
-                            }
-                        }
-
-                        if (VoipNotificationService.ACTION_Teams_CALL.equals(action)) {
-                            String state = intent.getStringExtra(VoipNotificationService.EXTRA_CALL_STATE);
-
-                            Log.d("WHATSAPP_CALL",
-                                    "newfused received = "
-                                            + state);
-
-                            if (VoipNotificationService
-                                    .CALL_STARTED
-                                    .equals(state)) {
-
-                                handleWhatsAppCallStart();
-
-                            } else if (VoipNotificationService
-                                    .CALL_ENDED
-                                    .equals(state)) {
-
-                                handleWhatsAppCallEnd();
-                            }
-                        }
-
-
-
-
-                    }
-                };
-
-        IntentFilter filter = new IntentFilter(VoipNotificationService.ACTION_WHATSAPP_CALL);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-            registerReceiver(whatsappCallReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
-
-        } else {
-
-            registerReceiver(whatsappCallReceiver, filter);
-        }
-
-//        Log.d("WHATSAPP_CALL",
-//                "Receiver registered");
-    }
-
-    private void handleWhatsAppCallStart() {
-
-        if (!isTripRunning()) {
-
-            Log.d("WHATSAPP_CALL", "Trip not running - ignore START");
-
-            return;
-        }
-
-        if (whatsappCallActive) {
-
-            Log.d("WHATSAPP_CALL", "Call already active - ignore START");
-
-            return;
-        }
-
-        whatsappCallActive = true;
-
-        callStartTime = System.currentTimeMillis();
-
-        callEndTime = 0;
-
-        speedViolation = false;
-
-        maxSpeedDuringCall = 0f;
-
-        maxSpeedMilli = 0L;
-
-        onCallStarted();
-
-        callStartLocation = null;
-
-        callEndLocation = null;
-
-        if (latestLocation != null) {
-
-            callStartLocation =
-                    new Location(latestLocation);
-        }
-
-        Log.d("WHATSAPP_CALL", "START");
-
-        Log.d("WHATSAPP_CALL", "Start Time = " + callStartTime);
-
-        if (callStartLocation != null) {
-
-            Log.d("WHATSAPP_CALL", "Start Lat = " + callStartLocation.getLatitude());
-
-            Log.d("WHATSAPP_CALL", "Start Lng = " + callStartLocation.getLongitude());
-
-            Log.d("WHATSAPP_CALL", "Start Speed = " + callStartLocation.getSpeed());
-        }
-    }
-
-    private void handleWhatsAppCallEnd() {
-
-        if (!whatsappCallActive) {
-
-            Log.d("WHATSAPP_CALL", "No active call - ignore END");
-
-            return;
-        }
-
-        callEndTime = System.currentTimeMillis();
-
-        if (latestLocation != null) {
-
-            callEndLocation = new Location(latestLocation);
-        }
-
-        Log.d("WHATSAPP_CALL", "END");
-
-        Log.d("WHATSAPP_CALL", "End Time = " + callEndTime);
-
-        Log.d("WHATSAPP_CALL", "speedViolation = " + speedViolation);
-
-        /*
-         * Insert ONLY if speed exceeded
-         * the configured call speed limit.
-         */
-        if (speedViolation
-                && callStartLocation != null
-                && callEndLocation != null) {
-
-            long duration = callEndTime - callStartTime;
-
-            float meters = callStartLocation.distanceTo(callEndLocation);
-
-            double distanceKm = meters / 1000.0;
-
-            Log.d("WHATSAPP_CALL", "Duration = " + duration);
-
-            //Log.d("WHATSAPP_CALL", "Distance = " + distanceKm + " KM");
-
-            boolean inserted = calleventinsert(callStartTime, String.valueOf(callEndTime), String.valueOf(duration), callEndLocation);
-
-            Log.d("WHATSAPP_CALL", "Event inserted = " + inserted);
-        } else {
-
-            Log.d("WHATSAPP_CALL", "No speed violation - no event");
-        }
-
-        resetWhatsAppCallData();
-    }
-
-    private void resetWhatsAppCallData() {
-
-        whatsappCallActive = false;
-
-        speedViolation = false;
-
-        callStartTime = 0L;
-
-        callEndTime = 0L;
-
-        callStartLocation = null;
-
-        callEndLocation = null;
-
-        maxSpeedDuringCall = 0f;
-
-        maxSpeedMilli = 0L;
-
-        resetCallRun();
-    }
-
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {

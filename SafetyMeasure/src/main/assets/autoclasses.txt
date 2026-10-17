@@ -1,6 +1,0 @@
-reflective_jacket
-Helmet
-hand_glows
-Harness_jacket
-safety_shoes
-No_glows

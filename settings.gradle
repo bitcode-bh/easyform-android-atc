@@ -1,36 +1,16 @@
 include ':EasyFormSE_finance'
 include ':CordovaLib'
-include ':callplugin-debug'
-include ':CollabApp'
 include ':weatherapp'
-include ':CordovaApp-CordovaLib'
 include ':calendarNew'
 include ':library'
 include ':app-measure'
-include ':commonlib'
 
 include ':app-scenForm'
-include ':mobilertc'
-include ':easyform-zoom-chat'
 
-include ':Jitsi'
 include ':newJitsiModule'
 include ':faceDetectionModel'
-include ':documentscanner'
 
-include ':openCVLibrary'
-//include ':BillScannerModule'
 include ':databaseManager'
-include ':SmartMeasure'
 
 include ':videoapp'
 include ':k4l-video-trimmer'
-
-include ':SafetyMeasure'
-include ':weatherapp'
-/* unused Libraries */
-// include ':rapportplugin-debug'
-// include ':google-play-services_lib'
-// include ':contactsplugin-debug'
-// include ':wiprocollablib-debug'
-// include ':nokiacollablib-debug'
