@@ -85,6 +85,32 @@
     animation: hd-trip-dot-blink 1.4s ease-in-out infinite;
 }
 
+/* Live trip: the lower pin of the route icon carries the indicator, a green
+   dot in the pin's hole with a ring pulsing out of it, instead of a separate
+   dot on the corner. Offsets are in em of the glyph (Font Awesome 7 route:
+   1.25em wide, hole of the lower pin at 0.31em / 0.66em), so the dot stays on
+   the hole at any icon size. */
+#div_new_tabbar #btn_start_trip.trip-live .trip-recording-dot { display: none !important; }
+#div_new_tabbar #btn_start_trip.trip-live .tab-ico i::after {
+    content: "";
+    position: absolute;
+    left: calc(50% - 0.3155em);
+    top: calc(50% + 0.1595em);
+    width: 0.22em;
+    height: 0.22em;
+    margin: -0.11em 0 0 -0.11em;
+    border-radius: 50%;
+    corner-shape: round;
+    background: #22c55e;
+    box-shadow: 0 0 0 1px #fff, 0 0 0 1px rgba(34, 197, 94, 0.6);
+    animation: trip-live-pulse 1.6s ease-out infinite;
+}
+@keyframes trip-live-pulse {
+    0% { box-shadow: 0 0 0 1px #fff, 0 0 0 1px rgba(34, 197, 94, 0.6); }
+    70% { box-shadow: 0 0 0 1px #fff, 0 0 0 0.42em rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 1px #fff, 0 0 0 0.42em rgba(34, 197, 94, 0); }
+}
+
 @keyframes hd-trip-dot-blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.25; }
@@ -93,6 +119,7 @@
 @media (prefers-reduced-motion: reduce) {
     #div_new_tabbar .tab-ico i { transition: none !important; }
     #div_new_tabbar .trip-recording-dot { animation: none; }
+    #div_new_tabbar #btn_start_trip.trip-live .tab-ico i::after { animation: none; }
 }
 
 /* ==========================================================================

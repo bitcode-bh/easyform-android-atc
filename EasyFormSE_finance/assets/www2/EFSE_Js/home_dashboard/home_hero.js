@@ -33,7 +33,8 @@ var HomeHero = (function () {
     // A fix less accurate than this is not treated as a reliable location.
     var ACCURACY_LIMIT_M = 100;
     var FIX_TIMEOUT_MS = 30000;
-    // Refresh cannot be tapped again until this long after the last one ended.
+    // A pull cannot start another refresh until this long after the last one
+    // ended; the hint counts it down.
     var REFRESH_COOLDOWN_MS = 10000;
     // A stored position older than this is shown with its time.
     var STALE_FIX_MS = 10 * 60000;
@@ -60,8 +61,8 @@ var HomeHero = (function () {
         note: '',
         flowRadius: {},   // flow id -> geofence radius in metres
         busy: false,
-        autoAskAt: 0,     // no automatic location request before this time
-        readyAt: 0
+        readyAt: 0,       // pull-to-refresh cooldown ends
+        tick: 0           // countdown repaint timer
     };
 
     // Home is a page of its own and is loaded afresh every time it is opened,
@@ -152,6 +153,9 @@ var HomeHero = (function () {
             + '<div class="hh-row-text"><div class="hh-head hh-site-name"></div><div class="hh-sub hh-site-sub"></div></div></div>'
             + '<div class="hh-site-fullname"></div>'
             + '<div class="hh-note hh-site-note"></div>'
+            // The next four nearest sites, small, under the nearest one; the
+            // reason for the visit (on-site only) as the third row.
+            + '<div class="hh-near-more" aria-label="Other nearby sites"></div>'
             + '<label class="hh-field"><small>Reason for visit</small>'
             + '<select class="hh-select hh-site-reason" disabled aria-label="Reason for visit">'
             + '<option value="">Loading modules…</option></select></label>'
@@ -184,11 +188,20 @@ var HomeHero = (function () {
         var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         return '<div class="hh-slide" data-slide="trips">'
             + TRIP_MAP_ART
-            + topHtml('Driver trips · ' + months[new Date().getMonth()], '', 'hh-trip-status')
-            + '<div class="hh-head hh-figure hh-trip-km">…</div>'
-            + '<div class="hh-sub hh-trip-sub"></div>'
-            + '<div class="hh-stats">' + tripStat('hh-trip-time', 'Drive time') + tripStat('hh-trip-viol', 'Violations')
+            + topHtml('Driver trips · ' + months[new Date().getMonth()], 'hh-trip-label', 'hh-trip-status')
+            + '<div class="hh-head hh-figure hh-trip-km hh-month-only">…</div>'
+            + '<div class="hh-sub hh-trip-sub hh-month-only"></div>'
+            + '<div class="hh-stats hh-month-only">' + tripStat('hh-trip-time', 'Drive time') + tripStat('hh-trip-viol', 'Violations')
             + tripStat('hh-trip-call', 'On call') + '</div>'
+            // While a trip runs: a button to switch between the live details
+            // and the month, and the live details themselves (live trip section).
+            + '<button type="button" class="hh-live-toggle" aria-pressed="true">'
+            + '<i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>Month</span></button>'
+            + '<div class="hh-live-speed hh-live-only"><b class="hh-live-kmh">–</b><span>km/h</span>'
+            + '<em class="hh-live-over">Over speed</em></div>'
+            + '<div class="hh-sub hh-live-sub hh-live-only"></div>'
+            + '<div class="hh-stats hh-live-only">' + tripStat('hh-live-km', 'Distance') + tripStat('hh-live-avg', 'Avg km/h')
+            + tripStat('hh-live-viol', 'Violations') + tripStat('hh-live-call', 'On call') + '</div>'
             + '</div>';
     }
 
@@ -228,7 +241,9 @@ var HomeHero = (function () {
 
     // ---- site visit --------------------------------------------------------
 
-    // The modules on this phone (flow_master), for the reason dropdown.
+    // The modules on this phone (User_Define_Flow_Master, the Home module
+    // list) that use geofencing — those the site catalog (geofence_tracking)
+    // has sites for; its flow_id is the module's id, as in getFlowRadius.
     function loadModules(onDone) {
         try {
             cordova.exec(function (e) {
@@ -236,7 +251,9 @@ var HomeHero = (function () {
                 try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
                 onDone(rows);
             }, function () { onDone([]); }, 'SqlitePlugin', 'showValues',
-                [{ data: 'select moduleid, module_name from flow_master order by module_name', p: '1' }]);
+                [{ data: 'select ufm.id as moduleid, max(ufm.flow_name) as module_name from User_Define_Flow_Master ufm '
+                    + 'where ufm.id in (select distinct flow_id from geofence_tracking) '
+                    + 'and (ufm.is_delete != 1 or ufm.is_delete is null) group by ufm.id order by module_name', p: '1' }]);
         } catch (e) { onDone([]); }
     }
 
@@ -246,9 +263,9 @@ var HomeHero = (function () {
         return (r && String(r.siteId) === String(siteId)) ? r : null;
     }
 
-    // Fills the reason dropdown with the phone's modules. It is open whether or
-    // not a nearest site is known, so the choice can be tried anywhere; with
-    // no site the choice is kept under TEST_SITE_ID.
+    // Fills the reason dropdown with the phone's geofenced modules. The field
+    // is shown only while on-site (paintSite); with no site the choice is
+    // kept under TEST_SITE_ID.
     function fillReasons($select, place) {
         var siteId = place ? place.siteId : TEST_SITE_ID;
         var siteName = place ? place.siteName : '';
@@ -259,7 +276,7 @@ var HomeHero = (function () {
             $select.data('hhStamp', stamp);
 
             var chosen = savedReason(siteId);
-            var html = '<option value="">' + (modules.length ? 'Select a module' : 'No modules on this phone yet') + '</option>';
+            var html = '<option value="">' + (modules.length ? 'Select a module' : 'No geofenced modules on this phone') + '</option>';
             for (var i = 0; i < modules.length; i++) {
                 var id = String(modules[i].moduleid);
                 html += '<option value="' + esc(id) + '"' + (chosen && String(chosen.moduleId) === id ? ' selected' : '') + '>'
@@ -320,20 +337,30 @@ var HomeHero = (function () {
         return '';
     }
 
-    // The closest catalog site to a position; rows with unusable coordinates
-    // are skipped.
-    function nearestSite(sites, fix) {
-        var best = null;
+    // The closest catalog sites to a position, nearest first, one entry per
+    // site (the catalog can list a site once per flow); rows with unusable
+    // coordinates are skipped.
+    function nearestSites(sites, fix, count) {
+        var bySite = {};
         for (var i = 0; i < (sites || []).length; i++) {
             var lat = parseFloat(sites[i].latitude), lon = parseFloat(sites[i].longitude);
             if (!validCoords(lat, lon)) continue;
             var d = metresBetween(fix.lat, fix.lon, lat, lon);
-            if (!best || d < best.distanceM) {
-                best = { siteId: sites[i].place_id, distanceM: d, radiusM: parseFloat(sites[i].radius), flowId: sites[i].flow_id, siteType: sites[i].site_type };
+            var key = String(sites[i].place_id);
+            if (!bySite[key] || d < bySite[key].distanceM) {
+                bySite[key] = { siteId: sites[i].place_id, distanceM: d, radiusM: parseFloat(sites[i].radius), flowId: sites[i].flow_id, siteType: sites[i].site_type };
             }
         }
-        if (best) best.siteName = knownSiteName(best.siteId);
-        return best;
+        var list = [];
+        for (var k in bySite) if (bySite.hasOwnProperty(k)) list.push(bySite[k]);
+        list.sort(function (a, b) { return a.distanceM - b.distanceM; });
+        list = list.slice(0, count);
+        for (var j = 0; j < list.length; j++) list[j].siteName = knownSiteName(list[j].siteId);
+        return list;
+    }
+
+    function nearestSite(sites, fix) {
+        return nearestSites(sites, fix, 1)[0] || null;
     }
 
     // The site's own radius, else its flow's (what the app's geofence itself
@@ -342,6 +369,13 @@ var HomeHero = (function () {
         if (n && n.radiusM > 0) return n.radiusM;
         if (n && site.flowRadius[n.flowId] > 0) return site.flowRadius[n.flowId];
         return DEFAULT_RADIUS_M;
+    }
+
+    // The pull hint: busy, counting down the cooldown, or ready.
+    function pullHint() {
+        if (site.busy) return 'Getting location…';
+        var wait = Math.ceil((site.readyAt - Date.now()) / 1000);
+        return wait > 0 ? 'Pull again in ' + wait + ' s' : 'Pull down to refresh location';
     }
 
     // One of: checking, nosites, unavailable, pending, on, off.
@@ -399,7 +433,7 @@ var HomeHero = (function () {
         }
         $slide.find('.hh-site-label').text(label);
         $slide.find('.hh-pull').toggleClass('is-busy', site.busy)
-            .find('.hh-pull-text').text(site.busy ? 'Getting location…' : 'Pull down to refresh location');
+            .find('.hh-pull-text').text(pullHint());
 
         // The server's own site and distance win over the phone's when it gave them.
         var v = site.verdict, n = site.nearest;
@@ -426,14 +460,25 @@ var HomeHero = (function () {
             $slide.find('.hh-site-fullname').text(siteName || '');
         }
 
+        // The next four nearest, from the same position.
+        var more = site.fix ? nearestSites(site.sites, site.fix, 5) : [];
+        var html = '';
+        for (var m = 0; m < more.length && m < 5; m++) {
+            if (String(more[m].siteId) === String(siteId)) continue;
+            if ((html.match(/hh-near-chip/g) || []).length >= 4) break;
+            html += '<div class="hh-near-chip"><b>' + esc(more[m].siteId) + '</b><span>' + esc(Math.round(more[m].distanceM) < 1000 ? Math.round(more[m].distanceM) + ' m' : (Math.round(more[m].distanceM / 100) / 10) + ' km') + '</span></div>';
+        }
+        $slide.find('.hh-near-more').html(html);
+
         $slide.find('.hh-site-note').text(site.note || '');
+        // Reason for visit only while at a site.
+        $slide.find('.hh-site-reason').closest('.hh-field').toggle(status === 'on');
         fillReasons($slide.find('.hh-site-reason'), siteId == null ? null : { siteId: siteId, siteName: siteName });
     }
 
-    // Catalog plus the position the location service last stored, taken
-    // whenever it is newer than the one held. The only GPS request made from
-    // here is one automatic one when that position is missing or too old to
-    // place the technician, and at most once per STALE_FIX_MS.
+    // Catalog plus, the first time only, the position the location service
+    // last stored. No GPS request is made from here: the position changes
+    // only when the card is pulled down (refreshLocation).
     function loadSite($slide) {
         if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getSiteCatalog) { paintSite($slide); return; }
         HomeDashboardData.getSiteCatalog(function (rows) {
@@ -443,7 +488,9 @@ var HomeHero = (function () {
             HomeDashboardData.getLastLocation(function (row) {
                 var lat = row ? parseFloat(row.lat) : NaN, lon = row ? parseFloat(row.lon) : NaN;
                 var at = row ? parseInt(row.date, 10) : NaN;
-                if (validCoords(lat, lon) && !isNaN(at) && at > 0 && (!site.fix || at > site.fix.at)) {
+                // Only the first time: after that the position changes only when
+                // the card is pulled down.
+                if (validCoords(lat, lon) && !isNaN(at) && at > 0 && !site.fix) {
                     site.fix = { lat: lat, lon: lon, accuracy: parseFloat(row.accuracy), at: at, fresh: false };
                     site.verdict = null;
                     site.problem = '';
@@ -453,12 +500,9 @@ var HomeHero = (function () {
                 var n = site.nearest;
                 var needsFlowRadius = n && !(n.radiusM > 0) && site.flowRadius[n.flowId] === undefined && HomeDashboardData.getFlowRadius;
                 function done() {
+                    // No automatic GPS request: a new position is fetched only
+                    // when the card is pulled down.
                     paintSite($slide);
-                    var stale = !site.fix || Date.now() - site.fix.at > STALE_FIX_MS;
-                    if (stale && !site.busy && site.sites.length && Date.now() >= site.autoAskAt) {
-                        site.autoAskAt = Date.now() + STALE_FIX_MS;
-                        refreshLocation($slide);
-                    }
                 }
                 if (!needsFlowRadius) { done(); return; }
                 HomeDashboardData.getFlowRadius(n.flowId, function (radius) {
@@ -489,6 +533,7 @@ var HomeHero = (function () {
             })
             .on('touchmove.hhPullSite', function (ev) {
                 if (!tracking || site.busy) return;
+                if (Date.now() < site.readyAt) { $slide.find('.hh-pull-text').text(pullHint()); return; }
                 var ready = pulled((ev.originalEvent || ev).touches[0]);
                 $slide.find('.hh-pull').toggleClass('is-ready', ready)
                     .find('.hh-pull-text').text(ready ? 'Release to refresh' : 'Pull down to refresh location');
@@ -502,30 +547,58 @@ var HomeHero = (function () {
             });
     }
 
-    // A new position from the location service (the plugin the site list's own
-    // refresh uses). It answers only when the service reports a location after
-    // this call, so a stored one is never passed off as new.
+    // A new position, asked for only when the card is pulled down. Three
+    // sources race and the first real answer wins: the WebView's own
+    // geolocation (high accuracy, nothing cached), the location plugin the
+    // site list's refresh uses, and any position the location service stores
+    // in track_master after the pull. A position from before the pull is never
+    // passed off as new.
     function requestFreshFix(onDone) {
-        var settled = false;
+        var settled = false, t0 = Date.now(), poll = 0;
         var timeout = setTimeout(function () { finish({ error: 'timeout' }); }, FIX_TIMEOUT_MS);
         function finish(result) {
             if (settled) return;
             settled = true;
             clearTimeout(timeout);
+            clearInterval(poll);
             onDone(result);
         }
+        function found(lat, lon, accuracy, gpsOn) {
+            if (!validCoords(lat, lon)) return false;
+            finish({ lat: lat, lon: lon, accuracy: accuracy, at: Date.now(), fresh: true, gpsOn: gpsOn !== false });
+            return true;
+        }
+        var failures = 0, offSeen = false;
+        function failed(off) {
+            if (off) offSeen = true;
+            // Wait for the other sources; give up early only when GPS is off.
+            if (++failures >= 2 && offSeen) finish({ error: 'off' });
+        }
+        try {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (p) {
+                    found(p.coords.latitude, p.coords.longitude, p.coords.accuracy, true);
+                }, function (err) {
+                    failed(err && err.code === 2);
+                }, { enableHighAccuracy: true, timeout: FIX_TIMEOUT_MS - 2000, maximumAge: 0 });
+            }
+        } catch (e) { failed(false); }
         try {
             cordova.exec(function (e) {
                 var row = null;
                 try { row = JSON.parse(e)[0]; } catch (err) { row = null; }
-                var lat = row ? parseFloat(row.lat) : NaN, lon = row ? parseFloat(row.lon) : NaN;
-                if (!validCoords(lat, lon)) { finish({ error: 'nofix' }); return; }
-                finish({ lat: lat, lon: lon, accuracy: parseFloat(row.accuracy), at: Date.now(), fresh: true, gpsOn: String(row.gps) !== '0' });
+                if (!row || !found(parseFloat(row.lat), parseFloat(row.lon), parseFloat(row.accuracy), String(row.gps) !== '0')) failed(false);
             }, function (err) {
-                finish({ error: /gps/i.test(String(err)) ? 'off' : 'nofix' });
+                failed(/gps/i.test(String(err)));
             }, 'current_lat', 'showValues', []);
-        } catch (ex) {
-            finish({ error: 'nofix' });
+        } catch (ex) { failed(false); }
+        if (typeof HomeDashboardData !== 'undefined' && HomeDashboardData.getLastLocation) {
+            poll = setInterval(function () {
+                HomeDashboardData.getLastLocation(function (row) {
+                    var at = row ? parseInt(row.date, 10) : NaN;
+                    if (!isNaN(at) && at >= t0 - 1000) found(parseFloat(row.lat), parseFloat(row.lon), parseFloat(row.accuracy), true);
+                });
+            }, 2000);
         }
     }
 
@@ -536,7 +609,7 @@ var HomeHero = (function () {
     };
 
     function refreshLocation($slide) {
-        if (site.busy || Date.now() < site.readyAt) return;
+        if (site.busy || Date.now() < site.readyAt) { paintSite($slide); return; }
         site.busy = true;
         site.note = '';
         paintSite($slide);
@@ -544,6 +617,12 @@ var HomeHero = (function () {
             site.busy = false;
             site.readyAt = Date.now() + REFRESH_COOLDOWN_MS;
             paintSite($slide);
+            // Count the cooldown down on the hint, then say it is ready.
+            clearInterval(site.tick);
+            site.tick = setInterval(function () {
+                $slide.find('.hh-pull-text').text(pullHint());
+                if (Date.now() >= site.readyAt) clearInterval(site.tick);
+            }, 1000);
         }
         requestFreshFix(function (fix) {
             // Whatever happened, the earlier server answer no longer applies.
@@ -718,8 +797,165 @@ var HomeHero = (function () {
         return (c && String(c.uid) === String(readSession('user_id'))) ? c.t : null;
     }
 
-    function paintTrips($slide) {
+    // ---- live trip -----------------------------------------------------------
+    //
+    // While a trip runs, the trip slide shows it live instead of the month:
+    // current speed, time since the start, distance, average speed and this
+    // trip's violations and calls. Everything is read from the phone's own
+    // tables (lat_plug, track_master, Events) — no server calls — every
+    // LIVE_POLL_MS while Home is on screen; the clock ticks every second.
+    var LIVE_POLL_MS = 5000;
+    var GPS_STALE_MS = 60000;
+    var live = { timer: 0, clock: 0, startMs: 0, lastFixMs: 0, $slide: null, showMonth: false };
+    var LIVE_EVENT_BUCKETS = { 'speed': 'speed', 'acc': 'accel', 'deacc': 'brake', 'harsh brake': 'brake', 'call': 'call' };
+
+    function hms(ms) {
+        var t = Math.max(0, Math.floor(ms / 1000));
+        return pad(Math.floor(t / 3600)) + ':' + pad(Math.floor(t / 60) % 60) + ':' + pad(t % 60);
+    }
+
+    function livePoints(rows) {
+        var pts = [];
+        for (var i = 0; i < (rows || []).length; i++) {
+            var r = rows[i], lat = parseFloat(r.lat), lon = parseFloat(r.lon), ms = parseInt(r.date, 10);
+            if (isNaN(lat) || isNaN(lon) || (lat === 0 && lon === 0) || isNaN(ms) || ms <= 0) continue;
+            pts.push({ lat: lat, lon: lon, ms: ms, mps: parseFloat(r.speed), over: String(r.tripflag) === '3' });
+        }
+        pts.sort(function (a, b) { return a.ms - b.ms; });
+        return pts;
+    }
+
+    function liveDistanceKm(pts) {
+        var km = 0;
+        for (var i = 1; i < pts.length; i++) {
+            var d = metresBetween(pts[i - 1].lat, pts[i - 1].lon, pts[i].lat, pts[i].lon) / 1000;
+            if (d < 50) km += d;   // same jump filter as the Trips page
+        }
+        return km;
+    }
+
+    function overspeedRuns(pts) {
+        var runs = 0, inRun = false;
+        for (var i = 0; i < pts.length; i++) {
+            if (pts[i].over) { if (!inRun) runs++; inRun = true; } else inRun = false;
+        }
+        return runs;
+    }
+
+    function liveClockTick() {
+        var $s = live.$slide;
+        if (!$s || !live.startMs) return;
+        $s.find('.hh-trip-status .hh-status-text').text('Live · ' + hms(Date.now() - live.startMs));
+        var sub = 'Started ' + clock(live.startMs);
+        if (live.lastFixMs) {
+            var ago = Math.round((Date.now() - live.lastFixMs) / 1000);
+            sub += ago > GPS_STALE_MS / 1000 ? ' · Waiting for GPS' : ' · GPS ' + ago + ' s ago';
+        } else sub += ' · Waiting for GPS';
+        $s.find('.hh-live-sub').text(sub);
+    }
+
+    function stopLive() {
+        clearTimeout(live.timer); clearInterval(live.clock);
+        live.timer = 0; live.clock = 0; live.startMs = 0; live.lastFixMs = 0;
+        live.showMonth = false;
+        if (live.$slide) {
+            live.$slide.removeClass('is-live has-live is-over');
+            var lbl = live.$slide.find('.hh-trip-label');
+            if (lbl.data('month')) lbl.text(lbl.data('month'));
+        }
+        live.$slide = null;
+    }
+
+    function pollLive($slide) {
+        clearTimeout(live.timer);
+        if (!$slide.closest('body').length) { stopLive(); return; }
+        // Off screen: look again later without reading anything.
+        if (document.hidden || !$slide[0].offsetParent) { live.timer = setTimeout(function () { pollLive($slide); }, LIVE_POLL_MS); return; }
+        if (typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getLiveTrip) return;
+        HomeDashboardData.getLiveTrip(function (trip) {
+            var startMs = trip ? parseInt(trip.min_milli, 10) : NaN;
+            if (!trip || isNaN(startMs) || startMs <= 0) {
+                // Trip ended: back to the month figures.
+                stopLive();
+                paintTrips($slide, true);
+                return;
+            }
+            live.$slide = $slide;
+            live.startMs = startMs;
+            var lbl = $slide.find('.hh-trip-label');
+            if (!lbl.data('month')) lbl.data('month', lbl.text());
+            if (!$slide.hasClass('has-live')) {
+                $slide.addClass('has-live');
+                $slide.find('.hh-trip-status').addClass('is-on');
+            }
+            $slide.toggleClass('is-live', !live.showMonth);
+            var site = String(trip.site_name || '').trim();
+            lbl.text(live.showMonth ? lbl.data('month') : (site && site !== 'null' ? 'Live trip · ' + site : 'Live trip'));
+            if (!live.clock) live.clock = setInterval(liveClockTick, 1000);
+
+            var now = Date.now();
+            HomeDashboardData.getTripPath(startMs, now, function (rows) {
+                var pts = livePoints(rows);
+                var km = liveDistanceKm(pts);
+                var hours = (now - startMs) / 3600000;
+                var last = pts.length ? pts[pts.length - 1] : null;
+                live.lastFixMs = last ? last.ms : 0;
+                var kmh = null;
+                if (last && now - last.ms <= GPS_STALE_MS) {
+                    if (!isNaN(last.mps) && last.mps >= 0) kmh = last.mps * 3.6;
+                    else if (pts.length > 1) {
+                        var prev = pts[pts.length - 2], dt = (last.ms - prev.ms) / 3600000;
+                        if (dt > 0) kmh = (metresBetween(prev.lat, prev.lon, last.lat, last.lon) / 1000) / dt;
+                    }
+                }
+                $slide.find('.hh-live-kmh').text(kmh === null ? '–' : String(Math.round(kmh)));
+                $slide.toggleClass('is-over', !!(last && last.over && kmh !== null));
+                $slide.find('.hh-live-km').text(km < 1 ? Math.round(km * 1000) + ' m' : km.toFixed(1) + ' km');
+                $slide.find('.hh-live-avg').text(hours > 0.01 ? String(Math.round(km / hours)) : '0');
+                liveClockTick();
+
+                HomeDashboardData.getTripEvents(trip.tid, startMs, now, function (evRows) {
+                    var b = { speed: 0, accel: 0, brake: 0, call: 0 };
+                    for (var i = 0; i < (evRows || []).length; i++) {
+                        var k = LIVE_EVENT_BUCKETS[String(evRows[i].Event_type || '').trim().toLowerCase()];
+                        if (k) b[k] += parseInt(evRows[i].c, 10) || 0;
+                    }
+                    var viol = Math.max(b.speed, overspeedRuns(pts)) + b.accel + b.brake + b.call;
+                    $slide.find('.hh-live-viol').text(String(viol));
+                    $slide.find('.hh-live-call').text(String(b.call));
+                    live.timer = setTimeout(function () { pollLive($slide); }, LIVE_POLL_MS);
+                });
+            });
+        });
+    }
+
+    // The card's toggle while a trip runs: live details <-> this month.
+    function toggleLiveView($slide) {
+        if (!$slide.hasClass('has-live')) return;
+        live.showMonth = !live.showMonth;
+        var lbl = $slide.find('.hh-trip-label');
+        $slide.toggleClass('is-live', !live.showMonth);
+        $slide.find('.hh-live-toggle').attr('aria-pressed', String(!live.showMonth))
+            .find('span').text(live.showMonth ? 'Live' : 'Month');
+        $slide.find('.hh-live-toggle i').attr('class', live.showMonth ? 'fa-solid fa-tower-broadcast' : 'fa-solid fa-calendar-days');
+        if (live.showMonth) {
+            lbl.text(lbl.data('month') || lbl.text());
+            var saved = cachedTrips();
+            if (saved) showTrips($slide, saved);
+            paintTrips($slide, true);
+        }
+        pollLive($slide);
+    }
+
+    function paintTrips($slide, monthOnly) {
         if (!$slide.length) return;
+        // A running trip takes over the slide (pollLive keeps it current).
+        if (!monthOnly && localStorage.getItem('trip_status') === '0') {
+            if (live.$slide && live.$slide[0] === $slide[0] && live.timer) return;
+            pollLive($slide);
+            return;
+        }
+        if (!monthOnly && live.$slide) stopLive();
         if (typeof TripListSheet === 'undefined' || !TripListSheet.summary) return;
         TripListSheet.summary('month', function (t) {
             if (!t) {
@@ -1143,7 +1379,8 @@ var HomeHero = (function () {
         var $root = $('#' + ROOT_ID);
         if (!$root.length) return;
         var slides = [];
-        if (isVendorTechnician()) slides.push(siteSlideHtml());
+        // Nearest site is shown to every role.
+        slides.push(siteSlideHtml());
         slides.push(tripSlideHtml());
         slides.push(lmsSlideHtml());
         slides.push(passportSlideHtml());
@@ -1167,6 +1404,12 @@ var HomeHero = (function () {
                 var $pass = $root.find('[data-slide="passport"]');
                 if ($pass.length && Math.abs($pass[0].offsetLeft - track.scrollLeft) > 4) $pass.find('.hh-passport').removeClass('is-back');
             }, 80);
+        });
+        $root.find('.hh-live-toggle').off('click.homeHero').on('click.homeHero', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            toggleLiveView($(this).closest('[data-slide="trips"]'));
+            return false;
         });
         $root.find('.hh-open-trips').off('click.homeHero').on('click.homeHero', function (ev) {
             ev.preventDefault();

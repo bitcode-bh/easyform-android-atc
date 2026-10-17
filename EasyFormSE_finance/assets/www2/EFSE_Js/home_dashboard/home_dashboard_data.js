@@ -631,13 +631,27 @@ var HomeDashboardData = (function () {
         if (isNaN(min)) min = 0;
         if (isNaN(max) || max <= 0) max = Date.now();
         sql(
-            "select lat,lon,tripflag,date from track_master where tripflag IN (2,3) and (date+0) >= " + min + " and (date+0) <= " + max + " order by date limit 5000",
+            "select lat,lon,tripflag,date,speed from track_master where tripflag IN (2,3) and (date+0) >= " + min + " and (date+0) <= " + max + " order by date limit 5000",
             function (e) {
                 var rows = [];
                 try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
                 onDone(rows);
             },
             function () { onDone([]); }
+        );
+    }
+
+    // The trip running now (trip_status 0, as in getTripStatus), or null.
+    // SELECT only.
+    function getLiveTrip(onDone) {
+        sql(
+            "select tid, min_milli, site_name from lat_plug where trip_status = 0 order by _id desc limit 1",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                onDone(rows.length ? rows[0] : null);
+            },
+            function () { onDone(null); }
         );
     }
 
@@ -742,6 +756,7 @@ var HomeDashboardData = (function () {
         getFlowRadius: getFlowRadius,
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,
+        getLiveTrip: getLiveTrip,
         getUploadCounts: getUploadCounts,
         getTripStats: getTripStats,
         getTripList: getTripList,

@@ -858,6 +858,16 @@
                                     </span>
                                     <span class="tabbar-label mt-1" id="lbl_start_trip">Start Trip</span>
                                 </a>
+                                <script>
+                                    // Hidden from the first paint for a role without trip setup
+                                    // (refreshHomeTripTab keeps it in step afterwards).
+                                    try {
+                                        if (typeof trip_punchout_status === 'function' && trip_punchout_status() === null
+                                            && localStorage.getItem('trip_status') !== '0') {
+                                            document.getElementById('btn_start_trip').style.display = 'none';
+                                        }
+                                    } catch (e) { }
+                                </script>
                                 <a href="#" class="tab-link" id="btn_trip_list" onclick="return TripListSheet.open()">
                                     <span class="tab-ico"><i class="fa-regular fa-rectangle-list ico-outline"></i><i class="fa-solid fa-rectangle-list ico-filled"></i></span>
                                     <span class="tabbar-label mt-1">Trips</span>
@@ -1407,6 +1417,11 @@
                     if (!tab || !lbl) return;
                     HomeDashboardData.getTripStatus(function (result) {
                         var dot = document.getElementById('trip_recording_dot');
+                        // No Start Trip for a role without trip (attendance
+                        // punch-out) setup, unless a trip is already running.
+                        var setUp = typeof trip_punchout_status !== 'function' || trip_punchout_status() !== null;
+                        tab.style.display = (setUp || result.active) ? '' : 'none';
+                        tab.classList.toggle('trip-live', !!result.active);
                         if (result.active) {
                             tab.classList.add('active');
                             lbl.textContent = 'On Trip';

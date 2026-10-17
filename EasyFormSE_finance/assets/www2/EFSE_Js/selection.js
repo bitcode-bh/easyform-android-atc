@@ -2420,7 +2420,25 @@ check_for_auto_close_trip = () => {
 
 }
 
+// The punch-out status a trip is ended with, from the attendance settings the
+// login response saved (AttendanceJson). Null when the role has no attendance
+// setup — then a trip can be started natively but never ended.
+trip_punchout_status = () => {
+    try {
+        let att = JSON.parse(localStorage.getItem('AttendanceJson'));
+        let st = Array.isArray(att) && att[0] ? att[0].Punchout_Status : null;
+        return (st === null || st === undefined || String(st).trim() === '') ? null : st;
+    } catch (e) {
+        return null;
+    }
+}
+
 noti_Attendance_Click = () => {
+    // Don't start what can't be ended.
+    if (localStorage.getItem('trip_status') !== '0' && trip_punchout_status() === null) {
+        alert1("Can't start a trip: attendance isn't set up for your role.");
+        return;
+    }
 
     let user_id = JSON.parse(storage.getItem('user_id'));
     let user_name = JSON.parse(storage.getItem('user_name'));
@@ -2701,6 +2719,10 @@ home_tab_click = () => {
 // stop trip manualy via module listing (task was created offline so get server task id)
 stop_trip_manualy_from_module_listing = () => {
     let trip_tid = localStorage.getItem('trip_tid');
+    if (trip_punchout_status() === null) {
+        alert1("Can't end the trip: attendance isn't set up for your role. Close the task from the web portal, or ask your admin.");
+        return;
+    }
     var query = "select tid, server_task_id, status, moduleid, checksheetid, siteid from task_master where tid = '" + trip_tid + "'";
     var q_jsonobj = [];
     q_jsonobj.push({
@@ -2708,8 +2730,12 @@ stop_trip_manualy_from_module_listing = () => {
         p: "1"
     });
     cordova.exec(function (e) {
-
+      try {
         let myArray = JSON.parse(e);
+        if (!myArray || !myArray[0]) {
+            alert1("Can't end the trip: its task isn't on this phone.");
+            return;
+        }
         let trip_tid = myArray[0].tid;
         let server_task_id = myArray[0].server_task_id;
         let start_status = myArray[0].status;
@@ -2718,7 +2744,7 @@ stop_trip_manualy_from_module_listing = () => {
         let siteid = myArray[0].siteid;
 
         let AttendanceJson = JSON.parse(localStorage.getItem('AttendanceJson'));
-        let Punchout_Status = AttendanceJson[0].Punchout_Status;
+        let Punchout_Status = trip_punchout_status();
 
         var company_id = JSON.parse(storage.getItem('company_id'));
 
@@ -2798,9 +2824,10 @@ stop_trip_manualy_from_module_listing = () => {
             }
         }, onfail);
         getdata.callOtherDomain();
-
-
-
+      } catch (err) {
+        loading_hide();
+        alert1("Couldn't end the trip. Please try again.");
+      }
     }, function (e) {
         // tid not found
         alert("trip id is not found!");
