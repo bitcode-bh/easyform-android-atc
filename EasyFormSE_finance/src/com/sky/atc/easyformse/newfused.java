@@ -92,7 +92,6 @@ import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
 import android.media.AudioManager;
 
-
 /**
  * Service providing the guts of the location polling engine. Uses a WakeLock to
  * ensure the CPU stays on while the location lookup is going on. Handles both
@@ -115,7 +114,6 @@ public class newfused extends Service implements LocationListener {
     GoogleApiClient mGoogleApiClient;
     MySharedPreferences pref;
     String lat_check;
-    //Editor editor;
     int check = 0;
 
     NotificationChannel mChannel = null;
@@ -138,8 +136,6 @@ public class newfused extends Service implements LocationListener {
 
     private PhoneStateListener phoneStateListener;
     private TelephonyCallback telephonyCallback;
-
-//    private  boolean callActive = false;
 
     private  long callStartTime = 0;
     private  long callEndTime = 0;
@@ -234,7 +230,6 @@ public class newfused extends Service implements LocationListener {
         return (lockStatic);
     }
 
-
     /**
      * No-op implementation as required by superclass
      */
@@ -324,20 +319,11 @@ public class newfused extends Service implements LocationListener {
     //create and start the location update
     public void getLocation() {
         try {
-//            if (!isGooglePlayServicesAvailable()) {
-//                System.out.print("Google play service not available");
-//            } else {
-//                createLocationRequest();
-//                database = sqlitewraper.getDatabase();
 //
 //                mGoogleApiClient = new GoogleApiClient.Builder(
 //                        sqlitewraper.context).addApi(LocationServices.API)
-//                        .addConnectionCallbacks(this)
-//                        .addOnConnectionFailedListener(this).build();
 //
-//                mGoogleApiClient.connect();
 //
-//            }
 
             //New Location Method
 
@@ -351,7 +337,6 @@ public class newfused extends Service implements LocationListener {
         }
 
     }
-
 
     private void stopLocationUpdates() {
         if (fusedLocationClient != null && locationCallback != null) {
@@ -380,8 +365,6 @@ public class newfused extends Service implements LocationListener {
 
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 public void run() {
-//                        Toast toast = Toast.makeText(sqlitewraper.context, "You Are Using Fake Location", Toast.LENGTH_LONG);
-//                        toast.show();
                     if (!B_new.isIsInBackgeound()) {
                         mockalert++;
                     }
@@ -391,8 +374,6 @@ public class newfused extends Service implements LocationListener {
 
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 public void run() {
-//                        Toast toast = Toast.makeText(sqlitewraper.context, "Real Location :", Toast.LENGTH_LONG);
-//                        toast.show();
                     mockalert = 0;
                 }
             });
@@ -425,7 +406,6 @@ public class newfused extends Service implements LocationListener {
         quite();
         unregisterphonestate();
     }
-
 
     void insert(String type) {
 
@@ -755,7 +735,6 @@ public class newfused extends Service implements LocationListener {
         }
     }
 
-
     private boolean isBadTripLocation(Location location) {
 
         if (location == null) {
@@ -779,13 +758,10 @@ public class newfused extends Service implements LocationListener {
             return true;
         }
 
-
-
         // First location is OK
         if (lastAcceptedLocation == null) {
             return false;
         }
-
 
         long currentTime = location.getTime();
 
@@ -801,7 +777,6 @@ public class newfused extends Service implements LocationListener {
             return true;
         }
 
-
         float[] distance =
                 new float[1];
 
@@ -815,7 +790,6 @@ public class newfused extends Service implements LocationListener {
 
         float distanceMeters =
                 distance[0];
-
 
         if (distanceMeters < 3f) {
 
@@ -858,7 +832,6 @@ public class newfused extends Service implements LocationListener {
             Log.e("LOCATION", "Fused location client/callback is null");
             return;
         }
-
 
         fusedLocationClient.requestLocationUpdates(
                 locationRequest,
@@ -1004,9 +977,6 @@ public class newfused extends Service implements LocationListener {
     }
     private void onLocationUpdate(Location location, float manualSpeed, boolean turnPoint) {
 
-
-
-
         data d = new data();
 
         double lat1 = location.getLatitude();
@@ -1023,9 +993,7 @@ public class newfused extends Service implements LocationListener {
 
         Log.d("##MOCKALERTUPPER_LATLON", String.valueOf(mockalert) + lat1 + ":" + lon1 + " MockLocationStatusNORMAL: " + mock);
 
-
         if (mock && !TripMapUtils.MOCKLOCATION.equalsIgnoreCase("true")) {
-//            sqlitewraper.setFakeflag(1);
             Log.d("##MOCKALERTUPPER_NORMAL", String.valueOf(mockalert) + lat1 + ":" + lon1);
 
             //Brodcast to show alert dialog of fake location in ph_s.java
@@ -1058,13 +1026,6 @@ public class newfused extends Service implements LocationListener {
         Intent loc_change = new Intent(sqlitewraper.context, loc_change.class);
 
         //  when mock location provider true, trip flag added 1 because fused location pot map not draw properly 07-04-2025
-//        if(location.isFromMockProvider())
-//        {
-//            loc_change.putExtra("tripflag", "1");
-//        }
-//        else {
-//            loc_change.putExtra("tripflag", "2");
-//        }
         loc_change.putExtra("tripflag", "2");
         loc_change.putExtra("loc", location);
         loc_change.putExtra("address", "");
@@ -1121,14 +1082,11 @@ public class newfused extends Service implements LocationListener {
 
     }
 
-
-
     public void start_alaramManager()
     {
         AlarmManager alarmManager = (AlarmManager)sqlitewraper.context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pendingIntent;
         Intent intent = new Intent(sqlitewraper.context, newfused_recevier.class);
-        // intent.setAction("Location_entry");
         int flags = PendingIntent.FLAG_CANCEL_CURRENT;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             flags = PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_MUTABLE;
@@ -1147,7 +1105,6 @@ public class newfused extends Service implements LocationListener {
     private void updateServiceMilli() {
 
         pref = sqlitewraper.getSecureShared("MyPref");
-//        editor = pref.edit();
         pref.putString("SERVICEUPDATE", String.valueOf(System.currentTimeMillis())); // Saving string
         pref.commit();
     }
@@ -1203,12 +1160,10 @@ public class newfused extends Service implements LocationListener {
         }catch (Exception e){
 
             pref = sqlitewraper.getSecureShared("MyPref");
-//                            editor = pref.edit();
             pref.putString("SERVICEUPDATE", "0"); // Saving string
             pref.commit();
         }
     }
-
 
     //timer for every 30 seconds to check if service is running or not
     private void startServUpdateTask() {
@@ -1230,7 +1185,6 @@ public class newfused extends Service implements LocationListener {
         }, DELAY, DELAY);
     }
 
-
     @SuppressLint("MissingPermission")
     private void registerCallListener() {
 
@@ -1238,7 +1192,6 @@ public class newfused extends Service implements LocationListener {
             Log.d("CALL", "Listener already registered");
             return;
         }
-
 
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
@@ -1309,11 +1262,6 @@ public class newfused extends Service implements LocationListener {
 
                     if (latestLocation != null) {
                         callStartLocation = new Location(latestLocation);
-                       // callStartSpeed = callStartLocation.getSpeed();
-//                        Log.d("CALL", "Start Time : " + callStartTime);
-//                        Log.d("CALL", "Start Lat : " + callStartLocation.getLatitude());
-//                        Log.d("CALL", "Start Lng : " + callStartLocation.getLongitude());
-//                        Log.d("CALL", "callStartSpeed : " + callStartSpeed);
                     }
 
                 }
@@ -1331,16 +1279,11 @@ public class newfused extends Service implements LocationListener {
                     if (latestLocation != null) {
                         callEndLocation = new Location(latestLocation);
 
-//                        Log.d("CALL", "End Time : " + callEndTime);
-//                        Log.d("CALL", "End Lat : " + callEndLocation.getLatitude());
-//                        Log.d("CALL", "End Lng : " + callEndLocation.getLongitude());
                     }
-                   // Log.d("CALL_DEBUG", "speedViolation at IDLE = " + speedViolation);
                     if (speedViolation && !callEventInserted)
                     {
                         long duration = (callEndTime - callStartTime) ;
 
-//                    Log.d("CALL", "Duration : " + duration + " sec");
                         callEventInserted = true;
                         if (callStartLocation != null &&
                                 callEndLocation != null) {
@@ -1356,12 +1299,7 @@ public class newfused extends Service implements LocationListener {
                                     String.valueOf(duration),
                                     callEndLocation);
 
-//                            Log.d("CALL","Start Speed : " + callStartSpeed);
-//                            Log.d("CALL","Max Speed : " + maxSpeedDuringCall);
-//                            Log.d("CALL","Max Speed Time : " + maxSpeedMilli);
 //
-//                            Log.d("CALL", "Distance : " + distanceKm  + " KM");
-
 
                         resetcalldata();
                         }
@@ -1369,8 +1307,6 @@ public class newfused extends Service implements LocationListener {
 
                             Log.d("CALL","No speed violation during call.");
                         }
-
-
 
                 }
 
@@ -1427,7 +1363,6 @@ public class newfused extends Service implements LocationListener {
             c.put("duration", duration);
 
             JSONObject maxViolation = new JSONObject();
-//            maxViolation.put("callStartSpeed", callStartSpeed);
             maxViolation.put("maxSpeedDuringCall", maxSpeedDuringCall);
             maxViolation.put("maxSpeedTime", maxSpeedMilli);
             maxViolation.put("handsfree", callHandsFree);
@@ -1439,7 +1374,6 @@ public class newfused extends Service implements LocationListener {
 
             c.put("tid",tid);
 
-//        Log.d("##SPEED_FINALDETECT", String.valueOf(ac_speed));
             long temp = database.insert("Events", null, c);
             if (temp > 0) {
                 Intent z_n12 = new Intent(sqlitewraper.context, Event.class);

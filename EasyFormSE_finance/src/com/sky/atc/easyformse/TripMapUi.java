@@ -152,15 +152,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         btnBack = (Button) findViewById(R.id.btn_back);
         refreshLat = (Button) findViewById(R.id.btn_refresh);
 
-
         database = sqlitewraper.getDatabase();
         refreshLat.setClickable(false);
         refreshLat.setEnabled(false);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-//        locationProvider();
-//        locationManagerGPS();
         progressBar.setVisibility(View.VISIBLE);
-
 
         tid = getIntent().getExtras().getString("tid");
         tripstatus = getIntent().getExtras().getString("tripstatus");
@@ -187,11 +183,9 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             @Override
             public void onClick(View v) {
                 refreshLat.setBackgroundDrawable(getResources().getDrawable(R.drawable.button_selected));
-//                tripStart(pointOneLat,pointOneLang,uniqtripid);
 
                 if (isClickable) {
 
-//                  latPlugUpdate(tid, tripstatus, odometerpoint);
                     Bundle b = new Bundle();
                     Intent intent = new Intent();
                     intent.putExtras(b);
@@ -204,25 +198,20 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
         });
 
-
-
     }
 
     //Load map
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-
         context = TripMapUi.this;
         mMap = googleMap;
-//        mMap.addMarker(new MarkerOptions().position(pointOne).title("Trip start point !!")).showInfoWindow();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         mMap.setMyLocationEnabled(true);
 
     }
-
 
     //request for GPS location update
     private void locationManagerGPS() {
@@ -238,12 +227,10 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
     }
 
-
     //for Zoom  marker Position ans start the trip
     private void pointToPosition(final LatLng position, int zoomlevel) {
 
         float zoom;
-
 
         //tripstatus=0 start 1= trip end
         if (tripstatus.equalsIgnoreCase("0")) {
@@ -251,7 +238,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             refreshLat.setText("Starting Trip please wait...");
             mMap.clear();
             if (pointOneLat != 0.0 || pointOneLang != 0.0) {
-
 
                 refreshLat.setEnabled(false);
                 zoom = 14.5F;
@@ -272,7 +258,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
             if (pointOneLat != 0.0 || pointOneLang != 0.0) {
 
-
                 refreshLat.setEnabled(false);
                 zoom = 14.5F;
                 CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -280,12 +265,10 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                         .zoom(zoom).build();
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-
                 isfinished = true;
                 new GetHashesFromServerTask().execute("");
 
             }
-
 
         }
 
@@ -314,22 +297,14 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     protected void onStart() {
         super.onStart();
 
-//        if (mGoogleApiClient != null) {
-//            mGoogleApiClient.connect();
-//        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        //checkActivityRecognitionPermission();
         createPermissionList();
         permissionCheck();
-//        if (mGoogleApiClient != null) {
-//            mGoogleApiClient.connect();
-//        }
-
 
         Log.d("##STARTLOCATIONUPDATES", "1");
 
@@ -341,25 +316,8 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         public void onLocationChanged(@NonNull Location location) {
 
         startEndLocationInsert(location);
-//        pointOneLat = location.getLatitude();
-//        pointOneLang = location.getLongitude();
-//        accuracy1 = location.getAccuracy();
-//        speed = location.getSpeed();
-//        provider = location.getProvider();
-//        isAlert=true;
-//        if (pointOneLat != 0.0 || pointOneLang != 0.0) {
 //
-//            pointOne = new LatLng(pointOneLat, pointOneLang);
 //
-//            if (isFirstUpdate) {
-//                pointToPosition(pointOne, 1);
-//                isFirstUpdate = false;
-//            }
-//            if (!isfinished) {
-//                isfinished = true;
-//                pointToPosition(pointOne, 0);
-//            }
-//        }
     }
 
         @Override
@@ -375,19 +333,8 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         }
     }
 
-//    @Override
-//    public void onConnected(@Nullable Bundle bundle) {
 //
-//        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            return;
-//        }
-//        mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 //
-//        if (mLocation != null) {
-//        }
-//        startLocationUpdates();
-//    }
-
 
     protected void startLocationUpdates() {
         mLocationRequest = new LocationRequest();
@@ -399,21 +346,13 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             Toast.makeText(getApplicationContext(), "Enable Permissions", Toast.LENGTH_LONG).show();
         }
 //
-//        LocationServices.FusedLocationApi.requestLocationUpdates(
-//                mGoogleApiClient, mLocationRequest, this);
 
     }
 
-//    @Override
-//    public void onConnectionSuspended(int i) {
 //
-//    }
 
-//    @Override
-//    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 //
 //
-//    }
 
     @Override
     protected void onDestroy() {
@@ -421,33 +360,18 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         stopLocationUpdates();
     }
 
-
     public void stopLocationUpdates() {
         if (locationManager != null) {
             locationManager.removeUpdates(locationListener);
         }
     }
 
-//    public void stopLocationUpdates() {
-//        if (mGoogleApiClient.isConnected()) {
 //            LocationServices.FusedLocationApi
-//                    .removeLocationUpdates(mGoogleApiClient, this);
-//            mGoogleApiClient.disconnect();
-//        }
-//    }
 
-//    public void locationProvider() {
 //        mGoogleApiClient = new GoogleApiClient.Builder(this)
-//                .addApi(LocationServices.API)
-//                .addConnectionCallbacks(this)
-//                .addOnConnectionFailedListener(this)
-//                .build();
-//    }
-
 
     //start and End the trip and insert data in to database
     private void latPlugUpdate(String tid, String trip_status, String odometerpoint, String etaFlag) {
-
 
         editor = sqlitewraper.getSecureShared(MY_PREFS_NAME);
 
@@ -519,10 +443,8 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         unique_trip_id = unique_trip_id + "_" + System.currentTimeMillis();
         c3.close();
 
-
         s_lat = String.valueOf(pointOneLat);
         s_lon = String.valueOf(pointOneLang);
-
 
         ContentValues latc = new ContentValues();
 
@@ -546,20 +468,15 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         latc.put("etaflag", etaFlag);
         latc.put("match_temp_id", matchKeyID);
 
-
         //start the trip
         if (trip_status.equalsIgnoreCase("0")) {
-
 
             Cursor c4 = database
                     .rawQuery(
                             "select s_lat,s_lon,llat,llon from lat_plug where trip_shflag=0 and tid='" + tid + "'", null);
             c4.moveToFirst();
             int j2 = c4.getCount();
-            //if (j2 == 0) {
 
-//                long temp = database.insert("lat_plug", null, latc);
-//                Log.d("##TripPluginInsert", String.valueOf(temp));
                 String t;
 
                 t = "tid='" + tid + "' and trip_status='" + 0 + "'";
@@ -570,7 +487,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 latc.put("last_upload_ms", "0");
                 latc.put("way_point", "NA");
                 latc.put("trip_shflag", "0");
-                //  latc.put("min_milli", System.currentTimeMillis());
                 editor.putString("unique_trip_id", unique_trip_id);
                 editor.putString("slat", s_lat);
                 editor.putString("slon", s_lon);
@@ -584,11 +500,9 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             // location get after update lat_plug entry for start trip 07072025
                 long temp = database.update("lat_plug", latc, t, null);
 
-
             List<AttendanceData> attendanceDataList = AttendanceUtil.getAttendanceDataList();
 
             AttendanceData mAttendanceData = null;
-
 
             if (attendanceDataList != null && !attendanceDataList.isEmpty()) {
                 mAttendanceData = attendanceDataList.get(0);
@@ -620,7 +534,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 }
             }
 
-
                 //for ETA
                 Intent i = new Intent(sqlitewraper.context, TripService.class);
                 WakefulIntentService.sendWakefulWork(sqlitewraper.context, i);
@@ -629,23 +542,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             Intent intent = new Intent(sqlitewraper.context, AutoTripStopService.class);
             WakefulIntentService.sendWakefulWork(sqlitewraper.context, intent);
 
-//            if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true")) {
-//                try {
 //
 //                    // crash detection like accident detection
-//                    Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
 //
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                        sqlitewraper.context.startForegroundService(mIntent1);
-//                    } else {
-//                        sqlitewraper.context.startService(mIntent1);
-//                    }
 //
-//                } catch (Exception e) {
 //
-//                }
-//            }
-          //  }
             c4.close();
 
         } else {
@@ -665,7 +566,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             editor.putString("llat", s_lat);
             editor.putString("llon", s_lon);
             editor.commit();
-
 
             pref.putString("event_start","0");
             pref.putBoolean("isAlarmSet",false);
@@ -702,13 +602,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 checkAvailibilityOftrip(tid, latc, s_lat, s_lon, unique_trip_id);
             }
 //            Attendance flag true trip end time update task_master notiflag
-//            String Attendance = pref.getString("Attendance","false");
-//            if(Attendance.equalsIgnoreCase("true"))
-//            {
-//                AttendanceData mAttendanceData = AttendanceUtil.getAttendanceDataList().get(0);
-//                String t_id = AttendanceTaskUtil.getTaskMasterTid(sqlitewraper.getDatabase(),Integer.valueOf( mAttendanceData.getFlowId()), mAttendanceData.getKey(), DeviceEventsUtils.getLoginDetails().get(3), DeviceEventsUtils.getLoginDetails().get(0));
-//                AttendanceTaskUtil.updateTaskmaster(sqlitewraper.getDatabase(), t_id,mAttendanceData.getPunchout_Status());
-//            }
 
             //update the task master flag for upload
             String cnd;
@@ -722,15 +615,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             Intent i = new Intent(sqlitewraper.context, f_upload_new_structure.class);
             WakefulIntentService.sendWakefulWork(sqlitewraper.context, i);
 
-//            if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
-//            {
-//                boolean check12 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
-//                        SafetyDetectionService.class.getName());
-//                if (check12) {
-//                    Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
-//                    sqlitewraper.context.stopService(mIntent1);
-//                }
-//            }
         }
     }
 
@@ -805,7 +689,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 .build();
     }
 
-
     private GoogleApiClient googleApiClient;
     private void addGeofence(GeofencingRequest request) {
         googleApiClient = sqlitewraper.getGoogleApiHelper().getGoogleApiClient();
@@ -840,7 +723,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         return geoFencePendingIntent;
     }
 
-
     @Override
     public void onResult(@NonNull Status status) {
         if (status.isSuccess()) {
@@ -850,7 +732,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     }
 
     public void insertTrackmaster(String lat, String lon) {
-
 
         android.database.Cursor a_t = database.rawQuery(
                 "select value from APP_states where ITEAM ='nick'", null);
@@ -865,7 +746,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             username = a_t.getString(0);
         }
 
-//        String add = getCompleteAddressString(Double.parseDouble(lat), Double.parseDouble(lon));
         String add = AddressApi.getCompleteAddress(Double.parseDouble(lat), Double.parseDouble(lon));
         Date now = new Date();
 
@@ -891,7 +771,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
     }
 
-
     @Override
     public void onBackPressed() {
 
@@ -908,9 +787,7 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     @Override
     protected void onPause() {
         super.onPause();
-        //stopLocationUpdates();
     }
-
 
     private class GetHashesFromServerTask extends AsyncTask<String, String, String> {
         ShowProgress progress = new ShowProgress();
@@ -918,7 +795,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         @Override
         protected void onPreExecute() {
 
-//            progress.showProgressDialog(TripMapUi.this, "Please wait...");
         }
 
         @Override
@@ -927,13 +803,11 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             return null;
         }
 
-
         @Override
         protected void onPostExecute(String status) {
             super.onPostExecute(status);
 
             stopLocationUpdatesFused();
-//            progress.hideProgressDialog(TripMapUi.this);
             if (tripstatus.equalsIgnoreCase("0")) {
                 updateTripflagTaskMaster(tid, "2");
             }
@@ -969,7 +843,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             int j2 = c4.getCount();
             if (j2 == 0) {
 
-
                 latc.put("unique_trip_id", unique_trip_id);
                 latc.put("s_lat", s_lat);
                 latc.put("s_lon", s_lon);
@@ -990,7 +863,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         }
         c.close();
 
-
     }
 
     //Showing alert dialog if unable to fetch location
@@ -1004,22 +876,9 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
 
-//                        Bundle b = new Bundle();
-//                        Intent intent = new Intent();
-//                        intent.putExtras(b);
-//                        setResult(RESULT_CANCELED, intent);
-//                        finish();
-//                        dialog.dismiss();
-//                        finish();
-
                         // change location get call method
                         locationManagerGPS();
 
-//                        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
-//                        locationRequest = createLocationRequestNew();
-//                        onLocationChanged();
-//                        startLocationUpdatesFused();
-//                        manageHandler(20000);
                     }
                 });
 
@@ -1067,7 +926,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 Looper.getMainLooper());
     }
 
-
     private void startEndLocationInsert(Location location) {
 
         if ("0".equalsIgnoreCase(tripstatus)) {
@@ -1099,7 +957,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
     }
 
-
     private void stopLocationUpdatesFused() {
 
         if (fusedLocationClient != null) {
@@ -1119,7 +976,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
                 if (!isAlert) {
                     showAlertDelayLatLong("Application is unable to get your location hence it is taking more time.please be patient & wait for little longer.");
-//                    showAlertDelayLatLong("App is unable to get your GPS location , keep your device in open space and retry after restarting your GPS service.");
                 }
             }
         }, delayMillis);
@@ -1152,7 +1008,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
     // trip start and end time insert entry in location_log tbl and upload
     public void insertLocation_log_Tbl(String lat, String lon) {
 
-
         android.database.Cursor a_t = database.rawQuery(
                 "select value from APP_states where ITEAM ='nick'", null);
         a_t.moveToFirst();
@@ -1166,7 +1021,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             username = a_t.getString(0);
         }
 
-//        String add = getCompleteAddressString(Double.parseDouble(lat), Double.parseDouble(lon));
         String add = AddressApi.getCompleteAddress(Double.parseDouble(lat), Double.parseDouble(lon));
         Date now = new Date();
 
@@ -1219,7 +1073,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
         }
 
-
     }
 
     void permissionCheck() {
@@ -1259,32 +1112,12 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         return grantPermissions;
     }
 
-//    public boolean checkPermission() {
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
-//                != PackageManager.PERMISSION_GRANTED) {
 //            // Permission is not granted
-//            return false;
-//        }
-//        return true;
-//    }
 
-//    public void requestPermission() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 //            ActivityCompat.requestPermissions(TripMapUi.this,
-//                    new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
-//                    PERMISSION_REQUEST_CODE);
-//        }
-//        else {
 //
 //            //if location does not received than show message after delay
-////            manageHandler(30000);
 ////            //start the fused location update
-////            manageHandlerFused(20000);
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                Locationpermissioncheck();
-//            }
-//        }
-//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
@@ -1294,7 +1127,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             if (grantResults.length > 0 && grantPermissionsResults(grantResults)) {
                 checkLocationPermissions();
             } else {
-                //Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
                 if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -1374,79 +1206,24 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
             BatteryOptimizationCheck();
         }
 
-//        if (!hasLocationPermissions()) {
-////            ActivityCompat.requestPermissions(this, locationPermissions, REQUEST_CODE_LOCATION);
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                Locationpermissioncheck();
-//                return;
-//            }
 //
-//            else {
-//                manageHandler(30000);
 //                //start the fused location update
-//                manageHandlerFused(200);
-//            }
-//        }
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-//        {
-//            boolean isEnabled = isNotificationServiceEnabled(this);
-//            if (isEnabled)
-//            {
-//                Intent mServiceIntent = new Intent(this, VoipNotificationService.class);
-//                startService(mServiceIntent);
 //
-//                manageHandler(30000);
 //                //start the fused location update
-//                manageHandlerFused(200);
-//            } else {
 //                //service is not enabled try to enable by calling...
 //
-//                requestNotificationaccess();
-//                return;
-//            }
-//        }
-//        else {
 //
 //
-//            checkBatteryOptimizationWithDialog();
 //
-//            manageHandler(30000);
 //            //start the fused location update
-//            manageHandlerFused(200);
-//        }
 //
-//        String checkfirstattempt = null;
-//        try {
-//            pref = sqlitewraper.getSecureShared("FIRSTTIME");
-//            checkfirstattempt = pref.getString("FIRSTTIME", "0");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        if (!checkfirstattempt.equalsIgnoreCase("1")) {
 //
-//            showAlertDialogAutostartalldevices();
 //
-//        } else {
 //
 //            //Check if trip has outage is more than 15 minutes of total trip time than
 //            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
 //
-//            String serviceoutage = ServiceOutage.getserviceoutage().get(0);
-//            String tid = ServiceOutage.getserviceoutage().get(1);
 //
-//            if (serviceoutage != null && tid != null) {
-//                if (!serviceoutage.equals("0") && !tid.equals("0")) {
-//                    if (Float.parseFloat(serviceoutage) > 900000) {
-//                        showAlertDialogAutostartalldevices();
-//                    }
-//                    String t4;
-//                    t4 = "tid =" + tid;
-//                    ContentValues cv4 = new ContentValues();
-//                    cv4.put("serviceoutage_flag", "1");
-//                    long temp4 = database.update("lat_plug", cv4, t4, null);
-//                }
-//            }
-//        }
     }
 
     private void BatteryOptimizationCheck() {
@@ -1498,8 +1275,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                     autoStartPref.commit();
                     showAlertDialogAutostartalldevices();
                 })
-//                .setNegativeButton("Cancel", (dialog, which) -> {
-//                    Toast.makeText(this, "Trip cannot start without Auto-Start permission.", Toast.LENGTH_LONG).show();
 //                    finish(); // BLOCK TRIP START
 //                })
                 .show();
@@ -1517,8 +1292,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                         startActivity(intent);
                     }
                 })
-//                .setNegativeButton("Cancel", (dialog, which) -> {
-//                    Toast.makeText(this, "Trip cannot start with battery optimization enabled.", Toast.LENGTH_LONG).show();
 //                    finish(); // BLOCK TRIP START
 //                })
                 .show();
@@ -1533,11 +1306,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         return true;
     }
     private boolean hasLocationPermissions() {
-//        for (String permission : locationPermissions) {
-//            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED)
-//                return false;
-//        }
-//        return true;
 
         // 1. Check Fine Location (Android 9 / API 28+)
         boolean hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -1554,13 +1322,8 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
     public void Locationpermissioncheck()
     {
-//        int bgLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-//        int coarseLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION);
 //
-//        boolean isAppLocationPermissionGranted = (bgLocation == PackageManager.PERMISSION_GRANTED) &&
-//                (coarseLocation == PackageManager.PERMISSION_GRANTED);
         AlertDialog alertDialog = null;
-       // if (!hasLocationPermissions()) {
             alertDialog = new AlertDialog.Builder(this).create();
             alertDialog.setTitle("Missing Permission!");
             alertDialog.setCancelable(false);
@@ -1573,23 +1336,16 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                         intent.setData(Uri.fromParts("package", getPackageName(), null));
                         mainactivity.startActivity(intent);
                         alltimelocation = false;
-//                        finish();
                     });
 
             if(!alltimelocation) {
                 alertDialog.show();
                 alltimelocation = true;
             }
-      //  }
-//        else {
-//            manageHandler(30000);
 //            //start the fused location update
-//            manageHandlerFused(20000);
 //
 //
-//        }
     }
-
 
     //alert dialog message for diiferent devices
     public void showAlertDialogAutostartalldevices() {
@@ -1693,7 +1449,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                             boolean supported = AutoStartPermissionHelper.getInstance().isAutoStartPermissionAvailable(context);
 
                             Log.d("##log", check + "/" + supported);
-//                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS), 0);
 
                         }
 
@@ -1737,14 +1492,12 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         Date now = new Date();
         Long time = now.getTime();
 
-
         ArrayList<String> logindetails = new ArrayList<>();
         logindetails = DeviceEventsUtils.getLoginDetails();
         String userid = logindetails.get(0);
         String imei = logindetails.get(1);
         String appid = logindetails.get(2);
         String username1 = logindetails.get(3);
-
 
         ContentValues c = new ContentValues();
         c.put("username", username1);
@@ -1778,8 +1531,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                     "(SELECT MAX(_id) FROM Events where Event_type in('Still','StillViolation','Vehicle','Walking','On Bicycle','On Foot','Running','PowerSavingMode') )", null);
                     c2.moveToFirst();
 
-
-
                 if (c2.getCount() > 0) {
                     String id = c2.getString(0);
                     Event_strt = c2.getString(1);
@@ -1800,18 +1551,15 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
                             long temp = database.update("Events", c_path, cnd, null);
 
-
                                 Intent z_n12 = new Intent(sqlitewraper.context, Event.class);
                                 WakefulIntentService.sendWakefulWork(sqlitewraper.context,
                                         z_n12);
-
 
                         }
                     }
                 }
             }
         }
-
 
     }
     public boolean isNotificationServiceEnabled(Context context) {
@@ -1835,7 +1583,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                 public void onClick(DialogInterface dialog, int which) {
                     Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
                     startActivity(intent);
-                    // finish();
                     isnotificationDialog = false;
                 }
             });
@@ -1848,9 +1595,7 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
         }
 
-
     }
-
 
     private Location getFinalEndLocation() {
 
@@ -1865,7 +1610,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 //                            newFusedLocation.getLatitude() + "," +
 //                            newFusedLocation.getLongitude() +
 //                            " accuracy=" +
-//                            newFusedLocation.getAccuracy());
 
             return newFusedLocation;
         }
@@ -1928,11 +1672,9 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
                     fallback.setLatitude(lat);
                     fallback.setLongitude(lon);
 
-
 //                    Log.d("TRIP_END_LOCATION",
 //                            "Using TRACK_MASTER fallback: " +
 //                                    lat + "," + lon +
-//                                    " accuracy=" + accuracy);
 
                     return fallback;
                 }
@@ -1962,14 +1704,12 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
         double lon = location.getLongitude();
         float accuracy = location.getAccuracy();
 
-
         if (lat == 0.0 && lon == 0.0) {
             return false;
         }
         if (lat < -90.0 || lat > 90.0 || lon < -180.0 || lon > 180.0) {
             return false;
         }
-
 
         return true;
     }

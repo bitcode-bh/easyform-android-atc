@@ -44,7 +44,6 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
-
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -66,7 +65,6 @@ public class activity_recognize extends BroadcastReceiver {
 
     private SQLiteDatabase databse;
     MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
-    //    Editor editor = pref.edit();
     Long time_c;
     LocationManager locationManager;
     double mlat;
@@ -127,19 +125,15 @@ public class activity_recognize extends BroadcastReceiver {
             still_flag = pref.getString("still_flag", "0");
             vehicle_flag = pref.getString("vehicle_flag", "0");
             event_name = pref.getString("event_name", "NA");
-            // String event_name = "V";
             eve_lat = pref.getString("eve_lat", "NA");
             eve_lon = pref.getString("eve_lon", "NA");
             IsCheckAlaraSet = pref.getBoolean("isAlarmSet", false);
 
-
             String vehicaletype = pref.getString("vehicle_type","Private-2W");
-
 
             Cursor a_t2 = databse
                     .rawQuery(
                             "select speed,speed_violation_time,normal_acc,normal_deacc,hard_acc,hard_deacc,gap_milli,call_event_speed_limit,fall_detection,continuous_driving_alert_time,continuous_driving_reset_alert_time from Thresold_New WHERE vehicle_type =" + "'" + vehicaletype + "'" , null);
-
 
             if(a_t2.getCount() > 0)
             {
@@ -153,8 +147,6 @@ public class activity_recognize extends BroadcastReceiver {
                 gap_milli = a_t2.getString(6);
                 continuous_driving_alert_time = a_t2.getString(9);
                 continuous_driving_reset_alert_time = a_t2.getString(10);
-
-
 
                 a_t2.close();
             }
@@ -172,10 +164,6 @@ public class activity_recognize extends BroadcastReceiver {
             DrivingContext.onActivity(contextActivity(detectedActivity.getType()), confidence,
                     System.currentTimeMillis());
 
-//            if (TEST_MODE && !mostProbableName.equalsIgnoreCase("V")) {
-//                mostProbableName = "V";
-//                confidence = 100;
-//            }
             Log.d("##confidence", String.valueOf(confidence));
             Log.d("##mostProbableName", mostProbableName);
 
@@ -298,7 +286,6 @@ public class activity_recognize extends BroadcastReceiver {
                             c.put("userid", userid);
                             c.put("duration", 0);
 
-
                             Cursor c2 = databse.rawQuery("SELECT _id,Event_strt,Event_end,Event_type FROM  Events WHERE _id = " +
                                     "(SELECT MAX(_id) FROM Events where Event_type in('Still','StillViolation','Vehicle','Walking','On Bicycle','On Foot','Running') )", null);
                             c2.moveToFirst();
@@ -356,7 +343,6 @@ public class activity_recognize extends BroadcastReceiver {
 
                                     }
 
-
                                 } else {
                                     // last entry event type not still insert still entry
                                     if (eve_time == 0) {
@@ -379,7 +365,6 @@ public class activity_recognize extends BroadcastReceiver {
 
                                     pref.commit();
                                 }
-
 
                             } else {
                                 // last entry not still insert new
@@ -404,8 +389,6 @@ public class activity_recognize extends BroadcastReceiver {
                             }
 
                         }
-
-
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -432,8 +415,6 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.putLong("event_start", time_c);
                         pref.commit();
 
-
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -457,9 +438,6 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.putLong("event_start", time_c);
                         pref.commit();
 
-
-
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -482,8 +460,6 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.putLong("event_start", time_c);
                         pref.commit();
 
-
-
                     } catch (Exception e) {
 
                     }
@@ -505,9 +481,6 @@ public class activity_recognize extends BroadcastReceiver {
                         pref.putString("eve_lon", d.getlatlon()[1]);
                         pref.putLong("event_start", time_c);
                         pref.commit();
-
-
-
 
                     } catch (Exception e) {
 
@@ -614,13 +587,9 @@ public class activity_recognize extends BroadcastReceiver {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-//            AudioAttributes attributes;
 //            attributes = new AudioAttributes.Builder()
-//                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-//                    .build();
             channel = new NotificationChannel("channel01", "name", NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription("description");
-//            channel.setSound(sound, attributes);
             //  notification play custom sound
             Ringtone r = RingtoneManager.getRingtone(sqlitewraper.context, sound);
             r.play();
@@ -652,7 +621,6 @@ public class activity_recognize extends BroadcastReceiver {
         still_violation_Entry();
 
     }
-
 
     //define the activity
     private static DrivingContext.Activity contextActivity(int type) {
@@ -704,15 +672,12 @@ public class activity_recognize extends BroadcastReceiver {
         still_flag = pref.getString("still_flag", "0");
         vehicle_flag = pref.getString("vehicle_flag", "0");
         event_name = pref.getString("event_name", "NA");
-        // String event_name = "V";
         eve_lat = pref.getString("eve_lat", "NA");
         eve_lon = pref.getString("eve_lon", "NA");
         Event_strt = pref.getString("tblevent_start","0");
         time_c = System.currentTimeMillis();
 
         insertIntoEvents(String.valueOf(Event_strt),String.valueOf(time_c),"0","StillViolation");
-//        Intent i = new Intent(sqlitewraper.context, Event.class);
-//        WakefulIntentService.sendWakefulWork(sqlitewraper.context, i);
         pref.putBoolean("isAlarmSet", false); // Saving string
         pref.putString("still_flag", "1");
         pref.putString("eve_lat", d.getlatlon()[0]);
@@ -725,8 +690,6 @@ public class activity_recognize extends BroadcastReceiver {
 
     }
 
-
-
     public void reqLocation() {
 
         LocationListener locationListener = new MyLocationListner();
@@ -734,7 +697,6 @@ public class activity_recognize extends BroadcastReceiver {
         if (location1 != null) {
             locationListener.onLocationChanged(location1);
         } else {
-            //Toast.makeText(sqlitewraper.context, "No Location Provider found", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -748,13 +710,11 @@ public class activity_recognize extends BroadcastReceiver {
                 continue;
             }
             if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-                // Found best last known location: %s", l);
                 bestLocation = l;
             }
         }
         return bestLocation;
     }
-
 
     public class MyLocationListner implements LocationListener {
         @Override
@@ -831,7 +791,6 @@ public class activity_recognize extends BroadcastReceiver {
             String appid = logindetails.get(2);
             String username1 = logindetails.get(3);
 
-
             ContentValues c = new ContentValues();
             c.put("Event_strt", eventstart);
             c.put("Event_end", eventend);
@@ -890,7 +849,6 @@ public class activity_recognize extends BroadcastReceiver {
         long lastVehicle = pref.getLong(KEY_DRIVING_LAST_VEHICLE, 0);
 
         // A session left over from an earlier drive is over. Activity recognition only runs
-        // during trips, so the reset in resetDrivingTimer() may never have run between trips;
         // without this the next trip inherited the old start time and alerted at once.
         DRIVING_RESET_GRACE_PERIOD = parseTimeToMillis(continuous_driving_reset_alert_time, 15 * 60 * 1000L);
         if (DRIVING_RESET_GRACE_PERIOD <= 0) DRIVING_RESET_GRACE_PERIOD = 15 * 60 * 1000L;   // "00:00" would reset every time

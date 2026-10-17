@@ -98,13 +98,11 @@ import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 import static com.sky.atc.easyformse.sqlitewraper.context;
 import static com.sky.atc.easyformse.sqlitewraper.mainactivity;
 
-
 @StringFogIgnore
 public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, ResultCallback {
 
     protected GoogleApiClient mGoogleApiClient;
     protected LocationRequest locationRequest;
-    //    SharedPreferences.Editor editor;
     MySharedPreferences pref;
     String login_key = "NA";
     int REQUEST_CHECK_SETTINGS = 100;
@@ -138,15 +136,12 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         .isProviderEnabled(LocationManager.GPS_PROVIDER);
                 String f_gps;
                 if (isGPSEnabled) {
-//                    displayAlert("Please Start Gps in High Accuracy mode Throughout Application", 0);
-//                    displayAlert("Please check,GPS must be on in high accuracy mode in GPS setting.", 0);
                 } else {
                     database = sqlitewraper.getDatabase();
                     String checkgpsstate = checkgps();
 
                     if (!checkgpsstate.equalsIgnoreCase("0")) {
 
-//                        displayAlert("Please check,GPS must be on in high accuracy mode in GPS setting.", 0);
                         ShowGPSAlert = false;
                         gpsonoff();
 
@@ -164,7 +159,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
                 if (!isGPSEnabled) {
                     database = sqlitewraper.getDatabase();
-//                    String checkgpsstate = checkgps();
                     if (!isGPSEnabled) {
                         gpsonoff();
                     }
@@ -172,7 +166,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             }
         }
     };
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -182,7 +175,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         sqlitewraper.checkIsFakeLocation(getApplicationContext());
 //      getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE); //to disable screenshot of activity
         database = sqlitewraper.getDatabase();
-
 
         //Will invoke from location service
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
@@ -197,19 +189,10 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         login_key = prefs.getString("login_key", "False");
 
         //Check if trip has outage>60% of total trip time than return true
-//        permit = ServiceOutageCheck.startDeviceAdmin();
 
         //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
-//        if (permit) {
-//            showAlertDialogAutostartalldevices();
-//        }
 //              logwrite tag set value false
-//                    SharedPreferences sharedPreferences= sqlitewraper.context.getSharedPreferences("LogWrite",0);
-//                    SharedPreferences.Editor mEditor = sharedPreferences.edit();
 //                    mEditor.putBoolean("isLogWrite",false);  // saving string
-//                    mEditor.apply();
-
-
 
         String checkfirstattempt_vivo = null;
         pref = sqlitewraper.getSecureShared("FIRSTTIMEVIVO");
@@ -241,37 +224,15 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         }
 
         // code move when trip start only 17092025
-//        if (!checkfirstattempt.equalsIgnoreCase("1")) {
 //
 //            //to ignore battery optimizATION In Background
-//            if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true"))
-//            {
-//                activateDozemode();
-//            }
 //            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
-//            showAlertDialogAutostartalldevices();
 //
-//        } else {
 //
 //            //Check if trip has outage is more than 15 minutes of total trip time than
 //            //SHOW DIALOG FOR BACKGROUND POWER SETTING BASED ON MODEL
 //
-//            String serviceoutage = ServiceOutage.getserviceoutage().get(0);
-//            String tid = ServiceOutage.getserviceoutage().get(1);
 //
-//            if (serviceoutage != null && tid != null) {
-//                if (!serviceoutage.equals("0") && !tid.equals("0")) {
-//                    if (Float.parseFloat(serviceoutage) > 900000) {
-//                        showAlertDialogAutostartalldevices();
-//                    }
-//                    String t4;
-//                    t4 = "tid =" + tid;
-//                    ContentValues cv4 = new ContentValues();
-//                    cv4.put("serviceoutage_flag", "1");
-//                    long temp4 = database.update("lat_plug", cv4, t4, null);
-//                }
-//            }
-//        }
 
         //If fake location detected one have to off/on gps or phone
         fakeLocationCheck();
@@ -279,7 +240,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         //For Showing Upload pending Notification
         Intent p2 = new Intent(sqlitewraper.context, foreverservice.class);
         sqlitewraper.context.startService(p2);
-
 
         //To Redirect to the screen according to flag
         if (login_key.equals("True")) {
@@ -291,21 +251,11 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             super.loadUrl("file:///android_asset/www2/Login.html");
             // ...and so is what shows before it has drawn (grey elsewhere).
             if (appView != null) appView.getView().setBackgroundColor(android.graphics.Color.WHITE);
-//            super.loadUrl("file:///android_asset/www2_muvr/index.html");
         }
 
         //register brodcast for gps on/off call onresume method so comment Oncreate method
-//        IntentFilter filter = new IntentFilter("android.location.PROVIDERS_CHANGED");
-//        this.registerReceiver(mReceivedSMSReceiver, filter);
-//        IntentFilter filter1 = new IntentFilter("com.easyform.CUSTOM_BROADCAST");
-//        this.registerReceiver(mReceivedSMSReceiver, filter1);
 
 //        app show in minimize when rf track app is available on device as per discuss with sir we commit this code 01-05-2024
-//        if (isAppInstalled("com.easyform.rftrack")) {
-//            pictureInPictureHomeClicked(true);
-//        } else {
-//            LogUtils.writeRfTrackLogToFile("RfTrack is not installed", "onCreate " + ph_s.this.getClass().getName());
-//        }
     }
 
     private boolean isAppInstalled(String packageName) {
@@ -400,23 +350,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         stopService(i);
                     }
 
-//                    if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
-//                    {
-//                        boolean check12 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
-//                                SafetyDetectionService.class.getName());
-//                        if (check12) {
-//                            Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
-//                            sqlitewraper.context.stopService(mIntent1);
-//                        }
-//                    }
 //                    hide newfused and activity_recognition code  23-07-2025
 
-//                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
-//                            newfused_gps.class.getName());
-//                    if (check) {
-//                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-//                        stopService(i);
-//                    }
                     // enable activity_recognition code  07082026
                     boolean checkActivity_recognition = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             Activity_recognition.class.getName());
@@ -438,7 +373,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
         Log.d("##MainActivityFake", String.valueOf(sqlitewraper.getFakeflag()));
         try {
-//            if (sqlitewraper.getFakeflag() == 0) {
 
             MySharedPreferences prefs = sqlitewraper.getSecureShared("MY_PREFS_NAME");
             int bootflag = prefs.getInt("bootflag", 0); //0 is the default value.
@@ -457,7 +391,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                     }
                 }
             }
-//            }
 
         } catch (Exception e) {
             Log.d("##MainActivity", String.valueOf(sqlitewraper.getFakeflag()));
@@ -486,46 +419,11 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         LogUtils.writeRfTrackLogToFile("Celled onResume ", this.getClass().getName());
         super.onResume();
 
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-//        {
-//            boolean isEnabled = isNotificationServiceEnabled(this);
-//            if (isEnabled)
-//            {
-//                Intent mServiceIntent = new Intent(this, NotificationListener.class);
-//                startService(mServiceIntent);
 //                //service is enabled do something
-//            } else {
 //                //service is not enabled try to enabled by calling...
 //
-//                if (checkOverlayDisplayPermission()) {
-//                    requestNotificationaccess();
-//                } else {
-//                    requestOverlayDisplayPermission();
-//                }
-//            }
-//        }
 
 //        onresume send notification code remove 07012026
-//        try{
-//            String Attendance = pref.getString("Attendance","false");
-//            if(Attendance.equalsIgnoreCase("false") || Attendance.equalsIgnoreCase("null"))
-//            {
-//            }
-//            else {
-//                if( AttendanceUtil.getAttendanceDataList() != null) {
-//                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-//                            // AttendanceUtil.setAttendanceDataListAndSave(finalAttendanceValues);
-//                            Log.e("attendanceDataList : ", AttendanceUtil.getAttendanceDataList().toString());
-//                            AttendanceUtil.setAttendanceNotificationAlarm(AttendanceUtil.getAttendanceDataList().get(0));
-//                    }, 1000);
-//                }
-//            }
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
 
         String AllPermission = sqlitewraper.context.getResources().getString(R.string.AllPermission);
         if(AllPermission.equalsIgnoreCase("true")) {
@@ -580,20 +478,11 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
 // when app go in background and open it again show trip background map -- so remove on resume 10-03-2023
 
-//        if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true")) {
 //           /* if (startmap) {
 //                startmap = false;*/
-//            // startActivityTripBackground();
-//        //    startTripMapActivity();
-//            //}
 //
-//            if (sqlitewraper.isMockAvailable) {
 //
-//            } else {
-//                startTripMapActivity();
-//            }
 //
-//        }
 
         if (!TripMapUtils.MOCKLOCATION.equalsIgnoreCase("true")) {
             MySharedPreferences editor = sqlitewraper.getSecureShared("MY_PREFS_NAME");
@@ -621,13 +510,7 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         internetBrodcast();
         registerBroadcast();
 
-//        PowerManager powerManager = (PowerManager)
-//                getApplicationContext().getSystemService(Context.POWER_SERVICE);
-//        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-//                && powerManager.isPowerSaveMode()) {
 //            // Animations are disabled in power save mode, so just show a toast instead.
-//            Toast.makeText(getApplicationContext(), "Power Saving Mode is ON", Toast.LENGTH_SHORT).show();
-//        }
 
         Cursor a_t12 = database.rawQuery(
                 "select value from APP_states where ITEAM ='gps'", null);
@@ -668,7 +551,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             }
         }
 
-
     }
 
     private void internetBrodcast() {
@@ -692,12 +574,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         //Phone switch off
         IntentFilter intentFilter4 = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
         IntentFilter intentFilter5 = new IntentFilter("android.os.action.POWER_SAVE_MODE_CHANGED");
-       // IntentFilter intentFilter = new IntentFilter("android.location.PROVIDERS_CHANGED");
 
-       // this.registerReceiver(new gpsreciever(), intentFilter);
         this.registerReceiver(new phoneon(), intentFilter1);
-        //this.registerReceiver(new BootReceiver(), intentFilter1);
-       // this.registerReceiver(new activity_recognize(), intentFilter2);
         this.registerReceiver(new onreboot(), intentFilter3);
         this.registerReceiver(new ShutdownReceiver(), intentFilter4);
         this.registerReceiver(new PowerSaveModeReceiver(), intentFilter5);
@@ -711,7 +589,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             isReceiverRegistered = true;
             Log.d("Receiver", "Receiver registered");
         }
-
 
         ComponentName receiver = new ComponentName(this, onreboot.class);
         PackageManager pm = this.getPackageManager();
@@ -744,7 +621,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
             if (notiflag.equalsIgnoreCase("1")) {
                 // Show check out AlertDialog
-                //  CheckSheetJsonConstant.getNotificationTime(0, dayOfWeek, value);
             } else {
                 if (!milliseconds.equalsIgnoreCase(currentData)) {
                     // Show check in AlertDialog
@@ -766,7 +642,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent faceRecognizerActivityIntent = new Intent(ph_s.this, FaceDetactionActivity.class);
-                // faceRecognizerActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(faceRecognizerActivityIntent);
             }
         });
@@ -779,8 +654,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         dialog.show();
 
     }
-
-
 
     //for starting  the location services according to flag
 
@@ -800,20 +673,11 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
         if (!username.equalsIgnoreCase("0")) {
             //hide newfused and activity_recognition code  23-07-2025
-//            boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
-//                    newfused_gps.class.getName());
-//            if (check) {
-//
-//                Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-//                sqlitewraper.context.startService(i);
-//
-//            } else {
-//
-//                Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-//                sqlitewraper.context.startService(i);
 //
 //
-//            }
+//
+//
+//
 
             boolean check2 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                     newfused.class.getName());
@@ -840,11 +704,9 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         dialog.cancel();
                         if (alertflag == 0) {
                             startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-//                            gpsonoff();
 
                         } else if (alertflag == 1) {
                             startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), 101);
-//                            gpsonoff();
 
                         } else {
                             if (sqlitewraper.getMainactivity() != null) {
@@ -873,18 +735,13 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         if (requestCode == REQUEST_CHECK_SETTINGS) {
 
             if (resultCode == RESULT_OK) {
-//                Toast.makeText(getApplicationContext(), "GPS enabled", Toast.LENGTH_LONG).show();
-//                IntentFilter filter = new IntentFilter("android.location.PROVIDERS_CHANGED");
-//                registerReceiver(new gpsreciever(), filter);
             } else {
-//                Toast.makeText(getApplicationContext(), "GPS is not enabled", Toast.LENGTH_LONG).show();
                 sqlitewraper.getMainactivity().finish();
                 System.exit(0);
             }
 
         }
     }
-
 
     public void showAlertDialogAutostart(String message, final int count, String title) {
 
@@ -896,11 +753,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-//                        pref = sqlitewraper.context.getSharedPreferences("FIRSTTIME", MODE_PRIVATE);
                         pref = sqlitewraper.getSecureShared("FIRSTTIME");
-//                        editor = pref.edit();
                         pref.putString("FIRSTTIME", "1"); // Saving string
-//                        editor.apply();
                         pref.commit();
                         Log.d("##PH_S", "ondestroy2");
                         if (count == 0) {
@@ -933,7 +787,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
             } else if ("oppo".equalsIgnoreCase(manufacturer)) {
 
-//                    intent.setComponent(new ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity"));
                 try {
                     intent = new Intent();
                     intent.setClassName("com.coloros.safecenter",
@@ -959,7 +812,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                 }
 
             } else if ("vivo".equalsIgnoreCase(manufacturer)) {
-//                    intent.setComponent(new ComponentName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"));
 
                 try {
                     intent = new Intent();
@@ -989,10 +841,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             } else if ("Letv".equalsIgnoreCase(manufacturer)) {
                 intent.setComponent(new ComponentName("com.letv.android.letvsafe", "com.letv.android.letvsafe.AutobootManageActivity"));
             } else if ("Honor".equalsIgnoreCase(manufacturer)) {
-//                intent.setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity"));
                 intent.setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"));
             } else if ("huawei".equalsIgnoreCase(manufacturer)) {
-//                intent.setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity"));
                 intent.setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"));
             } else if ("asus".equalsIgnoreCase(manufacturer)) {
                 intent.setComponent(new ComponentName("com.asus.mobilemanager", "com.asus.mobilemanager.autostart.AutoStartActivity"));
@@ -1003,7 +853,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                 context.startActivity(intent);
             }
         } catch (Exception e) {
-//                Crashlytics.logException(e);
         }
 
     }
@@ -1079,8 +928,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         switch (status.getStatusCode()) {
             case LocationSettingsStatusCodes.SUCCESS:
 
-                // NO need to show the dialog;
-
                 break;
 
             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -1123,30 +970,16 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
     }
 
     //alert dialog message for diiferent devices
-//    public void showAlertDialogAutostartalldevices() {
-//        String title = "Allow Permission";
-//        String brand = Build.MANUFACTURER;
-//        String message = "Please Enable Autostart Application from Setting";
-//        if (brand.equalsIgnoreCase("xiaomi")) {
-//            message = "- Go to your phone's Settings app\n" +
 //                    "- Select Additional Settings\n" +
 //                    "- Go to Battery & Performance\n" +
 //                    "- Tap on Manage apps’ battery usage\n" +
 //                    "- On this screen switch off Power Saving Mode\n" +
 //                    "- Tap on Saving Power in The Background\n" +
 //                    "- Select Choose Application\n" +
-//                    "- Go to Background Settings and switch to No Restrictions";
-//        }
-//        if (brand.equalsIgnoreCase("vivo")) {
 //
-//            message = "- Go to Settings on your VIVO device\n" +
 //                    "- Select Battery Option\n" +
-//                    "- Setect Normal Mode";
 //
-//        }
-//        if (brand.equalsIgnoreCase("oppo")) {
 //
-//            message = "- Go to Settings on your OPPO device\n" +
 //                    "- Go to Security Centre\n" +
 //                    "- Click Privacy Permissions\n" +
 //                    "- Click Start up Manager\n" +
@@ -1154,20 +987,12 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 //                    "- Go back to Settings\n" +
 //                    "- Go to Battery\n" +
 //                    "- Select Our Application!\n" +
-//                    "- Switch off Freeze in Background and Automatically Optimize When an Abnormality is Detected";
 //
-//        }
-//        if (brand.equalsIgnoreCase("htc")) {
-//            message = "- Open up Phone Settings\n" +
 //                    "- Tap Power\n" +
 //                    "- Tap Battery optimization\n" +
 //                    "- Tap Not optimized\n" +
 //                    "- Select All apps to see the complete list of apps.\n" +
-//                    "- Select App, and select Don't optimize";
-//        }
-//        if (brand.equalsIgnoreCase("huawei")) {
 //
-//            message = "- Go to Settings on your Huawei device\n" +
 //                    "- Select Apps\n" +
 //                    "- Tap Settings at the bottom of the screen\n" +
 //                    "- Select Special Access\n" +
@@ -1179,75 +1004,22 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 //                    "- Tap on Battery\n" +
 //                    "- Disable the Power-intensive prompt\n" +
 //                    "- On the same page, switch Launch from Automatic to Manage Manually\n" +
-//                    "- Enable all the Manage Manually options - these should include things such as 'Run in background'";
 //
-//        }
-//        if (brand.equalsIgnoreCase("ZTE")) {
-//            message = "- Open the Battery menu in the Settings app\n" +
 //                    "- Select the 3-dot menu\n" +
 //                    "- Tap Battery Optimisation\n" +
 //                    "- Select App, and tap Don't Optimise\n" +
 //                    "- Open your overview/recents screen which displays all of your recently used apps\n" +
-//                    "- Tap the padlock icon in the top right hand corner of the App";
-//        }
 //
-//        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-//        alertDialog.setTitle(title);
-//        alertDialog.setCancelable(false);
-//        alertDialog.setMessage(message);
 //        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        dialog.dismiss();
-//                        pref = sqlitewraper.getSecureShared("FIRSTTIME");
 //                        pref.putString("FIRSTTIME", "1"); // Saving string
-//                        pref.commit();
-//                        if (Build.MANUFACTURER.equalsIgnoreCase("xiaomi")) {
 //
-//                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS), 0);
 //
-//                        }
 //
-//                        if (Build.MANUFACTURER.equalsIgnoreCase("oppo")) {
-//                            Intent intent1 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//                            Uri uri1 = Uri.fromParts("package", getPackageName(), null);
-//                            intent1.setData(uri1);
-//                            startActivity(intent1);
-//                        }
-//                        if (Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
-//                            Intent intent1 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//                            Uri uri1 = Uri.fromParts("package", getPackageName(), null);
-//                            intent1.setData(uri1);
-//                            startActivity(intent1);
-//                            boolean check = AutoStartPermissionHelper.getInstance().getAutoStartPermission(context);
-//                            boolean supported = AutoStartPermissionHelper.getInstance().isAutoStartPermissionAvailable(context);
 //
-//                            Log.d("##log", check + "/" + supported);
-////                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS), 0);
 //
-//                        }
 //
-//                        if (Build.MANUFACTURER.equalsIgnoreCase("oneplus")) {
-//                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS), 0);
-//                        }
 //
-//                        if (Build.MANUFACTURER.equalsIgnoreCase("huawei")) {
-//                            Intent intent2 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//                            Uri uri2 = Uri.fromParts("package", getPackageName(), null);
-//                            intent2.setData(uri2);
-//                            startActivity(intent2);
-//                        }
-//                        if (Build.MANUFACTURER.equalsIgnoreCase("htc")) {
-//                            Intent intent3 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//                            Uri uri3 = Uri.fromParts("package", getPackageName(), null);
-//                            intent3.setData(uri3);
-//                            startActivity(intent3);
-//                        }
-//                    }
-//                });
 //
-//        alertDialog.show();
-//    }
     /*@Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
@@ -1332,7 +1104,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                     }
 
                     }
-//                  mHomeWatcher.stopWatch();
                 }
                 else {
                     pref = sqlitewraper.getSecureShared("MyPref");
@@ -1341,7 +1112,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         if (ismapcheck.equalsIgnoreCase("true"))
                         {
-                           // stopService(new Intent(ph_s.this,FloatingBubbleService.class));
                             pref.putString("IsMapcheck","false");
                             pref.commit();
                             sqlitewraper.getMainactivity().finish();
@@ -1374,11 +1144,9 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                                         final Handler handler = new Handler();
                                         handler.postDelayed(() -> {
                                             Intent intent = new Intent(ph_s.this, TripBackgroundMapActivity.class);
-                                            // intent.setFlags(intent.FLAG_ACTIVITY_NEW_TASK);
                                             intent.putExtra("IsOpenMAP", "1");
                                             startActivity(intent);
                                         }, 1000);
-
 
                                         if ("xiaomi".equals(Build.MANUFACTURER.toLowerCase(Locale.ROOT))) {
                                             timer = new CountDownTimer(TIMER_DURATION, TIMER_DURATION) {
@@ -1410,7 +1178,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                             if (ismapcheck.equalsIgnoreCase("true"))
                             {
-                               // stopService(new Intent(ph_s.this,FloatingBubbleService.class));
                                 pref.putString("IsMapcheck","false");
                                 pref.commit();
                                 sqlitewraper.getMainactivity().finish();
@@ -1421,7 +1188,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                    }
 
                 } catch (Exception e) {
-                    //Log.e("startPictureInPicture : ", e.toString());
                 }
             }
         });
@@ -1452,7 +1218,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                 if (!isInPictureInPictureMode()) {
                     PictureInPictureParams mPictureInPictureParams =
                             new PictureInPictureParams.Builder()
-                                    // .setAspectRatio(getPipRatio())
                                     .build();
                     enterPictureInPictureMode(mPictureInPictureParams);
                 }
@@ -1482,12 +1247,10 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             public void onHomeLongPressed() {
                 LogUtils.writeRfTrackLogToFile("onHomeLongPressed  Celled", "onHomeLongPressed " + ph_s.this.getClass().getName());
                 Log.d("pictureInPictureHomeClicked", "onHomeLongPressed Celled");
-                // startPictureInPicture();
             }
 
             @Override
             public void onHomeGestureCalled() {
-                //startPictureInPicture();
             }
         });
         if (isWatcher) {
@@ -1507,7 +1270,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
     //check if there is any trip running or not
 
-
     private void startTripMapActivity() {
 
         if (DeviceEventsUtils.liveTripCount() > 0) {
@@ -1524,7 +1286,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         TripMapUtils.setIsBypassActivity(false);
     }
 
-
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -1533,7 +1294,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             }
         }
     };
-
 
     public void showAlertDialogFakeLocation() {
 
@@ -1562,7 +1322,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             isDialogShowing = true;
         }
     }
-
 
     //check device time auto or manual
     private void checkDeviceTime() {
@@ -1621,7 +1380,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
                         mainactivity.startActivity(intent);
                         alltimelocation = false;
-//                        finish();
                     });
 
             if(!alltimelocation) {
@@ -1659,7 +1417,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         intent.setData(Uri.fromParts("package", mainactivity.getPackageName(), null));
                         mainactivity.startActivity(intent);
                         isShowNotiDialog = false;
-                        //finish();
                     });
             if(!isShowNotiDialog)
             {
@@ -1787,7 +1544,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         startActivity(intent);
                     });
 
-
             alertDialog.show();
 
         }
@@ -1805,7 +1561,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
                 startActivityForResult(intent, 1012);
-                //  finish();
                 isoverlyaDialog = false;
             }
         });
@@ -1849,7 +1604,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                 public void onClick(DialogInterface dialog, int which) {
                     Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
                     startActivity(intent);
-                    // finish();
                     isnotificationDialog = false;
                 }
             });
@@ -1861,7 +1615,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
             }
 
         }
-
 
     }
 

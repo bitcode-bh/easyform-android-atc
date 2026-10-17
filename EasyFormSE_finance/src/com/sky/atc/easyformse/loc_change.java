@@ -173,7 +173,6 @@ public class loc_change extends WakefulIntentService {
 		//insert location for the first time
 		if (check_location.getCount() == 0) {
 
-			// String address = add(Double.valueOf(lat), Double.valueOf(lon));
 			String address = AddressApi.getCompleteAddress(lat, lon);
 			if (address == null) {
 				address = "na";
@@ -216,16 +215,13 @@ public class loc_change extends WakefulIntentService {
 				long temp = database.insert("location_log", null, args);
 			}
 
-
 			Intent location = new Intent(sqlitewraper.context,
 					location_server.class);
 
 			WakefulIntentService
 					.sendWakefulWork(sqlitewraper.context, location);
 
-
 		} else {
-
 
 			Cursor check_location12 = database
 					.rawQuery(
@@ -253,7 +249,6 @@ public class loc_change extends WakefulIntentService {
 			//insert location if previous location 10 mini old or accurcy is higher
 			float diff = Float.valueOf(time.toString()) - (Float.valueOf(date));
 			if ((diff > 600000) || ((acc_old / 4) > acc_new)) {
-//				String address = add(Double.valueOf(lat), Double.valueOf(lon));
 				String address = AddressApi.getCompleteAddress(Double.valueOf(lat), Double.valueOf(lon));
 				ContentValues args = new ContentValues();
 				args.put("cellid", address);
@@ -291,7 +286,6 @@ public class loc_change extends WakefulIntentService {
 					long temp = database.insert("location_log", null, args);
 				}
 
-
 				System.out.print("out");
 			}
 
@@ -308,7 +302,6 @@ public class loc_change extends WakefulIntentService {
 				//insert if the distance is more than 80 meter
 				if (distance > (Float.valueOf(accuracy1) + acc + meterdistancevalue)) {
 					System.out.print("Enter");
-//					String address = add(lat, lon);
 					String address = AddressApi.getCompleteAddress(lat, lon);
 
 					ContentValues args = new ContentValues();
@@ -346,8 +339,6 @@ public class loc_change extends WakefulIntentService {
 						long temp = database.insert("location_log", null, args);
 					}
 
-
-
 				}
 				//temporary call to server is closed as per suggestion
 				Intent location = new Intent(sqlitewraper.context,
@@ -360,8 +351,6 @@ public class loc_change extends WakefulIntentService {
 		}
 
 	}
-
-
 
 	//to insert location into track
 	void chk_insert1(float lat, float lon, float acc, String provider,
@@ -378,7 +367,6 @@ public class loc_change extends WakefulIntentService {
 		//insert location for the first time
 		if (check_location.getCount() == 0) {
 
-			// String address = add(Double.valueOf(lat), Double.valueOf(lon));
 			String address = AddressApi.getCompleteAddress(lat, lon);
 			if (address == null) {
 				address = "na";
@@ -420,16 +408,13 @@ public class loc_change extends WakefulIntentService {
 				long temp = database.insert("track_master", null, args);
 			}
 
-
 			//Device status IMEI master upload to show that device is still connected
 			Intent z_n12 = new Intent(sqlitewraper.context,
 					touch_server.class);
 			WakefulIntentService.sendWakefulWork(sqlitewraper.context,
 					z_n12);
 
-
 		} else {
-
 
 			Cursor check_location12 = database
 					.rawQuery(
@@ -448,7 +433,6 @@ public class loc_change extends WakefulIntentService {
 			float diff = Float.parseFloat(time.toString()) - (Float.parseFloat(date));
 			if ( (diff > 600000) || ((acc_old / 4) > acc_new)) {
 
-//				String address = add(Double.valueOf(lat), Double.valueOf(lon));
 				String address = AddressApi.getCompleteAddress(lat, lon);
 				ContentValues args = new ContentValues();
 				args.put("cellid", address);
@@ -486,7 +470,6 @@ public class loc_change extends WakefulIntentService {
 				else {
 					long temp = database.insert("track_master", null, args);
 				}
-
 
 				System.out.print("out");
 			}
@@ -577,7 +560,6 @@ public class loc_change extends WakefulIntentService {
 				//to check if trip service is running or not
 				long nowmilliseconds = System.currentTimeMillis();
 
-
 				if (nowmilliseconds - last_upload_ms > 300000) {
 
 					boolean check2 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
@@ -601,7 +583,6 @@ public class loc_change extends WakefulIntentService {
 		}
 	}
 
-
 	String add(double lat, double lon) {
 		String address = null;
 		if (address == null) {
@@ -622,7 +603,6 @@ public class loc_change extends WakefulIntentService {
 				}
 
 			} catch (Exception e) {
-				////e.printStackTrace();
 
 			}
 
@@ -655,7 +635,6 @@ public class loc_change extends WakefulIntentService {
 			// TODO: handle exception
 		}
 	}
-
 
 	//to check if power saving mode activated or not
 	public void powersavingmode(String provider){
@@ -708,6 +687,5 @@ public class loc_change extends WakefulIntentService {
 		}
 
 	}
-
 
 }
