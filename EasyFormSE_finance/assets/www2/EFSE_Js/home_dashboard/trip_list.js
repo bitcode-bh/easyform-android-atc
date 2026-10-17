@@ -241,23 +241,11 @@ var TripListSheet = (function () {
         return pts;
     }
 
-    function toRad(deg) { return deg * (Math.PI / 180); }
-
-    function haversineKm(lat1, lon1, lat2, lon2) {
-        var R = 6371;
-        var dLat = toRad(lat2 - lat1);
-        var dLon = toRad(lon2 - lon1);
-        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
-            * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
-
     function pathKm(pts) {
         if (!pts || pts.length < 2) return 0;
         var km = 0;
         for (var i = 1; i < pts.length; i++) {
-            var d = haversineKm(pts[i - 1].lat, pts[i - 1].lon, pts[i].lat, pts[i].lon);
+            var d = getDistanceFromLatLonInMeter(pts[i - 1].lat, pts[i - 1].lon, pts[i].lat, pts[i].lon) / 1000;
             if (d < 50) km += d;
         }
         return km;

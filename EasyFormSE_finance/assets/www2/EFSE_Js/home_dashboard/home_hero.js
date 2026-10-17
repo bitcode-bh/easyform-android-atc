@@ -301,15 +301,6 @@ var HomeHero = (function () {
 
     // ---- nearest site and geofence status --------------------------------
 
-    function toRad(deg) { return deg * (Math.PI / 180); }
-
-    function metresBetween(lat1, lon1, lat2, lon2) {
-        var dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
-        var h = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return 6371000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
-    }
-
     // Meters (spelled out, so "3 m" is not read as minutes) under 1 km,
     // kilometres from there.
     function formatDistance(m) {
@@ -345,7 +336,7 @@ var HomeHero = (function () {
         for (var i = 0; i < (sites || []).length; i++) {
             var lat = parseFloat(sites[i].latitude), lon = parseFloat(sites[i].longitude);
             if (!validCoords(lat, lon)) continue;
-            var d = metresBetween(fix.lat, fix.lon, lat, lon);
+            var d = getDistanceFromLatLonInMeter(fix.lat, fix.lon, lat, lon);
             var key = String(sites[i].place_id);
             if (!bySite[key] || d < bySite[key].distanceM) {
                 bySite[key] = { siteId: sites[i].place_id, distanceM: d, radiusM: parseFloat(sites[i].radius), flowId: sites[i].flow_id, siteType: sites[i].site_type };
@@ -828,7 +819,7 @@ var HomeHero = (function () {
     function liveDistanceKm(pts) {
         var km = 0;
         for (var i = 1; i < pts.length; i++) {
-            var d = metresBetween(pts[i - 1].lat, pts[i - 1].lon, pts[i].lat, pts[i].lon) / 1000;
+            var d = getDistanceFromLatLonInMeter(pts[i - 1].lat, pts[i - 1].lon, pts[i].lat, pts[i].lon) / 1000;
             if (d < 50) km += d;   // same jump filter as the Trips page
         }
         return km;
@@ -900,7 +891,7 @@ var HomeHero = (function () {
                     if (!isNaN(last.mps) && last.mps >= 0) kmh = last.mps * 3.6;
                     else if (pts.length > 1) {
                         var prev = pts[pts.length - 2], dt = (last.ms - prev.ms) / 3600000;
-                        if (dt > 0) kmh = (metresBetween(prev.lat, prev.lon, last.lat, last.lon) / 1000) / dt;
+                        if (dt > 0) kmh = (getDistanceFromLatLonInMeter(prev.lat, prev.lon, last.lat, last.lon) / 1000) / dt;
                     }
                 }
                 $slide.find('.hh-live-kmh').text(kmh === null ? '–' : String(Math.round(kmh)));
@@ -1506,5 +1497,5 @@ var HomeHero = (function () {
 
     return { render: render, refresh: refresh, setGeofenceValidator: setGeofenceValidator, setPermitProvider: setPermitProvider, isVendorTechnician: isVendorTechnician,
         // exposed for tests
-        _toRowEdge: AppListing.toRowEdge, _listingKpi: listingKpi, _isHomeLevel: isHomeLevel, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: metresBetween };
+        _toRowEdge: AppListing.toRowEdge, _listingKpi: listingKpi, _isHomeLevel: isHomeLevel, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: getDistanceFromLatLonInMeter };
 })();

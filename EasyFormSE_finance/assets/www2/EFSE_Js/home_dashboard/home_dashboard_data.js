@@ -220,19 +220,6 @@ var HomeDashboardData = (function () {
         get_pending_upload_counts(onDone);
     }
 
-    function toRad(deg) {
-        return deg * Math.PI / 180;
-    }
-
-    function haversineKm(lat1, lon1, lat2, lon2) {
-        var R = 6371;
-        var dLat = toRad(lat2 - lat1);
-        var dLon = toRad(lon2 - lon1);
-        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
-
     function sumHaversineKm(points) {
         var total = 0;
         var prev = null;
@@ -241,7 +228,7 @@ var HomeDashboardData = (function () {
             var lon = parseFloat(points[i].lon);
             if (isNaN(lat) || isNaN(lon)) continue;
             if (prev) {
-                total += haversineKm(prev.lat, prev.lon, lat, lon);
+                total += getDistanceFromLatLonInMeter(prev.lat, prev.lon, lat, lon) / 1000;
             }
             prev = { lat: lat, lon: lon };
         }
