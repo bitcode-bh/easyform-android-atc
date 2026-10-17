@@ -32,6 +32,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.Dash;
+import com.google.android.gms.maps.model.Gap;
+import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -48,7 +51,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import com.sky.atc.easyformse.trip.engine.OverspeedEpisodes;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -860,7 +866,11 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
                 final List<TrackPathReader.TrackPoint> loaded = points;
                 final long tripStart = start;
                 final float meters = sumPathMeters(points);
-                final int violations = countViolationRuns(points);
+                // The engine's recorded events; a downloaded trip has none on
+                // this phone, so its map points are counted instead.
+                int events = TrackPathReader.countSpeedEvents(start, max);
+                final int violations = (events == 0 && json != null && json.length() > 0)
+                        ? countViolationRuns(points) : events;
                 runOnUiThread(new Runnable() {
                     @Override public void run() {
                         pathLoading = false;
@@ -916,10 +926,12 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         }
 
         // Group consecutive points of the same kind so a long trip draws a few
-        // polylines rather than one per pair.
+        // polylines rather than one per pair. In a merged day route, the join
+        // from one trip's end to the next trip's start is drawn dashed.
         int runStart = 0;
         for (int i = 1; i <= points.size(); i++) {
-            boolean endOfRun = (i == points.size())
+            boolean join = i < points.size() && points.get(i).joinBefore;
+            boolean endOfRun = (i == points.size()) || join
                     || (points.get(i).violation != points.get(runStart).violation);
             if (!endOfRun) {
                 continue;
@@ -929,10 +941,17 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
             for (int j = runStart; j < i; j++) {
                 options.add(points.get(j).position);
             }
-            if (i < points.size()) {
+            if (i < points.size() && !join) {
                 options.add(points.get(i).position);
             }
             pathOverlays.add(map.addPolyline(options));
+            if (join) {
+                pathOverlays.add(map.addPolyline(new PolylineOptions()
+                        .width(8f)
+                        .color(MapConstants.COLOR_JOIN)
+                        .pattern(Arrays.<PatternItem>asList(new Dash(24f), new Gap(16f)))
+                        .add(points.get(i - 1).position, points.get(i).position)));
+            }
             runStart = i;
         }
         updateTripStatsCard();
@@ -988,6 +1007,9 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         float total = 0f;
         float[] out = new float[1];
         for (int i = 1; i < points.size(); i++) {
+            if (points.get(i).joinBefore) {
+                continue;   // a join between trips, not distance driven
+            }
             LatLng a = points.get(i - 1).position;
             LatLng b = points.get(i).position;
             Location.distanceBetween(a.latitude, a.longitude, b.latitude, b.longitude, out);
@@ -999,18 +1021,26 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         return total;
     }
 
+    // Over-speed points less than 2 minutes apart are one episode, as in the
+    // engine (OverspeedEpisodes.MERGE_GAP_MS): ordinary track points landing
+    // between them while speeding don't split it. Points without a time fall
+    // back to counting unbroken runs.
     private static int countViolationRuns(List<TrackPathReader.TrackPoint> points) {
         int runs = 0;
         boolean inRun = false;
+        long lastViolationMs = 0L;
         for (int i = 0; i < points.size(); i++) {
-            if (points.get(i).violation) {
-                if (!inRun) {
-                    runs++;
-                    inRun = true;
-                }
-            } else {
-                inRun = false;
+            TrackPathReader.TrackPoint p = points.get(i);
+            if (!p.violation) {
+                if (p.timeMs <= 0L) inRun = false;
+                continue;
             }
+            boolean newEpisode = !inRun
+                    || (p.timeMs > 0L && lastViolationMs > 0L
+                        && p.timeMs - lastViolationMs > OverspeedEpisodes.MERGE_GAP_MS);
+            if (newEpisode) runs++;
+            inRun = true;
+            if (p.timeMs > 0L) lastViolationMs = p.timeMs;
         }
         return runs;
     }

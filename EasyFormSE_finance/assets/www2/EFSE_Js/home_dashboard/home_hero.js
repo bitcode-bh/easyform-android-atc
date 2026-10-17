@@ -834,14 +834,6 @@ var HomeHero = (function () {
         return km;
     }
 
-    function overspeedRuns(pts) {
-        var runs = 0, inRun = false;
-        for (var i = 0; i < pts.length; i++) {
-            if (pts[i].over) { if (!inRun) runs++; inRun = true; } else inRun = false;
-        }
-        return runs;
-    }
-
     function liveClockTick() {
         var $s = live.$slide;
         if (!$s || !live.startMs) return;
@@ -896,7 +888,10 @@ var HomeHero = (function () {
             var now = Date.now();
             HomeDashboardData.getTripPath(startMs, now, function (rows) {
                 var pts = livePoints(rows);
-                var km = liveDistanceKm(pts);
+                // Prefer the native engine's distance (every trusted fix); the
+                // stored track points are 300 m apart and cut corners.
+                var engineM = parseFloat(trip.engine_m);
+                var km = (!isNaN(engineM) && engineM > 0) ? engineM / 1000 : liveDistanceKm(pts);
                 var hours = (now - startMs) / 3600000;
                 var last = pts.length ? pts[pts.length - 1] : null;
                 live.lastFixMs = last ? last.ms : 0;
@@ -920,7 +915,7 @@ var HomeHero = (function () {
                         var k = LIVE_EVENT_BUCKETS[String(evRows[i].Event_type || '').trim().toLowerCase()];
                         if (k) b[k] += parseInt(evRows[i].c, 10) || 0;
                     }
-                    var viol = Math.max(b.speed, overspeedRuns(pts)) + b.accel + b.brake + b.call;
+                    var viol = b.speed + b.call;   // recorded events, as on the Trips page
                     $slide.find('.hh-live-viol').text(String(viol));
                     $slide.find('.hh-live-call').text(String(b.call));
                     live.timer = setTimeout(function () { pollLive($slide); }, LIVE_POLL_MS);

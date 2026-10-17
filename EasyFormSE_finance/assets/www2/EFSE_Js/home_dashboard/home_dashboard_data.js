@@ -607,19 +607,25 @@ var HomeDashboardData = (function () {
     // getTripStatus / TrackPathReader); anything else is an ended row.
     // Ordered by _id desc (autoincrement) — min_milli is TEXT so we don't
     // CAST. Cap keeps the sheet snappy on long-lived devices.
+    // engine_m: the native trip engine's measured distance (see getLiveTrip);
+    // trips recorded before the engine existed have none.
     function getTripList(startMs, endMs, onDone) {
         var start = parseInt(startMs, 10);
         var end = parseInt(endMs, 10);
         if (isNaN(start)) start = 0;
         if (isNaN(end) || end <= 0) end = Date.now();
-        sql(
-            "select lp._id, lp.tid, lp.sid, tm.server_task_id, lp.trip_status, lp.min_milli, lp.max_milli, lp.site_name, lp.unique_trip_id, lp.issend, lp.distance from lat_plug lp left join task_master tm on tm.tid = lp.tid where (lp.min_milli+0) >= " + start + " and (lp.min_milli+0) <= " + end + " order by lp._id desc limit 80",
-            function (e) {
-                var rows = [];
-                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
-                onDone(rows);
-            },
-            function () { onDone([]); }
+        var cols = "lp._id, lp.tid, lp.sid, tm.server_task_id, lp.trip_status, lp.min_milli, lp.max_milli, lp.site_name, lp.unique_trip_id, lp.issend, lp.distance";
+        var rest = " from lat_plug lp left join task_master tm on tm.tid = lp.tid where (lp.min_milli+0) >= " + start + " and (lp.min_milli+0) <= " + end + " order by lp._id desc limit 80";
+        function parse(e) {
+            var rows = [];
+            try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+            return rows;
+        }
+        sql("select " + cols + ", (select s.distance_m from trip_engine_state s where s.tid = lp.tid) as engine_m" + rest,
+            function (e) { onDone(parse(e)); },
+            function () {
+                sql("select " + cols + rest, function (e) { onDone(parse(e)); }, function () { onDone([]); });
+            }
         );
     }
 
@@ -642,16 +648,24 @@ var HomeDashboardData = (function () {
     }
 
     // The trip running now (trip_status 0, as in getTripStatus), or null.
-    // SELECT only.
+    // SELECT only. engine_m is the distance the native trip engine measured from every
+    // trusted fix (trip_engine_state). That table appears with the first
+    // fix of a trip, so fall back to the plain query until it exists.
     function getLiveTrip(onDone) {
-        sql(
-            "select tid, min_milli, site_name from lat_plug where trip_status = 0 order by _id desc limit 1",
-            function (e) {
-                var rows = [];
-                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
-                onDone(rows.length ? rows[0] : null);
-            },
-            function () { onDone(null); }
+        var base = "select tid, min_milli, site_name from lat_plug where trip_status = 0 order by _id desc limit 1";
+        var withEngine = "select l.tid, l.min_milli, l.site_name, "
+            + "(select s.distance_m from trip_engine_state s where s.tid = l.tid) as engine_m "
+            + "from lat_plug l where l.trip_status = 0 order by l._id desc limit 1";
+        function parse(e) {
+            var rows = [];
+            try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+            return rows.length ? rows[0] : null;
+        }
+        sql(withEngine,
+            function (e) { onDone(parse(e)); },
+            function () {
+                sql(base, function (e) { onDone(parse(e)); }, function () { onDone(null); });
+            }
         );
     }
 

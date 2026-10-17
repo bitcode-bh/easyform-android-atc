@@ -527,7 +527,7 @@
 }
 .trip-stats-events {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 6px;
     padding-top: 6px;
     border-top: 1px solid #dedfe0;
@@ -596,6 +596,66 @@
 /* The trip shown in the main card. */
 #trip_list_ul > li.trip-li.is-picked { background: #e3e6f5; }
 #trip_list_ul > li.trip-li.is-picked .item-title { color: #2a3086; }
+/* Trips grouped by workday, then Day (6 AM–6 PM) and Night (6 PM–6 AM). */
+#trip_list_ul > li.trip-day-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: auto;
+    min-height: 46px;
+    padding: 6px 8px 6px 16px;
+    box-sizing: border-box;
+    background: #e3e5e9;
+    border-bottom: 1px solid #dedfe0;
+}
+#trip_list_ul .trip-day-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0D1829;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#trip_list_ul .trip-day-km {
+    flex: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0D1829;
+    font-variant-numeric: tabular-nums;
+}
+#trip_list_ul .trip-day-route {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: var(--control-radius, 10px);
+    background: var(--app-action-blue, #2a3086);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none;
+}
+#trip_list_ul .trip-day-route:active { opacity: 0.85; }
+#trip_list_ul .trip-day-route i { font-size: 12px; color: #fff; }
+#trip_list_ul > li.trip-shift-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: auto;
+    min-height: 30px;
+    padding: 4px 16px;
+    box-sizing: border-box;
+    font-size: 12px;
+    color: #6A6C74;
+}
+#trip_list_ul .trip-shift-head i { font-size: 12px; width: 14px; text-align: center; color: #c07a12; }
+#trip_list_ul .trip-shift-head.is-night i { color: #4b5ab8; }
+#trip_list_ul .trip-shift-name { font-weight: 600; color: #3d4250; }
+#trip_list_ul .trip-shift-km { margin-left: auto; font-variant-numeric: tabular-nums; }
 .trip-list-empty {
     text-align: center;
     color: #8b93a7;

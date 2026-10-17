@@ -20,10 +20,23 @@ public final class TrackPathReader {
     public static class TrackPoint {
         public final LatLng position;
         public final boolean violation;
+        /**
+         * True when this point starts a new trip in a merged day route: the line from the previous
+         * point is a join between trips, not road driven, so it's drawn dashed and not counted.
+         */
+        public final boolean joinBefore;
+        /** Recorded time (ms), or 0 when unknown. */
+        public final long timeMs;
 
-        TrackPoint(LatLng position, boolean violation) {
+        TrackPoint(LatLng position, boolean violation, long timeMs) {
+            this(position, violation, false, timeMs);
+        }
+
+        TrackPoint(LatLng position, boolean violation, boolean joinBefore, long timeMs) {
             this.position = position;
             this.violation = violation;
+            this.joinBefore = joinBefore;
+            this.timeMs = timeMs;
         }
     }
 
@@ -79,7 +92,7 @@ public final class TrackPathReader {
                 return points;
             }
             c = database.rawQuery(
-                    "select lat,lon,tripflag from track_master where tripflag IN (2,3) and date>="
+                    "select lat,lon,tripflag,date from track_master where tripflag IN (2,3) and date>="
                             + trip.minMilli + " order by date", null);
             if (c.getCount() == 0) {
                 return points;
@@ -93,7 +106,8 @@ public final class TrackPathReader {
                 try {
                     points.add(new TrackPoint(
                             new LatLng(Double.parseDouble(lat), Double.parseDouble(lon)),
-                            MapConstants.TRIPFLAG_VIOLATION.equals(c.getString(2))));
+                            MapConstants.TRIPFLAG_VIOLATION.equals(c.getString(2)),
+                            parseTime(c.getString(3))));
                 } catch (NumberFormatException ignored) {
                     // A malformed row must not drop the rest of the path.
                 }
@@ -111,6 +125,35 @@ public final class TrackPathReader {
     // A path handed over by the caller: JSON array of [lat, lon, tripflag].
     // Used for trips downloaded from the server; nothing is read from, or
     // written to, the local tables.
+    /**
+     * Over-speed events the engine recorded in a window (maxMilli <= 0: until now). These are
+     * the violations; red map points also mark short bursts below the configured duration.
+     */
+    public static int countSpeedEvents(long minMilli, long maxMilli) {
+        if (minMilli <= 0) return 0;
+        Cursor c = null;
+        try {
+            SQLiteDatabase database = sqlitewraper.getDatabase();
+            if (database == null) return 0;
+            String sql = "select count(*) from Events where lower(Event_type) = 'speed' and (Event_strt+0) >= " + minMilli;
+            if (maxMilli > 0) sql += " and (Event_strt+0) <= " + maxMilli;
+            c = database.rawQuery(sql, null);
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        } catch (Exception e) {
+            return 0;
+        } finally {
+            if (c != null) c.close();
+        }
+    }
+
+    private static long parseTime(String s) {
+        try {
+            return s == null ? 0L : Long.parseLong(s.trim());
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
+    }
+
     public static List<TrackPoint> fromJson(String json) {
         List<TrackPoint> points = new ArrayList<TrackPoint>();
         if (json == null || json.length() == 0) {
@@ -129,7 +172,9 @@ public final class TrackPathReader {
                     continue;
                 }
                 points.add(new TrackPoint(new LatLng(lat, lon),
-                        MapConstants.TRIPFLAG_VIOLATION.equals(String.valueOf(p.optInt(2, 2)))));
+                        MapConstants.TRIPFLAG_VIOLATION.equals(String.valueOf(p.optInt(2, 2))),
+                        !points.isEmpty() && p.optInt(3, 0) == 1,
+                        p.optLong(4, 0L)));
             }
         } catch (Exception e) {
             // A malformed payload draws no path rather than crashing the map.
@@ -150,7 +195,7 @@ public final class TrackPathReader {
             if (database == null) {
                 return points;
             }
-            String sql = "select lat,lon,tripflag from track_master where tripflag IN (2,3) and date>="
+            String sql = "select lat,lon,tripflag,date from track_master where tripflag IN (2,3) and date>="
                     + minMilli;
             if (maxMilli > 0) {
                 sql += " and date<=" + maxMilli;
@@ -169,7 +214,8 @@ public final class TrackPathReader {
                 try {
                     points.add(new TrackPoint(
                             new LatLng(Double.parseDouble(lat), Double.parseDouble(lon)),
-                            MapConstants.TRIPFLAG_VIOLATION.equals(c.getString(2))));
+                            MapConstants.TRIPFLAG_VIOLATION.equals(c.getString(2)),
+                            parseTime(c.getString(3))));
                 } catch (NumberFormatException ignored) {
                 }
             }

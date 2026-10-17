@@ -36,6 +36,8 @@ public final class MapConstants {
     public static final int COLOR_COVERED = Color.parseColor("#2E7D32");
     public static final int COLOR_VIOLATION = Color.parseColor("#D84315");
     public static final int COLOR_PLANNED = Color.parseColor("#1565C0");
+    /** Dashed join between two trips in a merged day route. */
+    public static final int COLOR_JOIN = Color.parseColor("#9E9E9E");
     public static final int COLOR_RADIUS_STROKE = Color.parseColor("#66215BA8");
     public static final int COLOR_RADIUS_FILL = Color.parseColor("#14215BA8");
 

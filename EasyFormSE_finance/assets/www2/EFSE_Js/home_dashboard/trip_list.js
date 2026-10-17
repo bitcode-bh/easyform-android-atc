@@ -193,13 +193,26 @@ var TripListSheet = (function () {
         return merged;
     }
 
-    function serverViolationRuns(path) {
-        var runs = 0, inRun = false;
-        for (var i = 0; i < (path || []).length; i++) {
-            if (path[i][3] === 3) { if (!inRun) { runs++; inRun = true; } }
-            else inRun = false;
+    // Over-speed points less than this apart are one episode, as in the
+    // engine (OverspeedEpisodes.MERGE_GAP_MS). Ordinary track points that land
+    // between them while speeding don't split it.
+    var OVERSPEED_MERGE_MS = 2 * 60 * 1000;
+
+    function countEpisodes(times) {
+        var runs = 0, last = -Infinity;
+        for (var i = 0; i < times.length; i++) {
+            if (times[i] - last > OVERSPEED_MERGE_MS) runs++;
+            last = times[i];
         }
         return runs;
+    }
+
+    function serverViolationRuns(path) {
+        var times = [];
+        for (var i = 0; i < (path || []).length; i++) {
+            if (path[i][3] === 3) times.push(path[i][2] || 0);
+        }
+        return countEpisodes(times);
     }
 
     function setStats(kmText, timeText, violText) {
@@ -268,20 +281,11 @@ var TripListSheet = (function () {
     }
 
     function violationRuns(pts) {
-        if (!pts || !pts.length) return 0;
-        var runs = 0;
-        var inRun = false;
-        for (var i = 0; i < pts.length; i++) {
-            if (pts[i].violation) {
-                if (!inRun) {
-                    runs++;
-                    inRun = true;
-                }
-            } else {
-                inRun = false;
-            }
+        var times = [];
+        for (var i = 0; i < (pts || []).length; i++) {
+            if (pts[i].violation) times.push(pts[i].ms);
         }
-        return runs;
+        return countEpisodes(times);
     }
 
     function formatKm(km) {
@@ -314,7 +318,11 @@ var TripListSheet = (function () {
             var row = rows[j];
             if (row._server) continue;   // distance came with the download
             var live = String(row.trip_status) === '0';
-            var km = tripPathKm(pts, row.min_milli, row.max_milli, live);
+            // The native engine's distance (every trusted fix) when the trip
+            // has one; otherwise the stored track points, 300 m apart.
+            var engineM = parseFloat(row.engine_m);
+            var km = (!isNaN(engineM) && engineM > 0) ? engineM / 1000
+                : tripPathKm(pts, row.min_milli, row.max_milli, live);
             row._km = km;
             row._speedRuns = violationRuns(tripPts(pts, row.min_milli, row.max_milli, live));
             if (dataOnly) continue;
@@ -340,13 +348,15 @@ var TripListSheet = (function () {
         else el.classList.remove('has-events');
     }
 
-    // One trip's four violation counts, exactly as its own card shows them.
+    // One trip's violation counts, exactly as its own card shows them. Harsh
+    // acceleration and braking are no longer tracked.
+    // Over-speeding counts the engine's recorded events: a short burst below
+    // the configured duration leaves red map points but is not a violation.
+    // A downloaded trip may lack its events, so its map points count too.
     function rowViolations(row) {
         var ev = bucketEvents(row._events || {});
         return {
-            speed: Math.max(ev.speed, row._speedRuns || 0),
-            accel: ev.accel,
-            brake: ev.brake,
+            speed: row._server ? Math.max(ev.speed, row._speedRuns || 0) : ev.speed,
             call: ev.call
         };
     }
@@ -378,14 +388,14 @@ var TripListSheet = (function () {
     }
 
     function totalsFor(rows) {
-        var t = { trips: rows.length, km: 0, speed: 0, accel: 0, brake: 0, call: 0, live: false, liveMs: 0 };
+        var t = { trips: rows.length, km: 0, speed: 0, call: 0, live: false, liveMs: 0 };
         for (var i = 0; i < rows.length; i++) {
             t.km += rows[i]._km || 0;
             var v = rowViolations(rows[i]);
-            t.speed += v.speed; t.accel += v.accel; t.brake += v.brake; t.call += v.call;
+            t.speed += v.speed; t.call += v.call;
             if (String(rows[i].trip_status) === '0') { t.live = true; t.liveMs = tripDurationMs(rows[i], true); }
         }
-        t.violations = t.speed + t.accel + t.brake + t.call;
+        t.violations = t.speed + t.call;
         return t;
     }
 
@@ -438,10 +448,8 @@ var TripListSheet = (function () {
         // Distance and events arrive after the list is drawn.
         var known = summaryReady;
         setStats(known || row._km != null ? formatKm(row._km || 0) : '…', formatDuration(row.min_milli, row.max_milli, live) || '—',
-            known ? String(v.speed + v.accel + v.brake + v.call) : '…');
+            known ? String(v.speed + v.call) : '…');
         setEventStat('trip_stat_ev_speed', v.speed);
-        setEventStat('trip_stat_ev_accel', v.accel);
-        setEventStat('trip_stat_ev_brake', v.brake);
         setEventStat('trip_stat_ev_call', v.call);
     }
 
@@ -480,20 +488,16 @@ var TripListSheet = (function () {
     function paintSummaryLoading(rows, timeMs) {
         setStats('…', rows.length ? formatTotalDuration(timeMs) : '0m', '…');
         setEventStat('trip_stat_ev_speed', null);
-        setEventStat('trip_stat_ev_accel', null);
-        setEventStat('trip_stat_ev_brake', null);
         setEventStat('trip_stat_ev_call', null);
     }
 
     function paintSummary(rows, timeMs) {
         var n = rows.length;
         var tot = totalsFor(rows);
-        var km = tot.km, speed = tot.speed, accel = tot.accel, brake = tot.brake, call = tot.call;
+        var km = tot.km, speed = tot.speed, call = tot.call;
         var violations = tot.violations;
         setStats(formatKm(km), n ? formatTotalDuration(timeMs) : '0m', String(violations));
         setEventStat('trip_stat_ev_speed', speed);
-        setEventStat('trip_stat_ev_accel', accel);
-        setEventStat('trip_stat_ev_brake', brake);
         setEventStat('trip_stat_ev_call', call);
     }
 
@@ -531,14 +535,174 @@ var TripListSheet = (function () {
             if (seq !== loadSeq) return;
             // Sets each phone-recorded trip's own distance and overspeed runs.
             updateRowDistances(rows, parsePts(pathRows));
+            paintGroupTotals(rows);
             withEvents();
         });
+    }
+
+    // Trips are grouped by workday, each split into Day (6 AM–6 PM) and Night
+    // (6 PM–6 AM the next morning), by when the trip started. A trip at 2 AM
+    // belongs to the previous day's night.
+    var DAY_START_H = 6;
+    var NIGHT_START_H = 18;
+    var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    function shiftOf(ms) {
+        var n = parseInt(ms, 10);
+        if (isNaN(n) || n <= 0) return { day: '', part: 'day' };
+        var d = new Date(n);
+        var h = d.getHours();
+        if (h < DAY_START_H) {
+            d = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
+            return { day: ymd(d), part: 'night' };
+        }
+        return { day: ymd(d), part: h < NIGHT_START_H ? 'day' : 'night' };
+    }
+
+    // The workday a moment belongs to, as yyyy-mm-dd.
+    function workdayOf(ms) {
+        return shiftOf(ms).day;
+    }
+
+    function dayLabel(key) {
+        var p = String(key).split('-');
+        if (p.length !== 3) return '';
+        var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+        var date = WEEKDAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+        var today = workdayOf(Date.now());
+        var y = new Date(); y = new Date(y.getFullYear(), y.getMonth(), y.getDate() - 1);
+        var yesterday = workdayOf(y.getTime() + DAY_START_H * 3600000 + 60000);
+        if (key === today) return 'Today · ' + date;
+        if (key === yesterday) return 'Yesterday · ' + date;
+        return date;
+    }
+
+    function groupKm(rows, key, part) {
+        var km = 0, n = 0;
+        for (var i = 0; i < rows.length; i++) {
+            var s = shiftOf(rows[i].min_milli);
+            if (s.day !== key || (part && s.part !== part)) continue;
+            km += rows[i]._km || 0;
+            n++;
+        }
+        return { km: km, n: n };
+    }
+
+    function tripsText(n) {
+        return n + (n === 1 ? ' trip' : ' trips');
+    }
+
+    // Day and shift totals, once each trip's distance is known.
+    function paintGroupTotals(rows) {
+        var box = document.getElementById('trip_list_ul');
+        if (!box) return;
+        $(box).find('.trip-day-km').each(function () {
+            var t = groupKm(rows, $(this).attr('data-day'), null);
+            $(this).text(formatKm(t.km));
+        });
+        $(box).find('.trip-shift-km').each(function () {
+            var t = groupKm(rows, $(this).attr('data-day'), $(this).attr('data-part'));
+            $(this).text(tripsText(t.n) + ' · ' + formatKm(t.km));
+        });
+    }
+
+    // Keeps a long merged path small enough for the map: every violation
+    // point, each trip's first and last point, and an even sample of the rest.
+    var MAX_ROUTE_POINTS = 3000;
+    function thinRoute(path) {
+        if (path.length <= MAX_ROUTE_POINTS) return path;
+        var step = Math.ceil(path.length / MAX_ROUTE_POINTS);
+        var out = [];
+        for (var i = 0; i < path.length; i++) {
+            var keep = i % step === 0 || i === path.length - 1 || path[i][3] === 3 || path[i][4]
+                || (i + 1 < path.length && path[i + 1][4]);
+            if (keep) out.push(path[i]);
+        }
+        return out;
+    }
+
+    // All trips of one workday on the map as one route, in time order. The
+    // join from one trip's end to the next trip's start is drawn dashed: it
+    // was not recorded, so it is not shown as driven road.
+    function openDayRoute(rows, key) {
+        var trips = [];
+        for (var i = 0; i < rows.length; i++) {
+            if (shiftOf(rows[i].min_milli).day === key) trips.push(rows[i]);
+        }
+        if (!trips.length) return;
+        trips.sort(function (a, b) { return (parseInt(a.min_milli, 10) || 0) - (parseInt(b.min_milli, 10) || 0); });
+        var minMs = parseInt(trips[0].min_milli, 10);
+        var maxMs = 0, km = 0;
+        for (var t = 0; t < trips.length; t++) {
+            var live = String(trips[t].trip_status) === '0';
+            var end = live ? Date.now() : parseInt(trips[t].max_milli, 10);
+            if (!isNaN(end) && end > maxMs) maxMs = end;
+            km += trips[t]._km || 0;
+        }
+        var title = (key === workdayOf(Date.now()) ? "Today's route" : dayLabel(key) + ' route')
+            + ' · ' + tripsText(trips.length) + ' · ' + formatKm(km);
+
+        function build(localPts) {
+            var path = [];
+            for (var k = 0; k < trips.length; k++) {
+                var tr = trips[k];
+                var pts;
+                if (tr._server) {
+                    pts = tr._path || [];
+                } else {
+                    var sub = tripPts(localPts, tr.min_milli, tr.max_milli, String(tr.trip_status) === '0');
+                    pts = [];
+                    for (var j = 0; j < sub.length; j++) pts.push([sub[j].lat, sub[j].lon, sub[j].ms, sub[j].violation ? 3 : 2]);
+                }
+                for (var q = 0; q < pts.length; q++) {
+                    var join = q === 0 && path.length > 0;
+                    path.push([pts[q][0], pts[q][1], pts[q][2], pts[q][3], join ? 1 : 0]);
+                }
+            }
+            if (!path.length) {
+                alert('No route was recorded for this day.');
+                return;
+            }
+            if (typeof TripSiteMap !== 'undefined' && TripSiteMap.openRoute) {
+                TripSiteMap.openRoute(minMs, maxMs, title, thinRoute(path));
+            }
+        }
+        if (typeof HomeDashboardData !== 'undefined' && HomeDashboardData.getTripPath) {
+            HomeDashboardData.getTripPath(minMs, maxMs || Date.now(), function (pathRows) { build(parsePts(pathRows)); });
+        } else {
+            build([]);
+        }
+    }
+
+    function dayHeadHtml(key, isToday) {
+        return '<li class="trip-day-head">'
+            + '<div class="trip-day-title">' + esc(dayLabel(key)) + '</div>'
+            + '<span class="trip-day-km" data-day="' + esc(key) + '">…</span>'
+            + '<a href="#" class="trip-day-route" data-day="' + esc(key) + '" aria-label="'
+            + (isToday ? "Open today's route" : 'Open this day\'s route') + '">'
+            + '<i class="fa-solid fa-route" aria-hidden="true"></i>'
+            + (isToday ? "Today's route" : 'Route') + '</a>'
+            + '</li>';
+    }
+
+    function shiftHeadHtml(key, part) {
+        var night = part === 'night';
+        return '<li class="trip-shift-head' + (night ? ' is-night' : '') + '">'
+            + '<i class="fa-solid ' + (night ? 'fa-moon' : 'fa-sun') + '" aria-hidden="true"></i>'
+            + '<span class="trip-shift-name">' + (night ? 'Night · 6 PM–6 AM' : 'Day · 6 AM–6 PM') + '</span>'
+            + '<span class="trip-shift-km" data-day="' + esc(key) + '" data-part="' + part + '">…</span>'
+            + '</li>';
     }
 
     function renderRows(rows) {
         var box = document.getElementById('trip_list_ul');
         if (!box) return;
         rows = rows || [];
+        // Newest first, so each day reads Night then Day, as the hours ran.
+        rows.sort(function (x, y) {
+            return (parseInt(y.min_milli, 10) || 0) - (parseInt(x.min_milli, 10) || 0);
+        });
         pickedIdx = -1;
         setCount(rows.length);
         refreshListStats(rows);
@@ -548,8 +712,20 @@ var TripListSheet = (function () {
         }
 
         var html = '';
+        var lastDay = null, lastPart = null;
+        var todayKey = workdayOf(Date.now());
         for (var j = 0; j < rows.length; j++) {
             var row = rows[j];
+            var shift = shiftOf(row.min_milli);
+            if (shift.day !== lastDay) {
+                html += dayHeadHtml(shift.day, shift.day === todayKey);
+                lastDay = shift.day;
+                lastPart = null;
+            }
+            if (shift.part !== lastPart) {
+                html += shiftHeadHtml(shift.day, shift.part);
+                lastPart = shift.part;
+            }
             var live = String(row.trip_status) === '0';
             var title = rowTitle(row, live, row._km);
             var sub = rowSubtitle(row, live);
@@ -574,6 +750,12 @@ var TripListSheet = (function () {
                 + '</li>';
         }
         box.innerHTML = html;
+        paintGroupTotals(rows);
+        $(box).find('.trip-day-route').off('click.tripDay').on('click.tripDay', function (ev) {
+            ev.preventDefault();
+            openDayRoute(rows, $(this).attr('data-day'));
+            return false;
+        });
         $(box).find('.trip-list-item').off('click.tripList').on('click.tripList', function (ev) {
             ev.preventDefault();
             var idx = parseInt($(this).attr('data-idx'), 10);

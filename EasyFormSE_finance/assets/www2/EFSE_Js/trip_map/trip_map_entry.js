@@ -110,7 +110,10 @@ var TripSiteMap = (function () {
             if (pathPoints && pathPoints.length) {
                 var pts = [];
                 for (var i = 0; i < pathPoints.length; i++) {
-                    pts.push([pathPoints[i][0], pathPoints[i][1], pathPoints[i][3] === 3 ? 3 : 2]);
+                    // [4] marks the first point of the next trip in a merged
+                    // day route; the map draws the join to it dashed.
+                    // [2] is the point's time, used to count over-speed episodes.
+                    pts.push([pathPoints[i][0], pathPoints[i][1], pathPoints[i][3] === 3 ? 3 : 2, pathPoints[i][4] ? 1 : 0, pathPoints[i][2] || 0]);
                 }
                 payload.path_points = pts;
             }
