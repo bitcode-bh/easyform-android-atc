@@ -15,6 +15,10 @@ import com.github.megatronking.stringfog.annotation.StringFogIgnore;
  *   <li>An event needs at least the configured duration of time over the limit, and never less
  *       than {@link #MIN_DURATION_MS}. A GPS gap adds no time.</li>
  * </ul>
+ *
+ * {@link Decision#EVENT} marks the moment the episode qualifies (for the alert on the phone).
+ * The event itself is recorded at {@link Decision#FINISHED}, once the episode is over, so it
+ * carries the real end, duration and top speed.
  */
 @StringFogIgnore
 public final class OverspeedEpisodes {
@@ -28,8 +32,10 @@ public final class OverspeedEpisodes {
         ONGOING,
         /** Below the limit inside an episode, waiting to see if it ends. */
         DIPPING,
-        /** Record the event now. */
-        EVENT
+        /** The episode has just qualified as a violation: alert now. */
+        EVENT,
+        /** A qualified episode is over (no new speeding within the merge gap): record it now. */
+        FINISHED
     }
 
     public static final double MARGIN_MIN_KMH = 5.0;
@@ -42,6 +48,8 @@ public final class OverspeedEpisodes {
 
     private boolean inEpisode;
     private boolean eventRecorded;
+    private boolean finished;
+    private long lastOverMs;
     private long startMs;
     private long lastFixMs;
     private boolean hasLastFix;
@@ -58,6 +66,8 @@ public final class OverspeedEpisodes {
     public void reset() {
         inEpisode = false;
         eventRecorded = false;
+        finished = false;
+        lastOverMs = 0L;
         startMs = 0L;
         lastFixMs = 0L;
         hasLastFix = false;
@@ -77,6 +87,10 @@ public final class OverspeedEpisodes {
         boolean overLimit = speedKmh > limitKmh;
 
         if (!inEpisode) {
+            if (eventRecorded && !finished && endedMs > 0 && nowMs - endedMs >= MERGE_GAP_MS) {
+                finished = true;
+                return Decision.FINISHED;
+            }
             if (speedKmh < startThresholdKmh(limitKmh)) return Decision.NONE;
             inEpisode = true;
             belowSinceMs = 0L;
@@ -86,15 +100,18 @@ public final class OverspeedEpisodes {
                 startMs = nowMs;
                 overMs = 0L;
                 eventRecorded = false;
+                finished = false;
                 maxKmh = 0.0;
                 maxMs = 0L;
             }
+            lastOverMs = nowMs;
             noteMax(nowMs, speedKmh);
             return continuesLast ? Decision.ONGOING : Decision.STARTED;
         }
 
         if (overLimit) {
             belowSinceMs = 0L;
+            lastOverMs = nowMs;
             if (dt > 0 && dt <= GPS_GAP_MS) overMs += dt;
             noteMax(nowMs, speedKmh);
             if (!eventRecorded && overMs >= minDuration) {
@@ -115,6 +132,24 @@ public final class OverspeedEpisodes {
 
     public boolean inEpisode() {
         return inEpisode;
+    }
+
+    /**
+     * Closes a qualified episode that hasn't been recorded yet, e.g. when the trip ends. Returns
+     * true when there is one to record now.
+     */
+    public boolean flush() {
+        if (eventRecorded && !finished) {
+            finished = true;
+            inEpisode = false;
+            return true;
+        }
+        return false;
+    }
+
+    /** When the speeding was last seen. */
+    public long endMs() {
+        return lastOverMs;
     }
 
     public long startMs() {

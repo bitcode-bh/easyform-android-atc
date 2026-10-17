@@ -46,6 +46,9 @@ public class loc_change extends WakefulIntentService {
 	// location distance meter value
 	int meterdistancevalue = 300;
 	String gps_speed;
+	// A bend on a live trip (from newfused): kept even when closer than meterdistancevalue,
+	// so hill curves aren't drawn as straight lines.
+	boolean turnpoint;
 	static ArrayList<Long> arrayList = new ArrayList<>();
 	public loc_change() {
 		super("loc_change");
@@ -66,6 +69,7 @@ public class loc_change extends WakefulIntentService {
 			tripflag = b.getString("tripflag");
 			time = Long.valueOf(b.getString("time"));
 			gps_speed = b.getString("gps_speed");
+			turnpoint = b.getBoolean("turnpoint", false);
 			//if loc is null (that will not happen)
 			if (loc == null) {
 
@@ -516,8 +520,8 @@ public class loc_change extends WakefulIntentService {
 				double dist_m = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 				double distance = R * dist_m * 1000; // convert to
 
-				//insert if the location is 80 meter or more
-				if (distance >  acc + meterdistancevalue)
+				//insert if the location is 300 meter or more away, or is a bend on a live trip
+				if (distance >  acc + meterdistancevalue || (turnpoint && distance > Math.max(20, acc)))
 				{
 					System.out.print("Enter");
 

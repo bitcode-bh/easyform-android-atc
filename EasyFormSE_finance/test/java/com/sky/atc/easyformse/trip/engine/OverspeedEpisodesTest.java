@@ -112,4 +112,35 @@ public class OverspeedEpisodesTest {
         }
         assertEquals(0, events);
     }
+
+    @Test
+    public void finishedEpisodeCarriesTheRealEndAndTopSpeed() {
+        OverspeedEpisodes e = new OverspeedEpisodes();
+        long t = 1_000_000L;
+        int finished = 0;
+        // 5 minutes at 70-90 km/h (top 90 at minute 3), then slow for 3 minutes.
+        for (int i = 0; i < 300; i++) {
+            double v = (i == 180) ? 90 : 72;
+            e.onFix(t + i * 1000L, v, LIMIT, CONFIGURED);
+        }
+        for (int i = 300; i < 480; i++) {
+            if (e.onFix(t + i * 1000L, 40, LIMIT, CONFIGURED) == OverspeedEpisodes.Decision.FINISHED) finished++;
+        }
+        assertEquals(1, finished);
+        assertEquals(t, e.startMs());
+        assertEquals(t + 299_000L, e.endMs());
+        assertEquals(90.0, e.maxKmh(), 0.001);
+        assertEquals(299_000L, e.overMs());
+    }
+
+    @Test
+    public void flushRecordsAnEpisodeStillOpenAtTripEnd() {
+        OverspeedEpisodes e = new OverspeedEpisodes();
+        for (int i = 0; i < 30; i++) e.onFix(1_000L + i * 1000L, 72, LIMIT, CONFIGURED);
+        assertEquals(true, e.flush());
+        assertEquals(false, e.flush());   // only once
+        OverspeedEpisodes shortOne = new OverspeedEpisodes();
+        for (int i = 0; i < 5; i++) shortOne.onFix(1_000L + i * 1000L, 72, LIMIT, CONFIGURED);
+        assertEquals(false, shortOne.flush());   // never qualified: nothing to record
+    }
 }

@@ -63,6 +63,10 @@ public class SpeedViolation {
     private static SQLiteDatabase database = sqlitewraper.getDatabase();
     // Episode rules (margin, end after 5 s below, merging, minimum duration) live here.
     private static final OverspeedEpisodes episodes = new OverspeedEpisodes();
+    private static double episodeStartLat, episodeStartLon, lastLat, lastLon;
+    private static float episodeLimitKmh;
+    private static String episodeTid = "0";
+    private static DrivingContext.Context episodeContext = DrivingContext.Context.UNKNOWN;
     static MySharedPreferences pref;
 
     /**
@@ -82,6 +86,7 @@ public class SpeedViolation {
             return;
         }
         if (tripStatus() <= 0) {
+            flushPending();
             episodes.reset();
             return;
         }
@@ -92,6 +97,8 @@ public class SpeedViolation {
 
         switch (episodes.onFix(now, ac_speed, limit, configuredDurationMs())) {
             case STARTED:
+                episodeStartLat = lat;
+                episodeStartLon = lon;
                 Log.d("##SPEED_DETECT", String.valueOf(ac_speed));
                 LogUtils.writeAttendanceLogToFile(String.valueOf(ac_speed), "##SPEED_DETECT");
                 //tripflag=3 marks the location as a speed violation point on the map
@@ -105,11 +112,40 @@ public class SpeedViolation {
                 }
                 break;
             case EVENT:
+                // Qualified: alert now. The event is recorded when the episode is over, so it
+                // carries the real end, duration and top speed.
                 insertIntoTrackMaster(lat, lon, provider, speed, now, String.valueOf(acc), gps_speed);
-                recordEvent(lat, lon, now, ac_speed);
+                episodeContext = DrivingContext.current(true, pref.getString("vehicle_type", "Private-2W"), now);
+                episodeLimitKmh = limit;
+                episodeTid = gettid();
+                if (DrivingContext.counts(episodeContext)) {
+                    new Handler(Looper.getMainLooper()).post(SpeedViolation::speedViolationAlert);
+                }
+                break;
+            case FINISHED:
+                recordEvent(lastLat, lastLon);
                 break;
             default:
                 break;
+        }
+        if (episodes.inEpisode()) {
+            lastLat = lat;
+            lastLon = lon;
+        }
+    }
+
+    /**
+     * Records a qualified episode that hasn't been recorded yet, e.g. when the trip ends or the
+     * tracking service stops.
+     */
+    public static void flushPending() {
+        try {
+            if (episodes.flush()) {
+                if (pref == null) pref = sqlitewraper.getSecureShared("MyPref");
+                recordEvent(lastLat, lastLon);
+            }
+        } catch (Exception e) {
+            Log.e("SPEED", "flush failed", e);
         }
     }
 
@@ -125,49 +161,55 @@ public class SpeedViolation {
         return 120000L;
     }
 
-    /** One Events row for the episode, uploaded for the server alert, plus the alert on the phone. */
-    private static void recordEvent(double lat, double lon, long now, float ac_speed) {
+    /**
+     * One Events row for a finished episode: where and when the speeding started, when it ended,
+     * how long it lasted, the time spent over the limit and the top speed. Uploaded for the server.
+     */
+    private static void recordEvent(double endLat, double endLon) {
         try {
             long start = episodes.startMs();
+            long end = Math.max(episodes.endMs(), start);
+            DrivingContext.Context context = episodeContext;
             // Only speeding while driving counts (a declared passenger, for example, doesn't).
-            DrivingContext.Context context = DrivingContext.current(true,
-                    pref.getString("vehicle_type", "Private-2W"), now);
             if (!DrivingContext.counts(context)) {
-                HeldEventStore.hold(database, "speed", context, gettid(), start, now,
+                HeldEventStore.hold(database, "speed", context, episodeTid, start, end,
                         "{\"maxspeed\":" + (episodes.maxKmh() / 3.6) + "}");
                 return;
             }
-            new Handler(Looper.getMainLooper()).post(SpeedViolation::speedViolationAlert);
             ContentValues c = new ContentValues();
             c.put("username", d.getusername());
             c.put("Event_type", "speed");
             c.put("is_send", "0");
-            c.put("lat", lat);
-            c.put("lon", lon);
+            c.put("lat", episodeStartLat);
+            c.put("lon", episodeStartLon);
             c.put("th_s", "Still");
             c.put("battery", DeviceEventsUtils.getBatteryInfo());
             c.put("timezone", DeviceEventsUtils.getTimeZone());
             c.put("utcstart", DeviceEventsUtils.utcCalculationOffset(start));
-            c.put("utcend", DeviceEventsUtils.utcCalculationOffset(now));
+            c.put("utcend", DeviceEventsUtils.utcCalculationOffset(end));
             c.put("imei", DeviceEventsUtils.getLoginDetails().get(1));
             c.put("appid", DeviceEventsUtils.getLoginDetails().get(2));
             c.put("userid", DeviceEventsUtils.getLoginDetails().get(0));
             c.put("Event_strt", start);
-            c.put("Event_end", now);
-            c.put("duration", now - start);
+            c.put("Event_end", end);
+            c.put("duration", end - start);
 
             JSONObject maxViolation = new JSONObject();
             // m/s, as before
             maxViolation.put("maxspeed", episodes.maxKmh() / 3.6);
             maxViolation.put("maxspeedmilli", episodes.maxMs());
+            maxViolation.put("over_limit_ms", episodes.overMs());
+            maxViolation.put("limit_kmh", episodeLimitKmh);
+            maxViolation.put("end_lat", endLat);
+            maxViolation.put("end_lon", endLon);
             maxViolation.put("context", DrivingContext.label(context));
             c.put("maxviolation", maxViolation.toString());
-            c.put("tid", gettid());
+            c.put("tid", episodeTid);   // the trip may have ended by now
 
-            Log.d("##SPEED_FINALDETECT", String.valueOf(ac_speed));
+            Log.d("##SPEED_FINALDETECT", (end - start) + " ms, max " + episodes.maxKmh());
             database.insert("Events", null, c);
 
-            //upload the event to server for alert
+            //upload the event to the server
             Intent z_n12 = new Intent(sqlitewraper.context, Event.class);
             WakefulIntentService.sendWakefulWork(sqlitewraper.context, z_n12);
         } catch (Exception e) {

@@ -57,7 +57,7 @@ public final class FixValidator {
     }
 
     /** Smallest difference between two compass headings, 0–180 degrees. */
-    static float headingDelta(float a, float b) {
+    public static float headingDelta(float a, float b) {
         float d = Math.abs(b - a) % 360f;
         return d > 180f ? 360f - d : d;
     }

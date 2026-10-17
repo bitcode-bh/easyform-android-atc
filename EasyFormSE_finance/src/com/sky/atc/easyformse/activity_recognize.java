@@ -929,6 +929,13 @@ public class activity_recognize extends BroadcastReceiver {
         }
     }
 
+    private static final String KEY_DRIVING_ALERT_CONTEXT = "driving_alert_context";
+
+    /**
+     * Continuous driving. The alert fires once the drive reaches continuous_driving_alert_time;
+     * the event is recorded when the drive ends (no vehicle for the reset time), so it carries
+     * the real start, end and duration.
+     */
     private void checkContinuousDriving() {
 
         long currentTime = System.currentTimeMillis();
@@ -936,16 +943,16 @@ public class activity_recognize extends BroadcastReceiver {
         boolean alertSent = pref.getBoolean(KEY_DRIVING_ALERT, false);
         long lastVehicle = pref.getLong(KEY_DRIVING_LAST_VEHICLE, 0);
 
-        // A session left over from an earlier drive is not continuous driving. Activity
-        // recognition only runs during trips, so the reset in resetDrivingTimer() never ran
-        // between trips, and the next trip inherited the old start time and alerted at once.
+        // A session left over from an earlier drive is over. Activity recognition only runs
+        // during trips, so the reset in resetDrivingTimer() may never have run between trips;
+        // without this the next trip inherited the old start time and alerted at once.
         DRIVING_RESET_GRACE_PERIOD = parseTimeToMillis(continuous_driving_reset_alert_time, 15 * 60 * 1000L);
         if (DRIVING_RESET_GRACE_PERIOD <= 0) DRIVING_RESET_GRACE_PERIOD = 15 * 60 * 1000L;   // "00:00" would reset every time
         if (drivingStart != 0 && (lastVehicle == 0 || currentTime - lastVehicle >= DRIVING_RESET_GRACE_PERIOD)) {
-            Log.d("DrivingAlert", "Stale driving session discarded");
+            Log.d("DrivingAlert", "Previous driving session ended");
+            finishDrivingSession(lastVehicle);
             drivingStart = 0;
-            pref.putLong(KEY_DRIVING_START, 0);
-            pref.putBoolean(KEY_DRIVING_ALERT, false);
+            alertSent = false;
         }
 
         // Always update the last seen vehicle timestamp when driving is detected
@@ -965,43 +972,49 @@ public class activity_recognize extends BroadcastReceiver {
 
         DRIVING_ALERT_TIME = parseTimeToMillis(continuous_driving_alert_time, 2 * 60 * 60 * 1000L);
         if (!alertSent && duration >= DRIVING_ALERT_TIME) {
-
-            // Capture final telematics for the event
-            long endTime = System.currentTimeMillis();
-            
-            // Only driving on a live trip counts; otherwise the session is kept on the phone
-            // for review and closed without an alert.
+            // Only driving on a live trip counts. The context is kept for when the event is
+            // recorded at the end of the drive, by which time the trip may have ended.
             DrivingContext.Context drivingContext = DrivingContext.current(tripStatus() > 0,
-                    pref.getString("vehicle_type", "Private-2W"), endTime);
-            if (!DrivingContext.counts(drivingContext)) {
-                HeldEventStore.hold(sqlitewraper.getDatabase(), "continuous_driving", drivingContext,
-                        null, drivingStart, endTime, String.valueOf(duration));
-                pref.putLong(KEY_DRIVING_START, 0);
-                pref.putLong(KEY_DRIVING_LAST_VEHICLE, 0);
-                pref.putBoolean(KEY_DRIVING_ALERT, false);
-                pref.commit();
-                return;
-            }
-
-            // Insert ONE event for the continuous driving session
-            boolean isInserted = insertIntoEvents(
-                    String.valueOf(drivingStart),
-                    String.valueOf(endTime),
-                    String.valueOf(duration ), // duration in millisecond
-                    "continuous_driving"
-            );
-
-            if (isInserted) {
+                    pref.getString("vehicle_type", "Private-2W"), currentTime);
+            if (DrivingContext.counts(drivingContext)) {
                 Show_Driving_Alert();
-                pref.putLong(KEY_DRIVING_START, 0);
-                pref.putLong(KEY_DRIVING_LAST_VEHICLE, 0);
-                pref.putBoolean(KEY_DRIVING_ALERT, false);
-                pref.commit();
-                Log.d("DrivingAlert", "Continuous Driving Event Logged and Alert Triggered");
             }
-        } else {
-            pref.commit();
+            pref.putBoolean(KEY_DRIVING_ALERT, true);
+            pref.putString(KEY_DRIVING_ALERT_CONTEXT, drivingContext.name());
+            Log.d("DrivingAlert", "Continuous driving limit reached (" + DrivingContext.label(drivingContext) + ")");
         }
+        pref.commit();
+    }
+
+    /**
+     * Ends the current driving session at {@code endMs} (when a vehicle was last detected) and
+     * records it if it reached the alert time.
+     */
+    private void finishDrivingSession(long endMs) {
+        long drivingStart = pref.getLong(KEY_DRIVING_START, 0);
+        boolean alertSent = pref.getBoolean(KEY_DRIVING_ALERT, false);
+        if (drivingStart > 0 && alertSent && endMs > drivingStart) {
+            DrivingContext.Context context;
+            try {
+                context = DrivingContext.Context.valueOf(pref.getString(KEY_DRIVING_ALERT_CONTEXT, "DRIVING"));
+            } catch (IllegalArgumentException e) {
+                context = DrivingContext.Context.DRIVING;
+            }
+            long duration = endMs - drivingStart;
+            if (DrivingContext.counts(context)) {
+                insertIntoEvents(String.valueOf(drivingStart), String.valueOf(endMs),
+                        String.valueOf(duration), "continuous_driving");
+                Log.d("DrivingAlert", "Continuous driving recorded: " + (duration / 60000) + " min");
+            } else {
+                HeldEventStore.hold(sqlitewraper.getDatabase(), "continuous_driving", context,
+                        null, drivingStart, endMs, String.valueOf(duration));
+            }
+        }
+        pref.putLong(KEY_DRIVING_START, 0);
+        pref.putLong(KEY_DRIVING_LAST_VEHICLE, 0);
+        pref.putBoolean(KEY_DRIVING_ALERT, false);
+        pref.putString(KEY_DRIVING_ALERT_CONTEXT, "");
+        pref.commit();
     }
 
     private long parseTimeToMillis(String timeValue, long defaultMillis) {
@@ -1036,11 +1049,10 @@ public class activity_recognize extends BroadcastReceiver {
         // Implement grace period: Only reset if user has been non-vehicle for > 15 minutes
         long idleDuration = currentTime - lastVehicleTime;
         DRIVING_RESET_GRACE_PERIOD =  parseTimeToMillis(continuous_driving_reset_alert_time, 15 * 60 * 1000L);
+        if (DRIVING_RESET_GRACE_PERIOD <= 0) DRIVING_RESET_GRACE_PERIOD = 15 * 60 * 1000L;
         if (idleDuration >= DRIVING_RESET_GRACE_PERIOD) {
-            pref.putLong(KEY_DRIVING_START, 0);
-            pref.putLong(KEY_DRIVING_LAST_VEHICLE, 0);
-            pref.putBoolean(KEY_DRIVING_ALERT, false);
-            pref.commit();
+            // The drive is over: record it (if it reached the alert time) and reset.
+            finishDrivingSession(lastVehicleTime);
 
             pref.putInt("vehicleflag", 0);
             pref.commit();

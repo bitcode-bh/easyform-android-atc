@@ -44,6 +44,13 @@ public final class DrivingContext {
         lastActivityMs = nowMs;
     }
 
+    /** The latest activity reading, or UNKNOWN when it is old or unsure. */
+    public static Activity currentActivity(long nowMs) {
+        boolean fresh = lastActivityMs > 0 && nowMs - lastActivityMs <= ACTIVITY_FRESH_MS
+                && lastConfidence >= MIN_CONFIDENCE;
+        return fresh ? lastActivity : Activity.UNKNOWN;
+    }
+
     /** From the trip engine, on each trusted fix. */
     public static void onSpeed(double speedKmh, long nowMs) {
         lastSpeedKmh = speedKmh;

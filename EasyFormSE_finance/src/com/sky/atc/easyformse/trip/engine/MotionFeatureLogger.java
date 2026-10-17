@@ -27,8 +27,12 @@ import java.util.Map;
  * is uploaded.
  *
  * To keep battery use small, the accelerometer and gyroscope run at about 50 Hz for a
- * {@link #WINDOW_MS} window at most once every {@link #WINDOW_EVERY_MS}, and only while moving at
- * {@link #MIN_SPEED_KMH} or more on a live trip.
+ * {@link #WINDOW_MS} window at most once every {@link #WINDOW_EVERY_MS} while driving on a live
+ * trip, and once every {@link #WINDOW_NOT_DRIVING_EVERY_MS} while not driving (idle, walking, on
+ * site) on a live trip.
+ *
+ * Each window is labelled with the rule-based motion state and terrain tags, so a small model can
+ * later be trained on them (motion state, terrain type, vehicle type) and compared against them.
  */
 @StringFogIgnore
 public final class MotionFeatureLogger implements SensorEventListener {
@@ -37,15 +41,22 @@ public final class MotionFeatureLogger implements SensorEventListener {
     public static final long WINDOW_MS = 10_000L;
     public static final long WINDOW_EVERY_MS = 60_000L;
     public static final double MIN_SPEED_KMH = 10.0;
+    public static final long WINDOW_NOT_DRIVING_EVERY_MS = 5 * 60_000L;
     private static final int MAX_SAMPLES = 2_500;
     private static final int MAX_GPS = 64;
     private static final int MAX_ROWS = 20_000;
 
+    private final Context appContext;
     private final SensorManager sensors;
+    // Shadow-mode models (assets/trip_ai/*.json from tools/trip_ai/train_forest.py), loaded once
+    // on the sensor thread. Their answers are recorded next to the rule-based labels, never used.
+    private java.util.List<TreeModel> models;
     private final AudioManager audio;
     private final SQLiteDatabase db;
     private final HandlerThread thread;
     private final Handler handler;
+    // Same thread as onFix (the location callback runs on the main looper).
+    private final Handler mainHandler = new Handler(android.os.Looper.getMainLooper());
 
     // Written on the sensor thread only.
     private final float[] ax = new float[MAX_SAMPLES], ay = new float[MAX_SAMPLES], az = new float[MAX_SAMPLES];
@@ -66,9 +77,17 @@ public final class MotionFeatureLogger implements SensorEventListener {
     private long lastWindowEndMs;
     private String windowTid;
     private String windowVehicleType;
+    private TerrainTracker terrain;
+    private String windowMotionAtStart;
+
+    /** The terrain tracker whose features label each window (read on the caller's thread). */
+    public void setTerrain(TerrainTracker terrain) {
+        this.terrain = terrain;
+    }
     private static boolean tableReady = false;
 
     public MotionFeatureLogger(Context context, SQLiteDatabase db) {
+        this.appContext = context.getApplicationContext();
         this.sensors = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         this.audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         this.db = db;
@@ -81,17 +100,22 @@ public final class MotionFeatureLogger implements SensorEventListener {
      * Called on every fix. {@code tid} is null when no trip is live; {@code speedKmh} is -1 for an
      * untrusted fix.
      */
-    public void onFix(String tid, String vehicleType, double speedKmh, float bearingDeg, long nowMs) {
+    public void onFix(String tid, String vehicleType, double speedKmh, float bearingDeg, long nowMs,
+                      MotionTimeline.State motion) {
         if (tid == null) {
             if (collecting) abort();
             return;
         }
         if (!collecting) {
-            if (speedKmh >= MIN_SPEED_KMH && nowMs - lastWindowEndMs >= WINDOW_EVERY_MS) {
+            boolean driving = speedKmh >= MIN_SPEED_KMH;
+            long every = driving ? WINDOW_EVERY_MS : WINDOW_NOT_DRIVING_EVERY_MS;
+            if (nowMs - lastWindowEndMs >= every) {
+                windowMotionAtStart = motion == null ? null : MotionTimeline.label(motion);
                 begin(tid, vehicleType, nowMs);
             }
             return;
         }
+        currentMotion = motion;
         if (speedKmh >= 0) {
             synchronized (gpsMs) {
                 if (ngps < MAX_GPS) {
@@ -106,6 +130,8 @@ public final class MotionFeatureLogger implements SensorEventListener {
             finish(nowMs);
         }
     }
+
+    private MotionTimeline.State currentMotion;
 
     public void stop() {
         if (collecting) abort();
@@ -126,6 +152,13 @@ public final class MotionFeatureLogger implements SensorEventListener {
         handler.post(new Runnable() {
             @Override public void run() { na = 0; ng = 0; }
         });
+        // Close the window on time even if no fix arrives (parked or slow: few fixes come).
+        final long startedAt = nowMs;
+        mainHandler.postDelayed(new Runnable() {
+            @Override public void run() {
+                if (collecting && windowStartMs == startedAt) finish(System.currentTimeMillis());
+            }
+        }, WINDOW_MS + 1_000L);
         int latencyUs = 2_000_000;   // let the sensor hub batch samples
         sensors.registerListener(this, acc, SensorManager.SENSOR_DELAY_GAME, latencyUs, handler);
         if (gyro != null) sensors.registerListener(this, gyro, SensorManager.SENSOR_DELAY_GAME, latencyUs, handler);
@@ -145,6 +178,10 @@ public final class MotionFeatureLogger implements SensorEventListener {
         final long startMs = windowStartMs;
         final boolean btAudio = bluetoothAudioConnected();
         final String context = DrivingContext.label(DrivingContext.current(true, vehicleType, nowMs));
+        // Labels, read here on the caller's thread: rule-based motion state and terrain.
+        final String motionLabel = currentMotion != null ? MotionTimeline.label(currentMotion) : windowMotionAtStart;
+        final Map<String, Double> terrainFeatures = terrain != null ? terrain.features() : null;
+        final java.util.List<String> terrainTags = terrainFeatures != null ? TerrainTracker.tags(terrainFeatures) : null;
         handler.post(new Runnable() {
             @Override public void run() {
                 try {
@@ -158,7 +195,18 @@ public final class MotionFeatureLogger implements SensorEventListener {
                         t = java.util.Arrays.copyOf(gpsMs, n);
                     }
                     Map<String, Double> f = MotionFeatures.compute(ax, ay, az, at, na, gx, gy, gz, gt, ng, s, b, t, n);
+                    if (terrainFeatures != null) f.putAll(terrainFeatures);
                     JSONObject json = new JSONObject();
+                    json.put("label_motion", motionLabel == null ? JSONObject.NULL : motionLabel);
+                    json.put("label_terrain", terrainTags == null ? JSONObject.NULL : new org.json.JSONArray(terrainTags));
+                    for (TreeModel m : models()) {
+                        double[] p = m.predict(f);
+                        double best = 0;
+                        for (double x : p) best = Math.max(best, x);
+                        String key = "pred_" + m.target().replaceAll("[^A-Za-z0-9]", "_");
+                        json.put(key, m.best(p));
+                        json.put(key + "_p", Math.round(best * 1000) / 1000.0);
+                    }
                     for (Map.Entry<String, Double> e : f.entrySet()) {
                         double v = e.getValue();
                         json.put(e.getKey(), Double.isNaN(v) || Double.isInfinite(v) ? JSONObject.NULL
@@ -170,6 +218,32 @@ public final class MotionFeatureLogger implements SensorEventListener {
                 }
             }
         });
+    }
+
+    private java.util.List<TreeModel> models() {
+        if (models != null) return models;
+        models = new java.util.ArrayList<>();
+        try {
+            String[] files = appContext.getAssets().list("trip_ai");
+            if (files != null) {
+                for (String name : files) {
+                    if (!name.endsWith(".json")) continue;
+                    java.io.InputStream in = appContext.getAssets().open("trip_ai/" + name);
+                    try {
+                        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+                        byte[] buf = new byte[8192];
+                        int r;
+                        while ((r = in.read(buf)) > 0) out.write(buf, 0, r);
+                        models.add(new TreeModel(new JSONObject(out.toString("UTF-8"))));
+                    } finally {
+                        in.close();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "model load failed", e);
+        }
+        return models;
     }
 
     @Override

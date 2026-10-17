@@ -58,6 +58,7 @@ import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -71,6 +72,9 @@ import com.sky.atc.easyformse.trip.engine.DrivingContext;
 import com.sky.atc.easyformse.trip.engine.Fix;
 import com.sky.atc.easyformse.trip.engine.HeldEventStore;
 import com.sky.atc.easyformse.trip.engine.MotionFeatureLogger;
+import com.sky.atc.easyformse.trip.engine.MotionTimeline;
+import com.sky.atc.easyformse.trip.engine.SiteIndex;
+import com.sky.atc.easyformse.trip.engine.TerrainTracker;
 import com.sky.atc.easyformse.trip.engine.FixValidator;
 import com.sky.atc.easyformse.trip.engine.PositionEstimator;
 import com.sky.atc.easyformse.trip.engine.TripDistanceMeter;
@@ -162,6 +166,19 @@ public class newfused extends Service implements LocationListener {
     private final PositionEstimator positionEstimator = new PositionEstimator();
     private final TripDistanceMeter distanceMeter = new TripDistanceMeter();
     private Fix lastTrustedFix = null;
+    private long lastTrustedMs = 0L;
+    private double degradedMeters = 0;
+    private static final float DEGRADED_MAX_ACC_M = 35f;
+    private static final long DEGRADED_AFTER_MS = 8_000L;
+    private Location turnAnchor = null;
+    private float turnAnchorBearing = 0f;
+    private static final float TURN_POINT_DEG = 20f;
+    private static final float TURN_POINT_MIN_M = 20f;
+    private static final float TURN_ANCHOR_REFRESH_M = 150f;
+    private final MotionTimeline timeline = new MotionTimeline();
+    private final SiteIndex siteIndex = new SiteIndex();
+    // Road and surroundings over the last 2 minutes (GPS quality, bends, climbs, city/highway).
+    private final TerrainTracker terrain = new TerrainTracker();
     private long lastEstimatorFixMs = 0L;
     private float lastBearingDeg = Float.NaN;
     private String meterTid = null;
@@ -246,6 +263,7 @@ public class newfused extends Service implements LocationListener {
        // registerWhatsAppCallReceiver();
         if (featureLogger == null) {
             featureLogger = new MotionFeatureLogger(getApplicationContext(), database);
+            featureLogger.setTerrain(terrain);
         }
         boolean isuploadlastentry = pref.getBoolean("isuploadlastentry",false);
 //        check location and upload in server
@@ -402,6 +420,8 @@ public class newfused extends Service implements LocationListener {
             timer.cancel();
         }
         saveTripDistance();
+        SpeedViolation.flushPending();
+        SiteIndex.saveSegment(database, liveTid, timeline.close(System.currentTimeMillis()));
         if (featureLogger != null) {
             featureLogger.stop();
             featureLogger = null;
@@ -445,6 +465,11 @@ public class newfused extends Service implements LocationListener {
                 for (Location location : locationResult.getLocations()) {
                     processLocation(location);
                 }
+            }
+
+            @Override
+            public void onLocationAvailability(LocationAvailability availability) {
+                if (availability != null) tickTimeline(availability.isLocationAvailable());
             }
         };
     }
@@ -521,16 +546,32 @@ public class newfused extends Service implements LocationListener {
             }
             filteredLocation.setSpeed(speedMps);
 
+            // Under trees or in deep valleys most fixes miss the 15 m bar, and skipping them all
+            // turns hill curves into straight lines. When no trusted fix has come for a while,
+            // a fix up to DEGRADED_MAX_ACC_M that passes every other check counts for distance
+            // (never for violations), and is reported as such.
+            boolean degraded = false;
+            if (!trusted && quality == FixValidator.Reason.ACCURACY && fix.hasSpeed()
+                    && fix.accuracyM <= DEGRADED_MAX_ACC_M && nowMs - lastTrustedMs >= DEGRADED_AFTER_MS
+                    && placed != PositionEstimator.Result.REJECTED_OUTLIER) {
+                Fix relaxed = new Fix(fix.lat, fix.lng, 10f, fix.speedMps, fix.bearingDeg, fix.timeMs, fix.ageMs, fix.satellites);
+                degraded = FixValidator.validate(relaxed, lastTrustedFix) == FixValidator.Reason.OK;
+            }
+
             if (trusted) {
                 lastTrustedFix = fix;
+                lastTrustedMs = nowMs;
                 DrivingContext.onSpeed(speedMps * 3.6, nowMs);
             }
             lastAcceptedLocation = new Location(filteredLocation);
             lastvalidfortripend = new Location(filteredLocation); // use for trip end time
             latestLocation = new Location(filteredLocation);
 
+            double addedMeters = 0;
+            boolean turnPoint = false;
             if (tid != null) {
-                measureTripDistance(tid, filteredLocation, fix, trusted);
+                addedMeters = measureTripDistance(tid, filteredLocation, fix, trusted, degraded);
+                turnPoint = isTurnPoint(filteredLocation, fix, speedMps, trusted || degraded);
                 if (trusted) {
                     SpeedViolation.onSpeedViolationOccured(speedMps,
                             filteredLocation.getLatitude(), filteredLocation.getLongitude(),
@@ -538,18 +579,23 @@ public class newfused extends Service implements LocationListener {
                             "2", fix.accuracyM, String.valueOf(nowMs), String.valueOf(speedMps));
                 }
             } else if (meterTid != null) {
+                // The trip just ended: save its distance and record any speeding episode still open.
                 saveTripDistance();
+                SpeedViolation.flushPending();
                 meterTid = null;
             }
             checkCallTimeSpeed(speedMps, trusted);
+            updateTimeline(nowMs, filteredLocation, fix, speedMps, addedMeters, tid);
+            terrain.add(fix, speedMps * 3.6, trusted);
             if (featureLogger != null) {
-                featureLogger.onFix(tid, vehicleType, trusted ? speedMps * 3.6 : -1, fix.bearingDeg, nowMs);
+                featureLogger.onFix(tid, vehicleType, trusted ? speedMps * 3.6 : -1, fix.bearingDeg, nowMs,
+                        timeline.state());
             }
 
             long nowElapsed = SystemClock.elapsedRealtime();
-            if (lastForwardElapsedMs == 0L || nowElapsed - lastForwardElapsedMs >= FORWARD_INTERVAL_MS) {
+            if (turnPoint || lastForwardElapsedMs == 0L || nowElapsed - lastForwardElapsedMs >= FORWARD_INTERVAL_MS) {
                 lastForwardElapsedMs = nowElapsed;
-                onLocationUpdate(filteredLocation, speedMps);
+                onLocationUpdate(filteredLocation, speedMps, turnPoint);
             }
 
         } catch (Exception e) {
@@ -579,24 +625,85 @@ public class newfused extends Service implements LocationListener {
     }
 
     /** Adds this fix to the live trip's distance and saves the total every few seconds. */
-    private void measureTripDistance(String tid, Location filtered, Fix fix, boolean trusted) {
+    private double measureTripDistance(String tid, Location filtered, Fix fix, boolean trusted, boolean degraded) {
         if (!tid.equals(meterTid)) {
             saveTripDistance();
             meterTid = tid;
             distanceMeter.reset();
             distanceMeter.resume(TripEngineStore.loadDistance(sqlitewraper.getDatabase(), tid));
+            degradedMeters = TripEngineStore.loadDegraded(sqlitewraper.getDatabase(), tid);
             meterSavedMs = System.currentTimeMillis();
         }
-        distanceMeter.add(filtered.getLatitude(), filtered.getLongitude(), fix.accuracyM, fix.timeMs, trusted);
+        double added = distanceMeter.add(filtered.getLatitude(), filtered.getLongitude(), fix.accuracyM, fix.timeMs,
+                trusted || degraded);
+        if (degraded) degradedMeters += added;
         if (System.currentTimeMillis() - meterSavedMs >= METER_SAVE_MS) {
             saveTripDistance();
         }
+        return added;
+    }
+
+    /**
+     * A bend worth keeping as a track point: the heading has turned TURN_POINT_DEG since the
+     * last one and the vehicle has moved at least TURN_POINT_MIN_M. Track points are otherwise
+     * kept every 300 m, which draws hill curves as straight lines.
+     */
+    private boolean isTurnPoint(Location filtered, Fix fix, float speedMps, boolean usable) {
+        if (!usable || speedMps < 2f || Float.isNaN(fix.bearingDeg)) return false;
+        if (turnAnchor == null) {
+            turnAnchor = new Location(filtered);
+            turnAnchorBearing = fix.bearingDeg;
+            return false;
+        }
+        float d = turnAnchor.distanceTo(filtered);
+        if (d >= TURN_POINT_MIN_M && FixValidator.headingDelta(turnAnchorBearing, fix.bearingDeg) >= TURN_POINT_DEG) {
+            turnAnchor = new Location(filtered);
+            turnAnchorBearing = fix.bearingDeg;
+            return true;
+        }
+        if (d >= TURN_ANCHOR_REFRESH_M) {
+            // Follow gentle curves so only real bends count.
+            turnAnchor = new Location(filtered);
+            turnAnchorBearing = fix.bearingDeg;
+        }
+        return false;
+    }
+
+    /** Feeds the motion timeline and saves each finished segment. */
+    private void updateTimeline(long nowMs, Location filtered, Fix fix, float speedMps, double addedMeters, String tid) {
+        try {
+            boolean usable = fix.accuracyM > 0 && fix.accuracyM <= 50f;
+            String site = fix.accuracyM > 0 && fix.accuracyM <= 100f
+                    ? siteIndex.siteAt(database, filtered.getLatitude(), filtered.getLongitude(), fix.accuracyM, nowMs)
+                    : null;
+            MotionTimeline.Segment done = timeline.onFix(nowMs, usable ? speedMps * 3.6 : -1, site,
+                    DrivingContext.currentActivity(nowMs), addedMeters);
+            if (done != null) SiteIndex.saveSegment(database, tid, done);
+        } catch (Exception e) {
+            Log.e("TRIP_ENGINE", "timeline failed", e);
+        }
+    }
+
+    /** Time passing with no fix (parked), and Android's location on/off reports. */
+    private void tickTimeline(final Boolean locationAvailable) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override public void run() {
+                try {
+                    long now = System.currentTimeMillis();
+                    MotionTimeline.Segment done = locationAvailable == null ? timeline.tick(now)
+                            : timeline.onAvailability(now, locationAvailable);
+                    if (done != null) SiteIndex.saveSegment(database, liveTid, done);
+                } catch (Exception e) {
+                    Log.e("TRIP_ENGINE", "timeline tick failed", e);
+                }
+            }
+        });
     }
 
     private void saveTripDistance() {
         if (meterTid == null) return;
         TripEngineStore.saveDistance(sqlitewraper.getDatabase(), meterTid,
-                distanceMeter.totalMeters(), distanceMeter.gaps());
+                distanceMeter.totalMeters(), distanceMeter.gaps(), degradedMeters);
         meterSavedMs = System.currentTimeMillis();
     }
 
@@ -909,7 +1016,7 @@ public class newfused extends Service implements LocationListener {
             return false;
         }
     }
-    private void onLocationUpdate(Location location, float manualSpeed) {
+    private void onLocationUpdate(Location location, float manualSpeed, boolean turnPoint) {
 
 
 
@@ -978,6 +1085,8 @@ public class newfused extends Service implements LocationListener {
         loc_change.putExtra("speed", location.getSpeed());
         loc_change.putExtra("time", timemilli);
         loc_change.putExtra("gps_speed",gps_speed);
+        // A bend on a live trip: kept as a track point even when closer than 300 m.
+        loc_change.putExtra("turnpoint", turnPoint);
 
         // Fixes above 118 km/h used to be dropped here, so highway speeding left no trace.
         // FixValidator now rejects only impossible speeds (above about 270 km/h).
@@ -1130,6 +1239,7 @@ public class newfused extends Service implements LocationListener {
                 Log.d("NITNEWFUSED_GPS", String.valueOf(counter));
                 checkServicemilli();
                 updateServiceMilli();
+                tickTimeline(null);
             }
         }, DELAY, DELAY);
     }

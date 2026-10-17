@@ -26,9 +26,16 @@ public final class Fix {
     public final long ageMs;
     /** Satellites used, or 0 when the provider doesn't say. */
     public final int satellites;
+    /** Altitude in metres (ellipsoid), or NaN when unknown. Only differences are used. */
+    public final double altitudeM;
 
     public Fix(double lat, double lng, float accuracyM, float speedMps, float bearingDeg,
                long timeMs, long ageMs, int satellites) {
+        this(lat, lng, accuracyM, speedMps, bearingDeg, timeMs, ageMs, satellites, Double.NaN);
+    }
+
+    public Fix(double lat, double lng, float accuracyM, float speedMps, float bearingDeg,
+               long timeMs, long ageMs, int satellites, double altitudeM) {
         this.lat = lat;
         this.lng = lng;
         this.accuracyM = accuracyM;
@@ -37,6 +44,7 @@ public final class Fix {
         this.timeMs = timeMs;
         this.ageMs = ageMs;
         this.satellites = satellites;
+        this.altitudeM = altitudeM;
     }
 
     public boolean hasSpeed() {
@@ -60,6 +68,7 @@ public final class Fix {
                 l.hasBearing() ? l.getBearing() : Float.NaN,
                 l.getTime(),
                 ageMs,
-                satellites);
+                satellites,
+                l.hasAltitude() ? l.getAltitude() : Double.NaN);
     }
 }
