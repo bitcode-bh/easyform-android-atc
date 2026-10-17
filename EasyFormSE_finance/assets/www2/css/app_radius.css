@@ -1,6 +1,6 @@
 /* The app's corners, one value per kind of element:
-     8px  fields and buttons (--control-radius), and boxes inside a card
-    12px  cards, list containers and pop-up menus (--card-radius)
+    10px  fields and buttons (--control-radius), and boxes inside a card
+    16px  cards, list containers and pop-up menus (--card-radius)
     16px  dialogs, pop-ups and bottom sheets (--overlay-radius)
    Loaded on every page (common-functions.js writes the link; LMS_Dashboard.html
    links it). Selectors start with "html body" and use !important so they win
@@ -12,8 +12,8 @@
 /* "html:root" out-ranks the ":root" blocks of shared_listing.css and
    lms_ux_fixes.css that set their own values. */
 html:root {
-    --control-radius: 8px;
-    --card-radius: 12px;
+    --control-radius: 10px;
+    --card-radius: 16px;
     --overlay-radius: 16px;
     --answer-field-radius: var(--control-radius);
     --listing-radius: var(--card-radius);
@@ -255,4 +255,31 @@ html body .actions-modal .actions-modal-group:first-child {
    corners (styles_low.css rounded only their bottom corners). */
 html body .views .navbar {
     border-radius: 0 !important;
+}
+
+/* Squircles instead of circles: every rounded corner and every round item
+   (avatars, round buttons) uses the superellipse corner. The radius scale
+   above is unchanged. Spinning loaders and radio buttons stay true circles:
+   a turning squircle wobbles, and radios read as radios only when round. */
+html body *,
+html body *::before,
+html body *::after {
+    corner-shape: squircle;
+}
+html body .preloader,
+html body .preloader *,
+html body .ptr-preloader,
+html body .ptr-preloader *,
+html body [class*="spinner"],
+html body [class*="spinner"] *,
+html body [class*="loader"],
+html body [class*="loader"]::before,
+html body [class*="loader"]::after,
+html body .t20-pull span,
+html body .profile-pull *,
+html body input[type=radio],
+html body .label-radio .item-media i,
+html body .icon-form-radio,
+html body .icon-form-radio::after {
+    corner-shape: round;
 }

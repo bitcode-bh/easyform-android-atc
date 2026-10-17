@@ -24,7 +24,6 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -156,10 +155,7 @@ public class CordovaDialogsHelper {
                            boolean dangerOk) {
         LinearLayout root = new LinearLayout(context);
         root.setOrientation(LinearLayout.VERTICAL);
-        GradientDrawable card = new GradientDrawable();
-        card.setColor(Color.WHITE);
-        card.setCornerRadius(dp(16));
-        root.setBackground(card);
+        root.setBackground(new SquircleDrawable(Color.WHITE, dp(16)));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             root.setElevation(dp(12));
         }
@@ -230,11 +226,7 @@ public class CordovaDialogsHelper {
         input.setTextColor(COLOR_TITLE);
         input.setHintTextColor(COLOR_BODY);
         input.setPadding(dp(12), dp(10), dp(12), dp(10));
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(Color.WHITE);
-        bg.setCornerRadius(dp(8));
-        bg.setStroke(dp(1), COLOR_BORDER);
-        input.setBackground(bg);
+        input.setBackground(new SquircleDrawable(Color.WHITE, dp(10)).setStroke(dp(1), COLOR_BORDER));
         if (!TextUtils.isEmpty(defaultValue)) {
             input.setSelection(defaultValue.length());
         }
@@ -249,12 +241,8 @@ public class CordovaDialogsHelper {
         btn.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         btn.setClickable(true);
         btn.setFocusable(true);
-        GradientDrawable bg = new GradientDrawable();
-        bg.setCornerRadius(dp(8));
-        bg.setColor(fill);
-        bg.setStroke(dp(1), fill);
         btn.setTextColor(Color.WHITE);
-        btn.setBackground(bg);
+        btn.setBackground(new SquircleDrawable(fill, dp(10)));
         return btn;
     }
 

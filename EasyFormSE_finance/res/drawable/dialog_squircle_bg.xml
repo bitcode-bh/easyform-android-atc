@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Native dialog window: white 16dp squircle (same corner as the web pop-ups),
+     inset 16dp from the window edges like the platform dialog background. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="16dp"
+    android:insetTop="16dp"
+    android:insetRight="16dp"
+    android:insetBottom="16dp">
+    <drawable class="org.apache.cordova.SquircleDrawable$Dialog" />
+</inset>

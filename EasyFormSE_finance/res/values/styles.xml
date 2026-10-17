@@ -73,8 +73,22 @@
              16dp corners on all four sides as the app's own pop-ups. -->
         <item name="android:dialogCornerRadius" tools:targetApi="p">16dp</item>
         <item name="dialogCornerRadius">16dp</item>
+        <item name="android:alertDialogTheme">@style/AppAlertDialog</item>
+        <item name="alertDialogTheme">@style/AppAlertDialog.Compat</item>
 
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style>
+
+    <!-- Native dialogs: white squircle window (dialog_squircle_bg). -->
+    <style name="AppAlertDialog" parent="@android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/dialog_squircle_bg</item>
+        <item name="android:colorAccent">#2A3086</item>
+    </style>
+
+    <style name="AppAlertDialog.Compat" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/dialog_squircle_bg</item>
+        <item name="colorPrimary">#2A3086</item>
+        <item name="colorAccent">#2A3086</item>
     </style>
 
     <style name="ToolBarStyle" parent="AppBaseTheme">
