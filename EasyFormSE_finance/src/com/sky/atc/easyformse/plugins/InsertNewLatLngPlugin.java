@@ -92,19 +92,6 @@ public class InsertNewLatLngPlugin extends CordovaPlugin {
                     String lat_cal = c.getString(0);
                     String lon_cal = c.getString(1);
 
-                    final int R = 6371; // Radius of the earth
-
-                    Double latDistance = deg2rad((Double.parseDouble(lat_cal))
-                            - (Double.parseDouble(lat)));
-                    Double lonDistance = deg2rad((Double.parseDouble(lon_cal))
-                            - Double.parseDouble(lon));
-                    Double a = Math.sin(latDistance / 2)
-                            * Math.sin(latDistance / 2)
-                            + Math.cos(deg2rad(Double.parseDouble(lat_cal)))
-                            * Math.cos(deg2rad(Double.parseDouble(lat)))
-                            * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-                    Double dist_m = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                    double distance = R * dist_m * 1000; // convert to meters
 
                     //insert if the distance is more than 100 meter
                     // remove distance condition because always insert waypoint entry
@@ -130,9 +117,6 @@ public class InsertNewLatLngPlugin extends CordovaPlugin {
         return true;
     }
 
-    private double deg2rad(double deg) {
-        return (deg * Math.PI / 180.0);
-    }
 
     public void reqLocation() {
 

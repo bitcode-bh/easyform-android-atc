@@ -268,7 +268,7 @@ public class TripBackgroundMapActivity extends AppCompatActivity implements OnMa
         startMilli = System.currentTimeMillis();
 
 //        if (!isValidClose){
-//            if (tripStatus()>0) {
+//            if (DeviceEventsUtils.liveTripCount()>0) {
 //                startActivity(new Intent(this, TripBackgroundMapActivity.class));
 //            }
 //        }
@@ -345,16 +345,5 @@ public class TripBackgroundMapActivity extends AppCompatActivity implements OnMa
         super.onPictureInPictureModeChanged(isInPIPMode);
     }
 
-    private static int tripStatus() {
-
-        SQLiteDatabase database = sqlitewraper.getDatabase();
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
 }
 

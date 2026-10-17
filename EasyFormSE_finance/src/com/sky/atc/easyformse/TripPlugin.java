@@ -108,7 +108,7 @@ public class TripPlugin extends CordovaPlugin {
 //                    when task delete and trip start handle status -1 update lat_plug and remove pip mode 01042025
                     if(status.equalsIgnoreCase("-1"))
                     {
-                        if (tripStatus() > 0)
+                        if (DeviceEventsUtils.liveTripCount() > 0)
                         {
                             String t;
                             t = "tid='" + tid + "' and trip_status='" + 0 + "'";
@@ -306,13 +306,4 @@ public class TripPlugin extends CordovaPlugin {
         }
     }
 
-    private int tripStatus(){
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
 }

@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse;
 
+import com.sky.atc.easyformse.trip.engine.TripDistanceMeter;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.util.Log;
@@ -101,22 +103,8 @@ public class distance extends CordovaPlugin {
 	}
 
 	double dist(double lat1, double lat2, double lon1, double lon2) {
-
-		final int R = 6371; // Radius of the earth
-
-		double latDistance = deg2rad((lat1) - (lat2));
-		double lonDistance = deg2rad((lon1) - (lon2));
-		double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-				+ Math.cos(deg2rad((lat1))) * Math.cos(deg2rad(lat2))
-				* Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-		double dist_m = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double distance = R * dist_m * 1000;
-		return distance;
-
+		return TripDistanceMeter.haversine(lat1, lon1, lat2, lon2);
 	}
 
-	private double deg2rad(double deg) {
-		return (deg * Math.PI / 180.0);
-	}
 
 }

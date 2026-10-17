@@ -95,7 +95,7 @@ public class servicenew extends BroadcastReceiver {
 
 		if (Key.equalsIgnoreCase("wake")) {
 
-//			boolean check = isMyServiceRunning(sqlitewraper.context,
+//			boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //					wake_geo_server.class.getName());
 //			if (check) {
 //			} else {
@@ -107,7 +107,7 @@ public class servicenew extends BroadcastReceiver {
 
 		if (Key.equalsIgnoreCase("download_easy")) {
 
-//			boolean check = isMyServiceRunning(sqlitewraper.context,
+//			boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //					f_download_new_stuctrutre.class.getName());
 //			if (check) {
 //			} else {
@@ -123,7 +123,7 @@ public class servicenew extends BroadcastReceiver {
 
 			call();
 
-			boolean check = isMyServiceRunning(sqlitewraper.context,
+			boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 					f_upload_new_structure.class.getName());
 			if (!check) {
 
@@ -140,7 +140,7 @@ public class servicenew extends BroadcastReceiver {
 			String is_trip_flag = d.getFeatureFlag("istrip");
 			String isact_track = d.getFeatureFlag("isact_track");
 
-//			boolean check1 = isMyServiceRunning(sqlitewraper.context,
+//			boolean check1 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //					upload_path.class.getName());
 //			if (check1) {
 //			} else {
@@ -151,7 +151,7 @@ public class servicenew extends BroadcastReceiver {
 //						z_n12);
 //			}
 
-//			boolean check2 = isMyServiceRunning(sqlitewraper.context,
+//			boolean check2 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //					shortest_path.class.getName());
 //			if (check2) {
 //			} else {
@@ -163,7 +163,7 @@ public class servicenew extends BroadcastReceiver {
 //			}
 
 			if (isact_track.equalsIgnoreCase("1")) {
-				boolean check3 = isMyServiceRunning(sqlitewraper.context,
+				boolean check3 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 						Event.class.getName());
 				if (!check3) {
 					try {
@@ -176,7 +176,7 @@ public class servicenew extends BroadcastReceiver {
 				}
 				//hide newfused and activity_recognition code  23-07-2025
 				// enbale activity_recognition code  07082026
-				boolean check4 = isMyServiceRunning(sqlitewraper.context,
+				boolean check4 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 						Activity_recognition.class.getName());
 				if (!check4) {
 
@@ -199,7 +199,7 @@ public class servicenew extends BroadcastReceiver {
 
 			if (loc_flag.equalsIgnoreCase("1")) {
 
-				boolean check = isMyServiceRunning(sqlitewraper.context,
+				boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 						location_server.class.getName());
 				if (!check) {
 
@@ -216,7 +216,7 @@ public class servicenew extends BroadcastReceiver {
 			}
 		}
 //		if (Key.equalsIgnoreCase("georeg")) {
-//			boolean check = isMyServiceRunning(sqlitewraper.context,
+//			boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //					geo_send_server.class.getName());
 //			if (check) {
 //			} else {
@@ -230,7 +230,7 @@ public class servicenew extends BroadcastReceiver {
 
 		if (Key.equalsIgnoreCase("touch")) {
 
-			boolean check = isMyServiceRunning(sqlitewraper.context,
+			boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 					touch_server.class.getName());
 			if (!check) {
 
@@ -248,7 +248,7 @@ public class servicenew extends BroadcastReceiver {
 			}
 
 			// //////-----delete photo after upload--------///////
-			// boolean check1 = isMyServiceRunning(sqlitewraper.context,
+			// boolean check1 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 			// delete_photo.class.getName());
 			// if (check1) {
 			// } else {
@@ -263,7 +263,7 @@ public class servicenew extends BroadcastReceiver {
 
 //		if (Key.equalsIgnoreCase("geo_send")) {
 //
-//			boolean check = isMyServiceRunning(sqlitewraper.context,
+//			boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //					geo_send_server.class.getName());
 //			if (check) {
 //			} else {
@@ -300,18 +300,6 @@ public class servicenew extends BroadcastReceiver {
 
 	// Google Play services was not available for some reason
 
-	private boolean isMyServiceRunning(Context context, String Myservice) {
-		ActivityManager manager = (ActivityManager) context
-				.getSystemService(Context.ACTIVITY_SERVICE);
-		for (RunningServiceInfo service : manager
-				.getRunningServices(Integer.MAX_VALUE)) {
-			if (Myservice.equals(service.service.getClassName())) {
-
-				return true;
-			}
-		}
-		return false;
-	}
 
 	void call() {
 		// Intent i12 = new Intent(sqlitewraper.context, upload_path.class);
@@ -346,7 +334,7 @@ public class servicenew extends BroadcastReceiver {
 				if (gps.equalsIgnoreCase("0")) {
 				} else if (gps.equalsIgnoreCase("1")) {
 
-					boolean check = isMyServiceRunning(sqlitewraper.context,
+					boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 							newfused.class.getName());
 					if (check) {
 					} else {
@@ -365,7 +353,7 @@ public class servicenew extends BroadcastReceiver {
 					a_t12.close();
 
 
-//					boolean check12 = isMyServiceRunning(sqlitewraper.context,
+//					boolean check12 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //							GPSTracker_test.class.getName());
 //					if (check12) {
 //					} else {
@@ -413,7 +401,7 @@ public class servicenew extends BroadcastReceiver {
 
 
 		Log.d("###onStartJob", "that");
-//		boolean check = isMyServiceRunning(sqlitewraper.context,
+//		boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //				newfused_gps.class.getName());
 //		if (!check) {
 //
@@ -423,7 +411,7 @@ public class servicenew extends BroadcastReceiver {
 //
 //			}else {
 //
-//				if (tripStatus()>0) {
+//				if (DeviceEventsUtils.liveTripCount()>0) {
 //
 //					Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
 //					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -436,7 +424,7 @@ public class servicenew extends BroadcastReceiver {
 //		}
 
 
-		boolean checkfused = isMyServiceRunning(sqlitewraper.context,
+		boolean checkfused = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 				newfused.class.getName());
 		if (!checkfused) {
 
@@ -446,7 +434,7 @@ public class servicenew extends BroadcastReceiver {
 
 			}else {
 
-				if (tripStatus()>0) {
+				if (DeviceEventsUtils.liveTripCount()>0) {
 					Intent i = new Intent(sqlitewraper.context, newfused.class);
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 						sqlitewraper.context.startForegroundService(i);
@@ -459,13 +447,4 @@ public class servicenew extends BroadcastReceiver {
 
 	}
 
-	private int tripStatus(){
-
-		Cursor tripflag = database.rawQuery(
-				"select * from lat_plug where trip_status = 0", null);
-		tripflag.moveToFirst();
-		int tripflagCount = tripflag.getCount();
-		tripflag.close();
-		return tripflagCount;
-	}
 }

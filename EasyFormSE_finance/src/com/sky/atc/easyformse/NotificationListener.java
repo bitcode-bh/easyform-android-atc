@@ -151,7 +151,7 @@ public class NotificationListener extends NotificationListenerService {
                                     }
                                     // notificationQueue.add(content);
 
-                                    boolean check4 = isMyServiceRunning(context, FloatingBubbleService.class.getName());
+                                    boolean check4 = DeviceEventsUtils.isMyServiceRunning(context, FloatingBubbleService.class.getName());
                                     if (check4) {
 
                                         FloatingBubbleService bubbleService = FloatingBubbleService.getInstance();
@@ -184,18 +184,6 @@ public class NotificationListener extends NotificationListenerService {
 
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
 
     public void tryReconnectService() {

@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse.jobshedulers;
 
+import com.sky.atc.easyformse.DeviceEventsUtils;
+
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -53,7 +55,7 @@ public class SetAlarmWhileIdle extends BroadcastReceiver {
 //
 //                } else {
 //
-//                    if (tripStatus() > 0) {
+//                    if (DeviceEventsUtils.liveTripCount() > 0) {
 //                        //hide newfused and activity_recognition code  23-07-2025
 ////                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
 ////                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -69,7 +71,7 @@ public class SetAlarmWhileIdle extends BroadcastReceiver {
 //
 //                if (duration>60000){
 //
-//                    if (tripStatus() > 0) {
+//                    if (DeviceEventsUtils.liveTripCount() > 0) {
 //                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
 //                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 //                            sqlitewraper.context.startForegroundService(i);
@@ -89,7 +91,7 @@ public class SetAlarmWhileIdle extends BroadcastReceiver {
 
                 } else {
 
-                    if (tripStatus() > 0) {
+                    if (DeviceEventsUtils.liveTripCount() > 0) {
                         Intent i = new Intent(sqlitewraper.context, newfused.class);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             sqlitewraper.context.startForegroundService(i);
@@ -104,7 +106,7 @@ public class SetAlarmWhileIdle extends BroadcastReceiver {
 
                 if (duration>60000){
 
-                    if (tripStatus() > 0) {
+                    if (DeviceEventsUtils.liveTripCount() > 0) {
                         Intent i = new Intent(sqlitewraper.context, newfused.class);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             sqlitewraper.context.startForegroundService(i);
@@ -126,7 +128,7 @@ public class SetAlarmWhileIdle extends BroadcastReceiver {
 
                 } else {
 
-                    if (tripStatus() > 0) {
+                    if (DeviceEventsUtils.liveTripCount() > 0) {
                         Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             sqlitewraper.context.startForegroundService(i);
@@ -143,17 +145,6 @@ public class SetAlarmWhileIdle extends BroadcastReceiver {
         }
     }
 
-    private int tripStatus() {
-
-        SQLiteDatabase database = sqlitewraper.getDatabase();
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
 
     public void setAlarm(Context context) {
         Log.d("#####SETALART", "2");

@@ -115,15 +115,6 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
         }
     }
 
-    private int tripStatus(){
-
-        android.database.Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
 
     private  void GetTripStartLocation()
     {
@@ -165,7 +156,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
     }
     @Override
     public void onLocationChanged(Location location) {
-//        if(tripStatus() > 0 )
+//        if(DeviceEventsUtils.liveTripCount() > 0 )
 //        {
 //            GetTripStartLocation();
 //            if(startLocation != null) {
@@ -681,7 +672,7 @@ public class AutoTripStopService extends WakefulIntentService implements Locatio
                 }
                 for (Location location : locationResult.getLocations()) {
                     Log.d("##LOCATIONSERVIE", String.valueOf(location.getAccuracy()));
-                    if(tripStatus() > 0 )
+                    if(DeviceEventsUtils.liveTripCount() > 0 )
                     {
                         GetTripStartLocation();
                         if(startLocation != null) {

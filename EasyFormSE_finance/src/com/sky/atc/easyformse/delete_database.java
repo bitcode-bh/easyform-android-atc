@@ -108,7 +108,7 @@ public class delete_database extends CordovaPlugin {
         cursour_close(c);
 
         if (flag == 1) {
-            boolean check = isMyServiceRunning(sqlitewraper.context,
+            boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                     f_upload_new_structure.class.getName());
             if (!check) {
                 Intent z_n12 = new Intent(sqlitewraper.context,
@@ -271,18 +271,6 @@ public class delete_database extends CordovaPlugin {
 
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     void update_tables(String id) {
 

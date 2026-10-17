@@ -1,5 +1,7 @@
 package commonsware.cwac;
 
+import com.sky.atc.easyformse.DeviceEventsUtils;
+
 /***
  Copyright (c) 2010 CommonsWare, LLC
 
@@ -85,14 +87,14 @@ public class LocationPoller extends BroadcastReceiver {
 
 			if (in.equalsIgnoreCase("fused")) {
 
-				if (!isMyServiceRunning(sqlitewraper.context,
+				if (!DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 						fused_location_provider.class.getName())) {
 
 					fused_location_provider.requestLocation(context, intent);
 
 				}
 			} else {
-				if (!isMyServiceRunning(sqlitewraper.context,
+				if (!DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 						LocationPollerService.class.getName())) {
 
 					update_appsate("0", "count");
@@ -105,18 +107,6 @@ public class LocationPoller extends BroadcastReceiver {
 		// Google Play services was not available for some reason
 	}
 
-	private boolean isMyServiceRunning(Context context, String Myservice) {
-		ActivityManager manager = (ActivityManager) context
-				.getSystemService(Context.ACTIVITY_SERVICE);
-		for (RunningServiceInfo service : manager
-				.getRunningServices(Integer.MAX_VALUE)) {
-			if (Myservice.equals(service.service.getClassName())) {
-
-				return true;
-			}
-		}
-		return false;
-	}
 
 	void update_appsate(String value, String ITEAM) {
 		try {

@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse;
 
+import com.sky.atc.easyformse.trip.engine.TripDistanceMeter;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -300,19 +302,7 @@ public class loc_change extends WakefulIntentService {
 				String add_Cal = check_location.getString(2);
 				String accuracy1 = check_location.getString(3);
 
-				final int R = 6371; // Radius of the earth
-
-				Double latDistance = deg2rad((Double.parseDouble(lat_cal))
-						- ((double) (lat)));
-				Double lonDistance = deg2rad((Double.parseDouble(lon_cal))
-						- (double) (lon));
-				Double a = Math.sin(latDistance / 2)
-						* Math.sin(latDistance / 2)
-						+ Math.cos(deg2rad(Double.parseDouble(lat_cal)))
-						* Math.cos(deg2rad((double) (lat)))
-						* Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-				Double dist_m = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-				double distance = R * dist_m * 1000; // convert to
+				double distance = TripDistanceMeter.haversine(Double.parseDouble(lat_cal), Double.parseDouble(lon_cal), lat, lon);
 				// meters
 
 				//insert if the distance is more than 80 meter
@@ -506,19 +496,7 @@ public class loc_change extends WakefulIntentService {
 				String lat_cal = check_location12.getString(1);
 				String lon_cal = check_location12.getString(2);
 
-				final int R = 6371; // Radius of the earth
-
-				double latDistance = deg2rad((Double.parseDouble(lat_cal))
-						- ((double) (lat)));
-				double lonDistance = deg2rad((Double.parseDouble(lon_cal))
-						- (double) (lon));
-				double a = Math.sin(latDistance / 2)
-						* Math.sin(latDistance / 2)
-						+ Math.cos(deg2rad(Double.parseDouble(lat_cal)))
-						* Math.cos(deg2rad((double) (lat)))
-						* Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-				double dist_m = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-				double distance = R * dist_m * 1000; // convert to
+				double distance = TripDistanceMeter.haversine(Double.parseDouble(lat_cal), Double.parseDouble(lon_cal), lat, lon);
 
 				//insert if the location is 300 meter or more away, or is a bend on a live trip
 				if (distance >  acc + meterdistancevalue || (turnpoint && distance > Math.max(20, acc)))
@@ -602,7 +580,7 @@ public class loc_change extends WakefulIntentService {
 
 				if (nowmilliseconds - last_upload_ms > 300000) {
 
-					boolean check2 = isMyServiceRunning(sqlitewraper.context,
+					boolean check2 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 							TripService.class.getName());
 					if (!check2) {
 						//temporary close for ETA
@@ -622,22 +600,7 @@ public class loc_change extends WakefulIntentService {
 			check_location.close();
 		}
 	}
-	private boolean isMyServiceRunning(Context context, String Myservice) {
-		ActivityManager manager = (ActivityManager) context
-				.getSystemService(Context.ACTIVITY_SERVICE);
-		for (ActivityManager.RunningServiceInfo service : manager
-				.getRunningServices(Integer.MAX_VALUE)) {
-			if (Myservice.equals(service.service.getClassName())) {
 
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private double deg2rad(double deg) {
-		return (deg * Math.PI / 180.0);
-	}
 
 	String add(double lat, double lon) {
 		String address = null;

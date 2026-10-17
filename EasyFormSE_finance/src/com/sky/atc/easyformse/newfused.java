@@ -1230,18 +1230,6 @@ public class newfused extends Service implements LocationListener {
         }, DELAY, DELAY);
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     @SuppressLint("MissingPermission")
     private void registerCallListener() {
@@ -1286,25 +1274,6 @@ public class newfused extends Service implements LocationListener {
         isCallListenerRegistered = true;
 
     }
-    private  boolean isTripRunning() {
-
-        try {
-
-            Cursor tripCursor = database.rawQuery(
-                    "select * from lat_plug where trip_status = 0",
-                    null);
-
-            boolean running = tripCursor.getCount() > 0;
-
-            tripCursor.close();
-
-            return running;
-
-        } catch (Exception e) {
-
-            return false;
-        }
-    }
 
     public  void handleCallState(int state) {
         Log.e("CALL_DEBUG", "State = " + state);
@@ -1314,7 +1283,7 @@ public class newfused extends Service implements LocationListener {
 
         lastCallState = state;
 
-        if (!isTripRunning())
+        if (!(DeviceEventsUtils.liveTripCount() > 0))
             return;
 
         switch (state) {
@@ -1434,7 +1403,7 @@ public class newfused extends Service implements LocationListener {
             long currentTime = System.currentTimeMillis();
             // Only a call while driving counts; others are kept on the phone for review.
             if (!DrivingContext.counts(callContext)) {
-                HeldEventStore.hold(database, "Call", callContext, gettid(), callstarttime, currentTime,
+                HeldEventStore.hold(database, "Call", callContext, DeviceEventsUtils.gettid(), callstarttime, currentTime,
                         "{\"maxSpeedDuringCall\":" + maxSpeedDuringCall + ",\"handsfree\":" + callHandsFree + "}");
                 return false;
             }
@@ -1466,7 +1435,7 @@ public class newfused extends Service implements LocationListener {
 
             c.put("maxviolation",maxViolation.toString());
 
-            String tid = gettid();
+            String tid = DeviceEventsUtils.gettid();
 
             c.put("tid",tid);
 
@@ -1490,21 +1459,6 @@ public class newfused extends Service implements LocationListener {
         return false;
     }
 
-    public  String gettid(){
-
-        android.database.Cursor tripflag = database.rawQuery("select tid from lat_plug where trip_status = 0", null);
-        tripflag.moveToLast();
-        int tripflagCount = tripflag.getCount();
-
-        String tid = "0";
-
-        if (tripflagCount>0){
-            tid = tripflag.getString(0);
-        }
-
-        tripflag.close();
-        return tid;
-    }
     private void unregisterphonestate()
     {
         if (telephonyManager != null) {
@@ -1546,7 +1500,7 @@ public class newfused extends Service implements LocationListener {
         super.onTaskRemoved(rootIntent);
 
         try {
-            boolean isTripRunning = isTripRunning();
+            boolean isTripRunning = (DeviceEventsUtils.liveTripCount() > 0);
 
             if (isTripRunning ) {
                 scheduleServiceRestart();

@@ -188,7 +188,7 @@ public class NotificationActivity extends CordovaActivity {
                                 textToSpeech.stop();
                                 speakingcontent(message.getText().toString());
                             }
-                            boolean check4 = isMyServiceRunning(context, FloatingBubbleService.class.getName());
+                            boolean check4 = DeviceEventsUtils.isMyServiceRunning(context, FloatingBubbleService.class.getName());
                             if (check4) {
                                 int count = notificationMessages.size();
                                 FloatingBubbleService.mTextViewNotificationCount.setText(String.valueOf(count));
@@ -215,7 +215,7 @@ public class NotificationActivity extends CordovaActivity {
 
 //                                if (IsFromPlugin.equalsIgnoreCase("true")) {
 //
-//                                    boolean check4 = isMyServiceRunning(context, FloatingBubbleService.class.getName());
+//                                    boolean check4 = DeviceEventsUtils.isMyServiceRunning(context, FloatingBubbleService.class.getName());
 //                                    if (check4) {
 //                                        Intent intent = new Intent(getApplicationContext(), FloatingBubbleService.class);
 //                                        stopService(intent);
@@ -228,7 +228,7 @@ public class NotificationActivity extends CordovaActivity {
                                 editor.putString("readnoti","");
                                 editor.apply();
 
-                                boolean check4 = isMyServiceRunning(context, FloatingBubbleService.class.getName());
+                                boolean check4 = DeviceEventsUtils.isMyServiceRunning(context, FloatingBubbleService.class.getName());
                                 if (check4) {
                                     FloatingBubbleService.mTextViewNotificationCount.setVisibility(View.GONE);
                                 }
@@ -252,7 +252,7 @@ public class NotificationActivity extends CordovaActivity {
 
                             }
 
-                            boolean check4 = isMyServiceRunning(context, FloatingBubbleService.class.getName());
+                            boolean check4 = DeviceEventsUtils.isMyServiceRunning(context, FloatingBubbleService.class.getName());
                             //if (!check4) {
                                 Intent intent = new Intent(getApplicationContext(), FloatingBubbleService.class);
                                 intent.putExtra("notification_title", notificationMessages.get(0).toString());
@@ -307,7 +307,7 @@ public class NotificationActivity extends CordovaActivity {
                     @Override
                     public void run() {
                         if (addnotification.equalsIgnoreCase("yes")) {
-                            boolean check4 = isMyServiceRunning(context, FloatingBubbleService.class.getName());
+                            boolean check4 = DeviceEventsUtils.isMyServiceRunning(context, FloatingBubbleService.class.getName());
                             if (check4) {
 
                                 FloatingBubbleService bubbleService = FloatingBubbleService.getInstance();
@@ -470,16 +470,4 @@ public class NotificationActivity extends CordovaActivity {
         return;
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 }

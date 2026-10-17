@@ -95,8 +95,8 @@ public class DownloadListService extends WakefulIntentService implements Locatio
                 reqLocation();
 
                 // auto punch out code
-                if(tripStatus() > 0) {
-                    boolean check2 = isMyServiceRunning(sqlitewraper.context,
+                if(DeviceEventsUtils.liveTripCount() > 0) {
+                    boolean check2 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             AutoTripStopService.class.getName());
                     if (check2) {
                     } else {
@@ -560,27 +560,6 @@ public class DownloadListService extends WakefulIntentService implements Locatio
 //        }
 //    }
 
-    private int tripStatus(){
-
-        android.database.Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
 
     //function for checking if service is running or not
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 }

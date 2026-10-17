@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse.jobshedulers;
 
+import com.sky.atc.easyformse.DeviceEventsUtils;
+
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -36,13 +38,13 @@ public class SetAlarmTrip extends BroadcastReceiver
 //        Toast.makeText(context, "Alarm !!!!!!!!!!", Toast.LENGTH_LONG).show();// For example
 
         try {
-//            boolean check = isMyServiceRunning(sqlitewraper.context,
+//            boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                    newfused_gps.class.getName());
 //            if (!check) {
 //
 //                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 //
-//                    if (tripStatus() > 0) {
+//                    if (DeviceEventsUtils.liveTripCount() > 0) {
 //                        //hide newfused and activity_recognition code  23-07-2025
 ////                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
 ////                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -58,7 +60,7 @@ public class SetAlarmTrip extends BroadcastReceiver
 //
 //                if (duration>60000){
 //
-//                    if (tripStatus() > 0) {
+//                    if (DeviceEventsUtils.liveTripCount() > 0) {
 //                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
 //                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 //                            sqlitewraper.context.startForegroundService(i);
@@ -68,7 +70,7 @@ public class SetAlarmTrip extends BroadcastReceiver
 //                    }
 //                }
 //            }
-            boolean checkfused = isMyServiceRunning(sqlitewraper.context,
+            boolean checkfused = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                     newfused.class.getName());
             if (!checkfused) {
 
@@ -78,7 +80,7 @@ public class SetAlarmTrip extends BroadcastReceiver
 
                 } else {
 
-                    if (tripStatus() > 0) {
+                    if (DeviceEventsUtils.liveTripCount() > 0) {
                         Intent i = new Intent(sqlitewraper.context, newfused.class);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             sqlitewraper.context.startForegroundService(i);
@@ -93,7 +95,7 @@ public class SetAlarmTrip extends BroadcastReceiver
                 long duration=currentMilli-DataUtils.getServiceMilli();
 
                 if (duration>60000){
-                    if (tripStatus() > 0) {
+                    if (DeviceEventsUtils.liveTripCount() > 0) {
                         Intent i = new Intent(sqlitewraper.context, newfused.class);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             sqlitewraper.context.startForegroundService(i);
@@ -106,7 +108,7 @@ public class SetAlarmTrip extends BroadcastReceiver
 
             //hide newfused and activity_recognition code  23-07-2025
             // enbale activity_recognition code  07082026
-            boolean checkfused2 = isMyServiceRunning(sqlitewraper.context,
+            boolean checkfused2 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                     Activity_recognition.class.getName());
             if (!checkfused2) {
 
@@ -116,7 +118,7 @@ public class SetAlarmTrip extends BroadcastReceiver
 
                 } else {
 
-                    if (tripStatus() > 0) {
+                    if (DeviceEventsUtils.liveTripCount() > 0) {
                         Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             sqlitewraper.context.startForegroundService(i);
@@ -152,28 +154,5 @@ public class SetAlarmTrip extends BroadcastReceiver
         alarmManager.cancel(sender);
     }
 
-    private int tripStatus(){
 
-        SQLiteDatabase database=sqlitewraper.getDatabase();
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
-
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 }

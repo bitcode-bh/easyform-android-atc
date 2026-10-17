@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse.plugins;
 
+import com.sky.atc.easyformse.DeviceEventsUtils;
+
 import static com.sky.atc.easyformse.sqlitewraper.context;
 
 import android.annotation.SuppressLint;
@@ -77,7 +79,7 @@ public class NotificationPagePlugin extends CordovaPlugin {
                 context.startActivity(activityIntent);
                 this.callbackContext.success("success");
             }
-            boolean check4 = isMyServiceRunning(context, FloatingBubbleService.class.getName());
+            boolean check4 = DeviceEventsUtils.isMyServiceRunning(context, FloatingBubbleService.class.getName());
             if (check4) {
                 int count = mStrings.size();
                 FloatingBubbleService.mTextViewNotificationCount.setText(String.valueOf(count));
@@ -89,16 +91,4 @@ public class NotificationPagePlugin extends CordovaPlugin {
         return false;
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 }

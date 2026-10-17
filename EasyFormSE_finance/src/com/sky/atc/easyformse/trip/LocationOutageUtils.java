@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse.trip;
 
+import com.sky.atc.easyformse.DeviceEventsUtils;
+
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -40,17 +42,6 @@ public class LocationOutageUtils {
     }
 
 
-    private static int tripStatus() {
-
-        SQLiteDatabase database = sqlitewraper.getDatabase();
-
-        android.database.Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
 
     private void startServUpdateTask() {
 
@@ -62,7 +53,7 @@ public class LocationOutageUtils {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                if (tripStatus()>0) {
+                if (DeviceEventsUtils.liveTripCount()>0) {
 
                     long currentTime = System.currentTimeMillis();
                     Log.d("##LocationOutage", String.valueOf(currentTime));
@@ -86,7 +77,7 @@ public class LocationOutageUtils {
     @SuppressLint("WrongConstant")
     public static void locatiupdateAlert() {
 
-        if (tripStatus() > 0) {
+        if (DeviceEventsUtils.liveTripCount() > 0) {
 
 
             Uri sound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + sqlitewraper.context.getPackageName() + "/" + R.raw.glitchy);
@@ -128,7 +119,7 @@ public class LocationOutageUtils {
 
     public static void sendLocationToBackgrounMap(double lat, double lang) {
 
-        if (tripStatus()>0) {
+        if (DeviceEventsUtils.liveTripCount()>0) {
 
             Log.d("sender", "Broadcasting message");
             Intent intent = new Intent("trip-background-map");

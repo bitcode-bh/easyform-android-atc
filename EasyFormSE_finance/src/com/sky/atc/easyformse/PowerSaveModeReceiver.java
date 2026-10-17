@@ -55,7 +55,7 @@ public class PowerSaveModeReceiver extends BroadcastReceiver {
         database = sqlitewraper.getDatabase();
         pref = sqlitewraper.getSecureShared("MyPref");
 
-        boolean check1 = isMyServiceRunning(sqlitewraper.context,
+        boolean check1 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                 f_upload_new_structure.class.getName());
 
         if (check1) {
@@ -90,18 +90,6 @@ public class PowerSaveModeReceiver extends BroadcastReceiver {
 
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     public void inser(String powersavingmode) {
         PowersavingmodeOn = pref.getLong("PowersavingmodeOn", 0);
@@ -161,7 +149,7 @@ public class PowerSaveModeReceiver extends BroadcastReceiver {
 
                         long temp = database.update("Events", c_path, cnd, null);
 
-                        boolean check3 = isMyServiceRunning(sqlitewraper.context,
+                        boolean check3 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                                 Event.class.getName());
                         if (check3) {
                         } else {

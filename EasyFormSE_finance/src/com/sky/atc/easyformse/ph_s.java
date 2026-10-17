@@ -393,7 +393,7 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
                 if (gps.equalsIgnoreCase("2")) {
 
-                    boolean check123 = isMyServiceRunning(sqlitewraper.context,
+                    boolean check123 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             newfused.class.getName());
                     if (check123) {
                         Intent i = new Intent(sqlitewraper.context, newfused.class);
@@ -402,7 +402,7 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
 //                    if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
 //                    {
-//                        boolean check12 = isMyServiceRunning(sqlitewraper.context,
+//                        boolean check12 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                                SafetyDetectionService.class.getName());
 //                        if (check12) {
 //                            Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
@@ -411,14 +411,14 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 //                    }
 //                    hide newfused and activity_recognition code  23-07-2025
 
-//                    boolean check = isMyServiceRunning(sqlitewraper.context,
+//                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                            newfused_gps.class.getName());
 //                    if (check) {
 //                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
 //                        stopService(i);
 //                    }
                     // enable activity_recognition code  07082026
-                    boolean checkActivity_recognition = isMyServiceRunning(sqlitewraper.context,
+                    boolean checkActivity_recognition = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             Activity_recognition.class.getName());
                     if (checkActivity_recognition) {
                         Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
@@ -781,18 +781,6 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
     }
 
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     //for starting  the location services according to flag
 
@@ -812,7 +800,7 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
         if (!username.equalsIgnoreCase("0")) {
             //hide newfused and activity_recognition code  23-07-2025
-//            boolean check = isMyServiceRunning(sqlitewraper.context,
+//            boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                    newfused_gps.class.getName());
 //            if (check) {
 //
@@ -827,14 +815,14 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 //
 //            }
 
-            boolean check2 = isMyServiceRunning(sqlitewraper.context,
+            boolean check2 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                     newfused.class.getName());
             if (!check2) {
                 Intent i = new Intent(sqlitewraper.context, newfused.class);
                 sqlitewraper.context.startService(i);
             }
             // enbale activity_recognition code  07082026
-            boolean check3 = isMyServiceRunning(sqlitewraper.context,
+            boolean check3 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                     Activity_recognition.class.getName());
             if (!check3) {
                 Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
@@ -1290,7 +1278,7 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                 String isTripPauseAfterTask = pref.getString("isTripPauseAfterTask","false");
 
                 Log.d("##PHS", "HOMEBUTTONPRESSED");
-                if (tripStatus() > 0) {
+                if (DeviceEventsUtils.liveTripCount() > 0) {
                     if(!isTripPauseAfterTask.equalsIgnoreCase("true"))
                     {
                         if(!checkpermissionfirstattempt.equalsIgnoreCase("1"))
@@ -1298,7 +1286,7 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                             ShowDialog = "false";
                         }
                         if (!LocationOutageUtils.isPiP) {
-                            boolean check = isMyServiceRunning(sqlitewraper.context,
+                            boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                                     FloatingBubbleService.class.getName());
 
                             if(check)
@@ -1374,11 +1362,11 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
                         MySharedPreferences pref = sqlitewraper.getSecureShared("MyPref");
                         String isTripPauseAfterTask = pref.getString("isTripPauseAfterTask","false");
 
-                        if (tripStatus() > 0) {
+                        if (DeviceEventsUtils.liveTripCount() > 0) {
 
                             if(!isTripPauseAfterTask.equalsIgnoreCase("true")) {
                                 if (!LocationOutageUtils.isPiP) {
-                                    boolean check = isMyServiceRunning(sqlitewraper.context,
+                                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                                             FloatingBubbleService.class.getName());
 
                                     if (check) {
@@ -1518,23 +1506,11 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
     }
 
     //check if there is any trip running or not
-    private static int tripStatus() {
-
-        SQLiteDatabase database = sqlitewraper.getDatabase();
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        Log.d("TripCount ", tripflagCount + "");
-        tripflag.close();
-        return tripflagCount;
-    }
 
 
     private void startTripMapActivity() {
 
-        if (tripStatus() > 0) {
+        if (DeviceEventsUtils.liveTripCount() > 0) {
 
             if (!LocationOutageUtils.isPiP) {
 

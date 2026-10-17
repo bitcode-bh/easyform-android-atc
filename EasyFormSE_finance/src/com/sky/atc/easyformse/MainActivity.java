@@ -268,7 +268,7 @@ public class MainActivity extends Activity {
         if (isact_track.equalsIgnoreCase("1")) {
             //hide newfused and activity_recognition code  23-07-2025
             // enbale activity_recognition code  07082026
-            boolean check4 = isMyServiceRunning(context,
+            boolean check4 = DeviceEventsUtils.isMyServiceRunning(context,
                     Activity_recognition.class.getName());
             if (!check4) {
                 Intent i = new Intent(context,
@@ -399,18 +399,6 @@ public class MainActivity extends Activity {
     }
 
     //to check if service is running or not
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

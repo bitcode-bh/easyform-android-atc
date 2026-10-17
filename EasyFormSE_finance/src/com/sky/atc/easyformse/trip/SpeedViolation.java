@@ -117,7 +117,7 @@ public class SpeedViolation {
                 insertIntoTrackMaster(lat, lon, provider, speed, now, String.valueOf(acc), gps_speed);
                 episodeContext = DrivingContext.current(true, pref.getString("vehicle_type", "Private-2W"), now);
                 episodeLimitKmh = limit;
-                episodeTid = gettid();
+                episodeTid = DeviceEventsUtils.gettid();
                 if (DrivingContext.counts(episodeContext)) {
                     new Handler(Looper.getMainLooper()).post(SpeedViolation::speedViolationAlert);
                 }
@@ -268,20 +268,11 @@ public class SpeedViolation {
     // Called on every trusted fix, so the answer is reused for a few seconds.
     private static int tripStatus() {
         long now = System.currentTimeMillis();
-        if (now - tripStatusCheckedMs < TRIP_STATUS_CACHE_MS) {
-            return tripStatusCount;
+        if (now - tripStatusCheckedMs >= TRIP_STATUS_CACHE_MS) {
+            tripStatusCount = DeviceEventsUtils.liveTripCount();
+            tripStatusCheckedMs = now;
         }
-
-        SQLiteDatabase database = sqlitewraper.getDatabase();
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        tripStatusCount = tripflagCount;
-        tripStatusCheckedMs = now;
-        return tripflagCount;
+        return tripStatusCount;
     }
 
     @SuppressLint("WrongConstant")
@@ -370,18 +361,4 @@ public class SpeedViolation {
 
     }
 
-    public static String gettid(){
-        Cursor tripflag = database.rawQuery("select tid from lat_plug where trip_status = 0", null);
-        tripflag.moveToLast();
-        int tripflagCount = tripflag.getCount();
-
-        String tid = "0";
-
-        if (tripflagCount>0){
-            tid = tripflag.getString(0);
-        }
-
-        tripflag.close();
-        return tid;
-    }
 }

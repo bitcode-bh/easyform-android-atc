@@ -724,7 +724,7 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
 //            if(TripMapUtils.SAFETYDETECTION.equalsIgnoreCase("true"))
 //            {
-//                boolean check12 = isMyServiceRunning(sqlitewraper.context,
+//                boolean check12 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                        SafetyDetectionService.class.getName());
 //                if (check12) {
 //                    Intent mIntent1 = new Intent(sqlitewraper.context, SafetyDetectionService.class);
@@ -1851,18 +1851,6 @@ public class TripMapUi extends FragmentActivity implements OnMapReadyCallback, R
 
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     private Location getFinalEndLocation() {
 

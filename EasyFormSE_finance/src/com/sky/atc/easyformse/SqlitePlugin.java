@@ -72,11 +72,11 @@ public class SqlitePlugin extends CordovaPlugin {
         //To Exit from Application
         if (action.equalsIgnoreCase("exitapp")) {
             // trip start and check flag after open trip map exit app time
-             if (tripStatus() > 0)
+             if (DeviceEventsUtils.liveTripCount() > 0)
              {
                  if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true"))
                  {
-                     boolean check = isMyServiceRunning(sqlitewraper.context,
+                     boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                              FloatingBubbleService.class.getName());
 
                      if(check)
@@ -209,18 +209,6 @@ public class SqlitePlugin extends CordovaPlugin {
     }
 
     //to service running or not
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     void call() {
 
@@ -238,7 +226,7 @@ public class SqlitePlugin extends CordovaPlugin {
         a_t.close();
 
         if (!username.equalsIgnoreCase("0")) {
-            boolean check = isMyServiceRunning(sqlitewraper.context,
+            boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                     newfused.class.getName());
             if (!check) {
 
@@ -249,17 +237,5 @@ public class SqlitePlugin extends CordovaPlugin {
         }
     }
 
-    private static int tripStatus() {
-
-        SQLiteDatabase database = sqlitewraper.getDatabase();
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        Log.d("TripCount ", tripflagCount + "");
-        tripflag.close();
-        return tripflagCount;
-    }
 
 }

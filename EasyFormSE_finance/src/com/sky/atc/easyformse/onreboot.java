@@ -66,18 +66,6 @@ public class onreboot extends BroadcastReceiver {
 
 	}
 
-	private boolean isMyServiceRunning(Context context, String Myservice) {
-		ActivityManager manager = (ActivityManager) context
-				.getSystemService(Context.ACTIVITY_SERVICE);
-		for (RunningServiceInfo service : manager
-				.getRunningServices(Integer.MAX_VALUE)) {
-			if (Myservice.equals(service.service.getClassName())) {
-
-				return true;
-			}
-		}
-		return false;
-	}
 
 
 	void ala_new1(String key, String value, int id, long start, long repeat,

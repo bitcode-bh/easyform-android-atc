@@ -1862,7 +1862,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
                     //Need to change the logic from TID
                     if (!sidlat.equalsIgnoreCase("0")) {
-                        boolean check2 = isMyServiceRunning(sqlitewraper.context,
+                        boolean check2 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                                 AutoTripStopService.class.getName());
 
                         if (check2) {
@@ -2280,18 +2280,6 @@ public class f_upload_new_structure extends WakefulIntentService {
 
    }*/
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     void cursorClose(Cursor c) {
         try {
@@ -3214,7 +3202,7 @@ public class f_upload_new_structure extends WakefulIntentService {
 
     private void fcmDataUpload() {
 
-        boolean check4 = isMyServiceRunning(sqlitewraper.context,
+        boolean check4 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                 upload_clone.class.getName());
         if (!check4) {
             Intent i = new Intent(sqlitewraper.context,

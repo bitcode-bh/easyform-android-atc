@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse.jobshedulers;
 
+import com.sky.atc.easyformse.DeviceEventsUtils;
+
 import android.app.ActivityManager;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
@@ -36,7 +38,7 @@ public class TestJobService extends JobService {
         database=sqlitewraper.getDatabase();
 
         Log.d("###onStartJob", "that");
-//        boolean check = isMyServiceRunning(sqlitewraper.context,
+//        boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                newfused_gps.class.getName());
 //        if (!check) {
 //
@@ -51,7 +53,7 @@ public class TestJobService extends JobService {
 //
 //                }else {
 //
-//                    if (tripStatus()>0) {
+//                    if (DeviceEventsUtils.liveTripCount()>0) {
 //
 ////                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
 ////                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -66,7 +68,7 @@ public class TestJobService extends JobService {
 //        }
 
 
-        boolean checkfused = isMyServiceRunning(sqlitewraper.context,
+        boolean checkfused = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                 newfused.class.getName());
         if (!checkfused) {
 
@@ -83,7 +85,7 @@ public class TestJobService extends JobService {
 
                 } else {
 
-                    if (tripStatus() > 0) {
+                    if (DeviceEventsUtils.liveTripCount() > 0) {
                         Intent i = new Intent(sqlitewraper.context, newfused.class);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             sqlitewraper.context.startForegroundService(i);
@@ -97,7 +99,7 @@ public class TestJobService extends JobService {
 
         //hide newfused and activity_recognition code  23-07-2025
         // enbale activity_recognition code  07082026
-        boolean checkfused2 = isMyServiceRunning(sqlitewraper.context,
+        boolean checkfused2 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                 Activity_recognition.class.getName());
         if (!checkfused2) {
 
@@ -112,7 +114,7 @@ public class TestJobService extends JobService {
 
                 }else {
 
-                    if (tripStatus()>0) {
+                    if (DeviceEventsUtils.liveTripCount()>0) {
                         Intent i = new Intent(sqlitewraper.context, Activity_recognition.class);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             sqlitewraper.context.startForegroundService(i);
@@ -130,31 +132,10 @@ public class TestJobService extends JobService {
         return true;
     }
 
-    private int tripStatus(){
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
 
     @Override
     public boolean onStopJob(JobParameters params) {
         return true;
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 }

@@ -40,7 +40,7 @@ public class gpsreciever extends BroadcastReceiver {
         Log.d("####gpsreceiver", "1");
 
         if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
-            boolean check = isMyServiceRunning(sqlitewraper.context,
+            boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                     GpsReceiverService.class.getName());
 
             if (check) {
@@ -59,16 +59,4 @@ public class gpsreciever extends BroadcastReceiver {
         }
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 }

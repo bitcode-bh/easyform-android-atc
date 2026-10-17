@@ -654,7 +654,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     String flow_type = "";
                     String udf_data = "";
 
-                    boolean check = isMyServiceRunning(sqlitewraper.context,
+                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             DownloadListService.class.getName());
                     if (!check) {
                         Intent z_n12 = new Intent(sqlitewraper.context,
@@ -662,7 +662,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         WakefulIntentService.sendWakefulWork(sqlitewraper.context,
                                 z_n12);
                     }
-                    boolean check1 = isMyServiceRunning(sqlitewraper.context,
+                    boolean check1 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             NotificationListener.class.getName());
                     if (!check1) {
 
@@ -749,7 +749,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 }
                 if (message.equalsIgnoreCase("uploadForce")) {
 
-                    boolean check = isMyServiceRunning(sqlitewraper.context,
+                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             f_upload_new_structure.class.getName());
                     if (!check) {
                         Intent z_n12 = new Intent(sqlitewraper.context,
@@ -768,7 +768,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     String Company_Id = data.get("CompanyId");
                     String IssendCurrent = data.get("IssendCurrent");
 
-//                    boolean check1 = isMyServiceRunning(sqlitewraper.context,
+//                    boolean check1 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                            NotificationListener.class.getName());
 //                    if (check1) {
 //
@@ -822,18 +822,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     private static class GetDbUploadAsync extends AsyncTask<String, String, String> {
 

@@ -253,8 +253,22 @@ public class DeviceEventsUtils {
         }
     }
 
+    /** How many trips are live (lat_plug.trip_status = 0); 0 or 1 in practice. */
+    public static int liveTripCount() {
+        android.database.Cursor c = null;
+        try {
+            c = sqlitewraper.getDatabase().rawQuery("select * from lat_plug where trip_status = 0", null);
+            return c.getCount();
+        } catch (Exception e) {
+            return 0;   // database not ready: treat as no live trip
+        } finally {
+            if (c != null) c.close();
+        }
+    }
+
+    /** The live trip's tid, or "0" when none is live. */
     public static String gettid(){
-        android.database.Cursor tripflag = database.rawQuery("select tid from lat_plug where trip_status = 0", null);
+        android.database.Cursor tripflag = sqlitewraper.getDatabase().rawQuery("select tid from lat_plug where trip_status = 0", null);
         tripflag.moveToLast();
         int tripflagCount = tripflag.getCount();
 

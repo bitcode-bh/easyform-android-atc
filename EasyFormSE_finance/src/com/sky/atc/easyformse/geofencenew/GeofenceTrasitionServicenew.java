@@ -144,7 +144,7 @@ public class GeofenceTrasitionServicenew extends IntentService {
 //                        reDrawNewCircle();
 //                    }
                 }
-                if(tripStatus() > 0 ) {
+                if(DeviceEventsUtils.liveTripCount() > 0 ) {
                     if (TripMapUtils.TRIPMAPBACK.equalsIgnoreCase("true")) {
                         sqlitewraper.context.startActivity(pipIntent);
                     }
@@ -225,15 +225,6 @@ public class GeofenceTrasitionServicenew extends IntentService {
         Calendar now = Calendar.getInstance();
         int hour = now.get(Calendar.HOUR_OF_DAY);
         return hour >= 18;
-    }
-    private int tripStatus(){
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
     }
 
     //    // Create a detail message with Geofences received

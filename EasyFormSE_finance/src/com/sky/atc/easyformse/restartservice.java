@@ -30,7 +30,7 @@ public class restartservice extends BroadcastReceiver {
         database=sqlitewraper.getDatabase();
 
         try {
-            boolean check = isMyServiceRunning(sqlitewraper.context,
+            boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                     newfused.class.getName());
             if(check) {
             } else {
@@ -57,17 +57,5 @@ public class restartservice extends BroadcastReceiver {
         }
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
 }

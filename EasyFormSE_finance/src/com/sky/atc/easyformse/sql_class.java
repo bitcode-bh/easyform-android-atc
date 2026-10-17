@@ -135,7 +135,7 @@ public class sql_class implements Runnable {
                 if (query1.equalsIgnoreCase("8")) {
 
                     //start Document download service
-                    boolean check = isMyServiceRunning(sqlitewraper.context,
+                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             resume_wake.class.getName());
                     if (!check) {
                         Intent fupload = new Intent(sqlitewraper.context,
@@ -334,7 +334,7 @@ public class sql_class implements Runnable {
                 // ---upload task at the time of creation (if internet
                 // available-----/
                 else if (q.equalsIgnoreCase("5")) {
-                    boolean check = isMyServiceRunning(sqlitewraper.context,
+                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             f_upload_new_structure.class.getName());
                     if (!check) {
                         Intent fupload = new Intent(sqlitewraper.context,
@@ -726,10 +726,10 @@ public class sql_class implements Runnable {
                 if (gps.equalsIgnoreCase("0")) {
 
 
-//                    boolean check_gps = isMyServiceRunning(sqlitewraper.context,
+//                    boolean check_gps = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                            newfused_gps.class.getName());
 
-                    boolean check = isMyServiceRunning(sqlitewraper.context,
+                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             newfused.class.getName());
 
                     if (check) {
@@ -749,7 +749,7 @@ public class sql_class implements Runnable {
 
                 } else if (gps.equalsIgnoreCase("1") || gps.equalsIgnoreCase("2")) {
 
-                    boolean check = isMyServiceRunning(sqlitewraper.context,
+                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             newfused.class.getName());
                     if (!check) {
 
@@ -764,7 +764,7 @@ public class sql_class implements Runnable {
 
                 } else if (gps.equalsIgnoreCase("2")) {
 
-                    boolean check = isMyServiceRunning(sqlitewraper.context,
+                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             newfused.class.getName());
                     if (check) {
 
@@ -857,7 +857,7 @@ public class sql_class implements Runnable {
             if (isact_track.equalsIgnoreCase("1")) {
                 //hide newfused and activity_recognition code  23-07-2025
                 // enbale activity_recognition code  07082026
-                boolean check4 = isMyServiceRunning(sqlitewraper.context,
+                boolean check4 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                         Activity_recognition.class.getName());
                 if (!check4) {
 
@@ -879,16 +879,4 @@ public class sql_class implements Runnable {
     }
 
     //function for checking if service is running or not
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 }

@@ -373,9 +373,9 @@ public class GpsReceiverService extends WakefulIntentService {
 
                 } else if (gps.equalsIgnoreCase("1") || gps.equalsIgnoreCase("2")) {
 
-                    if(tripStatus()>0){
+                    if(DeviceEventsUtils.liveTripCount()>0){
                         //hide newfused and activity_recognition code  23-07-2025
-//                        boolean check = isMyServiceRunning(sqlitewraper.context,
+//                        boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                                newfused_gps.class.getName());
 //                        if (!check) {
 //
@@ -389,7 +389,7 @@ public class GpsReceiverService extends WakefulIntentService {
 //
 //                        }
 
-                        boolean check1 = isMyServiceRunning(sqlitewraper.context,
+                        boolean check1 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                                 newfused.class.getName());
                         if (!check1) {
 
@@ -437,7 +437,7 @@ public class GpsReceiverService extends WakefulIntentService {
             if (isact_track.equalsIgnoreCase("1")) {
                 //hide newfused and activity_recognition code  23-07-2025
                 // enbale activity_recognition code  07082026
-                boolean check4 = isMyServiceRunning(sqlitewraper.context,
+                boolean check4 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                         Activity_recognition.class.getName());
                 if (check4) {
                 } else {
@@ -461,18 +461,6 @@ public class GpsReceiverService extends WakefulIntentService {
     }
 
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     void gps() {
         Cursor a_t12 = database.rawQuery(
@@ -488,8 +476,8 @@ public class GpsReceiverService extends WakefulIntentService {
 
             if (gps.equalsIgnoreCase("2")) {
 
-                if (tripStatus() > 0) {
-                    boolean check = isMyServiceRunning(sqlitewraper.context,
+                if (DeviceEventsUtils.liveTripCount() > 0) {
+                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                             newfused.class.getName());
                     if (check) {
                         Intent i = new Intent(sqlitewraper.context, newfused.class);
@@ -497,7 +485,7 @@ public class GpsReceiverService extends WakefulIntentService {
                     }
 
                     //hide newfused and activity_recognition code  23-07-2025
-//                    boolean check1 = isMyServiceRunning(sqlitewraper.context,
+//                    boolean check1 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 //                            newfused_gps.class.getName());
 //                    if (check1) {
 //                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
@@ -509,17 +497,6 @@ public class GpsReceiverService extends WakefulIntentService {
     }
 
 
-    private int tripStatus(){
-
-        SQLiteDatabase database=sqlitewraper.getDatabase();
-
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
 
 
 }

@@ -18,7 +18,7 @@ public class ScreenOnoffUtils {
 
     static void insertIntoScreenoff(String action) {
 
-        if (tripStatus() > 0) {
+        if (DeviceEventsUtils.liveTripCount() > 0) {
 
             if (action.equalsIgnoreCase("android.intent.action.SCREEN_OFF")) {
                 offtime = System.currentTimeMillis();
@@ -37,16 +37,6 @@ public class ScreenOnoffUtils {
         }
     }
 
-    private static int tripStatus() {
-
-        SQLiteDatabase database = sqlitewraper.getDatabase();
-        android.database.Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
 
     private static boolean isValidEntry(long currentofftime) {
 

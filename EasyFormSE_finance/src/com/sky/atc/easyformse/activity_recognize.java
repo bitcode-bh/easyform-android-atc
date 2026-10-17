@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse;
 
+import com.sky.atc.easyformse.trip.engine.TripDistanceMeter;
+
 import static android.content.Context.LOCATION_SERVICE;
 
 import java.util.ArrayList;
@@ -183,7 +185,7 @@ public class activity_recognize extends BroadcastReceiver {
 
            // if isevent tag true print toast msg and handle physical events(28-11-2023)
             if(isEvents.equalsIgnoreCase("true")) {
-                if(tripStatus() > 0) {
+                if(DeviceEventsUtils.liveTripCount() > 0) {
                     // if ShowEventToast is true show toast msg other wise not show toast (13-02-2024)
                     if(ShowEventToast.equalsIgnoreCase("true")) {
                         Toast.makeText(context, "Current Activity: " + mostProbableName, Toast.LENGTH_LONG).show();
@@ -204,7 +206,7 @@ public class activity_recognize extends BroadcastReceiver {
                     if(StillUploadEventCount == 5)
                     {
                         // StillUploadEventCount 5 call still violation event
-                        boolean check3 = isMyServiceRunning(sqlitewraper.context,
+                        boolean check3 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                                 Event.class.getName());
                         if (check3) {
                         } else {
@@ -514,7 +516,7 @@ public class activity_recognize extends BroadcastReceiver {
 
                 // check and show still notification logic
                 if (mostProbableName.equalsIgnoreCase("Still")) {
-                    int tripstatus = tripStatus();
+                    int tripstatus = DeviceEventsUtils.liveTripCount();
                     if (tripstatus == 1) {
                         // trip is started
                         // stillviolation_event flag true start timer other wise not start timer
@@ -581,7 +583,7 @@ public class activity_recognize extends BroadcastReceiver {
             if(isEvents.equalsIgnoreCase("true")) {
                 if (IsCheckAlaraSet) {
 
-                    if ( tripStatus() == 1) {
+                    if ( DeviceEventsUtils.liveTripCount() == 1) {
                         Event_strt = pref.getString("tblevent_start","0");
                         time_c = System.currentTimeMillis();
                         long duration = time_c - Long.parseLong(Event_strt);
@@ -651,18 +653,6 @@ public class activity_recognize extends BroadcastReceiver {
 
     }
 
-    private boolean isMyServiceRunning(Context context, String Myservice) {
-        ActivityManager manager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (RunningServiceInfo service : manager
-                .getRunningServices(Integer.MAX_VALUE)) {
-            if (Myservice.equals(service.service.getClassName())) {
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     //define the activity
     private static DrivingContext.Activity contextActivity(int type) {
@@ -735,20 +725,7 @@ public class activity_recognize extends BroadcastReceiver {
 
     }
 
-    private int tripStatus() {
 
-        SQLiteDatabase database = sqlitewraper.getDatabase();
-        Cursor tripflag = database.rawQuery(
-                "select * from lat_plug where trip_status = 0", null);
-        tripflag.moveToFirst();
-        int tripflagCount = tripflag.getCount();
-        tripflag.close();
-        return tripflagCount;
-    }
-
-    private double deg2rad(double deg) {
-        return (deg * Math.PI / 180.0);
-    }
 
     public void reqLocation() {
 
@@ -805,20 +782,11 @@ public class activity_recognize extends BroadcastReceiver {
     }
 
     double find_distance() {
-        final int R = 6371; // Radius of the earth
         double distance = 0;
         if (eve_lat.equalsIgnoreCase("") || eve_lat.equalsIgnoreCase("NA")) {
 
         } else {
-            Double latDistance = deg2rad((Double.parseDouble(eve_lat)) - ((double) (mlat)));
-            Double lonDistance = deg2rad((Double.parseDouble(eve_lon)) - (double) (mlon));
-            Double a = Math.sin(latDistance / 2)
-                    * Math.sin(latDistance / 2)
-                    + Math.cos(deg2rad(Double.parseDouble(eve_lat)))
-                    * Math.cos(deg2rad((double) (mlat)))
-                    * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-            Double dist_m = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            distance = R * dist_m * 1000; // convert to meters
+            distance = TripDistanceMeter.haversine(Double.parseDouble(eve_lat), Double.parseDouble(eve_lon), mlat, mlon);
 
         }
         return distance;
@@ -892,7 +860,7 @@ public class activity_recognize extends BroadcastReceiver {
 
                 isInserted = true;
 
-                boolean check3 = isMyServiceRunning(sqlitewraper.context,
+                boolean check3 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
                         Event.class.getName());
                 if (check3) {
                 } else {
@@ -952,7 +920,7 @@ public class activity_recognize extends BroadcastReceiver {
         if (!alertSent && duration >= DRIVING_ALERT_TIME) {
             // Only driving on a live trip counts. The context is kept for when the event is
             // recorded at the end of the drive, by which time the trip may have ended.
-            DrivingContext.Context drivingContext = DrivingContext.current(tripStatus() > 0,
+            DrivingContext.Context drivingContext = DrivingContext.current(DeviceEventsUtils.liveTripCount() > 0,
                     pref.getString("vehicle_type", "Private-2W"), currentTime);
             if (DrivingContext.counts(drivingContext)) {
                 Show_Driving_Alert();

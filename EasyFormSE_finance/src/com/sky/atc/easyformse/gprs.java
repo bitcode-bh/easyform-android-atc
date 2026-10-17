@@ -85,7 +85,7 @@ public class gprs extends BroadcastReceiver {
 				|| conMgr.getNetworkInfo(1).getState() == NetworkInfo.State.CONNECTING
 				|| sqlitewraper.internetflag == 1 || icheck == true) {
 
-			boolean check1 = isMyServiceRunning(sqlitewraper.context,
+			boolean check1 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
 					f_upload_new_structure.class.getName());
 			if (check1) {
 			} else {
@@ -310,16 +310,4 @@ public class gprs extends BroadcastReceiver {
 		}
 	}
 
-	private boolean isMyServiceRunning(Context context, String Myservice) {
-		ActivityManager manager = (ActivityManager) context
-				.getSystemService(Context.ACTIVITY_SERVICE);
-		for (RunningServiceInfo service : manager
-				.getRunningServices(Integer.MAX_VALUE)) {
-			if (Myservice.equals(service.service.getClassName())) {
-
-				return true;
-			}
-		}
-		return false;
-	}
 }
