@@ -25,8 +25,13 @@ public final class SiteIndex {
 
     private static final String TAG = "TRIP_ENGINE";
     private static final long RELOAD_MS = 15 * 60_000L;
-    /** Used when neither the site nor its flow gives a radius. */
-    private static final float DEFAULT_RADIUS_M = 100f;
+    /**
+     * Used when neither the site nor its flow gives a radius. Sites are telecom towers: a small
+     * compound with parking at the gate, often next to a road, so the default stays tight.
+     */
+    private static final float DEFAULT_RADIUS_M = 50f;
+    /** More sites than this at one exact point is a placeholder location, not a tower. */
+    private static final int PLACEHOLDER_MIN_SHARED = 10;
     /** Inside once within radius plus this much of the fix's accuracy; stays inside with more. */
     private static final float ENTER_ACC_ALLOWANCE_M = 25f;
     private static final float STAY_ACC_ALLOWANCE_M = 50f;
@@ -73,6 +78,8 @@ public final class SiteIndex {
         sites.clear();
         if (db == null) return;
         Map<String, Float> flowRadius = new HashMap<>();
+        Map<String, Integer> perPoint = new HashMap<>();
+        List<Site> loaded = new ArrayList<>();
         Cursor c = null;
         try {
             c = db.rawQuery("select place_id, latitude, longitude, radius, flow_id from geofence_tracking "
@@ -84,6 +91,8 @@ public final class SiteIndex {
                     String id = c.getString(0);
                     double lat = Double.parseDouble(c.getString(1));
                     double lng = Double.parseDouble(c.getString(2));
+                    // Impossible coordinates are in the site list too; skip them.
+                    if (Math.abs(lat) > 90 || Math.abs(lng) > 180 || (Math.abs(lat) < 0.5 && Math.abs(lng) < 0.5)) continue;
                     float r = 0f;
                     try { r = Float.parseFloat(c.getString(3)); } catch (Exception ignored) { }
                     if (r <= 0) {
@@ -95,7 +104,11 @@ public final class SiteIndex {
                         }
                         r = fr;
                     }
-                    if (id != null) sites.add(new Site(id, lat, lng, r > 0 ? r : DEFAULT_RADIUS_M));
+                    if (id == null) continue;
+                    loaded.add(new Site(id, lat, lng, r > 0 ? r : DEFAULT_RADIUS_M));
+                    String key = pointKey(lat, lng);
+                    Integer n = perPoint.get(key);
+                    perPoint.put(key, n == null ? 1 : n + 1);
                 } catch (Exception ignored) {
                     // One bad row must not drop the rest.
                 }
@@ -105,6 +118,16 @@ public final class SiteIndex {
         } finally {
             if (c != null) c.close();
         }
+        // Many sites at one exact point is a placeholder (e.g. thousands at 22.0, 55.0).
+        for (Site s : loaded) {
+            Integer n = perPoint.get(pointKey(s.lat, s.lng));
+            if (n == null || n <= PLACEHOLDER_MIN_SHARED) sites.add(s);
+        }
+        Log.d(TAG, "sites usable " + sites.size() + " of " + loaded.size());
+    }
+
+    private static String pointKey(double lat, double lng) {
+        return Math.round(lat * 1e5) + "," + Math.round(lng * 1e5);
     }
 
     // Same lookup as GeoFenceDraw.getRadiusfromFlowmaster(): data -> geotracking[0].radius.

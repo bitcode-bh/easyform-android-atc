@@ -50,7 +50,7 @@ public final class MotionTimeline {
         switch (s) {
             case DRIVING: return 20_000L;
             case IDLE: return 2 * 60_000L;
-            case ON_SITE: return 3 * 60_000L;
+            case ON_SITE: return 5 * 60_000L;   // towers sit by roads: a traffic stop isn't a visit
             case WALKING: return 60_000L;
             case STOPPED: return 3 * 60_000L;
             default: return 0L;

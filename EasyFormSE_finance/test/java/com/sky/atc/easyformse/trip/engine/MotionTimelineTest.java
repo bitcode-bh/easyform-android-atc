@@ -52,7 +52,7 @@ public class MotionTimelineTest {
     public void arrivingAtASiteIsOnSite() {
         feed(120, 40, null, V);
         long arrive = now;
-        feed(240, 1, "SITE-7", FOOT);
+        feed(360, 1, "SITE-7", FOOT);
         assertEquals(MotionTimeline.State.ON_SITE, t.state());
         assertEquals(arrive, t.stateStartMs());
     }
