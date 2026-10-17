@@ -30,11 +30,6 @@ public final class Fix {
     public final double altitudeM;
 
     public Fix(double lat, double lng, float accuracyM, float speedMps, float bearingDeg,
-               long timeMs, long ageMs, int satellites) {
-        this(lat, lng, accuracyM, speedMps, bearingDeg, timeMs, ageMs, satellites, Double.NaN);
-    }
-
-    public Fix(double lat, double lng, float accuracyM, float speedMps, float bearingDeg,
                long timeMs, long ageMs, int satellites, double altitudeM) {
         this.lat = lat;
         this.lng = lng;

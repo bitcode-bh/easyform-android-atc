@@ -28,6 +28,12 @@ public final class MotionFeatures {
     /** Only turns with at least this much centripetal force say anything about lean. */
     private static final double MIN_TURN_MPS2 = 0.5;
     private static final int[][] BANDS = {{1, 3}, {4, 7}, {8, 12}, {13, 20}};
+    /** Every feature, in output order. */
+    private static final String[] KEYS = {"accel_hz", "accel_mag_mean", "accel_mag_std", "vert_vib_rms",
+            "horiz_mean", "horiz_p90", "tilt_std_deg", "tilt_p95_deg", "vib_energy", "vib_share_1_3hz",
+            "vib_share_4_7hz", "vib_share_8_12hz", "vib_share_13_20hz", "gyro_mean_dps", "gyro_std_dps",
+            "yaw_rate_dps", "speed_mean_kmh", "speed_std_kmh", "speed_max_kmh", "speed_change_p90_mps2",
+            "heading_rate_dps", "centripetal_mps2", "lean_ratio"};
 
     private MotionFeatures() {
     }
@@ -43,6 +49,7 @@ public final class MotionFeatures {
                                               float[] gx, float[] gy, float[] gz, long[] gt, int ng,
                                               double[] speedKmh, float[] bearingDeg, long[] gpsMs, int ngps) {
         Map<String, Double> f = new LinkedHashMap<>();
+        for (String k : KEYS) f.put(k, Double.NaN);   // anything not computed below stays NaN
         double windowSec = na > 1 ? (at[na - 1] - at[0]) / 1e9 : 0;
         f.put("accel_hz", windowSec > 0 ? (na - 1) / windowSec : Double.NaN);
 
@@ -51,9 +58,7 @@ public final class MotionFeatures {
         for (int i = 0; i < na; i++) { mx += ax[i]; my += ay[i]; mz += az[i]; }
         double mn = Math.sqrt(mx * mx + my * my + mz * mz);
         if (na == 0 || mn == 0) {
-            putAllNaN(f);
             putGps(f, speedKmh, bearingDeg, gpsMs, ngps);
-            f.put("lean_ratio", Double.NaN);
             return f;
         }
         double ux = mx / mn, uy = my / mn, uz = mz / mn;
@@ -125,10 +130,6 @@ public final class MotionFeatures {
             f.put("gyro_mean_dps", Math.toDegrees(meanW));
             f.put("gyro_std_dps", Math.toDegrees(std(w, ng, meanW)));
             f.put("yaw_rate_dps", Math.toDegrees(sumYaw / ng));
-        } else {
-            f.put("gyro_mean_dps", Double.NaN);
-            f.put("gyro_std_dps", Double.NaN);
-            f.put("yaw_rate_dps", Double.NaN);
         }
 
         putGps(f, speedKmh, bearingDeg, gpsMs, ngps);
@@ -201,13 +202,7 @@ public final class MotionFeatures {
 
     private static void putGps(Map<String, Double> f, double[] speedKmh, float[] bearingDeg, long[] gpsMs,
                                int n) {
-        if (n == 0) {
-            for (String k : new String[]{"speed_mean_kmh", "speed_std_kmh", "speed_max_kmh",
-                    "speed_change_p90_mps2", "heading_rate_dps", "centripetal_mps2"}) {
-                f.put(k, Double.NaN);
-            }
-            return;
-        }
+        if (n == 0) return;
         double sum = 0, max = 0;
         for (int i = 0; i < n; i++) { sum += speedKmh[i]; max = Math.max(max, speedKmh[i]); }
         double mean = sum / n;
@@ -236,14 +231,6 @@ public final class MotionFeatures {
         double centripetal = nRate > 0 ? sumCentripetal / nRate : Double.NaN;
         f.put("heading_rate_dps", nRate > 0 ? sumRate / nRate : Double.NaN);
         f.put("centripetal_mps2", centripetal);
-    }
-
-    private static void putAllNaN(Map<String, Double> f) {
-        for (String k : new String[]{"accel_mag_mean", "accel_mag_std", "vert_vib_rms", "horiz_mean", "horiz_p90",
-                "tilt_std_deg", "tilt_p95_deg", "vib_energy", "vib_share_1_3hz", "vib_share_4_7hz",
-                "vib_share_8_12hz", "vib_share_13_20hz", "gyro_mean_dps", "gyro_std_dps", "yaw_rate_dps"}) {
-            f.put(k, Double.NaN);
-        }
     }
 
     private static double mean(double[] v, int n) {

@@ -179,13 +179,6 @@ public final class MotionTimeline {
     }
 
     public static String label(State s) {
-        switch (s) {
-            case DRIVING: return "driving";
-            case IDLE: return "idle";
-            case ON_SITE: return "on_site";
-            case WALKING: return "walking";
-            case STOPPED: return "stopped";
-            default: return "no_signal";
-        }
+        return s.name().toLowerCase(java.util.Locale.ROOT);
     }
 }

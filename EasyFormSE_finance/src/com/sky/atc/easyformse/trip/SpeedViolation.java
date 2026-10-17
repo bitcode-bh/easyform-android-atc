@@ -74,7 +74,7 @@ public class SpeedViolation {
      * second while driving. Records at most one over-speed event per episode; see
      * {@link OverspeedEpisodes} for when an episode starts, ends and counts.
      */
-    public static void onSpeedViolationOccured(float speed, double lat, double lon, String provider, String tripflag, float acc,String timelocation,String gps_speed) {
+    public static void onSpeedViolationOccured(float speed, double lat, double lon, String provider, float acc, String gps_speed) {
 
         //convert speed to m/s to km/h
         float ac_speed = speed * 3.6f;

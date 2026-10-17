@@ -156,7 +156,6 @@ public class newfused extends Service implements LocationListener {
     private long maxSpeedMilli = 0L;
     private boolean speedViolation ;
     private boolean callEventInserted = false;
-    private static float CALL_SPEED_LIMIT = 15;
     private boolean simCallActive = false;
     private boolean whatsappCallActive = false;
 
@@ -554,7 +553,7 @@ public class newfused extends Service implements LocationListener {
             if (!trusted && quality == FixValidator.Reason.ACCURACY && fix.hasSpeed()
                     && fix.accuracyM <= DEGRADED_MAX_ACC_M && nowMs - lastTrustedMs >= DEGRADED_AFTER_MS
                     && placed != PositionEstimator.Result.REJECTED_OUTLIER) {
-                Fix relaxed = new Fix(fix.lat, fix.lng, 10f, fix.speedMps, fix.bearingDeg, fix.timeMs, fix.ageMs, fix.satellites);
+                Fix relaxed = new Fix(fix.lat, fix.lng, 10f, fix.speedMps, fix.bearingDeg, fix.timeMs, fix.ageMs, fix.satellites, Double.NaN);
                 degraded = FixValidator.validate(relaxed, lastTrustedFix) == FixValidator.Reason.OK;
             }
 
@@ -576,7 +575,7 @@ public class newfused extends Service implements LocationListener {
                     SpeedViolation.onSpeedViolationOccured(speedMps,
                             filteredLocation.getLatitude(), filteredLocation.getLongitude(),
                             filteredLocation.getProvider() == null ? "fused" : filteredLocation.getProvider(),
-                            "2", fix.accuracyM, String.valueOf(nowMs), String.valueOf(speedMps));
+                            fix.accuracyM, String.valueOf(speedMps));
                 }
             } else if (meterTid != null) {
                 // The trip just ended: save its distance and record any speeding episode still open.
@@ -630,8 +629,9 @@ public class newfused extends Service implements LocationListener {
             saveTripDistance();
             meterTid = tid;
             distanceMeter.reset();
-            distanceMeter.resume(TripEngineStore.loadDistance(sqlitewraper.getDatabase(), tid));
-            degradedMeters = TripEngineStore.loadDegraded(sqlitewraper.getDatabase(), tid);
+            double[] saved = TripEngineStore.load(sqlitewraper.getDatabase(), tid);
+            distanceMeter.resume(saved[0]);
+            degradedMeters = saved[1];
             meterSavedMs = System.currentTimeMillis();
         }
         double added = distanceMeter.add(filtered.getLatitude(), filtered.getLongitude(), fix.accuracyM, fix.timeMs,
@@ -980,7 +980,6 @@ public class newfused extends Service implements LocationListener {
             }
         } catch (NumberFormatException ignored) {
         }
-        CALL_SPEED_LIMIT = limit;
         callSpeedLimitKmh = limit;
         return limit;
     }

@@ -78,13 +78,11 @@ public final class MotionFeatureLogger implements SensorEventListener {
     private String windowTid;
     private String windowVehicleType;
     private TerrainTracker terrain;
-    private String windowMotionAtStart;
 
     /** The terrain tracker whose features label each window (read on the caller's thread). */
     public void setTerrain(TerrainTracker terrain) {
         this.terrain = terrain;
     }
-    private static boolean tableReady = false;
 
     public MotionFeatureLogger(Context context, SQLiteDatabase db) {
         this.appContext = context.getApplicationContext();
@@ -110,7 +108,7 @@ public final class MotionFeatureLogger implements SensorEventListener {
             boolean driving = speedKmh >= MIN_SPEED_KMH;
             long every = driving ? WINDOW_EVERY_MS : WINDOW_NOT_DRIVING_EVERY_MS;
             if (nowMs - lastWindowEndMs >= every) {
-                windowMotionAtStart = motion == null ? null : MotionTimeline.label(motion);
+                currentMotion = motion;
                 begin(tid, vehicleType, nowMs);
             }
             return;
@@ -179,7 +177,7 @@ public final class MotionFeatureLogger implements SensorEventListener {
         final boolean btAudio = bluetoothAudioConnected();
         final String context = DrivingContext.label(DrivingContext.current(true, vehicleType, nowMs));
         // Labels, read here on the caller's thread: rule-based motion state and terrain.
-        final String motionLabel = currentMotion != null ? MotionTimeline.label(currentMotion) : windowMotionAtStart;
+        final String motionLabel = currentMotion != null ? MotionTimeline.label(currentMotion) : null;
         final Map<String, Double> terrainFeatures = terrain != null ? terrain.features() : null;
         final java.util.List<String> terrainTags = terrainFeatures != null ? TerrainTracker.tags(terrainFeatures) : null;
         handler.post(new Runnable() {
@@ -282,28 +280,16 @@ public final class MotionFeatureLogger implements SensorEventListener {
 
     private void store(String tid, long startMs, long durMs, String vehicleType, String context,
                        boolean btAudio, String features) {
-        if (db == null) return;
-        try {
-            if (!tableReady) {
-                db.execSQL("CREATE TABLE IF NOT EXISTS trip_motion_features ("
-                        + "_id INTEGER PRIMARY KEY AUTOINCREMENT, tid TEXT, start_ms INTEGER, dur_ms INTEGER, "
-                        + "vehicle_type TEXT, context TEXT, bt_audio INTEGER, features TEXT)");
-                tableReady = true;
-            }
-            ContentValues v = new ContentValues();
-            v.put("tid", tid);
-            v.put("start_ms", startMs);
-            v.put("dur_ms", durMs);
-            v.put("vehicle_type", vehicleType);
-            v.put("context", context);
-            v.put("bt_audio", btAudio ? 1 : 0);
-            v.put("features", features);
-            long id = db.insert("trip_motion_features", null, v);
-            if (id > MAX_ROWS && id % 500 == 0) {
-                db.execSQL("delete from trip_motion_features where _id <= " + (id - MAX_ROWS));
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "store failed", e);
-        }
+        ContentValues v = new ContentValues();
+        v.put("tid", tid);
+        v.put("start_ms", startMs);
+        v.put("dur_ms", durMs);
+        v.put("vehicle_type", vehicleType);
+        v.put("context", context);
+        v.put("bt_audio", btAudio ? 1 : 0);
+        v.put("features", features);
+        EngineTables.append(db, "trip_motion_features", "CREATE TABLE IF NOT EXISTS trip_motion_features ("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, tid TEXT, start_ms INTEGER, dur_ms INTEGER, "
+                + "vehicle_type TEXT, context TEXT, bt_audio INTEGER, features TEXT)", v, MAX_ROWS);
     }
 }

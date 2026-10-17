@@ -30,8 +30,6 @@ public final class OverspeedEpisodes {
         STARTED,
         /** Speeding continues; no event yet, or the event was already recorded. */
         ONGOING,
-        /** Below the limit inside an episode, waiting to see if it ends. */
-        DIPPING,
         /** The episode has just qualified as a violation: alert now. */
         EVENT,
         /** A qualified episode is over (no new speeding within the merge gap): record it now. */
@@ -127,7 +125,7 @@ public final class OverspeedEpisodes {
             endedMs = belowSinceMs;
             return Decision.NONE;
         }
-        return Decision.DIPPING;
+        return Decision.ONGOING;   // a dip: wait and see if it ends
     }
 
     public boolean inEpisode() {

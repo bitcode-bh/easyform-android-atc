@@ -49,6 +49,11 @@ public final class TerrainTracker {
 
     private final ArrayDeque<Sample> samples = new ArrayDeque<>();
 
+    /** Every feature, in output order. */
+    private static final String[] KEYS = {"terr_fixes", "terr_acc_mean", "terr_acc_p90", "terr_trusted_ratio",
+            "terr_sats_mean", "terr_km", "terr_speed_mean_kmh", "terr_stops_per_km", "terr_turn_deg_per_km",
+            "terr_climb_m_per_km", "terr_alt_range_m"};
+
     public void add(Fix f, double speedKmh, boolean trusted) {
         samples.addLast(new Sample(f.timeMs, f.lat, f.lng, f.altitudeM, speedKmh, f.accuracyM,
                 f.bearingDeg, trusted, f.satellites));
@@ -63,16 +68,10 @@ public final class TerrainTracker {
     /** Features over the window; NaN where it can't say. */
     public Map<String, Double> features() {
         Map<String, Double> f = new LinkedHashMap<>();
+        for (String k : KEYS) f.put(k, Double.NaN);   // anything not computed below stays NaN
         int n = samples.size();
         f.put("terr_fixes", (double) n);
-        if (n < 2) {
-            for (String k : new String[]{"terr_acc_mean", "terr_acc_p90", "terr_trusted_ratio", "terr_sats_mean",
-                    "terr_km", "terr_speed_mean_kmh", "terr_stops_per_km", "terr_turn_deg_per_km",
-                    "terr_climb_m_per_km", "terr_alt_range_m"}) {
-                f.put(k, Double.NaN);
-            }
-            return f;
-        }
+        if (n < 2) return f;
         double[] acc = new double[n];
         double sumAcc = 0, sumSats = 0, sumSpeed = 0, meters = 0, turn = 0, climb = 0;
         int trusted = 0, satsN = 0, speedN = 0, stops = 0;

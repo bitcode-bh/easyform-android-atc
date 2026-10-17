@@ -11,7 +11,7 @@ public class TripEngineTest {
     private static final double DEG_PER_M = 1.0 / 111_195.0;
 
     private static Fix fix(double northM, float acc, float speed, float bearing, long t) {
-        return new Fix(23.0 + northM * DEG_PER_M, 72.5, acc, speed, bearing, t, 200L, 0);
+        return new Fix(23.0 + northM * DEG_PER_M, 72.5, acc, speed, bearing, t, 200L, 0, Double.NaN);
     }
 
     // ---- FixValidator ----
@@ -24,9 +24,9 @@ public class TripEngineTest {
     @Test
     public void poorAccuracyStaleAndFewSatellitesAreRejected() {
         assertEquals(FixValidator.Reason.ACCURACY, FixValidator.validateFix(fix(0, 25f, 20f, 0f, 1000)));
-        Fix stale = new Fix(23, 72.5, 6f, 20f, 0f, 1000, 5_000L, 0);
+        Fix stale = new Fix(23, 72.5, 6f, 20f, 0f, 1000, 5_000L, 0, Double.NaN);
         assertEquals(FixValidator.Reason.STALE, FixValidator.validateFix(stale));
-        Fix fewSats = new Fix(23, 72.5, 6f, 20f, 0f, 1000, 200L, 3);
+        Fix fewSats = new Fix(23, 72.5, 6f, 20f, 0f, 1000, 200L, 3, Double.NaN);
         assertEquals(FixValidator.Reason.SATELLITES, FixValidator.validateFix(fewSats));
     }
 

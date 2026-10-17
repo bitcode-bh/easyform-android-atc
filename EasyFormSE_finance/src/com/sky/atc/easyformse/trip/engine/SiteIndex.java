@@ -49,7 +49,6 @@ public final class SiteIndex {
     private final List<Site> sites = new ArrayList<>();
     private long loadedMs = 0L;
     private String currentSite;
-    private static boolean segmentTableReady = false;
 
     /** The site the user is inside now, or null. */
     public String siteAt(SQLiteDatabase db, double lat, double lng, float accuracyM, long nowMs) {
@@ -149,28 +148,17 @@ public final class SiteIndex {
 
     /** Saves a finished motion segment on the phone. */
     public static void saveSegment(SQLiteDatabase db, String tid, MotionTimeline.Segment s) {
-        if (db == null || s == null || s.endMs <= s.startMs) return;
-        try {
-            if (!segmentTableReady) {
-                db.execSQL("CREATE TABLE IF NOT EXISTS motion_segments ("
-                        + "_id INTEGER PRIMARY KEY AUTOINCREMENT, tid TEXT, state TEXT, start_ms INTEGER, "
-                        + "end_ms INTEGER, site_id TEXT, meters REAL, max_kmh REAL)");
-                segmentTableReady = true;
-            }
-            ContentValues v = new ContentValues();
-            v.put("tid", tid);
-            v.put("state", MotionTimeline.label(s.state));
-            v.put("start_ms", s.startMs);
-            v.put("end_ms", s.endMs);
-            v.put("site_id", s.siteId);
-            v.put("meters", Math.round(s.meters * 10) / 10.0);
-            v.put("max_kmh", Math.round(s.maxKmh * 10) / 10.0);
-            long id = db.insert("motion_segments", null, v);
-            if (id > 20_000 && id % 500 == 0) {
-                db.execSQL("delete from motion_segments where _id <= " + (id - 20_000));
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "segment save failed", e);
-        }
+        if (s == null || s.endMs <= s.startMs) return;
+        ContentValues v = new ContentValues();
+        v.put("tid", tid);
+        v.put("state", MotionTimeline.label(s.state));
+        v.put("start_ms", s.startMs);
+        v.put("end_ms", s.endMs);
+        v.put("site_id", s.siteId);
+        v.put("meters", Math.round(s.meters * 10) / 10.0);
+        v.put("max_kmh", Math.round(s.maxKmh * 10) / 10.0);
+        EngineTables.append(db, "motion_segments", "CREATE TABLE IF NOT EXISTS motion_segments ("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, tid TEXT, state TEXT, start_ms INTEGER, "
+                + "end_ms INTEGER, site_id TEXT, meters REAL, max_kmh REAL)", v, 20_000);
     }
 }
