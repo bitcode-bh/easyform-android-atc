@@ -930,7 +930,7 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         // from one trip's end to the next trip's start is drawn dashed.
         int runStart = 0;
         for (int i = 1; i <= points.size(); i++) {
-            boolean join = i < points.size() && points.get(i).joinBefore;
+            boolean join = i < points.size() && isBreak(points.get(i - 1), points.get(i));
             boolean endOfRun = (i == points.size()) || join
                     || (points.get(i).violation != points.get(runStart).violation);
             if (!endOfRun) {
@@ -1003,18 +1003,40 @@ public class VtTripTrackingMapActivity extends AppCompatActivity implements OnMa
         map.setPadding(0, 0, 0, bottom);
     }
 
+    /**
+     * True when the line from {@code a} to {@code b} wasn't driven as recorded: a join between
+     * trips in a day route, or a GPS gap (a long silence with real movement, or a jump faster
+     * than a vehicle). Drawn dashed, never as a solid straight "flight" line.
+     */
+    static boolean isBreak(TrackPathReader.TrackPoint a, TrackPathReader.TrackPoint b) {
+        if (b.joinBefore) return true;
+        float[] out = new float[1];
+        Location.distanceBetween(a.position.latitude, a.position.longitude,
+                b.position.latitude, b.position.longitude, out);
+        float d = out[0];
+        if (a.timeMs > 0 && b.timeMs > a.timeMs) {
+            double dtSec = (b.timeMs - a.timeMs) / 1000.0;
+            if (dtSec > 300 && d > 1000) return true;     // silent 5+ min, then far away
+            if (d > 500 && d / dtSec > 41.7) return true;  // faster than 150 km/h
+            return false;
+        }
+        return d > 5000;   // no times (e.g. downloaded trips): only very long jumps
+    }
+
     private static float sumPathMeters(List<TrackPathReader.TrackPoint> points) {
         float total = 0f;
         float[] out = new float[1];
         for (int i = 1; i < points.size(); i++) {
-            if (points.get(i).joinBefore) {
-                continue;   // a join between trips, not distance driven
+            if (isBreak(points.get(i - 1), points.get(i))) {
+                continue;   // a join between trips or a GPS gap, not distance driven
             }
             LatLng a = points.get(i - 1).position;
             LatLng b = points.get(i).position;
             Location.distanceBetween(a.latitude, a.longitude, b.latitude, b.longitude, out);
-            // Drop GPS jumps the engine already rejects (> 1 km between ticks).
-            if (out[0] > 0f && out[0] <= 1000f) {
+            // With times, isBreak() already dropped the gaps; without them, keep the old rule
+            // (no more than 1 km between points).
+            boolean timed = points.get(i - 1).timeMs > 0 && points.get(i).timeMs > 0;
+            if (out[0] > 0f && (timed || out[0] <= 1000f)) {
                 total += out[0];
             }
         }

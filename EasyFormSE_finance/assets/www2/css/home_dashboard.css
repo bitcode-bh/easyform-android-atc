@@ -596,6 +596,39 @@
 /* The trip shown in the main card. */
 #trip_list_ul > li.trip-li.is-picked { background: #e3e6f5; }
 #trip_list_ul > li.trip-li.is-picked .item-title { color: #2a3086; }
+/* The picked trip's time split: driving, idle, on site, walking, stopped, no signal. */
+.trip-motion {
+    display: grid;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid #dedfe0;
+}
+.trip-motion[hidden] { display: none; }
+.trip-motion-bar {
+    display: flex;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #ecedef;
+}
+.trip-motion-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 12px;
+    color: #6A6C74;
+}
+.trip-motion-legend b { color: #0D1829; font-weight: 600; }
+.tm-item { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.tm-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
+.tm-driving { background: #2a3086; }
+.tm-idle { background: #c07a12; }
+.tm-on_site { background: #1f7a4d; }
+.tm-walking { background: #6a4fb3; }
+.tm-stopped { background: #9aa0aa; }
+.tm-no_signal { background: #b42318; }
+.trip-motion-note { font-size: 12px; color: #6A6C74; }
+.trip-motion-note:empty { display: none; }
 /* Trips grouped by workday, then Day (6 AM–6 PM) and Night (6 PM–6 AM). */
 #trip_list_ul > li.trip-day-head {
     display: flex;

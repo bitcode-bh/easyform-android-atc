@@ -451,6 +451,71 @@ var TripListSheet = (function () {
             known ? String(v.speed + v.call) : '…');
         setEventStat('trip_stat_ev_speed', v.speed);
         setEventStat('trip_stat_ev_call', v.call);
+        paintMotion(row, live);
+    }
+
+    // How the picked trip's time split between driving, idle, on site, walking,
+    // stopped and no signal (native motion_segments), plus how much of its
+    // distance came from weak GPS.
+    var MOTION_STATES = [
+        { key: 'driving', label: 'Driving' },
+        { key: 'idle', label: 'Idle' },
+        { key: 'on_site', label: 'On site' },
+        { key: 'walking', label: 'Walking' },
+        { key: 'stopped', label: 'Stopped' },
+        { key: 'no_signal', label: 'No signal' }
+    ];
+    var motionSeq = 0;
+
+    function hideMotion() {
+        var box = document.getElementById('trip_stat_motion');
+        if (box) box.hidden = true;
+    }
+
+    function paintMotion(row, live) {
+        var box = document.getElementById('trip_stat_motion');
+        if (!box || row._server || typeof HomeDashboardData === 'undefined' || !HomeDashboardData.getMotionSegments) {
+            hideMotion();
+            return;
+        }
+        var min = parseInt(row.min_milli, 10);
+        var max = live ? Date.now() : parseInt(row.max_milli, 10);
+        if (isNaN(min) || isNaN(max) || max <= min) { hideMotion(); return; }
+        var seq = ++motionSeq;
+        HomeDashboardData.getMotionSegments(min, max, function (segs) {
+            if (seq !== motionSeq) return;
+            var ms = {}, total = 0;
+            for (var i = 0; i < segs.length; i++) {
+                var a = Math.max(min, parseInt(segs[i].start_ms, 10) || 0);
+                var b = Math.min(max, parseInt(segs[i].end_ms, 10) || 0);
+                if (b <= a) continue;
+                ms[segs[i].state] = (ms[segs[i].state] || 0) + (b - a);
+                total += b - a;
+            }
+            if (!total) { hideMotion(); return; }
+            var bar = '', legend = '';
+            for (var k = 0; k < MOTION_STATES.length; k++) {
+                var st = MOTION_STATES[k], t = ms[st.key] || 0;
+                if (!t) continue;
+                bar += '<span class="tm-seg tm-' + st.key + '" style="width:' + (t / total * 100).toFixed(2) + '%"></span>';
+                legend += '<span class="tm-item"><i class="tm-dot tm-' + st.key + '"></i>' + st.label
+                    + ' <b>' + formatTotalDuration(t) + '</b></span>';
+            }
+            document.getElementById('trip_motion_bar').innerHTML = bar;
+            document.getElementById('trip_motion_legend').innerHTML = legend;
+            var note = document.getElementById('trip_motion_note');
+            note.textContent = '';
+            box.hidden = false;
+            if (HomeDashboardData.getTripEngine) {
+                HomeDashboardData.getTripEngine(row.tid, function (eng) {
+                    if (seq !== motionSeq || !eng) return;
+                    var weak = parseFloat(eng.degraded_m);
+                    if (!isNaN(weak) && weak >= 50) {
+                        note.textContent = formatKm(weak / 1000) + ' of this trip was measured on weak GPS (forest, valleys).';
+                    }
+                });
+            }
+        });
     }
 
     // What the list is showing, which of its trips is picked (-1: none), and
@@ -465,6 +530,7 @@ var TripListSheet = (function () {
     function paintCard() {
         if (pickedIdx >= 0 && shownRows[pickedIdx]) { paintTrip(shownRows[pickedIdx]); return; }
         setCardHead('All trips', shownRows.length + (shownRows.length === 1 ? ' trip' : ' trips'), '', false);
+        hideMotion();
         if (summaryReady) paintSummary(shownRows, shownTimeMs);
         else paintSummaryLoading(shownRows, shownTimeMs);
     }

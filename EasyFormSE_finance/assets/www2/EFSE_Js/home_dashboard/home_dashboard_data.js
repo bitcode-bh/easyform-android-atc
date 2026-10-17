@@ -669,6 +669,38 @@ var HomeDashboardData = (function () {
         );
     }
 
+    // Motion segments (driving, idle, on site, walking, stopped, no signal)
+    // overlapping a time window, from the native engine's motion_segments
+    // table. The table appears with the first segment; until then: none.
+    function getMotionSegments(minMs, maxMs, onDone) {
+        var min = parseInt(minMs, 10) || 0;
+        var max = parseInt(maxMs, 10) || Date.now();
+        sql("select state, start_ms, end_ms, site_id from motion_segments where end_ms >= " + min
+            + " and start_ms <= " + max + " order by start_ms",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                onDone(rows);
+            },
+            function () { onDone([]); }
+        );
+    }
+
+    // The native engine's record for one trip (distance, gaps, weak-GPS part),
+    // or null.
+    function getTripEngine(tid, onDone) {
+        var id = String(tid == null ? '' : tid).replace(/[^0-9A-Za-z_-]/g, '');
+        if (!id) { onDone(null); return; }
+        sql("select * from trip_engine_state where tid = '" + id + "'",
+            function (e) {
+                var rows = [];
+                try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
+                onDone(rows.length ? rows[0] : null);
+            },
+            function () { onDone(null); }
+        );
+    }
+
     // The site catalog on this phone (geofence_tracking: the sites the server
     // sent down for this user). Same row filter as the native map's
     // GeofenceTrackingReader. SELECT only.
@@ -771,6 +803,8 @@ var HomeDashboardData = (function () {
         getTaskCounts: getTaskCounts,
         getTripStatus: getTripStatus,
         getLiveTrip: getLiveTrip,
+        getMotionSegments: getMotionSegments,
+        getTripEngine: getTripEngine,
         getUploadCounts: getUploadCounts,
         getTripStats: getTripStats,
         getTripList: getTripList,
