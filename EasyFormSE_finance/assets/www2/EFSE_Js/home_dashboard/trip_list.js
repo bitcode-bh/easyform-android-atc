@@ -280,14 +280,6 @@ var TripListSheet = (function () {
         return pathKm(tripPts(pts, minMs, maxMs, live));
     }
 
-    function violationRuns(pts) {
-        var times = [];
-        for (var i = 0; i < (pts || []).length; i++) {
-            if (pts[i].violation) times.push(pts[i].ms);
-        }
-        return countEpisodes(times);
-    }
-
     function formatKm(km) {
         if (!km) return '0 km';
         if (km < 1) return Math.round(km * 1000) + ' m';
@@ -324,7 +316,6 @@ var TripListSheet = (function () {
             var km = (!isNaN(engineM) && engineM > 0) ? engineM / 1000
                 : tripPathKm(pts, row.min_milli, row.max_milli, live);
             row._km = km;
-            row._speedRuns = violationRuns(tripPts(pts, row.min_milli, row.max_milli, live));
             if (dataOnly) continue;
             var title = rowTitle(row, live, km);
             var $item = $(box).find('.trip-list-item[data-idx="' + j + '"]');
@@ -636,11 +627,9 @@ var TripListSheet = (function () {
         if (p.length !== 3) return '';
         var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
         var date = WEEKDAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
-        var today = workdayOf(Date.now());
-        var y = new Date(); y = new Date(y.getFullYear(), y.getMonth(), y.getDate() - 1);
-        var yesterday = workdayOf(y.getTime() + DAY_START_H * 3600000 + 60000);
-        if (key === today) return 'Today · ' + date;
-        if (key === yesterday) return 'Yesterday · ' + date;
+        var t = workdayOf(Date.now()).split('-');
+        if (key === t.join('-')) return 'Today · ' + date;
+        if (key === ymd(new Date(+t[0], +t[1] - 1, +t[2] - 1))) return 'Yesterday · ' + date;
         return date;
     }
 

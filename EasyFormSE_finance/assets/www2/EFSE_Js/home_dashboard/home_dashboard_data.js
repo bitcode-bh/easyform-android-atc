@@ -616,17 +616,19 @@ var HomeDashboardData = (function () {
         if (isNaN(end) || end <= 0) end = Date.now();
         var cols = "lp._id, lp.tid, lp.sid, tm.server_task_id, lp.trip_status, lp.min_milli, lp.max_milli, lp.site_name, lp.unique_trip_id, lp.issend, lp.distance";
         var rest = " from lat_plug lp left join task_master tm on tm.tid = lp.tid where (lp.min_milli+0) >= " + start + " and (lp.min_milli+0) <= " + end + " order by lp._id desc limit 80";
+        sqlOrFallback("select " + cols + ", (select s.distance_m from trip_engine_state s where s.tid = lp.tid) as engine_m" + rest,
+            "select " + cols + rest, function (rows) { onDone(rows); });
+    }
+
+    // Runs primary; if it fails (e.g. a native table that doesn't exist yet),
+    // runs fallback instead. onDone gets the parsed rows ([] on failure).
+    function sqlOrFallback(primary, fallback, onDone) {
         function parse(e) {
-            var rows = [];
-            try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
-            return rows;
+            try { return JSON.parse(e) || []; } catch (err) { return []; }
         }
-        sql("select " + cols + ", (select s.distance_m from trip_engine_state s where s.tid = lp.tid) as engine_m" + rest,
-            function (e) { onDone(parse(e)); },
-            function () {
-                sql("select " + cols + rest, function (e) { onDone(parse(e)); }, function () { onDone([]); });
-            }
-        );
+        sql(primary, function (e) { onDone(parse(e)); }, function () {
+            sql(fallback, function (e) { onDone(parse(e)); }, function () { onDone([]); });
+        });
     }
 
     // GPS breadcrumbs for one lat_plug window (same tripflag filter as
@@ -652,21 +654,11 @@ var HomeDashboardData = (function () {
     // trusted fix (trip_engine_state). That table appears with the first
     // fix of a trip, so fall back to the plain query until it exists.
     function getLiveTrip(onDone) {
-        var base = "select tid, min_milli, site_name from lat_plug where trip_status = 0 order by _id desc limit 1";
-        var withEngine = "select l.tid, l.min_milli, l.site_name, "
+        sqlOrFallback("select l.tid, l.min_milli, l.site_name, "
             + "(select s.distance_m from trip_engine_state s where s.tid = l.tid) as engine_m "
-            + "from lat_plug l where l.trip_status = 0 order by l._id desc limit 1";
-        function parse(e) {
-            var rows = [];
-            try { rows = JSON.parse(e) || []; } catch (err) { rows = []; }
-            return rows.length ? rows[0] : null;
-        }
-        sql(withEngine,
-            function (e) { onDone(parse(e)); },
-            function () {
-                sql(base, function (e) { onDone(parse(e)); }, function () { onDone(null); });
-            }
-        );
+            + "from lat_plug l where l.trip_status = 0 order by l._id desc limit 1",
+            "select tid, min_milli, site_name from lat_plug where trip_status = 0 order by _id desc limit 1",
+            function (rows) { onDone(rows.length ? rows[0] : null); });
     }
 
     // Motion segments (driving, idle, on site, walking, stopped, no signal)
