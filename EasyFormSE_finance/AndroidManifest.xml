@@ -441,13 +441,6 @@
                 <action android:name="com.easyfrom.jitsi.SCREENSHOT_SAVED"/>
             </intent-filter>
         </receiver>
-        <service
-            android:name=".jobshedulers.MyJobService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
-            </intent-filter>
-        </service>
         <service android:name=".download.DownloadListService" />
         <service android:name=".download.DowoloadQuestionLogService" />
         <service android:name=".Activity_recognition" />

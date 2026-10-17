@@ -4,11 +4,7 @@ import android.content.Context;
 import android.os.StrictMode;
 import android.util.Log;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.sky.atc.easyformse.utils.JsonPost;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -117,27 +113,6 @@ public class SendNotification {
         params.put("Content-Type", "application/json");
 
         // Step 4: Create and send the notification request
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Request.Method.POST,
-                FCM_API,
-                notification,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i(TAG, "Notification sent successfully: " + response.toString());
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e(TAG, "Error sending notification: " + error.getMessage());
-                    }
-                }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                return params;  // Return the headers with the access token
-            }
-        };
-        MySingleton.getInstance(myContext).addToRequestQueue(jsonObjectRequest);
+        JsonPost.async(FCM_API, params, notification, TAG, null);
     }
 }

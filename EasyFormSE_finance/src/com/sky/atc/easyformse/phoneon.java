@@ -241,7 +241,6 @@ public class phoneon extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Util.scheduleJob(sqlitewraper.context);
         }
-        Util.scheduleJobFirebase(sqlitewraper.context);
 
     }
 

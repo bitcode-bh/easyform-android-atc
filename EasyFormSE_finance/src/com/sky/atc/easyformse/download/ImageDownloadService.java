@@ -28,8 +28,9 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Retrofit;
+import okhttp3.HttpUrl;
+import okhttp3.Request;
+import okhttp3.Response;
 
 @Keep
 public class ImageDownloadService extends IntentService {
@@ -114,14 +115,10 @@ public class ImageDownloadService extends IntentService {
             PreferencesUtil.getPreferences(this).edit().remove(PreferencesKey.isDownloaded)
                     .remove(PreferencesKey.fileFullPath).apply();
         }
-        Retrofit retrofit = new Retrofit.Builder()
-                .client(defaultClient())
-                .baseUrl("https://development.easyform.in/")
-                .build();
-        RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
-        Call<ResponseBody> request = retrofitInterface.downloadImage(imageUrl);
-        try {
-            ResponseBody responseBody = request.clone().execute().body();
+        // Absolute URLs are used as they are; relative ones resolve against the old base, as before.
+        HttpUrl url = HttpUrl.get("https://development.easyform.in/").resolve(imageUrl);
+        try (Response response = defaultClient().newCall(new Request.Builder().url(url).get().build()).execute()) {
+            ResponseBody responseBody = response.isSuccessful() ? response.body() : null;
             if (responseBody != null) {
                 downloadImage(responseBody, fileName);
             } else {

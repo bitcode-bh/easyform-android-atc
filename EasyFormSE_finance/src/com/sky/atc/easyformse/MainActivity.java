@@ -993,7 +993,6 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Util.scheduleJob(this);
         }
-        Util.scheduleJobFirebase(this);
 
     }
 

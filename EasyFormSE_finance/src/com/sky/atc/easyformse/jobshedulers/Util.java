@@ -7,11 +7,6 @@ import android.content.Context;
 import android.os.Build;
 import androidx.annotation.RequiresApi;
 
-import com.firebase.jobdispatcher.FirebaseJobDispatcher;
-import com.firebase.jobdispatcher.GooglePlayDriver;
-import com.firebase.jobdispatcher.Job;
-import com.firebase.jobdispatcher.Lifetime;
-import com.firebase.jobdispatcher.Trigger;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
 
@@ -35,22 +30,6 @@ public class Util {
 //        JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
         JobScheduler jobScheduler = (JobScheduler) context.getSystemService(JOB_SCHEDULER_SERVICE);
         jobScheduler.schedule(builder.build());
-    }
-
-    public static void scheduleJobFirebase(Context context){
-
-        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
-
-        Job myJob = dispatcher.newJobBuilder()
-                .setService(MyJobService.class) // the JobService that will be called
-                .setTag("my-unique-tag")// uniquely identifies the job
-                .setRecurring(true)
-                .setTrigger(Trigger.executionWindow(0, 60))
-                .setLifetime(Lifetime.FOREVER)
-                .build();
-        dispatcher.mustSchedule(myJob);
-
-
     }
 
 }

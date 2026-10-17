@@ -5,10 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.sky.atc.easyformse.utils.JsonPost;
 import com.sky.atc.easyformse.DeviceEventsUtils;
 import com.sky.atc.easyformse.datautils.CheckAuthOfApplication;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
@@ -42,31 +39,18 @@ public class SendPushNotification {
 
     public void sendNotification(JSONObject notification, final Context context) {
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(FCM_API, notification,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i("##FIREBASE", "onResquste: " + notification.toString());
-                        Log.i("##FIREBASE", "onResponse: " + response.toString());
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
+        Map<String, String> params = new HashMap<>();
+        params.put("Authorization", serverKey);
+        params.put("Content-Type", contentType);
+        JsonPost.async(FCM_API, params, notification, "##FIREBASE", new Runnable() {
+            @Override public void run() {
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(new Runnable() {
+                    @Override public void run() {
                         Toast.makeText(context, "Request error", Toast.LENGTH_LONG).show();
-                        Log.i("##FIREBASE", "onErrorResponse: " + notification.toString());
-                        Log.i("##FIREBASE", "onErrorResponse: Didn't work" + error.getMessage());
                     }
-                }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("Authorization", serverKey);
-                params.put("Content-Type", contentType);
-                return params;
+                });
             }
-        };
-        MySingleton.getInstance(context).addToRequestQueue(jsonObjectRequest);
+        });
     }
 
     public void sendNotificationToGroup(String meetingId, String meetingPassword, Context context, String userName, String deviceType) {
