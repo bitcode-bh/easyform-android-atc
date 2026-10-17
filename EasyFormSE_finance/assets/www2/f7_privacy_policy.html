@@ -43,6 +43,45 @@
     .cls_consent_button {
         display: none;
     }
+
+    .popup-privacy-policy .pp-consent {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2;
+        padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+        background: #fff;
+        box-shadow: 0 -1px 0 #e3e4e8, 0 -6px 16px rgba(0, 0, 0, 0.06);
+        text-align: left;
+    }
+    .popup-privacy-policy .pp-consent-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: var(--app-action-blue, #2a3086);
+    }
+    .popup-privacy-policy.pp-read .pp-consent-hint,
+    .popup-privacy-policy.pp-consented .pp-consent-hint { display: none; }
+    .popup-privacy-policy .pp-consent-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 6px 0;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: #0d1829;
+        text-align: left;
+    }
+    .popup-privacy-policy .pp-consent-row input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; }
+    /* Locked: greyed until the notice has been read to the end. */
+    .popup-privacy-policy:not(.pp-read):not(.pp-consented) .pp-consent-row { opacity: 0.45; }
+    .popup-privacy-policy .cls_consent_button { margin-top: 8px; }
+    .popup-privacy-policy .cls_consent_button .button { height: 44px; line-height: 44px; font-size: 15px; text-transform: none; }
 </style>
 <script>
     display_consent_button = () => {
@@ -57,17 +96,51 @@
 
         if (checked_box == 2) {
             $(".cls_consent_button").show();
-            let el = $('.popup-privacy-policy .page-content');
-            el.animate({
-                scrollTop: el[0].scrollHeight
-            }, 500);
         }
         else {
             $(".cls_consent_button").hide();
         }
+        pp_fit_footer();
+    }
+
+    // The consent footer sits under the notice; the notice scrolls above it.
+    pp_fit_footer = () => {
+        var popup = document.querySelector('.popup-privacy-policy');
+        if (!popup) return;
+        var foot = popup.querySelector('.pp-consent'), content = popup.querySelector('.page-content');
+        if (foot && content) content.style.bottom = foot.offsetHeight + 'px';
+    }
+
+    // Checkboxes unlock once the notice has been scrolled to the end (at once
+    // when it fits without scrolling) and stay unlocked.
+    pp_check_read = () => {
+        var popup = $('.popup-privacy-policy');
+        if (popup.hasClass('pp-read')) return;
+        var el = popup.find('.page-content')[0];
+        if (!el) return;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 8) {
+            popup.addClass('pp-read');
+            if (localStorage.getItem("user_consent") != "true") $("input[name='consent']").prop("disabled", false);
+            pp_fit_footer();
+        }
+    }
+
+    pp_prepare = () => {
+        var popup = $('.popup-privacy-policy');
+        var consented = localStorage.getItem("user_consent") == "true";
+        popup.toggleClass('pp-consented', consented);
+        if (!consented) {
+            popup.removeClass('pp-read');
+            $("input[name='consent']").prop("checked", false).prop("disabled", true);
+            $(".cls_consent_button").hide();
+        }
+        var el = popup.find('.page-content');
+        el.scrollTop(0).off('scroll.pp').on('scroll.pp', pp_check_read);
+        requestAnimationFrame(function () { pp_fit_footer(); pp_check_read(); });
     }
 
     save_consent = () => {
+        if ($("input[name='consent']:checked").length < 2) return;
         localStorage.setItem("user_consent", "true");
         /*changeurl("Login.html");*/
 
@@ -191,23 +264,25 @@
                             <li>My personal data and consent record will be retained only for as long as necessary to fulfil the purpose or as required by applicable law, after which it will be securely deleted.</li>
                         </ol>
 
-                        <table>
-                            <tr>
-                                <td style="padding:0"><input type="checkbox" name="consent" onchange="display_consent_button(this)"></td>
-                                <td><b>By ticking this box, I provide my explicit consent to the processing of my personal data for the above stated purposes.</b></td>
-                            </tr>
-                            <tr>
-                                <td style="padding:0"><input type="checkbox" name="consent" onchange="display_consent_button(this)"></td>
-                                <td><b>I consent to sharing of my personal data with third parties.</b></td>
-                            </tr>
-                        </table>
 
                     </div>
 
-                    <div class="content-block cls_consent_button">
-                        <a href="#" class="button button-fill" onclick="save_consent()">Submit</a>
-                    </div>
+                </div>
 
+                <!-- Pinned under the notice: locked until the notice has been read to the end. -->
+                <div class="pp-consent">
+                    <div class="pp-consent-hint"><i class="fa fa-arrow-down" aria-hidden="true"></i> Read to the end to agree</div>
+                    <label class="pp-consent-row">
+                        <input type="checkbox" name="consent" disabled onchange="display_consent_button(this)">
+                        <span>By ticking this box, I provide my explicit consent to the processing of my personal data for the above stated purposes.</span>
+                    </label>
+                    <label class="pp-consent-row">
+                        <input type="checkbox" name="consent" disabled onchange="display_consent_button(this)">
+                        <span>I consent to sharing of my personal data with third parties.</span>
+                    </label>
+                    <div class="cls_consent_button">
+                        <a href="#" class="button button-fill" onclick="save_consent(); return false;">Submit</a>
+                    </div>
                 </div>
             </div>
         </div>

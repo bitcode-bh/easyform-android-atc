@@ -1058,6 +1058,8 @@ function onsucess_update_user_from_user_listing(e) {
                     else {
                         let updated_profile_user_data = ap_json[0].data;
                         localStorage.setItem('profile_user_data', JSON.stringify(updated_profile_user_data));
+                        // The profile fetches its details from the server again on next open.
+                        localStorage.removeItem('profile_user_data_at');
                         alert1("User Updated successfully !");
 
                         if (is_approval == "1") {

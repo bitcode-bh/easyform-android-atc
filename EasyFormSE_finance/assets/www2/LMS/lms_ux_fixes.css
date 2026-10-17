@@ -576,3 +576,47 @@ body { animation: page-in 0.28s ease both; }
   45% { transform: scale(1.28); }
   100% { transform: scale(1); }
 }
+
+/* Module page while its lessons load (.is-loading, set in
+   get_target_skill_by_module_id): three placeholder lesson cards and a bar for
+   the lesson count hold the space, instead of a black preloader over an empty
+   page. */
+.lms-module-preview-popup.is-loading .lesson-preview-list:empty {
+  position: relative;
+  height: 260px;
+}
+.lms-module-preview-popup.is-loading .lesson-preview-list:empty::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 80px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 90px 0 #fff, 0 180px 0 #fff;
+  animation: lms-skel-pulse 1.2s ease-in-out infinite;
+}
+.lms-module-preview-popup.is-loading .lession-count:empty {
+  display: inline-block;
+  width: 130px;
+  height: 14px;
+  border-radius: 4px;
+  background: #dcdde1;
+  animation: lms-skel-pulse 1.2s ease-in-out infinite;
+}
+@keyframes lms-skel-pulse { 50% { opacity: .5; } }
+@media (prefers-reduced-motion: reduce) {
+  .lms-module-preview-popup.is-loading * { animation: none !important; }
+}
+
+/* Lesson thumbnails from the course system are icons (signs, hexagons): show
+   them whole instead of cropping their edges to fill the square. Frames the
+   app takes from the video itself (data-gen-thumb-id) and the stock
+   placeholder still fill it. */
+.lesson-preview-thumb img:not([data-gen-thumb-id]):not([src="images/bg2.jpg"]) {
+    object-fit: contain;
+}
+.lesson-preview-thumb:has(> img:not([data-gen-thumb-id]):not([src="images/bg2.jpg"])) {
+    background: #fff;
+}

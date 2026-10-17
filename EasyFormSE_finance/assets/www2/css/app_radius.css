@@ -1,0 +1,258 @@
+/* The app's corners, one value per kind of element:
+     8px  fields and buttons (--control-radius), and boxes inside a card
+    12px  cards, list containers and pop-up menus (--card-radius)
+    16px  dialogs, pop-ups and bottom sheets (--overlay-radius)
+   Loaded on every page (common-functions.js writes the link; LMS_Dashboard.html
+   links it). Selectors start with "html body" and use !important so they win
+   over the page stylesheets and the inline styles the scripts write.
+   Round buttons (floating, circle, avatar-style) are put back at the end.
+   Field selectors name each input type (not a chain of :not()) so the
+   underline-search rule below can still out-rank them. */
+
+/* "html:root" out-ranks the ":root" blocks of shared_listing.css and
+   lms_ux_fixes.css that set their own values. */
+html:root {
+    --control-radius: 8px;
+    --card-radius: 12px;
+    --overlay-radius: 16px;
+    --answer-field-radius: var(--control-radius);
+    --listing-radius: var(--card-radius);
+    --r-card: var(--card-radius);
+}
+html body .notif-popup { --n-radius: var(--card-radius) !important; }
+
+/* Fields: text, number, password, search, date and time, multi-line, dropdowns,
+   searchable dropdowns, OTP boxes, and the boxes that wrap them. */
+html body input:not([type]),
+html body input[type=text],
+html body input[type=number],
+html body input[type=password],
+html body input[type=email],
+html body input[type=tel],
+html body input[type=search],
+html body input[type=url],
+html body input[type=date],
+html body input[type=time],
+html body input[type=datetime-local],
+html body input[type=month],
+html body input[type=week],
+html body textarea,
+html body select,
+html body .cntrl_main_div .list-block,
+html body .cntrl_main_div .item-input,
+html body .password-page .item-input-field,
+html body .login_user_data .item-content,
+html body .home-search,
+html body .home-search-pill,
+html body .popup-type20-dropdown .searchbar-input,
+html body .cls_searchbox,
+html body .trip-date-input,
+html body #div_home_hero .hh-field,
+html body #div_home_hero .hh-select,
+html body .bootstrap-select > .dropdown-toggle,
+html body .bootstrap-select .btn,
+html body img[id^="cbtn_"],
+html body img[id^="sign_"],
+html body img[id^="livelink_image_"],
+html body table[style*="#f7f7d6"],
+html body .lms-search-input,
+html body .sample-safety-search {
+    border-radius: var(--control-radius) !important;
+}
+
+/* A bare underline field (F7 list search on the dark bar) has no box to round;
+   a radius there would only bend the ends of its underline. */
+html body .searchbar input[type=search] {
+    border-radius: 0 !important;
+}
+html body .home-search input[type=search],
+html body .home-search-pill input[type=search],
+html body .popup-type20-dropdown .searchbar-input input[type=search] {
+    border-radius: var(--control-radius) !important;
+}
+
+/* Buttons. */
+html body .button,
+html body button,
+html body input[type=button],
+html body input[type=submit],
+html body input[type=reset],
+html body .modal-button,
+html body .modal-buttons .button,
+html body .picker-footer a,
+html body #container_btn_div a.link,
+html body .foooter-type22 a.link,
+html body .footer-type20-add a.link,
+html body .popup-profile .profile-actions a.button,
+html body .home-filter,
+html body .hv-btn,
+html body #div_home_dashboard .hd-btn,
+html body #btn_login_theme,
+html body #btn_dashboard_copy,
+html body #btn_add_chart,
+html body #btn_Clear_Filter,
+html body #btn_create_chart,
+html body #btn_add_pvt_aggrcol,
+html body #btn_pivot_add_col,
+html body #btn_pivot_cancel_col,
+html body #btn_advanced_search,
+html body .pvtFilterBox button,
+html body .modal:not(.modal-preloader):not(.picker-modal) .modal-button,
+html body .dialog .dialog-button,
+html body #btn_ML_Que_Submit,
+html body .safety-quiz-submit-btn,
+html body .sample-module-btn,
+html body .home-tab,
+html body .home-filter,
+html body #checksheet_list li input[type=button] {
+    border-radius: var(--control-radius) !important;
+}
+
+/* Round buttons stay round. */
+html body .floating-button,
+html body .speed-dial-buttons a,
+html body .btn-circle,
+html body #btn_login_biometric,
+html body #btn_company_info,
+html body .floating-button-mail,
+html body .task-list-screen #btn_Create_Task,
+html body .reel-play-pause,
+html body #safety-video-expand {
+    border-radius: 50% !important;
+}
+
+/* Rows and cells that sit inside a card stay square; the card rounds them. */
+html body .app-listing .notification-card,
+html body .lms-info-bar .lms-info-item,
+html body .lms-info-bar .lms-info-item.lms-kpi-card {
+    border-radius: 0 !important;
+}
+
+/* Cards and list containers: Home module rows, the cards at the top of Home,
+   Trips, dashboard widgets, task and listing cards, profile, passport,
+   notifications, report and chart cards, LMS cards, and their loading
+   placeholders. */
+html body .card,
+html body .list-block.inset,
+html body .list-block.inset ul,
+html body #module_list.app-listing > li > a.item-content,
+html body #div_home_dashboard .hd-widget,
+html body .trip-list-card,
+html body .trip-list-stats-card,
+html body #trip_list_ul,
+html body #div_home_hero .hh-card,
+html body #permit_samples .ps-face,
+html body #permit_samples .sp-face,
+html body .passport-card,
+html body .popup-profile .profile-card,
+html body .task_cardview,
+html body .showmore-box,
+html body .timeline-item-inner,
+html body .content-block-inner .timeline-item-inner,
+html body .card_td,
+html body #nav_sub2 .card,
+html body .chart_grid,
+html body .cls_card_filter_items,
+html body .cls_card_aggregate_fun,
+html body .tbl_container,
+html body .counter_chart,
+html body .cls_max_preview,
+html body .pm-skeleton-card,
+html body .lms-info-bar,
+html body .lms-kpi-card,
+html body .lesson-preview-card,
+html body .lms-skel-card,
+html body .sample-module-card,
+html body .sample-safety-empty-state,
+html body .pill-card,
+html body .question-card,
+html body .course-card,
+html body .module-card,
+html body .module-overlay {
+    border-radius: var(--card-radius) !important;
+}
+html body .card-header { border-radius: var(--card-radius) var(--card-radius) 0 0 !important; }
+html body .card-footer { border-radius: 0 0 var(--card-radius) var(--card-radius) !important; }
+html body .list-block.inset li:first-child > a,
+html body #checksheet_list li:first-child { border-radius: var(--card-radius) var(--card-radius) 0 0 !important; }
+html body .list-block.inset li:last-child > a,
+html body #checksheet_list li:last-child { border-radius: 0 0 var(--card-radius) var(--card-radius) !important; }
+html body .list-block.inset li:first-child:last-child > a,
+html body #checksheet_list li:first-child:last-child { border-radius: var(--card-radius) !important; }
+
+/* Boxes inside a card (stat tiles, images, small panels) follow the card's
+   curve one step in. */
+html body #div_home_dashboard .hd-site-stat,
+html body #div_home_dashboard .hd-trip-metric,
+html body .trip-stats-events .trip-event,
+html body #div_home_hero .hh-permit,
+html body #div_home_hero .hh-passport .sp-face,
+html body .course-image,
+html body .module-image img,
+html body .lesson-preview-thumb {
+    border-radius: var(--control-radius) !important;
+}
+
+/* Pop-up menus. */
+html body .popover,
+html body .popover-language,
+html body .sample-safety-sort-menu {
+    border-radius: var(--card-radius) !important;
+}
+html body .popover .list-block:first-child ul,
+html body .popover .list-block:first-child li:first-child a { border-radius: var(--card-radius) var(--card-radius) 0 0 !important; }
+html body .popover .list-block:last-child ul,
+html body .popover .list-block:last-child li:last-child a { border-radius: 0 0 var(--card-radius) var(--card-radius) !important; }
+html body .popover .list-block:first-child:last-child ul,
+html body .popover .list-block:first-child:last-child li:first-child:last-child a { border-radius: var(--card-radius) !important; }
+
+/* Dialogs and pop-ups that float over the page. Full-screen pop-ups stay
+   square. */
+html body .modal:not(.modal-preloader):not(.picker-modal),
+html body .dialog,
+html body .safety-quiz-dialog,
+html body .popup.popup-trip-route,
+html body #popup_inner_div,
+html body .popup_inner_div_type20,
+html body #popup_inner_div_type22,
+html body #popup_inner_div_type23,
+html body #popup_inner_div_network_retry,
+html body .popup_inner_div_type27,
+html body .popup_error_div_type27,
+html body .popup_inner_div_cust_info,
+html body .popup_inner_div_filter_info,
+html body #preview_card_alert,
+html body #mdl_add_pvttbl_col,
+html body .white_content_login {
+    border-radius: var(--overlay-radius) !important;
+}
+
+/* Sheets that rise from the bottom float 8px clear of the screen edges with
+   the same 16px corners on all four sides, like every other pop-up. Hidden,
+   they sit fully below the screen (their height plus the gap). */
+html body .picker-modal,
+html body .picker-calendar.picker-modal,
+html body .sheet-modal,
+html body #pnl_ML_Question.sheet-modal,
+html body .actions-modal {
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: var(--overlay-radius) !important;
+    overflow: hidden;
+}
+html body .picker-modal:not(.modal-in),
+html body .actions-modal:not(.modal-in),
+html body .sheet-modal:not(.modal-in) {
+    transform: translate3d(0, calc(100% + 16px + env(safe-area-inset-bottom, 0px)), 0) !important;
+}
+html body .actions-modal .actions-modal-group:first-child {
+    border-radius: var(--overlay-radius) var(--overlay-radius) 0 0 !important;
+}
+
+/* Top bars run edge to edge under the status bar: square on all four
+   corners (styles_low.css rounded only their bottom corners). */
+html body .views .navbar {
+    border-radius: 0 !important;
+}

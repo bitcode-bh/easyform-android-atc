@@ -39,6 +39,23 @@
         /*border: 1px solid rgba(0, 0, 0, .12);*/
     }
 
+    /* A taken photo keeps its own shape inside the 140px box instead of being
+       letterboxed in it, so the rounded corners sit on the photo itself. The
+       row keeps its 140px height. */
+    .w-50-50 .item-input-field img[id^='cbtn_']:not([src='images/camera.png']) {
+        width: auto !important;
+        height: auto !important;
+        max-width: 100% !important;
+        max-height: 140px !important;
+        vertical-align: middle;
+    }
+    .w-50-50 .item-input-field.photo-field:has(img[id^='cbtn_']:not([src='images/camera.png'])) {
+        min-height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
         .w-50-50 .item-input-field img[src='images/camera.png'] {
             width: initial !important;
             height: initial !important;
@@ -490,10 +507,22 @@ img[id^="cbtn_"] { object-fit: contain; }
 .pinch-zoom::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 68px; background: rgba(8, 12, 24, .62); z-index: 9998; pointer-events: none; }
 
 /* Account fields use the same answer surfaces and action component. */
-.password-page .inputs-list { margin: 16px 0 !important; }
+.password-page .inputs-list { margin: 8px 0 !important; }
 .password-page .inputs-list .item-content { align-items: flex-end; padding: 0 16px; }
-.password-page .inputs-list .item-media { padding-bottom: 10px; }
-.password-page .inputs-list .item-inner { padding: 0 0 12px; margin-left: 12px; }
+.password-page .inputs-list .item-inner { padding: 0 0 12px; margin-left: 0; }
+.password-page .password-signed-in { margin: 20px 16px 16px; font-size: 13px; color: #6A6C74; }
+.password-page .password-signed-in span { color: #0d1829; font-weight: 500; }
+.password-page .navbar .center { position: absolute; left: 0; right: 0; justify-content: center; text-align: center; pointer-events: none; }
+.password-page .password-title { font-size: 17px; font-weight: 500; color: #0d1829; }
+.password-page #lbl_theme_header:empty { display: none; }
+.password-page #lbl_theme_header:not(:empty) + .password-title { display: none; }
+/* Lock inside the field on the left, show/hide eye on the right. */
+.password-page .password-field { display: flex; align-items: center; gap: 8px; padding: 0 4px 0 10px; }
+.password-page .password-field input { flex: 1 1 auto; min-width: 0; }
+.password-page .password-field-ico { font-size: 16px; color: #6A6C74; width: 14px; text-align: center; }
+.password-page .password-eye { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: #6A6C74; }
+.password-page .password-eye i { font-size: 17px; }
+.password-page .password-actions { margin: 8px 16px 24px; }
 .password-page .password-label { color: #6A6C74; font-size: 14px; margin-bottom: 4px; }
 .password-page .item-input-field { background: #ECEDEF; border-radius: var(--answer-field-radius, 6px); padding: 0 7px; box-sizing: border-box; }
 .password-page .item-input-field input { font-size: 14px; color: #000; }
@@ -543,7 +572,33 @@ img[id^="cbtn_"] { object-fit: contain; }
 .popup-type20-dropdown #type20_ddl_list .item-inner { min-height: var(--listing-row-height); margin: 0; padding: 12px 15px; }
 .popup-type20-dropdown #type20_ddl_list .item-inner::after { display: none; }
 .popup-type20-dropdown #type20_ddl_list .item-title { line-height: 1.35; white-space: normal; }
-.popup-type20-dropdown #type20_ddl_list > li.type20-placeholder .item-title { color: #6b7280; }
+/* Options read as plain choices, not headings. */
+.popup-type20-dropdown #type20_ddl_list .item-title,
+.list-block .popup-type20-dropdown #type20_ddl_list .item-title { font-weight: 400 !important; }
+/* The search field stays folded into a search icon until it is tapped
+   (get_search_control.js adds the icon and the title). */
+.popup-type20-dropdown:not(.t20-search-open) #F7_type20_ddl_Search { display: none !important; }
+.popup-type20-dropdown.t20-search-open .t20-title { display: none; }
+.popup-type20-dropdown .t20-title { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; padding: 0 96px; font-size: 17px; font-weight: 500; color: #0d1829; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: normal; pointer-events: none; }
+.popup-type20-dropdown.t20-search-open .t20-search-toggle { display: none; }
+/* Search and list icons stay at the right edge (the title is centred over the bar). */
+.popup-type20-dropdown .navbar-inner > .right { margin-left: auto; position: relative; z-index: 1; }
+.popup-type20-dropdown .t20-search-toggle i { font-size: 20px; color: #0d1829; }
+/* Pull-down-to-refresh indicator for the option list. */
+.popup-type20-dropdown #ddl_list { overscroll-behavior-y: none; }
+.popup-type20-dropdown .t20-pull { position: absolute; top: 0; left: 0; right: 0; height: 40px; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; z-index: 1; will-change: transform, opacity; }
+.popup-type20-dropdown #ddl_list .list-block-search { will-change: transform; }
+.popup-type20-dropdown .t20-pull span { width: 22px; height: 22px; box-sizing: border-box; border-radius: 50%; border: 2.5px solid #d5d8de; border-top-color: var(--app-action-blue, #2a3086); opacity: .6; }
+.popup-type20-dropdown .t20-pull.is-ready span { opacity: 1; }
+.popup-type20-dropdown .t20-pull.is-busy span { opacity: 1; animation: t20-pull-spin .8s linear infinite; }
+@keyframes t20-pull-spin { to { transform: rotate(360deg); } }
+/* "Select Value" is not offered as a choice; options read centred. */
+.popup-type20-dropdown #type20_ddl_list > li.type20-placeholder { display: none !important; }
+.popup-type20-dropdown #type20_ddl_list .item-inner { justify-content: center; }
+.popup-type20-dropdown #type20_ddl_list .item-title { flex: 1 1 auto; text-align: center; }
+.popup-type20-dropdown #type20_ddl_list > li.type20-empty .item-title { color: #6b7280; font-weight: 400; }
+/* No options to search: no search icon. */
+.popup-type20-dropdown.t20-no-options:not(.t20-search-open) .t20-search-toggle { display: none; }
 /* Legacy metadata markers remain internal to existing selection callbacks. */
 .popup-type20-dropdown #type20_ddl_list .item-after { display: none; }
 .popup-type20-dropdown #type20_ddl_list > li.type20-selected { background: #ecedef; }
@@ -551,7 +606,7 @@ img[id^="cbtn_"] { object-fit: contain; }
 .popup-type20-dropdown #type20_ddl_list > li.type20-selected .item-inner::after { display: none; }
 .password-page .item-inner::after, .password-page .list-block ul::before, .password-page .list-block ul::after { display: none; }
 .password-page .label-checkbox { margin: 0 16px; padding-left: 7px !important; background: #ECEDEF; border-radius: var(--answer-field-radius, 6px); }
-.password-page .password-submit { width: auto; display: inline-block; margin: 7px; }
+.password-page .password-submit { display: block; width: 100%; height: 44px; line-height: 44px; margin: 0; text-transform: none; font-size: 15px; font-weight: 500; }
 
 /* Arrays keep their shared action button inside a normal answer field. */
 .cntrl_main_div .array-field { min-height: 36px; display: flex; align-items: center; padding: 0 7px 0 0; }

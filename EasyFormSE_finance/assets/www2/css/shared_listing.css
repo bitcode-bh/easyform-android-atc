@@ -27,12 +27,29 @@
     box-sizing: border-box;
     margin: 0;
     min-height: var(--listing-row-height);
-    border-bottom: 1px solid var(--listing-line);
     background: var(--listing-surface);
     font-size: 14px;
     list-style: none;
 }
-.app-listing > :last-child { border-bottom: 0; }
+/* Row dividers start where the row's text starts and stop short of the right
+   edge, as in the checklist list, so they never touch the list's border. */
+.app-listing > .app-listing-row::after,
+.app-listing > li[udf_name]::after,
+.app-listing > .item-content::after {
+    content: '';
+    position: absolute;
+    left: var(--listing-line-start, 16px);
+    right: var(--listing-line-end, 8px);
+    bottom: 0;
+    height: 1px;
+    background: var(--listing-line);
+    pointer-events: none;
+}
+.app-listing > :last-child::after { display: none; }
+/* Home modules: 15px row padding + 30px icon + 10px text padding. */
+#module_list.app-listing { --listing-line-start: 55px; }
+/* Notifications: the card's 15px side padding. */
+#notification_list.app-listing { --listing-line-start: 15px; }
 .app-listing::before, .app-listing::after { display: none !important; }
 .app-listing .item-title,
 .list-block .app-listing .item-title,

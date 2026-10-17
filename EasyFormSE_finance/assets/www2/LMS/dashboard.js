@@ -62,6 +62,8 @@ function lms_update_apex_chart(elId, options, kind) {
 
 $(document).on('ptr:refresh', '.ptr-content', function (e) {
     try {
+        // Pull-down fetches everything fresh, lessons behind course times too.
+        if (typeof lms_force_lessons_refresh !== 'undefined') lms_force_lessons_refresh = true;
         if (typeof get_safety_module_listing === 'function') get_safety_module_listing(true);
         if (typeof get_assessments_listing === 'function') get_assessments_listing(true);
         if (typeof get_user_activities === 'function') get_user_activities();
@@ -845,7 +847,9 @@ function get_dashboard_data(force_refresh) {
         LmsData.fetch(lms_dash_cache_key, lms_dash_url, JSON.stringify(Param_obj),
             dashboard_received,
             dashboard_failed,
-            { timeout: 15000, retries: 1, force: !!force_refresh }
+            { timeout: 15000, retries: 1, force: force_refresh === true,
+              // 'auto' (opening LMS, switching tabs): saved copy, network only when stale.
+              maxAge: force_refresh === true ? 0 : LmsData.LIST_MAX_AGE }
         );
         return;
     }

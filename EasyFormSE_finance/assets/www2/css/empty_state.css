@@ -65,3 +65,12 @@ ul.es-empty-list::before,
 ul.es-empty-list::after { border: 0 !important; background: transparent !important; height: auto; }
 ul.es-empty-list::before,
 ul.es-empty-list::after { display: none !important; }
+
+/* Nothing to search: an empty list hides the search and advanced-search
+   icons. They stay when a filter or a search made the list empty (the
+   filter name shows in #lbl_filter_name, or the search bar is open), so the
+   filter can still be changed. Refresh stays. */
+body:has(.tab.active ul.es-empty-list):has(#lbl_filter_name:empty):not(:has(.columnwise-head-search[style*="block"])):not(:has(.columnwise-head-search[style*="flex"])) .head-menu #btn_Search,
+body:has(.tab.active ul.es-empty-list):has(#lbl_filter_name:empty):not(:has(.columnwise-head-search[style*="block"])):not(:has(.columnwise-head-search[style*="flex"])) .head-menu #btn_advanced_search {
+    display: none !important;
+}

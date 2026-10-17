@@ -403,6 +403,8 @@ function update_module_kpi() {
 // lesson video (see lms_sum_video_durations in LMS_Misc.js). Runs once per
 // session; real network/bandwidth cost, accepted for a true course-wide total.
 var lms_module_total_time_started = false;
+// Set by pull-down: the next course-time pass fetches every module's lessons.
+var lms_force_lessons_refresh = false;
 function lms_fetch_all_module_skills(modules, onDone) {
     var allSkills = [];
     if (!modules || !modules.length) { onDone(allSkills); return; }
@@ -413,10 +415,28 @@ function lms_fetch_all_module_skills(modules, onDone) {
 
     function fetchOne(mod, cb) {
         var Param_obj = [{ 'Module_Id': mod.Module_Id }];
+        // Each module's lessons are kept for a day (or until pull-down), so
+        // opening LMS does not download every module's lessons again.
+        var saved_key = lms_lessons_cache_key(mod.Module_Id);
+        if (saved_key && typeof LmsData !== 'undefined' && !lms_force_lessons_refresh
+            && LmsData.getCache(saved_key) != null && LmsData.cacheAge(saved_key) < LmsData.LESSONS_MAX_AGE) {
+            try {
+                var saved = JSON.parse(LmsData.getCache(saved_key));
+                if (saved[0].status == 1) {
+                    var saved_skills = JSON.parse(saved[0].data);
+                    saved_skills.forEach(function (s) { s._lms_module_id = mod.Module_Id; });
+                    setTimeout(function () { cb(saved_skills); }, 0);
+                    return;
+                }
+            } catch (err) { }
+        }
         var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Skill_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
             try {
                 var arr = JSON.parse(e.responseText);
                 if (arr[0].status == 1) {
+                    // Saved for the module page, which then opens instantly.
+                    var lessons_key = lms_lessons_cache_key(mod.Module_Id);
+                    if (lessons_key && typeof LmsData !== 'undefined') LmsData.setCache(lessons_key, e.responseText);
                     var skills = JSON.parse(arr[0].data);
                     // The response doesn't echo Module_Id back (it's already scoped
                     // by the request) — tag it here so per-module totals can be
@@ -460,6 +480,7 @@ function lms_compute_module_total_video_time() {
     lms_module_total_time_started = true;
 
     lms_fetch_all_module_skills(safety_module_data, function (allSkills) {
+        lms_force_lessons_refresh = false;
         // The background fetch is the only place that sees every assigned
         // lesson at once. Ingest its saved Watch_Video_Time values before
         // calculating Dashboard totals; opening a module must not be required.
@@ -546,7 +567,9 @@ function get_safety_module_listing(force_refresh) {
                     LmsData.showError("#dv_Module_List", "get_safety_module_listing(true)");
                 }
             },
-            { timeout: 15000, retries: 1, force: !!force_refresh }
+            { timeout: 15000, retries: 1, force: force_refresh === true,
+              // 'auto' (opening LMS, switching tabs): saved copy, network only when stale.
+              maxAge: force_refresh === true ? 0 : LmsData.LIST_MAX_AGE }
         );
         return;
     }
@@ -786,18 +809,33 @@ function get_progess_by_module(Module_Id, Skill_Id) {
 var lms_module_preview_request_id = 0;
 
 // get modulewise videos (level 2)
+// Title, tag, artwork and description of a module, from its card in the list.
+function lms_fill_module_preview_head(Module_Id) {
+    var card = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']");
+    var module_bg = card.find("div.sample-module-image").find("img").attr("src");
+    if (module_bg) $(".module-preview-header").css("background-image", "linear-gradient(180deg, rgba(6, 18, 66, 0.20), rgba(4, 6, 20, 0.60)), url('" + module_bg + "')");
+    $(".module-preview-tag").html(card.find("span.sample-module-tag").html());
+    $(".module-preview-title").html(card.find("div.sample-module-title").html());
+    $(".module-preview-desc").html(card.find("div.sample-module-desc").html());
+}
+
 function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Module_Schedule_Id) {
 
     var previewRequestId = ++lms_module_preview_request_id;
     glob_Module_Schedule_Id = Module_Schedule_Id;
 
-    // Clear every module-bound field before opening/calling the API. The popup
-    // must show the existing preloader over a blank state, never the last
-    // module's title, artwork, progress, description, or lesson/watch data.
+    // Clear every module-bound field before opening/calling the API, so the
+    // popup never shows the last module's data. The title, tag, artwork and
+    // description are already on the tapped card, so they are filled at once;
+    // only the lessons wait for the server, shown meanwhile as grey
+    // placeholder cards (.is-loading, LMS/lms_ux_fixes.css) instead of the
+    // black preloader over an empty page.
     $('.module-preview-header').css('background-image', 'none');
     $('.module-preview-tag, .module-preview-title, .module-preview-desc, .lession-count, .module-preview-percent').empty();
     $('.module-preview-progress').find('span').css('width', '0%');
     $('.lesson-preview-list').empty();
+    lms_fill_module_preview_head(Module_Id);
+    $('.lms-module-preview-popup').addClass('is-loading');
 
     safetyModulePreviewActive = true;
     myApp.popup.open('.lms-module-preview-popup');
@@ -806,27 +844,25 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
     Param_obj.push({
         'Module_Id': Module_Id
     });
-    loading();
 
-    var getdata = new Webservicecall_REST(global_wcf_url_lms + 'LMS_Select_Skill_Master_RoleWise', JSON.stringify(Param_obj), function (e) {
+    // Lessons rarely change: the last copy for this module (saved here, or by
+    // lms_fetch_all_module_skills when LMS opened) is shown at once, and the
+    // server's answer redraws the list only if it differs.
+    var lms_lessons_url = global_wcf_url_lms + 'LMS_Select_Skill_Master_RoleWise';
+    var lms_lessons_key = lms_lessons_cache_key(Module_Id);
+    var lessons_shown = null;
+    function render_lessons(responseText) {
         // Ignore stale responses when another module was selected (or this
         // preview was closed) while the request was in flight.
         if (previewRequestId !== lms_module_preview_request_id || !safetyModulePreviewActive) return;
-        var responseText = e.responseText;
+        if (responseText == null || responseText === lessons_shown) return;
+        lessons_shown = responseText;
+        $('.lesson-preview-list').empty();
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;
 
-        let module_bg = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-image").find("img").attr("src");
-        $(".module-preview-header").css("background-image", "linear-gradient(180deg, rgba(6, 18, 66, 0.20), rgba(4, 6, 20, 0.60)), url('" + module_bg + "')");
-
-        let module_tag = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("span.sample-module-tag").html();
-        $(".module-preview-tag").html(module_tag);
-
-        let module_title = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-title").html();
-        $(".module-preview-title").html(module_title);
-
-        let module_description = $("#dv_Module_List").find("div[Module_Id='" + Module_Id + "']").find("div.sample-module-desc").html();
-        $(".module-preview-desc").html(module_description);
+        $('.lms-module-preview-popup').removeClass('is-loading');
+        lms_fill_module_preview_head(Module_Id);
 
         $(".module-preview-percent").html(Progress + "%");
         $(".module-preview-progress").find("span").css("width", "" + Progress + "%");
@@ -1071,14 +1107,44 @@ function get_target_skill_by_module_id(Module_Id, Progress, SubmitedSkill, Modul
         }
 
         loading_hide();
-
-    }, function (error) {
+    }
+    function lessons_failed(error) {
         // A superseded request must not hide the current module's loader or
         // display an error belonging to the previous selection.
         if (previewRequestId !== lms_module_preview_request_id || !safetyModulePreviewActive) return;
-        onfail(error);
-    });
+        $('.lms-module-preview-popup').removeClass('is-loading');
+        // A saved copy is already on screen: keep it rather than show an error.
+        if (lessons_shown === null) onfail(error);
+    }
+    if (typeof LmsData !== 'undefined' && lms_lessons_key) {
+        LmsData.fetch(lms_lessons_key, lms_lessons_url, JSON.stringify(Param_obj),
+            function (txt) { render_lessons(txt); }, lessons_failed, { timeout: 15000, retries: 1 });
+        return;
+    }
+    var getdata = new Webservicecall_REST(lms_lessons_url, JSON.stringify(Param_obj), function (e) {
+        render_lessons(e.responseText);
+    }, lessons_failed);
     getdata.callOtherDomain();
+}
+
+// Cache key for one module's lessons, per user and role.
+function lms_lessons_cache_key(Module_Id) {
+    if (typeof lms_listing_cache_key !== 'function') return null;
+    return lms_listing_cache_key('lessons_' + Module_Id);
+}
+
+// A lesson's progress was saved on the server: drop the saved lessons of its
+// module, so the module page and the course times load them fresh and show
+// the new progress at once rather than up to a day later.
+function lms_lessons_changed(Module_Id) {
+    var key = lms_lessons_cache_key(Module_Id);
+    if (key && typeof LmsData !== 'undefined') LmsData.clearCache(key);
+}
+function lms_lessons_changed_for_skill(Skill_Id) {
+    var index = (typeof lms_module_skill_index === 'object' && lms_module_skill_index) || {};
+    Object.keys(index).forEach(function (modId) {
+        if ((index[modId] || []).indexOf(String(Skill_Id)) !== -1) lms_lessons_changed(modId);
+    });
 }
 
 
@@ -1388,6 +1454,7 @@ function logSafetyVideoWatch(done, requireSave) {
                     saved = result.length > 0 && Number(result[0].status) === 1;
                 } catch (e) { console.error('Unable to parse Safety video watch log response.', e); }
                 if (saved) {
+                    try { lms_lessons_changed(payload[0].Module_Id); } catch (e) { }
                     // Update the exact submitted lesson, even if navigation already changed.
                     try {
                         if (typeof LmsBackend !== 'undefined') LmsBackend.ingestSkillRows(payload);
@@ -1863,6 +1930,7 @@ function lms_refresh_module_after_submit(moduleId, skillId) {
     } catch (e) { }
     if (typeof refresh_lesson_preview_rows === 'function') refresh_lesson_preview_rows();
     lms_pending_module_reopen = String(moduleId);
+    lms_lessons_changed(moduleId);
     get_safety_module_listing(true);
 }
 
@@ -2029,6 +2097,7 @@ function get_video_skill_by_module_id(flag) {
     loading();
 
     var videolog_success = function (e) {
+        lms_lessons_changed_for_skill(Skill_Id);
         var responseText = e.responseText;
         var myArray = JSON.parse(responseText);
         var status = myArray[0].status;

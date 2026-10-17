@@ -270,7 +270,9 @@ function get_assessments_listing(force_refresh, onNetworkApplied) {
                     LmsData.showError("#dv_Assessments_List", "get_assessments_listing(true)");
                 }
             },
-            { timeout: 15000, retries: 1, force: !!force_refresh }
+            { timeout: 15000, retries: 1, force: force_refresh === true,
+              // 'auto' (opening LMS, switching tabs): saved copy, network only when stale.
+              maxAge: force_refresh === true ? 0 : LmsData.LIST_MAX_AGE }
         );
         return;
     }

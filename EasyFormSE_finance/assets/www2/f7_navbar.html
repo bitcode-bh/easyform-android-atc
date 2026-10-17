@@ -1,52 +1,19 @@
 ﻿<!-- Navbar Start -->
 <div id="nav_main" class="panel panel-left panel-cover" style="display: block;">
-    <div id="nav_sub1" class="view navbar-fixed" data-page="panel-left">
+    <div id="nav_sub1" class="view" data-page="panel-left">
         <div class="pages">
-            <div id="nav_sub2" data-page="panel-left" class="page" style="background: #eee;">
-                <div class="navbar">
-                    <div class="navbar-inner">
-                        <div class="center">Settings</div>
-                    </div>
-                </div>
+            <div id="nav_sub2" data-page="panel-left" class="page side-menu">
                 <div class="page-content">
-                    <div class="content-block profile_photo" style="margin: 0px; position:relative;">
-                        <ul>
-                            <li style="text-align: center">
-                                <img id="img_profile" src="images/profile_pic.png" onclick="get_full_view_profile_pic()" onerror="set_detault_profile_pic()">
-                                <!--<i id="edit_pro_pic" class="fa fa-pencil" style="font-size: 30px; display:inline-block; color: #fff;"></i>-->
-                            </li>
-                            <li id="change_photo" onclick='change_profile_pic("browse")' style="width:28px; display:inline-block; position:absolute;top:80px;right:50px;">
-                                <a href="#" class="item-link item-content">
-                                    <div class="item-inner" style="margin-left: 0">
-                                        <div class="item-title"><i id="edit_pro_pic" class="fa fa-pencil" style="font-size: 25px"></i></div>
-                                    </div>
-                                </a>
-                                <div class="accordion-item-content" style="margin-left:0; background: #e5e2e2;opacity:0.9; position:absolute;right:-25px;z-index:999;">
-                                    <div class="list-block">
-                                        <ul>
-                                            <li onclick='change_profile_pic("browse")'>
-                                                <div class="item-content">
-                                                    <div class="item-inner" style="margin-left: 0">
-                                                        <div class="item-title">BROWSE</div>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <!--<li onclick='change_profile_pic("camera")'>
-                                                <div class="item-content">
-                                                    <div class="item-inner" style="margin-left: 0">
-                                                        <div class="item-title">CAPTURE</div>
-                                                    </div>
-                                                </div>
-                                            </li>-->
-                                        </ul>
-                                    </div>
-                                </div>
-                            </li>
-                            <li style="text-align: center; font-size: 13pt; font-weight: bold">
-                                <label id="lblusername" style="margin-bottom: 0; padding-bottom: 0;"></label>
-                                <i id="menu_img_gprs" class="fa fa-circle" style="color: lightgreen; margin-left: 10px"></i>
-                            </li>
-                        </ul>
+                    <!-- Who is signed in: photo (tap to view), camera badge to change it, name and connection. -->
+                    <div class="side-menu-head">
+                        <div class="side-menu-photo">
+                            <img id="img_profile" src="images/profile_pic.png" onclick="get_full_view_profile_pic()" onerror="set_detault_profile_pic()">
+                            <a href="#" id="change_photo" class="side-menu-photo-edit" aria-label="Change photo" onclick='change_profile_pic("browse"); return false;'><i id="edit_pro_pic" class="fa fa-camera" aria-hidden="true"></i></a>
+                        </div>
+                        <div class="side-menu-who">
+                            <label id="lblusername"></label>
+                            <div class="side-menu-status"><i id="menu_img_gprs" class="fa fa-circle" style="color: lightgreen"></i><span id="menu_net_status">Online</span></div>
+                        </div>
                     </div>
 
                     <div class="card">
@@ -57,7 +24,7 @@
                                         <div class="item-content">
                                             <div class="item-media"><i class="fa fa-user" style="color: lightseagreen"></i></div>
                                             <div class="item-inner" style="margin-left: 0">
-                                                <div class="item-title">My Profile</div>
+                                                <div class="item-title">My profile</div>
                                             </div>
                                         </div>
                                     </a>
@@ -67,93 +34,24 @@
                                         <div class="item-content">
                                             <div class="item-media"><i class="fa fa-shield" style="color: orange"></i></div>
                                             <div class="item-inner" style="margin-left: 0">
-                                                <div class="item-title">My Safety Passport</div>
+                                                <div class="item-title">My safety passport</div>
                                             </div>
                                         </div>
                                     </a>
                                 </li>
-
-
-                                <!--<li id="change_photo" class="accordion-item" style="display:none;">
-                                    <a href="#" class="item-link item-content">
-                                        <div class="item-media"><i class="fa fa-adjust"></i></div>
-                                        <div class="item-inner" style="margin-left: 0">
-                                            <div class="item-title">Change Photo</div>
-                                        </div>
-                                    </a>
-                                    <div class="accordion-item-content">
-                                        <div class="list-block">
-                                            <ul>
-                                                <li onclick='change_profile_pic("browse")'>
-                                                    <div class="item-content">
-                                                        <div class="item-media"></div>
-                                                        <div class="item-inner" style="margin-left: 0">
-                                                            <div class="item-title">BROWSE</div>
-                                                        </div>
-                                                    </div>
-                                                </li>
-                                                <li onclick='change_profile_pic("camera")'>
-                                                    <div class="item-content">
-                                                        <div class="item-media"></div>
-                                                        <div class="item-inner" style="margin-left: 0">
-                                                            <div class="item-title">CAPTURE</div>
-                                                        </div>
-                                                    </div>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </li>-->
-                                <!--<li id="about" class="accordion-item">
-                                    <a href="#" class="item-link item-content">
-                                        <div class="item-media"><i class="fa fa-bookmark"></i></div>
-                                        <div class="item-inner" style="margin-left: 0">
-                                            <div class="item-title">About Easy Form</div>
-                                        </div>
-                                    </a>
-                                    <div class="accordion-item-content">
-                                        <div class="content-block">
-                                            <p style="text-align: justify">EasyForm is useful for any organization executing large projects. Application can be customize to meet specific project requirements. Application removes paper work and speed up approval process. Application is online process for having visibility of real time status of work and users. Location module help in ensuring site visit and brings transparency in way of working.</p>
-                                            <p style="text-align: justify">Last updated 29 May 2020(19.6.9.2) 11:39</p>
-                                            <p id="app_version" style="text-align: right"></p>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li id="faq" class="accordion-item">
-                                    <a data-popup=".popup-faq" class="item-link close-panel open-popup">
-                                        <div class="item-content">
-                                            <div class="item-media"><i class="fa fa-question-circle"></i></div>
-                                            <div class="item-inner" style="margin-left: 0">
-                                                <div class="item-title">FAQ</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>-->
-
                             </ul>
-
                         </div>
                     </div>
 
                     <div class="card">
                         <div class="list-block">
                             <ul>
-                                <!--<li>
-                                    <a class="item-link open-popover" data-popover=".popover-language">
-                                        <div class="item-content">
-                                            <div class="item-media"><i class="fa fa-globe" style="font-size: 15px; color: blue;"></i></div>
-                                            <div class="item-inner" style="margin-left: 0">
-                                                <div class="item-title">Change Language</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>-->
                                 <li id="change_pass" onclick="localStorage.setItem('change_pwd_flag', 'profile');changeurl('change_password.html');">
                                     <a class="item-link close-panel item-cp">
                                         <div class="item-content">
                                             <div class="item-media"><i class="fa fa-unlock-alt" style="color: blueviolet"></i></div>
                                             <div class="item-inner" style="margin-left: 0">
-                                                <div class="item-title">Change Password</div>
+                                                <div class="item-title">Change password</div>
                                             </div>
                                         </div>
                                     </a>
@@ -162,7 +60,7 @@
                                     <div class="item-content">
                                         <div class="item-media"><i class="fa fa-mail-forward" style="color: limegreen"></i></div>
                                         <div class="item-inner" style="margin-left: 0">
-                                            <div class="item-title">Skip Download</div>
+                                            <div class="item-title">Skip download</div>
                                             <label class="label-switch">
                                                 <input type="checkbox" id="chk_skip_down" onchange="toggle_skip_download_flag(this)">
                                                 <div class="checkbox"></div>
@@ -173,36 +71,35 @@
                                 <li>
                                     <a onclick="get_privacy_policy()" class="item-link close-panel">
                                         <div class="item-content">
-                                            <div class="item-media"><i class="fa fa-file-text" style="font-size: 14px; color: deepskyblue"></i></div>
+                                            <div class="item-media"><i class="fa fa-file-text" style="color: deepskyblue"></i></div>
                                             <div class="item-inner" style="margin-left: 0">
-                                                <div class="item-title">Privacy Policy</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li onclick="logout_on_click_online()">
-                                    <a class="item-link close-panel">
-                                        <div class="item-content">
-                                            <div class="item-media"><i class="fa fa-power-off" style="color:red"></i></div>
-                                            <div class="item-inner" style="margin-left: 0">
-                                                <div class="item-title">LogOut</div>
+                                                <div class="item-title">Privacy policy</div>
                                             </div>
                                         </div>
                                     </a>
                                 </li>
                             </ul>
-
-
                         </div>
                     </div>
 
+                    <div class="card side-menu-logout">
+                        <div class="list-block">
+                            <ul>
+                                <li onclick="logout_on_click_online()">
+                                    <a class="item-link close-panel">
+                                        <div class="item-content">
+                                            <div class="item-media"><i class="fa fa-power-off" style="color: #A32D2D"></i></div>
+                                            <div class="item-inner" style="margin-left: 0">
+                                                <div class="item-title">Log out</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
 
-                    <table style="width:85%; margin:5px 15px">
-                        <tr>
-                            <td><b>ID:</b> 81</td>
-                            <td style="text-align:right"><p id="app_version" style="margin:0"></p></td>
-                        </tr>
-                    </table>
+                    <div class="side-menu-foot">ID 81 · <span id="app_version"></span></div>
 
                     <div class="list-block">
                         <ul id="view_database">

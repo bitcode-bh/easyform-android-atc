@@ -814,12 +814,8 @@ var HomeHero = (function () {
         $slide.find('.hh-score-val').text(String(score.value));
         $slide.find('.hh-score-tag').text(score.sample ? ' · Sample' : '');
         var $shield = $slide.find('.hh-shield');
-        if ($shield.length && !$shield.attr('src')) {
-            try {
-                var base = JSON.parse(storage.getItem('global_wcf_url')) || (typeof global_wcf_url !== 'undefined' ? global_wcf_url : '');
-                $shield.attr('src', new URL(base).origin + '/images/safety_passport/sp_shield.png');
-            } catch (e) { }
-        }
+        // The shield ships with the app (the server's copy is the same file).
+        if ($shield.length && !$shield.attr('src')) $shield.attr('src', 'images/safety_passport/sp_shield.png');
         var modules = cachedListing('modules');
         var assessments = cachedListing('assessments');
         var ml = microLearning();

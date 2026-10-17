@@ -1,4 +1,5 @@
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <style name="RedHUGEText">
         <item name="android:layout_width">200dp</item>
@@ -68,6 +69,10 @@
              buttons/handle so they stay visible on the light colour. -->
         <item name="android:navigationBarColor">#ECEDEF</item>
         <item name="android:windowLightNavigationBar">true</item>
+        <!-- Native dialogs (date/time pickers, confirmations) get the same
+             16dp corners on all four sides as the app's own pop-ups. -->
+        <item name="android:dialogCornerRadius" tools:targetApi="p">16dp</item>
+        <item name="dialogCornerRadius">16dp</item>
 
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>

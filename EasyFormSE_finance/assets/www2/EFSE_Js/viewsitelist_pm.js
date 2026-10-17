@@ -2204,14 +2204,14 @@ function onsuccess_get_list_of_pm_sites(e) {
             $("#btn_Create_Task").hide();
         }
         else {
-            setTimeout(function () {
-                var data_json = JSON.parse(storage.getItem('list_json'));
-                var list_data = JSON.parse(data_json);
-                var task_value = list_data[0].task;
-                if (task_value == "true") {
-                    $("#btn_Create_Task").show();
-                }
-            }, 500);
+            // Shown with the list, not half a second after it: the setting
+            // it reads is already saved on the device.
+            var data_json = JSON.parse(storage.getItem('list_json'));
+            var list_data = JSON.parse(data_json);
+            var task_value = list_data[0].task;
+            if (task_value == "true") {
+                $("#btn_Create_Task").show();
+            }
         }
 
         //var task_value = list_data[0].task;

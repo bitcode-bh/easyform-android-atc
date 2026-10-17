@@ -1715,7 +1715,7 @@ MkDocInits.prototype = {
 
         setTimeout(function () {
             var app_version = localStorage.getItem('version');
-            $("#app_version").html('<b>Ver:</b> ' + app_version);
+            $("#app_version").text(app_version || '');
 
             //set version for ios [FT - 30052024]
             $("#app_version_ios").html('<b>Ver:</b> ' + app_version);

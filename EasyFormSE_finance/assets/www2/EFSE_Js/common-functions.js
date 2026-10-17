@@ -203,7 +203,8 @@ if (typeof AppLoader === 'undefined' && document.readyState === 'loading') {
     document.write('<link href="css/app_loader.css" rel="stylesheet" /><script src="EFSE_Js/app_loader.js"><\/script>');
 }
 // Likewise the top bar's line icons (css/topbar_icons.css).
-if (document.readyState === 'loading') document.write('<link href="css/topbar_icons.css" rel="stylesheet" /><link href="css/shared_listing.css" rel="stylesheet" /><script src="EFSE_Js/shared_listing.js"><\/script>');
+// One set of corners for fields, buttons, cards and pop-ups (css/app_radius.css).
+if (document.readyState === 'loading') document.write('<link href="css/topbar_icons.css" rel="stylesheet" /><link href="css/app_radius.css" rel="stylesheet" /><link href="css/side_menu.css" rel="stylesheet" /><link href="css/shared_listing.css" rel="stylesheet" /><script src="EFSE_Js/shared_listing.js"><\/script>');
 
 var loading_timer;
 function loading() {
@@ -335,6 +336,12 @@ function back_button(page) {
     else if (search_listview_popup.length > 0) {
         // searchable listview popup is open
         popup_items_hide_type20();
+        return false;
+    }
+    else if ($('.popup-type20-dropdown:visible').length > 0 && typeof close_type20_dropdown_popup === 'function') {
+        // searchable dropdown is open: back closes it, and only it
+        loading_hide();
+        close_type20_dropdown_popup();
         return false;
     }
     else if (inv_popup.length > 0) {
@@ -908,27 +915,119 @@ function close_my_profile() {
 
 function get_my_profile_details_F7() {
     $('#chartContainer').empty();
+    bind_profile_pull();
+    // Last known position and address at once; the device's current reading
+    // replaces them a moment later in the same place.
+    if (!$('#lbl_pro_latlong').text()) {
+        try {
+            var last_loc = JSON.parse(localStorage.getItem('profile_last_location')) || {};
+            if (last_loc.latlong) $('#lbl_pro_latlong').text(last_loc.latlong);
+            if (last_loc.address) $('#pro_address').text(last_loc.address);
+        } catch (err) { }
+    }
+    // Until the details arrive, the popup shows grey placeholders where they
+    // will sit, so nothing moves when they fill in (css/styles_low.css).
+    // Profile details rarely change: show the last saved copy at once and let
+    // the server refresh it. Only a first-ever open shows placeholders.
+    // Redrawn from the saved copy on every open, so an edit made on the
+    // profile update screen shows at once.
+    {
+        var saved = null;
+        try { saved = JSON.parse(localStorage.getItem('profile_user_data')); } catch (err) { }
+        if (saved && saved.length) {
+            try { render_profile_user_data(saved); } catch (err) { set_profile_loading(true); }
+        } else {
+            set_profile_loading(true);
+        }
+    }
     myApp.popup('.popup-profile');
 
     $('.popup-profile .media-list').show();
     //$('#iframe_update_profile').hide();
 
+    // The details come straight from the device. (They used to wait for a
+    // chart script from canvasjs.com that the profile no longer draws, which
+    // left the profile empty with a slow or no connection.)
     var company_id = JSON.parse(storage.getItem('company_id'));
-    if (company_id == '157') {
-        setTimeout(function () {
-            cordova.exec(onsuccess_get_my_profile_details_F7, onfail_get_my_profile_details_F7, 'maulik', 'nck', ["ds"]);
-        }, 300);
-    }
-    else {
-        var js = document.createElement("script");
-        js.src = 'https://canvasjs.com/assets/script/canvasjs.min.js';
-        //js.src = 'https://code.highcharts.com/highcharts.js';
+    setTimeout(function () {
+        cordova.exec(onsuccess_get_my_profile_details_F7, onfail_get_my_profile_details_F7, 'maulik', 'nck', ["ds"]);
+    }, company_id == '157' ? 300 : 0);
+}
 
-        document.body.appendChild(js);
-        js.onload = function () {
-            cordova.exec(onsuccess_get_my_profile_details_F7, onfail_get_my_profile_details_F7, 'maulik', 'nck', ["ds"]);
-        };
+var profile_loading_timer;
+function set_profile_loading(on) {
+    clearTimeout(profile_loading_timer);
+    $('.popup-profile').toggleClass('is-loading', on);
+    // Never leave placeholders up if a request never answers.
+    if (on) profile_loading_timer = setTimeout(function () { set_profile_loading(false); }, 15000);
+    else profile_pull_done();
+}
+
+// Pull down on the profile to fetch it again. A small handler of its own:
+// Home's pull-to-refresh code binds to every .pull-to-refresh-content, so the
+// profile does not use that class.
+var profile_pull = { y0: null, dist: 0, busy: false };
+function profile_pull_indicator() {
+    var content = document.querySelector('.popup-profile .profile-content');
+    if (!content) return null;
+    var el = content.querySelector('.profile-pull');
+    if (!el) {
+        el = document.createElement('div');
+        el.className = 'profile-pull';
+        el.innerHTML = '<span class="profile-pull-ring"></span>';
+        content.insertBefore(el, content.firstChild);
     }
+    return el;
+}
+function profile_pull_done() {
+    if (!profile_pull.busy) return;
+    profile_pull.busy = false;
+    var el = profile_pull_indicator();
+    if (el) { el.classList.remove('is-busy'); el.style.height = '0px'; }
+}
+// Bound when the profile first opens: this file loads before jQuery.
+function bind_profile_pull() {
+    if (profile_pull.bound) return;
+    profile_pull.bound = true;
+    $(document).on('touchstart', '.popup-profile .profile-content', function (e) {
+        if (profile_pull.busy || this.scrollTop > 0) { profile_pull.y0 = null; return; }
+        profile_pull.y0 = e.originalEvent.touches[0].clientY;
+        profile_pull.dist = 0;
+    });
+    $(document).on('touchmove', '.popup-profile .profile-content', function (e) {
+        if (profile_pull.y0 === null) return;
+        var d = e.originalEvent.touches[0].clientY - profile_pull.y0;
+        if (d <= 0 || this.scrollTop > 0) { profile_pull.dist = 0; return; }
+        profile_pull.dist = Math.min(d * 0.5, 72);
+        var el = profile_pull_indicator();
+        if (!el) return;
+        el.style.transition = 'none';
+        el.style.height = profile_pull.dist + 'px';
+        el.querySelector('.profile-pull-ring').style.transform = 'rotate(' + (profile_pull.dist * 5) + 'deg)';
+        el.classList.toggle('is-ready', profile_pull.dist >= 56);
+    });
+    $(document).on('touchend touchcancel', '.popup-profile .profile-content', function () {
+        if (profile_pull.y0 === null) return;
+        profile_pull.y0 = null;
+        var el = profile_pull_indicator();
+        if (!el) return;
+        el.style.transition = '';
+        el.classList.remove('is-ready');
+        if (profile_pull.dist >= 56) {
+            profile_pull.busy = true;
+            el.classList.add('is-busy');
+            el.style.height = '48px';
+            refresh_my_profile();
+        } else {
+            el.style.height = '0px';
+        }
+        profile_pull.dist = 0;
+    });
+}
+function refresh_my_profile() {
+    clearTimeout(profile_loading_timer);
+    profile_loading_timer = setTimeout(function () { set_profile_loading(false); }, 15000);
+    cordova.exec(onsuccess_get_my_profile_details_F7, onfail_get_my_profile_details_F7, 'maulik', 'nck', ["ds"]);
 }
 
 function onsuccess_get_my_profile_details_F7(e) {
@@ -973,16 +1072,30 @@ function onsuccess_get_my_profile_details_F7(e) {
         //}
 
         $("#lbl_pro_latlong").html(user_lat_long_str);
-        $("#pro_address").html(address);
+        // Keep the last street address on screen until the new one arrives.
+        if (address) $("#pro_address").html(address);
         /*$("#pro_imei").html('<b>IMEI:</b> ' + imei_no);*/
 
+        // The street address is looked up only when the position has moved
+        // about 100 m from where the saved address was found (or on
+        // pull-down). Meanwhile its line keeps a placeholder so nothing jumps.
+        var saved_loc = {};
+        try { saved_loc = JSON.parse(localStorage.getItem('profile_last_location')) || {}; } catch (err) { }
+        var moved_m = profile_distance_m(saved_loc.lat, saved_loc.lng, lat, long);
+        if (saved_loc.address && moved_m < 100 && !profile_pull.busy) {
+            $("#pro_address").html(saved_loc.address);
+            profile_save_location(lat, long);
+        } else {
+        $("#pro_address").addClass('addr-pending');
         var request = $.get({
             url: global_wcf_url + `LocationApi/aws/${lat}/${long}`, success(data) {
                 let address = data.display_name;
                 let area = address.split(',')[0];
                 $("#pro_address").html(address);
+                profile_save_location(lat, long);
             }
-        });
+        }).always(function () { $("#pro_address").removeClass('addr-pending'); });
+        }
 
         var gprs = myArray[0].gprs;
         var gps = myArray[0].gps;
@@ -1003,7 +1116,15 @@ function onsuccess_get_my_profile_details_F7(e) {
         //    get_user_flow_sublflow_names();
         //}
 
-        get_user_data_online();
+        // Profile details rarely change: the saved copy (already on screen) is
+        // fetched again once a day, or on pull-down.
+        var saved_at = Number(localStorage.getItem('profile_user_data_at')) || 0;
+        var have_saved = !!localStorage.getItem('profile_user_data') && $('#profile_user_detail').children().length;
+        if (!have_saved || profile_pull.busy || Date.now() - saved_at > 24 * 60 * 60 * 1000) {
+            get_user_data_online();
+        } else {
+            set_profile_loading(false);
+        }
 
         create_table_by_device_info();
 
@@ -1016,7 +1137,8 @@ function onsuccess_get_my_profile_details_F7(e) {
 //////////////----profile user detail tbl start-----/////////////////
 function get_user_data_online() {
 
-    loading();
+    // No busy indicator when the saved profile is already on screen.
+    if (!$('#profile_user_detail').children().length) loading();
 
     let user_id = JSON.parse(storage.getItem('user_id'));
     let company_id = JSON.parse(storage.getItem('company_id'));
@@ -1039,6 +1161,7 @@ function get_user_data_online() {
             var user_data = message;
 
             localStorage.setItem('profile_user_data', JSON.stringify(user_data));
+            localStorage.setItem('profile_user_data_at', String(Date.now()));
         }
         else {
             var user_data = localStorage.getItem('profile_user_data');
@@ -1047,27 +1170,51 @@ function get_user_data_online() {
         loading_hide();
 
         if (user_data == "" || user_data == null || user_data == undefined) {
+            set_profile_loading(false);
             alert("User data is not available!");
         }
         else {
-
-            $("#title_user_profile").show();
-
-            var prop = user_data[0].prop;
-            if (prop == "" || prop == null || prop == undefined) {
-                // 3 key json
-                get_blank_checksheet_profile(user_data);
-            }
-            else {
-                // full json
-                build_user_table(user_data);
-            }
+            render_profile_user_data(user_data);
         }
     }, onfail);
     getdata1.callOtherDomain();
 }
 
+// Saves the position shown, and where its street address was looked up.
+function profile_save_location(lat, lng) {
+    try {
+        localStorage.setItem('profile_last_location', JSON.stringify({
+            latlong: $('#lbl_pro_latlong').text(), address: $('#pro_address').text(),
+            lat: Number(lat), lng: Number(lng)
+        }));
+    } catch (err) { }
+}
+
+// Metres between two positions; Infinity when either is unknown.
+function profile_distance_m(lat1, lng1, lat2, lng2) {
+    lat1 = Number(lat1); lng1 = Number(lng1); lat2 = Number(lat2); lng2 = Number(lng2);
+    if (!lat1 || !lng1 || !lat2 || !lng2) return Infinity;
+    var r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLng = (lng2 - lng1) * r;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+        + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function render_profile_user_data(user_data) {
+    $("#title_user_profile").show();
+    var prop = user_data[0].prop;
+    if (prop == "" || prop == null || prop == undefined) {
+        // 3 key json
+        get_blank_checksheet_profile(user_data);
+    }
+    else {
+        // full json
+        build_user_table(user_data);
+    }
+}
+
 function onfail_get_my_profile_details_F7(e) {
+    set_profile_loading(false);
     get_my_task();
 }
 
@@ -1088,9 +1235,36 @@ function get_blank_checksheet_profile(user_data, safety_passport) {
             'trip_id': 0
         });
 
+        // The profile form (its labels) rarely changes: kept for a day, or
+        // until pull-down on the profile. The answers merged into it come
+        // from user_data.
+        var template_key = 'profile_template_' + company_id + '_' + selected_check_type;
+        var template_at = Number(localStorage.getItem(template_key + '_at')) || 0;
+        var template_saved = localStorage.getItem(template_key);
+        if (template_saved && !profile_pull.busy && Date.now() - template_at < 24 * 60 * 60 * 1000) {
+            show_profile_template(template_saved);
+            return;
+        }
+
         loading();
         var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetCheckSheetData_Port', JSON.stringify(param_obj), function (e) {
-            var responseText = JSON.parse(e.responseText);
+            try {
+                if (JSON.parse(e.responseText)[0].status == 1) {
+                    localStorage.setItem(template_key, e.responseText);
+                    localStorage.setItem(template_key + '_at', String(Date.now()));
+                }
+            } catch (err) { }
+            show_profile_template(e.responseText);
+        }, onfail);
+        getdata.callOtherDomain();
+    }
+    catch (e) {
+        alert(e + '_get_blank_checksheet_profile()');
+        loading_hide();
+    }
+
+    function show_profile_template(templateText) {
+            var responseText = JSON.parse(templateText);
             var status = responseText[0].status;
 
             if (status == 1) {
@@ -1138,12 +1312,6 @@ function get_blank_checksheet_profile(user_data, safety_passport) {
                 loading_hide();
                 alert(responseText[0].message);
             }
-        }, onfail);
-        getdata.callOtherDomain();
-    }
-    catch (e) {
-        alert(e + '_get_blank_checksheet_profile()');
-        loading_hide();
     }
 }
 
@@ -1375,6 +1543,7 @@ function arrange_my_profile_rows() {
     languageCell.textContent = languages[user_language] || languages.en;
     $('#profile_work_card').toggle(work.rows.length > 0);
     $('#profile_contact_card').toggle(contact.rows.length > 0);
+    set_profile_loading(false);
 }
 
 update_profile = () => {
@@ -1735,13 +1904,16 @@ function onsuccess_get_internet_status_F7(e) {
     var gprs = myArray[0].gprs;
     if (gprs == "1") {
         $("#menu_img_gprs").css("color", "lightgreen");
+        $("#menu_net_status").text("Online");
     } else {
         $("#menu_img_gprs").css("color", "gray");
+        $("#menu_net_status").text("Offline");
     }
 }
 
 function onfail_get_internet_status_F7(e) {
     $("#menu_img_gprs").css("color", "gray");
+    $("#menu_net_status").text("Offline");
 }
 
 // view date as per device setting
@@ -4138,8 +4310,9 @@ function get_safety_passport() {
         var src = $(this).attr("src");
         let hostname = new URL(global_wcf_url).hostname;
 
-        if (src) {
-            var url = new URL(src, window.location.origin);
+        // Images bundled with the app (relative paths) stay local.
+        if (src && /^https?:\/\//i.test(src)) {
+            var url = new URL(src);
             url.hostname = hostname;
 
             $(this).attr("src", url.toString());
@@ -4605,6 +4778,7 @@ function get_privacy_policy() {
         $(".cls_consent_button").hide();
         $("input[type='checkbox'][name='consent']").prop("checked", true).prop("disabled", true);;
     }
+    if (typeof pp_prepare === 'function') pp_prepare();
 }
 
 // change language from checksheet page

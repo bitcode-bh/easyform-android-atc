@@ -250,7 +250,7 @@ public class CordovaDialogsHelper {
         btn.setClickable(true);
         btn.setFocusable(true);
         GradientDrawable bg = new GradientDrawable();
-        bg.setCornerRadius(dp(12));
+        bg.setCornerRadius(dp(8));
         bg.setColor(fill);
         bg.setStroke(dp(1), fill);
         btn.setTextColor(Color.WHITE);

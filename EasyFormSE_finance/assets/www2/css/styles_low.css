@@ -2893,6 +2893,40 @@ li.w-75-25 {
 #pro_img_gps { color: var(--app-action-blue, #2a3086); font-size: 14px; margin-top: 2px; }
 #pro_address { font-size: 12px; color: #6a6c74; overflow-wrap: anywhere; }
 #lbl_pro_latlong { font-size: 15px; color: #6a6c74; margin-top: 2px; overflow-wrap: anywhere; }
+/* While the profile loads (.is-loading, set by get_my_profile_details_F7),
+   grey bars hold the place of each value at its real height, so the page does
+   not shift when the details arrive. */
+.popup-profile.is-loading #profile_full_name:empty,
+.popup-profile.is-loading #lblusername_my:empty,
+.popup-profile.is-loading #lbluserrole_my:empty,
+.popup-profile.is-loading #pro_address:empty,
+.popup-profile.is-loading #lbl_pro_latlong:empty {
+    display: block; width: 160px; max-width: 100%; border-radius: 4px;
+    background: #dcdde1; animation: profile-skel 1.2s ease-in-out infinite;
+}
+.popup-profile.is-loading #profile_full_name:empty { height: 20px; }
+.popup-profile.is-loading #lblusername_my:empty { height: 20px; width: 120px; }
+.popup-profile.is-loading #lbluserrole_my:empty { height: 20px; width: 90px; }
+.popup-profile.is-loading #pro_address:empty { height: 15px; width: 220px; }
+.popup-profile.is-loading #lbl_pro_latlong:empty { height: 19px; width: 140px; }
+.popup-profile.is-loading #profile_contact_card { display: block !important; }
+.popup-profile.is-loading .profile-table:empty {
+    display: block; height: 85px;
+    background: repeating-linear-gradient(to bottom, #dcdde1 0 11px, transparent 11px 17px);
+    animation: profile-skel 1.2s ease-in-out infinite;
+}
+/* The address line keeps its height while the street address is looked up. */
+#pro_address:empty { min-height: 15px; }
+#lbl_pro_latlong:empty { min-height: 19px; }
+#pro_address.addr-pending:empty { width: 220px; max-width: 100%; border-radius: 4px; background: #dcdde1; animation: profile-skel 1.2s ease-in-out infinite; }
+@keyframes profile-skel { 50% { opacity: .45; } }
+/* Pull-down-to-refresh indicator on the profile (common-functions.js). */
+.popup-profile .profile-pull { height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: height .2s ease; }
+.popup-profile .profile-pull-ring { width: 22px; height: 22px; box-sizing: border-box; border-radius: 50%; border: 2.5px solid #d5d8de; border-top-color: var(--app-action-blue, #2a3086); opacity: .6; }
+.popup-profile .profile-pull.is-ready .profile-pull-ring { opacity: 1; }
+.popup-profile .profile-pull.is-busy .profile-pull-ring { opacity: 1; animation: profile-pull-spin .8s linear infinite; }
+@keyframes profile-pull-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .popup-profile.is-loading * { animation: none !important; } }
 .popup-profile .profile-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid #dedfe0; padding-top: 5px; }
 .popup-profile .profile-actions a.button { height: auto; min-height: 22px; line-height: 22px; font-size: 11px; border-radius: 8px; padding: 0 10px; flex-shrink: 0; }
 .popup-profile .profile-section-title { margin: 0 0 3px; padding-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 12px; line-height: 1.25; font-weight: 700; border-bottom: 1px solid #dedfe0; }

@@ -6634,6 +6634,8 @@ function set_dropdown_data(t_val, t_new_id, add_cust_from_search, t_val1, ddl_tx
 }
 
 function reset_type20_popup_search() {
+    type20_prepare_header();
+    $('.popup-type20-dropdown').removeClass('t20-search-open');
     var form = document.getElementById('F7_type20_ddl_Search');
     if (form && form.f7Searchbar) form.f7Searchbar.disable();
     else if (form) $(form).find('input[type=search]').val('');
@@ -6656,7 +6658,6 @@ function sync_type20_popup_selection() {
         $('#type20_ddl_list > li[value]').each(function () {
             var title = $(this).find('.item-title').text().trim();
             var active = selected.has(JSON.stringify([this.getAttribute('value'), title]));
-            $(this).toggleClass('type20-placeholder', title === 'Select Value');
             $(this).toggleClass('type20-selected', active).attr({ 'role': 'option', 'aria-selected': String(active) });
         });
     });
@@ -6957,3 +6958,142 @@ create_listview_html_for_new_customer = (new_id_G) => {
         loading_hide();
     }
 }
+
+// ----- Searchable dropdown: folded search field and pull-down refresh -----
+// The search field is folded into a search icon beside a title; tapping the
+// icon opens it, Cancel (or leaving it empty) folds it again. Pulling the
+// option list down asks the server for the options again, through the same
+// request the search uses (get_data_by_dropdown_search).
+function type20_prepare_header() {
+    $('.popup-type20-dropdown .navbar-inner').each(function () {
+        var inner = $(this);
+        if (inner.find('.t20-search-toggle').length) return;
+        inner.find('#F7_type20_ddl_Search').after('<div class="t20-title">Select an option</div>');
+        var right = inner.find('.right');
+        if (!right.length) right = $('<div class="right"></div>').appendTo(inner);
+        right.prepend('<a href="#" class="link icon-only t20-search-toggle" aria-label="Search"><i class="fa fa-search" aria-hidden="true"></i></a>');
+    });
+}
+// Every option list redraw: the "Select Value" row is hidden, and the search
+// icon is hidden while the list holds no real options. Runs before paint.
+function type20_tag_rows(list) {
+    var real = 0;
+    $(list).children('li').each(function () {
+        var title = $(this).find('.item-title').text().trim();
+        var empty = $(this).hasClass('no-record') || title === 'No Data Found !' || title === '';
+        $(this).toggleClass('type20-placeholder', title === 'Select Value');
+        $(this).toggleClass('type20-empty', empty);
+        if (!empty && title !== 'Select Value') real++;
+    });
+    $(list).closest('.popup-type20-dropdown').toggleClass('t20-no-options', real === 0);
+}
+$(function () {
+    $('.popup-type20-dropdown #type20_ddl_list').each(function () {
+        var list = this;
+        type20_tag_rows(list);
+        if (window.MutationObserver) new MutationObserver(function () { type20_tag_rows(list); }).observe(list, { childList: true });
+    });
+});
+$(document).on('click', '.popup-type20-dropdown .t20-search-toggle', function (e) {
+    e.preventDefault();
+    var popup = $(this).closest('.popup-type20-dropdown').addClass('t20-search-open');
+    var form = document.getElementById('F7_type20_ddl_Search');
+    if (form && form.f7Searchbar) form.f7Searchbar.enable();
+    setTimeout(function () { popup.find('#F7_type20_ddl_Search input[type=search]').focus(); }, 50);
+});
+$(document).on('click', '.popup-type20-dropdown .searchbar-cancel', function () {
+    $(this).closest('.popup-type20-dropdown').removeClass('t20-search-open');
+});
+$(document).on('blur', '.popup-type20-dropdown #F7_type20_ddl_Search input[type=search]', function () {
+    var input = this;
+    setTimeout(function () {
+        if (!input.value) $(input).closest('.popup-type20-dropdown').removeClass('t20-search-open');
+    }, 150);
+});
+
+// The list slides down with a transform (no layout per frame) and a ring
+// spins above it while the server answers; the app-wide loader is skipped.
+var type20_pull = { y0: null, dist: 0, busy: false, timer: 0, list: null, ring: null };
+var TYPE20_PULL_READY = 56, TYPE20_PULL_HOLD = 52;
+function type20_pull_parts(content) {
+    var ring = content.querySelector('.t20-pull');
+    if (!ring) {
+        ring = document.createElement('div');
+        ring.className = 't20-pull';
+        ring.innerHTML = '<span></span>';
+        content.insertBefore(ring, content.firstChild);
+    }
+    type20_pull.ring = ring;
+    type20_pull.list = content.querySelector('.list-block-search') || content.lastElementChild;
+    return type20_pull;
+}
+function type20_pull_move(dist, animate) {
+    var p = type20_pull;
+    if (!p.list || !p.ring) return;
+    var t = animate ? 'transform .25s ease, opacity .25s ease' : 'none';
+    p.list.style.transition = t;
+    p.ring.style.transition = t;
+    p.list.style.transform = dist ? 'translate3d(0,' + dist + 'px,0)' : '';
+    p.ring.style.opacity = dist ? Math.min(dist / TYPE20_PULL_READY, 1) : 0;
+    p.ring.style.transform = 'translate3d(0,' + (dist - 40) / 2 + 'px,0)';
+}
+function type20_pull_done() {
+    clearTimeout(type20_pull.timer);
+    type20_pull.busy = false;
+    if (type20_pull.ring) type20_pull.ring.classList.remove('is-busy');
+    type20_pull_move(0, true);
+}
+function type20_pull_target(e) {
+    return e.target && e.target.closest ? e.target.closest('.popup-type20-dropdown #ddl_list') : null;
+}
+document.addEventListener('touchstart', function (e) {
+    var content = type20_pull_target(e);
+    if (!content || type20_pull.busy || content.scrollTop > 0) { type20_pull.y0 = null; return; }
+    type20_pull.y0 = e.touches[0].clientY;
+    type20_pull.dist = 0;
+    type20_pull_parts(content);
+}, { passive: true });
+document.addEventListener('touchmove', function (e) {
+    if (type20_pull.y0 === null) return;
+    var content = type20_pull_target(e);
+    var d = e.touches[0].clientY - type20_pull.y0;
+    if (!content || d <= 0 || content.scrollTop > 0) { if (type20_pull.dist) { type20_pull.dist = 0; type20_pull_move(0); } return; }
+    type20_pull.dist = Math.min(d * 0.5, 80);
+    type20_pull_move(type20_pull.dist);
+    var span = type20_pull.ring.firstChild;
+    span.style.transform = 'rotate(' + (type20_pull.dist * 5) + 'deg)';
+    type20_pull.ring.classList.toggle('is-ready', type20_pull.dist >= TYPE20_PULL_READY);
+}, { passive: true });
+function type20_pull_release() {
+    if (type20_pull.y0 === null) return;
+    type20_pull.y0 = null;
+    var ring = type20_pull.ring;
+    var pulled = type20_pull.dist >= TYPE20_PULL_READY;
+    type20_pull.dist = 0;
+    if (!ring) return;
+    ring.classList.remove('is-ready');
+    ring.firstChild.style.transform = '';
+    if (!pulled || typeof new_id_G === 'undefined' || !new_id_G) { type20_pull_move(0, true); return; }
+    type20_pull.busy = true;
+    ring.classList.add('is-busy');
+    type20_pull_move(TYPE20_PULL_HOLD, true);
+    // The list redraws when the server answers; stop the spinner then, or
+    // after 10 s at the latest.
+    var list = document.getElementById('type20_ddl_list');
+    if (list && window.MutationObserver) {
+        var watch = new MutationObserver(function () { watch.disconnect(); setTimeout(type20_pull_done, 150); });
+        watch.observe(list, { childList: true });
+    }
+    type20_pull.timer = setTimeout(type20_pull_done, 10000);
+    // Let the ring start spinning before the request is built.
+    setTimeout(function () {
+        var appLoading = window.loading;
+        window.loading = function () { };
+        try {
+            get_data_by_dropdown_search(new_id_G, TableName_G, JoinTableName_G, Checksheet_id_G);
+        } catch (err) { type20_pull_done(); }
+        finally { window.loading = appLoading; }
+    }, 60);
+}
+document.addEventListener('touchend', type20_pull_release, { passive: true });
+document.addEventListener('touchcancel', type20_pull_release, { passive: true });

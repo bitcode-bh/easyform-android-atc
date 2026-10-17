@@ -27,11 +27,37 @@ var LmsData = (function () {
     }
 
     function setCache(cacheKey, responseText) {
-        try { localStorage.setItem(ck(cacheKey), responseText); } catch (e) { /* quota — ignore */ }
+        try {
+            localStorage.setItem(ck(cacheKey), responseText);
+            localStorage.setItem(ck(cacheKey) + '__t', String(Date.now()));   // when it was saved, for opts.maxAge
+        } catch (e) { /* quota — ignore */ }
+    }
+
+    // Progress was saved: the module list, assessments and dashboard carry
+    // progress too, so their saved copies stay on screen but are fetched again
+    // on the next view instead of waiting out LIST_MAX_AGE.
+    function markListsStale() {
+        try {
+            var stale = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf(PREFIX) === 0 && /__t$/.test(k)
+                    && /^(modules|assessments|dashboard)/.test(k.slice(PREFIX.length))) stale.push(k);
+            }
+            stale.forEach(function (k) { localStorage.removeItem(k); });
+        } catch (e) { }
+    }
+
+    // Milliseconds since the cache entry was saved; Infinity when unknown.
+    function cacheAge(cacheKey) {
+        try {
+            var t = Number(localStorage.getItem(ck(cacheKey) + '__t'));
+            return t ? Date.now() - t : Infinity;
+        } catch (e) { return Infinity; }
     }
 
     function clearCache(cacheKey) {
-        try { localStorage.removeItem(ck(cacheKey)); } catch (e) { }
+        try { localStorage.removeItem(ck(cacheKey)); localStorage.removeItem(ck(cacheKey) + '__t'); } catch (e) { }
     }
 
     // Remove every LmsData cache entry (used on logout for VAPT compliance).
@@ -50,7 +76,9 @@ var LmsData = (function () {
      * Cache-first fetch.
      *   onData(responseText, source)  source is 'cache' then 'network'
      *   onError(err)                  only fires when NO cache was shown and the network failed
-     *   opts: { timeout (ms, default 15000), retries (default 1) }
+     *   opts: { timeout (ms, default 15000), retries (default 1),
+     *           maxAge (ms): when the cached copy is younger than this, show it
+     *           and skip the network entirely }
      */
     function fetch(cacheKey, url, paramsStr, onData, onError, opts) {
         opts = opts || {};
@@ -64,6 +92,7 @@ var LmsData = (function () {
             if (cached != null && onData) {
                 try { onData(cached, 'cache'); } catch (e) { }
             }
+            if (cached != null && opts.maxAge && cacheAge(cacheKey) < opts.maxAge) return;
         }
 
         var dedupKey = url + '|' + paramsStr;
@@ -193,6 +222,12 @@ var LmsData = (function () {
         fetch: fetch,
         getCache: getCache,
         setCache: setCache,
+        cacheAge: cacheAge,
+        markListsStale: markListsStale,
+        // Lists (modules, assessments, dashboard) are fetched again only after
+        // this long, or on pull-down; lessons behind the course times once a day.
+        LIST_MAX_AGE: 10 * 60 * 1000,
+        LESSONS_MAX_AGE: 24 * 60 * 60 * 1000,
         clearCache: clearCache,
         clearAll: clearAll,
         showSkeletons: showSkeletons,
@@ -202,4 +237,18 @@ var LmsData = (function () {
         isOnline: isOnline,
         prefix: PREFIX
     };
+})();
+
+// Every LMS request that saves progress (watch logs, quiz answers, ratings,
+// micro-learning activity) marks the saved lists out of date as it is sent,
+// so no screen shows progress older than the last thing the learner did.
+(function () {
+    if (typeof Webservicecall_REST !== 'function' || Webservicecall_REST.lmsWrapped) return;
+    var Original = Webservicecall_REST;
+    var SAVES_PROGRESS = /\/(LMS_Insert|LMS_Skill_VideoLog_Master)/;
+    Webservicecall_REST = function (url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30, retryState) {
+        if (SAVES_PROGRESS.test(String(url1))) LmsData.markListsStale();
+        return new Original(url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30, retryState);
+    };
+    Webservicecall_REST.lmsWrapped = true;
 })();

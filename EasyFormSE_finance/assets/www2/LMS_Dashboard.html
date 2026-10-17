@@ -32,6 +32,7 @@
     <link href="LMS/micro learning.css" rel="stylesheet" />
     <link href="LMS/lms_ux_fixes.css" rel="stylesheet" />
     <link href="css/app_loader.css" rel="stylesheet" />
+    <link href="css/app_radius.css" rel="stylesheet" />
     <script src="EFSE_Js/app_loader.js"></script>
 
     <script src="LMS/lms_state.js"></script>
@@ -218,7 +219,11 @@
                     </div>
                 </div>
                 <swiper-container class="tabs">
-                    <swiper-slide id="tab-1" class="page-content tab">
+                    <swiper-slide id="tab-1" class="page-content tab ptr-content" data-ptr-distance="55">
+                        <div class="ptr-preloader">
+                            <div class="preloader"></div>
+                            <div class="ptr-arrow"></div>
+                        </div>
                         <!--<div id="dv_Module_List" class="block block-strong inset !p-0 !m-0 !bg-white"></div>-->
                         <div class="sample-safety-ui">
                             <!--<div class="sample-safety-titlebar">Safety Modules</div>-->
@@ -307,7 +312,11 @@
                             </div>
                         </div>
                     </swiper-slide>
-                    <swiper-slide id="tab-2" class="page-content tab bg-white">
+                    <swiper-slide id="tab-2" class="page-content tab bg-white ptr-content" data-ptr-distance="55">
+                        <div class="ptr-preloader">
+                            <div class="preloader"></div>
+                            <div class="ptr-arrow"></div>
+                        </div>
                         <div class="sample-safety-ui">
                             <div class="sample-safety-content assessment-content">
                                 <!-- Frozen while the assessments list below scrolls — same sticky treatment

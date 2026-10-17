@@ -1073,10 +1073,10 @@ $(document).ready(function () {
 
     if (typeof lms_reset_runtime_listings === 'function') lms_reset_runtime_listings();
 
-    get_safety_module_listing(true);
-    get_assessments_listing(true);
+    get_safety_module_listing('auto');
+    get_assessments_listing('auto');
     get_user_activities();
-    get_dashboard_data(true);
+    get_dashboard_data('auto');
 
     window.addEventListener('pageshow', function (ev) {
         if (typeof lms_reset_listings_if_role_changed === 'function') {
@@ -1084,9 +1084,9 @@ $(document).ready(function () {
         }
         // Home -> LMS (bfcache restore) must refetch assigned/removed modules.
         if (!ev.persisted) return;
-        if (typeof get_safety_module_listing === 'function') get_safety_module_listing(true);
-        if (typeof get_assessments_listing === 'function') get_assessments_listing(true);
-        if (typeof get_dashboard_data === 'function') get_dashboard_data(true);
+        if (typeof get_safety_module_listing === 'function') get_safety_module_listing('auto');
+        if (typeof get_assessments_listing === 'function') get_assessments_listing('auto');
+        if (typeof get_dashboard_data === 'function') get_dashboard_data('auto');
     });
 
     $(document).on('tab:show', '.tab', function () {
@@ -1122,17 +1122,17 @@ $(document).ready(function () {
             $(".navbar").hide();
             $(".sample-safety-titlebar").html("Safety Modules");
             if (typeof lms_reset_listings_if_role_changed === 'function') lms_reset_listings_if_role_changed();
-            get_safety_module_listing(true);
+            get_safety_module_listing('auto');
         }
         else if (this.id == "tab-2") {
             $(".navbar").hide();
             $(".sample-safety-titlebar").html("Assessments");
             if (typeof lms_reset_listings_if_role_changed === 'function') lms_reset_listings_if_role_changed();
-            get_assessments_listing(true);
+            get_assessments_listing('auto');
         }
         else if (this.id == "tab-3") {
             $(".navbar").hide();
-            get_dashboard_data(true);
+            get_dashboard_data('auto');
         }
         else if (this.id == "tab-4") {
             $(".navbar").hide();
