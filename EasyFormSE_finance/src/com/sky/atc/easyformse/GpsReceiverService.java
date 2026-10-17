@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse;
 
+import com.sky.atc.easyformse.location.TamperWatch;
+
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.Notification;
@@ -30,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.github.megatronking.stringfog.annotation.StringFogIgnore;
-import com.sky.atc.easyformse.trip.TripMapUtils;
 
 //to handle gps status
 @StringFogIgnore
@@ -69,6 +70,8 @@ public class GpsReceiverService extends WakefulIntentService {
 
 
         database = sqlitewraper.getDatabase();
+        // Records Gps_outage once, shared with the location service, which may not be running.
+        TamperWatch.get(sqlitewraper.context).checkGps();
         Cursor c;
 
         LocationManager lm = (LocationManager) sqlitewraper.context
@@ -152,9 +155,6 @@ public class GpsReceiverService extends WakefulIntentService {
                 }
                 call();
             } else {
-
-                gps();
-
                 if (mobile.isConnectedOrConnecting()) {
 
                     gps_off = time;
@@ -239,16 +239,10 @@ public class GpsReceiverService extends WakefulIntentService {
                         insert_t(g_ontime, g_offtime, gp_ontime, gp_offtime,
                                 phone_on1, phone_off2, gp_duration, gprs_duration, phone_duration, date);
 
-                            if (TripMapUtils.MOCKLOCATION.equalsIgnoreCase("false")) {
-                                boolean isInserted = DeviceEventsUtils.insertIntoEvents(g_offtime, g_ontime, String.valueOf(gp_duration), "Gps_outage");
-
-                                if (isInserted) {
-                                    Log.d("####gpsservice", String.valueOf(isInserted));
-                                    ContentValues args = new ContentValues();
-                                    args.put("g_offtime", String.valueOf(0));
-                                    long temp = database.update("gpsrec", args, null, null);
-                                }
-                            }
+                            // Gps_outage is recorded by TamperWatch (see doWakefulWork).
+                            ContentValues args = new ContentValues();
+                            args.put("g_offtime", String.valueOf(0));
+                            database.update("gpsrec", args, null, null);
                         }
 
                     } else {
@@ -459,44 +453,4 @@ public class GpsReceiverService extends WakefulIntentService {
 
 
     }
-
-
-
-    void gps() {
-        Cursor a_t12 = database.rawQuery(
-                "select value from APP_states where ITEAM ='gps'", null);
-        a_t12.moveToFirst();
-        int j1 = a_t12.getCount();
-
-        String gps = null;
-        if (a_t12.getCount() > 0) {
-
-            gps = a_t12.getString(0);
-
-
-            if (gps.equalsIgnoreCase("2")) {
-
-                if (DeviceEventsUtils.liveTripCount() > 0) {
-                    boolean check = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
-                            newfused.class.getName());
-                    if (check) {
-                        Intent i = new Intent(sqlitewraper.context, newfused.class);
-                        sqlitewraper.context.stopService(i);
-                    }
-
-                    //hide newfused and activity_recognition code  23-07-2025
-//                    boolean check1 = DeviceEventsUtils.isMyServiceRunning(sqlitewraper.context,
-//                            newfused_gps.class.getName());
-//                    if (check1) {
-//                        Intent i = new Intent(sqlitewraper.context, newfused_gps.class);
-//                        sqlitewraper.context.stopService(i);
-//                    }
-                }
-            }
-        }
-    }
-
-
-
-
 }

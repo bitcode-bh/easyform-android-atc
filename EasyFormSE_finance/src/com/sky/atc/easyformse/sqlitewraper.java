@@ -9,7 +9,6 @@ import net.sqlcipher.database.SQLiteDatabase;
 
 import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 
@@ -112,31 +111,11 @@ public class sqlitewraper extends MultiDexApplication {
         return mock;
     }
 
-    static LocationListener mLocationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            isMockAvailable = sqlitewraper.isMockAvailable(location, sqlitewraper.context);
-            Log.d("checkIsFakeLocation lChanged: ", isMockAvailable + "");
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-            Log.d("checkIsFakeLocation sChanged: ", provider + " " + status + "" + extras.toString());
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            Log.d("checkIsFakeLocation Enabled: ", provider);
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            Log.d("checkIsFakeLocation Disabled: ", provider);
-        }
-    };
-   public static Boolean isMockAvailable = false;
+    /** Set from the last fix the location service received. */
+    public static volatile boolean isMockAvailable = false;
 
     @SuppressLint("MissingPermission")
+    /** One look at the last known location when a screen opens; the location service keeps the flag current. */
     public static void checkIsFakeLocation(Context context) {
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
@@ -152,14 +131,8 @@ public class sqlitewraper extends MultiDexApplication {
             } else {
                 Log.d("checkIsFakeLocation else: ", "null ");
             }
-            locationManager.requestLocationUpdates(provider, 1L, 1f, mLocationListener);
         } else {
             Log.d("checkIsFakeLocation provider: ", provider + "");
-            /*if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1L, 1f, mLocationListener);
-            }else {
-                Log.d("checkIsFakeLocation isProviderEnabled: ", provider + "");
-            }*/
         }
     }
 

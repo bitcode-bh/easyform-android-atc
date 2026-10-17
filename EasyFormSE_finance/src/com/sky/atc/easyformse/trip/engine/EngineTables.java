@@ -15,7 +15,7 @@ import java.util.Set;
  * and, for logs, trimmed to its newest rows.
  */
 @StringFogIgnore
-final class EngineTables {
+public final class EngineTables {
 
     private static final String TAG = "TRIP_ENGINE";
     private static final Set<String> ready = new HashSet<>();
@@ -38,7 +38,7 @@ final class EngineTables {
     }
 
     /** Creates the table if needed, inserts a row, and keeps only the newest {@code maxRows}. */
-    static void append(SQLiteDatabase db, String table, String ddl, ContentValues v, int maxRows) {
+    public static void append(SQLiteDatabase db, String table, String ddl, ContentValues v, int maxRows) {
         if (db == null) return;
         try {
             ensure(db, table, ddl);

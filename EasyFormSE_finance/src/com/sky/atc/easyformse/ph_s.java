@@ -484,6 +484,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 //
 //
 
+        // The location service keeps the flag current only while it runs.
+        sqlitewraper.checkIsFakeLocation(getApplicationContext());
         if (!TripMapUtils.MOCKLOCATION.equalsIgnoreCase("true")) {
             MySharedPreferences editor = sqlitewraper.getSecureShared("MY_PREFS_NAME");
             editor.putInt("bootflag", 1);

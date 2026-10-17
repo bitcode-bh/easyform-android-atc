@@ -66,6 +66,7 @@ import com.google.android.gms.location.LocationServices;
 import com.sky.atc.easyformse.datautils.DataUtils;
 import com.sky.atc.easyformse.datautils.MySharedPreferences;
 import com.sky.atc.easyformse.location.SpeedCalculation;
+import com.sky.atc.easyformse.location.TamperWatch;
 import com.sky.atc.easyformse.trip.SpeedViolation;
 import com.sky.atc.easyformse.trip.TripMapUtils;
 import com.sky.atc.easyformse.trip.engine.DrivingContext;
@@ -256,6 +257,7 @@ public class newfused extends Service implements LocationListener {
             featureLogger = new MotionFeatureLogger(getApplicationContext(), database);
             featureLogger.setTerrain(terrain);
         }
+        TamperWatch.get(this).start();
         boolean isuploadlastentry = pref.getBoolean("isuploadlastentry",false);
 //        check location and upload in server
         if(!isuploadlastentry) {
@@ -403,6 +405,7 @@ public class newfused extends Service implements LocationListener {
             featureLogger.stop();
             featureLogger = null;
         }
+        TamperWatch.get(this).stop();
         quite();
         unregisterphonestate();
     }
@@ -455,6 +458,9 @@ public class newfused extends Service implements LocationListener {
             boolean isMock = isMockAvailable(location);
             boolean mockLocationEnabled =
                     TripMapUtils.MOCKLOCATION.equalsIgnoreCase("true");
+            // Read by loc_change and the app's screens.
+            sqlitewraper.isMockAvailable = isMock;
+            if (!mockLocationEnabled) TamperWatch.get(this).onFix(isMock);
 
             if (!mockLocationEnabled && isMock) {
                 Log.d("LOCATION_FILTER", "Rejected mock location");
@@ -1181,6 +1187,7 @@ public class newfused extends Service implements LocationListener {
                 checkServicemilli();
                 updateServiceMilli();
                 tickTimeline(null);
+                TamperWatch.get(newfused.this).checkGps();
             }
         }, DELAY, DELAY);
     }

@@ -284,6 +284,7 @@ public class TripBackgroundMapActivity extends AppCompatActivity implements OnMa
         isGoBack = false;
         isValidClose = false;
 
+        sqlitewraper.checkIsFakeLocation(getApplicationContext());
         if (!TripMapUtils.MOCKLOCATION.equalsIgnoreCase("true")) {
             if (sqlitewraper.isMockAvailable) {
                 MySharedPreferences editor = sqlitewraper.getSecureShared("MY_PREFS_NAME");

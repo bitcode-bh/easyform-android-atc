@@ -1,5 +1,7 @@
 package com.sky.atc.easyformse;
 
+import com.sky.atc.easyformse.location.TamperWatch;
+
 import android.app.ActivityManager;
 import android.content.ContentValues;
 import android.content.Context;
@@ -234,6 +236,7 @@ public class delete_database extends CordovaPlugin {
             try {
 //                context.getSharedPreferences("AttendanceData", Context.MODE_PRIVATE).edit().clear().apply();
                 sqlitewraper.getSecureShared("AttendanceData").clear();
+                TamperWatch.get(sqlitewraper.context).clear();
                // context.getSharedPreferences("UPDATEPREF", Context.MODE_PRIVATE).edit().clear().apply();
                // context.getSharedPreferences("MyPref", Context.MODE_PRIVATE).edit().clear().apply();
                // context.getSharedPreferences("MY_PREFS_NAME", Context.MODE_PRIVATE).edit().clear().apply();
