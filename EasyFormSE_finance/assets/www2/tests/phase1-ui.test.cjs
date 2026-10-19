@@ -60,9 +60,17 @@ test('notices work before body creation and without jQuery or Framework7', () =>
 test('only typed rollout switches apply, including double-encoded flow config', () => {
     const flow = JSON.stringify(JSON.stringify([{ ui_phase1: { motion: false, notices: 'false' } }]));
     const s = setup({ flow, config: null });
-    assert.equal(s.ui.enabled('motion'), false);
-    assert.equal(s.ui.enabled('notices'), false);
+    assert.equal(s.ui.enabled('motion'), false, 'typed false turns it off');
+    assert.equal(s.ui.enabled('notices'), true, 'a string is not a switch, so the default applies');
     assert.equal(setup({ config: false }).ui.enabled('press'), false);
+});
+
+test('safe features are on by default; the two that change loading stay off', () => {
+    const s = setup({ config: null });
+    ['notices', 'press', 'motion'].forEach(n => assert.equal(s.ui.enabled(n), true, n));
+    ['lazyScripts', 'savedLists'].forEach(n => assert.equal(s.ui.enabled(n), false, n));
+    const off = setup({ config: null, flow: JSON.stringify([{ ui_phase1: false }]) });
+    ['notices', 'press', 'motion'].forEach(n => assert.equal(off.ui.enabled(n), false, 'server kill switch ' + n));
 });
 
 test('back direction is scoped to the destination, consumed once, and expires', () => {

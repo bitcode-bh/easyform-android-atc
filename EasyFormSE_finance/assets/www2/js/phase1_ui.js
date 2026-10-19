@@ -27,7 +27,7 @@
         return result;
     }
     // Existing login response and downloaded flow JSON can supply ui_phase1
-    // switches. No new endpoint/request. Missing flags retain today's behavior.
+    // switches. No new endpoint/request. Missing flags use DEFAULT_ON; an explicit false is the kill switch.
     // Preview is bounded, account-scoped session state for the debug demo only.
     var cached = null, CACHE_MS = 1000;
     function storedConfigs() {
@@ -53,8 +53,11 @@
     }
     // A page start asks many times in a row; the flow JSON is large, so it is
     // read once a second at most. configure()/preview() reset it at once.
+    // On unless the server (or a debug override) says false. The two switches that
+    // change what loads or what is shown first stay off until proven on phones.
+    var DEFAULT_ON = { notices: true, press: true, motion: true };
     function enabled(name) {
-        var result = false;
+        var result = DEFAULT_ON[name] === true;
         storedConfigs().concat([w.MWFMPhase1Config]).forEach(function (config) {
             if (typeof config === 'boolean') result = config;
             else if (config && typeof config[name] === 'boolean') result = config[name];
