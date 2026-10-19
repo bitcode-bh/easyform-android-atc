@@ -14,6 +14,7 @@
     out.cordovaShared = wa.cordova === window.cordova;
     out.pageOwnCordovaStripped = wa.secondCordova === undefined;
     out.pageDependencyLoaded = wa.depLoaded === true;
+    out.nativeObjectShared = wa.callChecker === true;
     out.pathSeen = wa.pathSeen; out.search = wa.location.search;
     out.deviceReady = wa.deviceReadySeen === true;
     await sleep(60); out.execResult = wa.execResult;

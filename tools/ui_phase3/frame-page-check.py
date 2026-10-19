@@ -41,7 +41,7 @@ def main():
     expect = {
         'registeredBoth': 'selection.html,viewsitedata.html,viewsitedata_task.html',
         'supports': True, 'cordovaShared': True, 'pageOwnCordovaStripped': True, 'pageDependencyLoaded': True,
-        'pathSeen': 'viewsitedata.html', 'search': '?task_id=7', 'deviceReady': True, 'execResult': 'native:hello',
+        'nativeObjectShared': True, 'pathSeen': 'viewsitedata.html', 'search': '?task_id=7', 'deviceReady': True, 'execResult': 'native:hello',
         'onBackHandled': True, 'backSeen': 1, 'navigations': '[["viewsitelist_pm_grouplist.html","back"]]',
         'firstOpenedWith': 'fresh', 'firstAnswer': 'typed-in-viewsitedata.html',
         'secondOpenedWith': 'fresh', 'secondIsolated': True, 'sharedStorage': 'v', 'afterDisposeNoFrames': 0,

@@ -46,3 +46,12 @@ test('the shell scripts are not loaded again inside a form frame', () => {
     assert.ok(/inShellFrame \? ''/.test(block), 'the shell scripts are skipped inside a frame');
     assert.ok(block.includes('js/phase1_ui.js'), 'notices and press feedback still load in the frame');
 });
+
+test('every Java object injected into the web page is shared with the frame', () => {
+    const java = fs.readFileSync(path.join(__dirname, '../../../../CordovaLib/src/org/apache/cordova/CordovaActivity.java'), 'utf8');
+    const injected = [...java.matchAll(/addJavascriptInterface\([\s\S]*?\},\s*"(\w+)"\)/g)].map(m => m[1]);
+    assert.ok(injected.length >= 1, 'found the injected objects in the Java source');
+    const { w } = load();
+    for (const name of injected) assert.ok(w.AppFramePages.native.includes(name), name + ' must be shared into the frame');
+    assert.ok(w.AppFramePages.native.includes('_cordovaNative'));
+});

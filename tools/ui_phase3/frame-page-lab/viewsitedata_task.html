@@ -9,6 +9,7 @@
 window.opened_with = (typeof formAnswer === 'undefined') ? 'fresh' : 'stale';
 var formAnswer = 'typed-in-' + location.pathname.split('/').pop();
 window.pathSeen = location.pathname.split('/').pop();
+window.callChecker = (typeof AndroidCallChecker !== 'undefined') && AndroidCallChecker.isJitsiCallRunning() === false;
 document.addEventListener('deviceready', function () {
     window.deviceReadySeen = true;
     cordova.exec(function (v) { window.execResult = v; }, function () {}, 'Svc', 'hello', []);

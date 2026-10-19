@@ -18,6 +18,7 @@
     // until the server turns it on in ui_shell.pages.
     var pages = ['selection.html', 'viewsitedata.html', 'viewsitedata_task.html'];
     var sources = Object.create(null), instances = new WeakMap();
+    var native = ['AndroidCallChecker', '_cordovaNative'];
 
     function text(url) {
         if (!sources[url]) sources[url] = Promise.resolve(w.jQuery.ajax({ url: url, dataType: 'text', cache: true }))
@@ -74,6 +75,9 @@
                                 });
                                 try {
                                     win.cordova = w.cordova; win.Cordova = w.Cordova; win.PhoneGap = w.PhoneGap; win.phonegap = w.phonegap;
+                                    // Java objects the app injects into its web page (see CordovaActivity). A frame made with
+                                    // document.open() is not a page load, so Android does not inject them again.
+                                    native.forEach(function (name) { if (w[name] !== undefined) win[name] = w[name]; });
                                     doc.open();
                                     // The page reads its own file name from the address, so the frame reports the page it is.
                                     try { win.history.replaceState(null, '', context.route); } catch (e) { }
@@ -103,6 +107,6 @@
         };
     }
 
-    w.AppFramePages = { pages: pages, prepare: prepare };
+    w.AppFramePages = { pages: pages, prepare: prepare, native: native };
     if (w.AppShell) pages.forEach(function (name) { w.AppShell.register(name, define(name)); });
 })(window, document);

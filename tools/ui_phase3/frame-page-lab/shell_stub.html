@@ -8,6 +8,7 @@ window.cordova = { execs: [], exec: function (ok, fail, service, action) {
     this.execs.push(service + '.' + action);
     setTimeout(function () { ok('native:' + action); }, 5);
 } };
+window.AndroidCallChecker = { isJitsiCallRunning: function () { return false; } };
 window.registered = {};
 window.AppShell = { register: function (name, definition) { window.registered[name] = definition; } };
 window.navigations = [];
