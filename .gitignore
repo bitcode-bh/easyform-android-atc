@@ -60,3 +60,12 @@ easyform-zoom-chat/build.gradle
 CLAUDE.md
 
 !EasyFormSE_finance/res/drawable/cam_mirror.xml
+
+# Resources referenced by the existing fall alert must survive a fresh checkout.
+!EasyFormSE_finance/res/layout/fall_alert_activity.xml
+!EasyFormSE_finance/res/drawable/circle_bg.xml
+!EasyFormSE_finance/res/drawable/bg_confrom.xml
+!EasyFormSE_finance/res/drawable/bg_decline.xml
+!EasyFormSE_finance/res/raw/
+EasyFormSE_finance/res/raw/*
+!EasyFormSE_finance/res/raw/beep_sound.mp3
