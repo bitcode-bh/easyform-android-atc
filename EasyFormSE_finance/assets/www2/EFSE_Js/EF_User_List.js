@@ -507,24 +507,8 @@ function view_user_info(t_user_id) {
 
 
 // redirection to aadhar & bank
-function select_user_for_verification(u_id, adhar_verified, bank_verified) {
-    localStorage.setItem("aadhar_user_id", u_id);
-    localStorage.setItem('adhar_verified', adhar_verified);
-    localStorage.setItem('bank_verified', bank_verified);
-
-    if (adhar_verified == "True") {
-        if (bank_verified == "True") {
-            alert1("Aadhar and bank details are already verified.");
-        }
-        else {
-            // For Bank
-            changeurl("EF_Account_Verification.html");
-        }
-    }
-    else {
-        // For Aadhar
-        changeurl("EF_Aadhar_Verification.html");
-    }
+function select_user_for_verification() {
+    // Aadhar and bank verification are not part of this build.
 }
 
 

@@ -2,7 +2,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve('EasyFormSE_finance/assets/www2');
-const owners=['EFSE_Js/EF_Aadhar_Verification.js','EFSE_Js/EF_Bank_Verification.js','EFSE_Js/EF_User_List.js','EFSE_Js/EF_User_Update.js',
+const owners=['EFSE_Js/EF_User_List.js','EFSE_Js/EF_User_Update.js',
  'EFSE_Js/login.js','EFSE_Js/download_status.js','EFSE_Js/pending_status.js','EFSE_Js/viewsitelist_pm.js','EFSE_Js/cascading_drop_down.js',
  'EFSE_Js/selection_survey.js','EFSE_Js/feature_kyff_with_filter.js','EFSE_Js/get_search_control.js','EFSE_Js/get_upload_pdf.js','EFSE_Js_Server/server_viewsitelist.js'];
 function harness(files=[]){
@@ -25,7 +25,7 @@ function harness(files=[]){
 }
 for(const reverse of [false,true])test('page API callbacks keep their owner in '+(reverse?'reverse':'normal')+' script order',()=>{
  const {c,requests,labels}=harness(reverse?[...owners].reverse():owners);
- for(const prefix of ['aadhar','bank','user_update']){
+ for(const prefix of ['user_update']){
   const fn=prefix==='user_update'?'get_user_update_data':'get_'+prefix+'_user_data';
   const cb=prefix==='user_update'?'onsuccess_get_user_update_data':'onsuccess_get_'+prefix+'_user_data';
   c[fn]();assert.equal(requests.at(-1).success,c[cb]);assert.match(requests.at(-1).url,/WCF_select_user_master_by_userid$/);
@@ -35,7 +35,6 @@ for(const reverse of [false,true])test('page API callbacks keep their owner in '
  c.get_checksheet_details(12,'synthetic');assert.equal(requests.at(-1).success,c.onsuccess_get_checksheet_details);assert.notEqual(requests.at(-1).success,c.onsuccess_get_kyff_filter_checksheet_details);
  c.update_download_wait_label();c.update_upload_wait_label();c.update_site_refresh_wait_label();
  assert.equal(labels.lbl_downloading.innerHTML,'Please Wait...');assert.equal(labels.lbl_uploading.innerHTML,'Please Wait...');assert.equal(labels.lbl_refreshing.innerHTML,'Please Wait...');
- c.aadhar_otp_timer=71;c.check_5_times_click();assert.equal(c.aadhar_otp_timer,71);assert.notEqual(c.login_info_click_timer,71);
  assert.equal(typeof c.timer,'undefined');assert.equal(typeof c.get_user_data,'undefined');assert.equal(typeof c.get_survey_json,'undefined');
 });
 test('server and form PDF downloads retain separate completion/error callbacks',()=>{

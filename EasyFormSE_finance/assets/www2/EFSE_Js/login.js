@@ -554,7 +554,6 @@ function check_remember_me(internet) {
         var t_global_wcf_url = JSON.parse(storage.getItem('global_wcf_url'));
         if (t_global_wcf_url.indexOf("http://app.muvr.in/") > -1) {
             // display signup button for only development and login url 14112022
-            $("#btnSignup").show();                                              // show signup button for valid user
         }
 
     } else {
@@ -567,7 +566,6 @@ function check_remember_me(internet) {
             $('#txtusername').val(rm_username);
             $('#txtpassword').val(rm_password);
             $('#chk_remember_me').prop('checked', true);
-            $("#btnSignup").hide();                                              // hide signup button for valid user
 
         } else {
             // session is exist
@@ -592,7 +590,6 @@ function check_remember_me(internet) {
                 $('#txtusername').val(rm_username);
                 $('#txtpassword').val(rm_password);
                 $('#chk_remember_me').prop('checked', true);
-                $("#btnSignup").hide();                                              // hide signup button for valid user
 
                 // show_biometric() shows the button + prompts only if the user
                 // has enabled biometric (view_biometric == "true").
@@ -1178,24 +1175,7 @@ function updateuniquecode_android(invocation, res_type) {
                         }
                         else {
                             // valid login
-                            var otp_feature = result[0].otp_feature;
-                            //otp_feature = "true";
-                            if (otp_feature == "true") {
-                                loading_hide();
-                                myApp.closeModal('.popover-login');
-
-                                $('.otp-verify input').val("");
-                                $("#spn_OTPMessage").html(result[0].message);
-                                myApp.popup('.popup-otp-verify');
-
-                                var fiveMinutes = 60 * 5;
-                                var display = document.querySelector('#time');
-                                startTimer(fiveMinutes, display);
-
-                            }
-                            else {
-                                update_user_details();
-                            }
+                            update_user_details();
                         }
 
 
@@ -1204,20 +1184,7 @@ function updateuniquecode_android(invocation, res_type) {
                 else {
                     // current user & previous users are not same (check for upload)
 
-                    var otp_feature = result[0].otp_feature;
-                    if (otp_feature == "true") {
-                        loading_hide();
-                        myApp.closeModal('.popover-login');
-
-                        $('.otp-verify input').val("");
-                        $("#spn_OTPMessage").html(result[0].message);
-                        myApp.popup('.popup-otp-verify');
-
-                        var fiveMinutes = 60 * 5;
-                        var display = document.querySelector('#time');
-                        startTimer(fiveMinutes, display);
-                    }
-                    else {
+                    {
                         // valid login
                         storage.setItem('profile_pic_path', JSON.stringify(''));
                         storage.setItem('profile_pic_path_ios', JSON.stringify(''));
@@ -1594,29 +1561,7 @@ function onsuccess_update_app_state_speed_limit(e) {
 
         localStorage.setItem("last_page", "Login");
 
-        var adhar_feature = localStorage.getItem('adhar_feature');
-        if (adhar_feature == "True") {
-            var adhar_verified = localStorage.getItem('adhar_verified');
-            if (adhar_verified == "True") {
-                var bank_verified = localStorage.getItem('bank_verified');
-                if (bank_verified == "True") {
-                    changeurl("selection.html");
-                }
-                else {
-                    // For Bank
-                    changeurl("EF_Account_Verification.html");
-                }
-            }
-            else {
-                // For Aadhar
-                changeurl("EF_Aadhar_Verification.html");
-            }
-        }
-        else {
-           // changeurl("selection.html");
-
-            get_blank_user_checksheet();
-        }
+        get_blank_user_checksheet();
 
     } catch (e) {
         alert1(e);
@@ -1688,40 +1633,14 @@ function get_blank_user_checksheet() {
     }
 }
 
-var FaceDetection;
 function check_2FA_with_face_detection() {
-
-    if (FaceDetection == "True") {
-        var q_jsonobj = [];
-        cordova.exec(function (e) {
-            // onsuccess
-
-            var chk_skip_down = JSON.parse(storage.getItem('chk_skip_down'));
-            if (chk_skip_down == "false") {
-                changeurl("download_status.html");
-            }
-            else {
-                changeurl("selection.html");
-            }
-
-        }, function (e) {
-            // onfail / back button from face detection
-
-            myApp.setProgressbar('#login_progressbar', 0);
-            myApp.closeModal('.popover-login');
-
-        }, 'TwoFAWithFaceDetectionPlugin', 'anAction', q_jsonobj);
+    // No second-factor check in this build: straight to the data download or Home.
+    var chk_skip_down = JSON.parse(storage.getItem('chk_skip_down'));
+    if (chk_skip_down == "false") {
+        changeurl("download_status.html");
     }
     else {
-
-        var chk_skip_down = JSON.parse(storage.getItem('chk_skip_down'));
-        if (chk_skip_down == "false") {
-            changeurl("download_status.html");
-        }
-        else {
-            changeurl("selection.html");
-         }
-
+        changeurl("selection.html");
     }
 }
 
@@ -2450,161 +2369,6 @@ function fill_app_details_post() {
 
 
 
-
-// Verify OTP
-
-var lastkeycode;
-let tabChange = function (val, elem, event) {
-    let ele = document.querySelectorAll('.otp-verify input');
-
-    var value = $(elem).val();
-    if (value.length > 1) {
-        var last_char = value.charAt(value.length - 1);
-        $(elem).val(last_char);
-    }
-
-    if (value == "") {
-        if (event.keyCode == lastkeycode) {
-            ele[val - 2].focus();
-            lastkeycode = "";
-        }
-        else {
-            lastkeycode = event.keyCode;
-        }
-    }
-    else {
-
-        lastkeycode = "";
-
-        if (ele[val - 1].value != '') {
-            ele[val].focus()
-        } else if (ele[val - 1].value == '') {
-            ele[val - 2].focus()
-        } else if (ele[val - 1].value == '') {
-            ele[val - 3].focus()
-        }
-    }
-}
-
-function verify_otp() {
-
-    var otp1 = $('.otp-verify input:nth-child(1)').val();
-    var otp2 = $('.otp-verify input:nth-child(2)').val();
-    var otp3 = $('.otp-verify input:nth-child(3)').val();
-    var otp4 = $('.otp-verify input:nth-child(4)').val();
-    var otp5 = $('.otp-verify input:nth-child(5)').val();
-    var otp6 = $('.otp-verify input:nth-child(6)').val();
-
-    if (otp1 == "" || otp2 == "" || otp3 == "" || otp4 == "" || otp5 == "" || otp6 == "") {
-        alert("Please enter the OTP!");
-    }
-    else {
-        var final_otp = otp1 + otp2 + otp3 + otp4 + otp5 + otp6;
-
-        var rpass = $('#txtpassword').val();
-        var pass = EncryptData(rpass, "sky123");
-
-        uniqcode = Math.random().toString(36).substring(0, 8);
-        storage.setItem('uniqcode', JSON.stringify(uniqcode));
-
-        user = $('#txtusername').val();
-        user = user.toLowerCase();
-        storage.setItem('username', JSON.stringify(user));
-        password_valid = $('#txtpassword').val();
-
-        if (servermilli == "" || servermilli == null || servermilli == undefined || servermilli == "null") {
-            servermilli = 0;
-        }
-
-        var login_obj = [];
-        login_obj.push({
-            'log_flag': 'login',
-            'username_': user,
-            'password_': pass,
-            'uniq_code': uniqcode,
-            'imeino': imeino,
-            'appid': appid,
-            'version': version,
-            'servermilli': servermilli,
-            'otp': final_otp
-        });
-        //alert1(JSON.stringify(login_obj));
-
-        var clickedLink = $("#btn_login_theme");
-        // Loading state shown on the button itself (subtle spinner + shimmer),
-        // replacing the old "Fetching dashboard" progress popover.
-        /* login progress shown via the top loading bar (loading()) */
-        myApp.setProgressbar('#login_progressbar', 0);
-        $("#lbl_progress_details").html("Verifying OTP");
-
-        cordova.exec(onsuccess_verify_otp, onfail_login, 'SqlitePlugin', 'login_detail_plug1', login_obj);
-    }
-}
-function onsuccess_verify_otp(invocation) {
-    try {
-
-        updateuniquecode_android(invocation, "after_valid_otp");
-
-    }
-    catch (e) {
-        alert(e + '_onsuccess_client_sign_in()');
-    }
-}
-
-var otp_timer
-function startTimer(duration, display) {
-    var timer = duration, minutes, seconds;
-
-    hourglassFill();
-    setInterval(hourglassFill, 4500);
-
-    if (otp_timer) {
-        clearInterval(otp_timer);
-    }
-
-    otp_timer = setInterval(function () {
-        minutes = parseInt(timer / 60, 10)
-        seconds = parseInt(timer % 60, 10);
-
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-
-        display.textContent = minutes + ":" + seconds;
-
-        if (--timer < 0) {
-            alert("OTP is expired, Please try again!");
-            timer = duration;
-            changeurl("Login.html");
-        }
-    }, 1000);
-}
-
-// Animation to fill the hourglass
-function hourglassFill() {
-    let hourglass = document.getElementById("hourglass");
-    hourglass.innerHTML = "&#xf251";
-
-    // half
-    setTimeout(function () {
-        hourglass.innerHTML = "&#xf252";
-    }, 1000);
-
-    // end
-    setTimeout(function () {
-        hourglass.innerHTML = "&#xf253";
-    }, 2000);
-
-    // rotate
-    setTimeout(function () {
-        hourglass.classList.toggle("rotated");
-    }, 3000);
-
-    // rotate again to the original position
-    setTimeout(function () {
-        hourglass.classList.toggle("rotated");
-        hourglass.innerHTML = "&#xf251";
-    }, 4000);
-}
 
 show_biometric = () => {
     // view biometric

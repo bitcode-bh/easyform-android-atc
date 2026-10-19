@@ -122,7 +122,7 @@ test('disabled, unregistered, unknown and non-asset routes retain legacy navigat
 test('all current production pages remain fallback even if a server enables their flags', () => {
     const s = setup();
     const names = fs.readdirSync(webRoot).filter(name => name.endsWith('.html') && name !== 'app-shell.html');
-    assert.equal(names.length, 27);
+    assert.equal(names.length, 23);
     enabled(s, names);
     for (const name of names) assert.equal(s.ui.navigate(name, 'forward', s.reload), false, name);
     assert.deepEqual(Array.from(s.ui.diagnostics().registeredPages), []);

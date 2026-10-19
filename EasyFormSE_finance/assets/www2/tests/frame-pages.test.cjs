@@ -17,7 +17,7 @@ function load(shell) {
 test('every page except Login and the two list pages registers with the shell', () => {
     const { registered } = load();
     const names = Object.keys(registered);
-    assert.equal(names.length, 24);
+    assert.equal(names.length, 20);
     for (const n of ['Login.html', 'selection_survey.html', 'viewsitelist_pm_grouplist.html']) assert.equal(names.includes(n), false, n);
     for (const n of ['selection.html', 'LMS_Dashboard.html', 'viewsitedata.html']) assert.equal(names.includes(n), true, n);
     for (const def of Object.values(registered)) assert.equal(typeof def.load, 'function');

@@ -2,9 +2,9 @@
 (function (w, d) {
     'use strict';
     if (w.AppShell) return;
-    var pages = ('EF_Aadhar_Verification.html EF_Account_Verification.html EF_Custom_Reports.html EF_User_List.html ' +
-        'EF_User_Update.html LMS_Dashboard.html Login.html Signup.html change_password.html download_status.html ' +
-        'f7-verify-otp.html f7_faq.html f7_flowchart.html f7_myprofile.html f7_navbar.html f7_privacy_policy.html ' +
+    var pages = ('EF_Custom_Reports.html EF_User_List.html ' +
+        'EF_User_Update.html LMS_Dashboard.html Login.html change_password.html download_status.html ' +
+        'f7_faq.html f7_flowchart.html f7_myprofile.html f7_navbar.html f7_privacy_policy.html ' +
         'f7_safety_passport.html feature_chart.html feature_filter.html pending_status.html selection.html ' +
         'selection_survey.html support_page.html viewcustomerlist_on.html viewsitedata.html viewsitedata_task.html ' +
         'viewsitelist_pm_grouplist.html').split(' ');
