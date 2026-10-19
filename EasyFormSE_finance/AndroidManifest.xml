@@ -2,7 +2,76 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.sky.atc.easyformse">
-    <queries> <package android:name="com.whatsapp" /> </queries>
+    <queries>
+        <!-- Companion apps the app checks for and launches -->
+        <package android:name="com.dm.zbar.android.examples" />
+        <package android:name="com.easyform.parammitra" />
+        <package android:name="com.easyform.rftrack" />
+        <package android:name="com.easyform.scanner" />
+        <package android:name="com.easyform.video" />
+        <package android:name="life.knowledge4.videocroppersample" />
+        <package android:name="com.whatsapp" />
+        <!-- Manufacturer battery and autostart settings pages -->
+        <package android:name="com.asus.mobilemanager" />
+        <package android:name="com.coloros.safecenter" />
+        <package android:name="com.huawei.systemmanager" />
+        <package android:name="com.iqoo.secure" />
+        <package android:name="com.letv.android.letvsafe" />
+        <package android:name="com.miui.powerkeeper" />
+        <package android:name="com.miui.securitycenter" />
+        <package android:name="com.oneplus.security" />
+        <package android:name="com.oppo.safe" />
+        <package android:name="com.vivo.permissionmanager" />
+        <!-- Root and mock-location tools the app detects -->
+        <package android:name="com.alephzain.framaroot" />
+        <package android:name="com.allinone.free" />
+        <package android:name="com.amphoras.hidemyroot" />
+        <package android:name="com.amphoras.hidemyrootadfree" />
+        <package android:name="com.android.camera.update" />
+        <package android:name="com.android.wp.net.log" />
+        <package android:name="com.baseappfull.fwd" />
+        <package android:name="com.charles.lpoqasert" />
+        <package android:name="com.chelpus.lackypatch" />
+        <package android:name="com.chelpus.luckypatcher" />
+        <package android:name="com.cih.game_cih" />
+        <package android:name="com.devadvance.rootcloak" />
+        <package android:name="com.devadvance.rootcloakplus" />
+        <package android:name="com.dimonvideo.luckypatcher" />
+        <package android:name="com.dv.marketmod.installer" />
+        <package android:name="com.formyhm.hideroot" />
+        <package android:name="com.formyhm.hiderootPremium" />
+        <package android:name="com.kingo.root" />
+        <package android:name="com.kingroot.kinguser" />
+        <package android:name="com.koushikdutta.rommanager" />
+        <package android:name="com.koushikdutta.rommanager.license" />
+        <package android:name="com.koushikdutta.superuser" />
+        <package android:name="com.noshufou.android.su" />
+        <package android:name="com.noshufou.android.su.elite" />
+        <package android:name="com.ramdroid.appquarantine" />
+        <package android:name="com.ramdroid.appquarantinepro" />
+        <package android:name="com.repodroid.app" />
+        <package android:name="com.saurik.substrate" />
+        <package android:name="com.smedialink.oneclickroot" />
+        <package android:name="com.solohsu.android.edxp.manager" />
+        <package android:name="com.thirdparty.superuser" />
+        <package android:name="com.topjohnwu.magisk" />
+        <package android:name="com.yellowes.su" />
+        <package android:name="com.zachspong.temprootremovejb" />
+        <package android:name="com.zhiqupk.root.global" />
+        <package android:name="de.robv.android.xposed.installer" />
+        <package android:name="org.blackmart.market" />
+        <package android:name="org.creeplays.hack" />
+        <package android:name="org.meowcat.edxposed.manager" />
+        <package android:name="org.mobilism.android" />
+        <!-- Any app with a launcher icon (the meter-reading app's package comes from the server) -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
     <uses-sdk tools:ignore="GradleOverrides" />
     <supports-screens
         android:anyDensity="true"
