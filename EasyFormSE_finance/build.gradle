@@ -65,9 +65,10 @@ android {
         resValue "string", "RestrictDeviceTime","true"
         // all permission ask apk install time
         resValue "string", "AllPermission", "false"
-        /*ndk {
-            abiFilters 'armeabi-v7a','arm64-v8a'
-        }*/
+        // Phones from Android 8 up are ARM. x86, x86_64 and armeabi libraries were about 54 MB of dead weight.
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
     }
     sourceSets {
         main {
