@@ -2357,6 +2357,6 @@ function get_prev_next_btnval(datetxt) {
     w.AppTaskNavigationController = { create: create };
     if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute("data-app-shell")) {
         var legacy = create();
-        Object.keys(legacy).forEach(function (name) { Object.defineProperty(w, name, Object.getOwnPropertyDescriptor(legacy, name)); });
+        Object.keys(legacy).forEach(function (name) { try { Object.defineProperty(w, name, Object.getOwnPropertyDescriptor(legacy, name)); } catch (error) { w[name] = legacy[name]; }; });
     }
 })(window);
