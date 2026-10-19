@@ -49,6 +49,19 @@ public class SqlitePlugin extends CordovaPlugin {
                            org.apache.cordova.CallbackContext callbackContext)
             throws org.json.JSONException {
 
+        if ("formDraft".equals(action)) {
+            final JSONObject request = args.getJSONObject(0);
+            cordova.getThreadPool().execute(() -> {
+                try {
+                    callbackContext.success(FormDraftStore.run(sqlitewraper.getDatabase(), request));
+                } catch (Exception error) {
+                    // Never expose SQL, field contents or account identifiers in a popup/log.
+                    callbackContext.error("draft-unavailable");
+                }
+            });
+            return true;
+        }
+
         c1 = this.cordova.getActivity();
         pref = sqlitewraper.getSecureShared("MyPref");
 //        editor = pref.edit();
