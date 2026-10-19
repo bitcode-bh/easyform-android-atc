@@ -4,6 +4,7 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
+import android.util.Log;
 
 import com.sky.atc.easyformse.sqlitewraper;
 
@@ -29,11 +30,62 @@ public final class AppStorage {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.R || Environment.isExternalStorageLegacy();
     }
 
+    // The app folders that older versions created on shared storage.
+    private static final String[] SHARED_FOLDERS = {"myDirectory", "Easy_form", "ATC", "RFTrack", "EASY_LOG",
+            "Easform Reports", "Easy_form_pdf", "TestFolder"};
+    private static volatile Boolean sharedUsable;
+
+    /**
+     * Android's legacy flag says whether the app is allowed to use shared storage, not whether it
+     * can: after a reinstall the app folders on the card belong to the previous install's user id and
+     * every write fails ("Unable to save image"). So test it: create a file in the shared root and in
+     * each app folder that already exists there.
+     */
+    private static boolean sharedUsable() {
+        Boolean known = sharedUsable;
+        if (known != null) return known;
+        File root = Environment.getExternalStorageDirectory();
+        boolean ok = canWrite(root);
+        String blocked = null;
+        for (String name : SHARED_FOLDERS) {
+            File folder = new File(root, name);
+            if (ok && folder.isDirectory() && !canWrite(folder)) {
+                ok = false;
+                blocked = name;
+            }
+        }
+        sharedUsable = ok;
+        Log.i("APP_STORAGE", ok ? "using shared storage" : "using the app's own folder; shared storage is not writable"
+                + (blocked == null ? "" : " (" + blocked + ")"));
+        return ok;
+    }
+
+    /** The folder can be written to, and so can every app folder that already exists inside it. */
+    private static boolean usable(File base) {
+        if (base.isDirectory() && !canWrite(base)) return false;
+        for (String name : SHARED_FOLDERS) {
+            File folder = new File(base, name);
+            if (folder.isDirectory() && !canWrite(folder)) return false;
+        }
+        return true;
+    }
+
+    private static boolean canWrite(File folder) {
+        try {
+            File probe = File.createTempFile(".mwfm", null, folder);
+            //noinspection ResultOfMethodCallIgnored
+            probe.delete();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /** Root for app folders such as Easy_form, ATC, RFTrack and EASY_LOG. */
     public static File root() {
         File own = sqlitewraper.context == null ? null : sqlitewraper.context.getExternalFilesDir(null);
-        if (!legacy() && own != null) return own;
-        return Environment.getExternalStorageDirectory();
+        if (legacy() && sharedUsable()) return Environment.getExternalStorageDirectory();
+        return own != null ? own : Environment.getExternalStorageDirectory();
     }
 
     public static File pictures() {
@@ -51,14 +103,17 @@ public final class AppStorage {
     private static File publicOrOwn(String type) {
         Context context = sqlitewraper.context;
         File own = context == null ? null : context.getExternalFilesDir(type);
-        if (!legacy() && own != null) return own;
-        return Environment.getExternalStoragePublicDirectory(type);
+        File shared = Environment.getExternalStoragePublicDirectory(type);
+        if (legacy() && sharedUsable() && usable(shared)) return shared;
+        return own != null ? own : shared;
     }
 
     /** Where a DownloadManager request saves {@code name}: the public Downloads folder, or the app's own. */
     public static void downloadTo(DownloadManager.Request request, String name) {
         Context context = sqlitewraper.context;
-        if (!legacy() && context != null) {
+        File shared = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        boolean sharedOk = legacy() && sharedUsable() && usable(shared);
+        if (!sharedOk && context != null) {
             request.setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, name);
         } else {
             request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name);

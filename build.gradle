@@ -56,7 +56,9 @@ buildscript {
 
         project.ext {
             minSdk = 26
-            targetSdk = 35
+            // Held at 29: from 30 Android stops the app reading and writing its photos and files on shared
+            // storage (checked on Android 17), and photos waiting to upload become unreadable.
+            targetSdk = 29
             compileSdk = 35
         }
     }
