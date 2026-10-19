@@ -552,7 +552,7 @@ public class MessageReceivedUtils {
 
             intent = new Intent(applicationContext, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, 0);
+            pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
             builder.setContentTitle(aMessage)  // required
                     .setSmallIcon(android.R.drawable.ic_popup_reminder) // required
@@ -568,7 +568,7 @@ public class MessageReceivedUtils {
 
             intent = new Intent(applicationContext, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, 0);
+            pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
             builder.setContentTitle(aMessage)                           // required
                     .setSmallIcon(android.R.drawable.ic_popup_reminder) // required

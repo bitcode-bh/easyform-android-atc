@@ -418,7 +418,7 @@ public class SupportPageMapsPlugin_Green extends CordovaPlugin implements Locati
 
         Intent intent = new Intent(sqlitewraper.context, GeofenceTrasitionServicenew.class);
         return PendingIntent.getService(
-                sqlitewraper.getInstance(), GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                sqlitewraper.getInstance(), GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT | (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0));
     }
 
     @Override

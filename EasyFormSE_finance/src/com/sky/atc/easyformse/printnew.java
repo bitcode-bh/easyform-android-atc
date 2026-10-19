@@ -143,7 +143,7 @@ public class printnew extends Activity {
 		IntentFilter filter = new IntentFilter(
 				"android.bluetooth.device.action.PAIRING_REQUEST");
 
-		this.registerReceiver(myReceiver1, filter);
+		androidx.core.content.ContextCompat.registerReceiver(this, myReceiver1, filter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
 		/*
 		 * Registering a new BTBroadcast receiver from the Main Activity context
@@ -929,7 +929,7 @@ public class printnew extends Activity {
 		IntentFilter intentFilter = new IntentFilter(
 				android.bluetooth.BluetoothDevice.ACTION_FOUND);
 
-		this.registerReceiver(myReceiver, intentFilter);
+		androidx.core.content.ContextCompat.registerReceiver(this, myReceiver, intentFilter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
 		bluetoothAdapter.startDiscovery();
 
@@ -1301,7 +1301,7 @@ public class printnew extends Activity {
 		IntentFilter filter = new IntentFilter(
 				"android.bluetooth.device.action.PAIRING_REQUEST");
 
-		this.registerReceiver(myReceiver1, filter);
+		androidx.core.content.ContextCompat.registerReceiver(this, myReceiver1, filter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
 		// TODO Auto-generated method stub
 		super.onResume();

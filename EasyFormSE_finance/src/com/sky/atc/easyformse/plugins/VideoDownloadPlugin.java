@@ -234,7 +234,7 @@ public class VideoDownloadPlugin extends CordovaPlugin {
         };
 
         IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-        context.registerReceiver(downloadReceiver, filter);
+        androidx.core.content.ContextCompat.registerReceiver(context, downloadReceiver, filter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     @Override

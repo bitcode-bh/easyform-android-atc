@@ -83,7 +83,7 @@ public final class TamperWatch {
         };
         IntentFilter filter = new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
         filter.addAction(LocationManager.MODE_CHANGED_ACTION);
-        context.registerReceiver(receiver, filter);
+        androidx.core.content.ContextCompat.registerReceiver(context, receiver, filter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         checkGps();
     }
 

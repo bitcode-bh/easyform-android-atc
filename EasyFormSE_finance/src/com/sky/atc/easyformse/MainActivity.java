@@ -1016,8 +1016,8 @@ public class MainActivity extends Activity {
 
         try {
             IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
-            this.registerReceiver(new UpdateReceiver(), intentFilter);
-            this.registerReceiver(new gprs(), intentFilter);
+            androidx.core.content.ContextCompat.registerReceiver(this, new UpdateReceiver(), intentFilter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
+            androidx.core.content.ContextCompat.registerReceiver(this, new gprs(), intentFilter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1037,12 +1037,12 @@ public class MainActivity extends Activity {
         //Phone switch off
         IntentFilter intentFilter4 = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
         IntentFilter intentFilter5 = new IntentFilter("com.easyfrom.jitsi.SCREENSHOT_SAVED");
-        this.registerReceiver(new gpsreciever(), intentFilter);
-        this.registerReceiver(new phoneon(), intentFilter1);
-        this.registerReceiver(new BootReceiver(), intentFilter1);
+        androidx.core.content.ContextCompat.registerReceiver(this, new gpsreciever(), intentFilter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
+        androidx.core.content.ContextCompat.registerReceiver(this, new phoneon(), intentFilter1, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
+        androidx.core.content.ContextCompat.registerReceiver(this, new BootReceiver(), intentFilter1, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
        // this.registerReceiver(new activity_recognize(), intentFilter2);
-        this.registerReceiver(new onreboot(), intentFilter3);
-        this.registerReceiver(new ShutdownReceiver(), intentFilter4);
+        androidx.core.content.ContextCompat.registerReceiver(this, new onreboot(), intentFilter3, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
+        androidx.core.content.ContextCompat.registerReceiver(this, new ShutdownReceiver(), intentFilter4, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.registerReceiver(new ScreenshotBroadcastReceiver(),intentFilter5,Context.RECEIVER_EXPORTED);
         }
@@ -1086,7 +1086,7 @@ public class MainActivity extends Activity {
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         PowerButtonReceiver mReceiver = new PowerButtonReceiver();
-        registerReceiver(mReceiver, filter);
+        androidx.core.content.ContextCompat.registerReceiver(this, mReceiver, filter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     @SuppressLint("ObsoleteSdkInt")

@@ -85,7 +85,7 @@ public class current_lat extends CordovaPlugin {
 			}
 
 			IntentFilter wifiFilter = new IntentFilter("Location");
-			sqlitewraper.context.registerReceiver(mReceiver, wifiFilter);
+			androidx.core.content.ContextCompat.registerReceiver(sqlitewraper.context, mReceiver, wifiFilter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 			this.callback = callbackContext;
 			PluginResult result = new PluginResult(
 					PluginResult.Status.NO_RESULT);

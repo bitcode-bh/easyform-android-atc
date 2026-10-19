@@ -403,7 +403,7 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
     @Override
     protected void onStart() {
         IntentFilter filter = new IntentFilter("android.location.PROVIDERS_CHANGED");
-        registerReceiver(new gpsreciever(), filter);
+        androidx.core.content.ContextCompat.registerReceiver(this, new gpsreciever(), filter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         LogUtils.writeRfTrackLogToFile("Celled onStart ", this.getClass().getName());
         super.onStart();
     }
@@ -504,9 +504,9 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         }
 
         IntentFilter filter = new IntentFilter("android.location.PROVIDERS_CHANGED");
-        this.registerReceiver(mReceivedSMSReceiver, filter);
+        androidx.core.content.ContextCompat.registerReceiver(this, mReceivedSMSReceiver, filter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         IntentFilter filter1 = new IntentFilter("com.easyform.CUSTOM_BROADCAST");
-        this.registerReceiver(mReceivedSMSReceiver, filter1);
+        androidx.core.content.ContextCompat.registerReceiver(this, mReceivedSMSReceiver, filter1, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         B_new.setIsInBackgeound(false);
 
         internetBrodcast();
@@ -559,8 +559,8 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
 
         try {
             IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
-            this.registerReceiver(new UpdateReceiver(), intentFilter);
-            this.registerReceiver(new gprs(), intentFilter);
+            androidx.core.content.ContextCompat.registerReceiver(this, new UpdateReceiver(), intentFilter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
+            androidx.core.content.ContextCompat.registerReceiver(this, new gprs(), intentFilter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -577,10 +577,10 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         IntentFilter intentFilter4 = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
         IntentFilter intentFilter5 = new IntentFilter("android.os.action.POWER_SAVE_MODE_CHANGED");
 
-        this.registerReceiver(new phoneon(), intentFilter1);
-        this.registerReceiver(new onreboot(), intentFilter3);
-        this.registerReceiver(new ShutdownReceiver(), intentFilter4);
-        this.registerReceiver(new PowerSaveModeReceiver(), intentFilter5);
+        androidx.core.content.ContextCompat.registerReceiver(this, new phoneon(), intentFilter1, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
+        androidx.core.content.ContextCompat.registerReceiver(this, new onreboot(), intentFilter3, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
+        androidx.core.content.ContextCompat.registerReceiver(this, new ShutdownReceiver(), intentFilter4, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
+        androidx.core.content.ContextCompat.registerReceiver(this, new PowerSaveModeReceiver(), intentFilter5, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
         if (!isReceiverRegistered) {
             screenshotReceiver = new ScreenshotBroadcastReceiver();
@@ -1502,7 +1502,7 @@ public class ph_s extends CordovaActivity implements GoogleApiClient.OnConnectio
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity");
         intent.putExtra("extra_pkgname", getPackageName());
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Uri sound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + sqlitewraper.context.getPackageName() + "/" + R.raw.trip_sound);
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

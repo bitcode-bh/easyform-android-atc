@@ -1470,18 +1470,21 @@ public class newfused extends Service implements LocationListener {
         if (alarmManager != null) {
             long triggerAtMillis = SystemClock.elapsedRealtime() + (15 * 60 * 1000);
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                        triggerAtMillis,
-                        restartServicePendingIntent
-                );
-            } else {
-                alarmManager.setExact(
-                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                        triggerAtMillis,
-                        restartServicePendingIntent
-                );
+            // minSdk is 26. From Android 12 an exact alarm throws unless the user allowed it, and
+            // this one is only a safety net, so without that permission an inexact alarm will do.
+            boolean exact = android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S
+                    || alarmManager.canScheduleExactAlarms();
+            try {
+                if (exact) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                            triggerAtMillis, restartServicePendingIntent);
+                } else {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                            triggerAtMillis, restartServicePendingIntent);
+                }
+            } catch (SecurityException e) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        triggerAtMillis, restartServicePendingIntent);
             }
         }
     }

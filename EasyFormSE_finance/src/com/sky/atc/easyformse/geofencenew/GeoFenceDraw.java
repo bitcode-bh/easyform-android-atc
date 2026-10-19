@@ -338,7 +338,7 @@ public class GeoFenceDraw implements
 
         Intent intent = new Intent(sqlitewraper.getInstance(), GeofenceTrasitionService.class);
         return PendingIntent.getService(
-                sqlitewraper.getInstance(), GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                sqlitewraper.getInstance(), GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT | (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0));
     }
 
     //add geofennce request

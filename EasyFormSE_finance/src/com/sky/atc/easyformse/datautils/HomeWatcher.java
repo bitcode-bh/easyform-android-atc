@@ -36,7 +36,7 @@ public class HomeWatcher {
 
     public void startWatch() {
         if (mReceiver != null) {
-            mContext.registerReceiver(mReceiver, mFilter);
+            androidx.core.content.ContextCompat.registerReceiver(mContext, mReceiver, mFilter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         }
     }
 
