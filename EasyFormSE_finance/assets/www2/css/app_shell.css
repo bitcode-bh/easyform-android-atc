@@ -35,3 +35,9 @@ html[data-app-shell] .popup { transition-duration: 1ms !important; }
 /* Form pages run in a frame of their own (js/app_frame_pages.js). */
 .app-frame-page { height: 100%; }
 .app-frame { display: block; width: 100%; height: 100%; border: 0; background: var(--app-page, #fff); }
+
+/* Shared top and bottom bars (js/app_chrome.js): drawn over the frame, copied from the page's own bars. */
+@font-face { font-family: 'FontAwesome'; src: url('../font-awesome-4.7.0/fonts/fontawesome-webfont.woff2') format('woff2'), url('../font-awesome-4.7.0/fonts/fontawesome-webfont.woff') format('woff'); font-weight: normal; font-style: normal; }
+.app-chrome { position: fixed; z-index: 9000; -webkit-tap-highlight-color: transparent; }
+.app-chrome[hidden] { display: none; }
+.app-chrome * { box-sizing: border-box; }

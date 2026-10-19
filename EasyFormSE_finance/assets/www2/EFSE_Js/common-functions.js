@@ -43,7 +43,7 @@ if (document.readyState === 'loading') {
     var inShellFrame = false;
     try { inShellFrame = !!(window.frameElement && window.frameElement.classList.contains('app-frame')); } catch (e) { }
     document.write('<script src="js/phase1_ui.js"><\/script>' + (inShellFrame ? '' :
-        '<script src="js/app_shell.js"><\/script><script src="js/app_pages.js"><\/script><script src="js/app_frame_pages.js"><\/script>'));
+        '<script src="js/app_shell.js"><\/script><script src="js/app_pages.js"><\/script><script src="js/app_chrome.js"><\/script><script src="js/app_frame_pages.js"><\/script>'));
 }
 // Reload the page that holds this one (the profile popup is a frame inside Home). When Home itself
 // runs in a shell frame, reloading its own address would load it without Cordova, so ask the shell

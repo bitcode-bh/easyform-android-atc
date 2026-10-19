@@ -52,7 +52,7 @@
                             frame.className = 'app-frame';
                             frame.setAttribute('title', 'Form');
                             root.appendChild(frame);
-                            instances.set(root, { frame: frame });
+                            instances.set(root, { frame: frame, chrome: null });
                             return root;
                         },
                         open: function (context) {
@@ -80,7 +80,10 @@
                                             try {
                                                 held.forEach(function (copy) { copy.holdReady(false); });
                                                 // Cordova fired this once, in the shell, before the form existed.
-                                                doc.dispatchEvent(event(doc, 'deviceready')); done();
+                                                doc.dispatchEvent(event(doc, 'deviceready'));
+                                                // The shell's own top and bottom bars take over the page's bars.
+                                                if (w.AppChrome) entry.chrome = w.AppChrome.attach(win, frame);
+                                                done();
                                             } catch (error) { done(error); }
                                         })();
                                     } catch (error) { done(error); }
@@ -112,6 +115,7 @@
                             var entry = instances.get(context.root);
                             if (!entry) return;
                             instances.delete(context.root);
+                            if (entry.chrome) entry.chrome.detach();
                             // Navigating the frame away stops its timers and requests before the shell removes it.
                             try { entry.frame.src = 'about:blank'; } catch (e) { }
                         }
