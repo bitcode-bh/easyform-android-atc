@@ -121,6 +121,6 @@
         };
     }
 
-    w.AppFramePages = { pages: pages, prepare: prepare, native: native };
+    w.AppFramePages = { pages: pages, prepare: prepare, native: native, adapter: function (name) { return define(name).load(); } };
     if (w.AppShell) pages.forEach(function (name) { w.AppShell.register(name, define(name)); });
 })(window, document);

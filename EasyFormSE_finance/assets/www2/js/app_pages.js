@@ -72,6 +72,31 @@
             'SqlitePlugin', 'showValues', [{ data: query, p: '1' }]);
         });
     }
+    // A flow the list adapter cannot show still opens inside the shell, in a frame running the original page.
+    function withFrame(name, loading) {
+        return loading.then(function (list) {
+            if (!w.AppFramePages || !w.AppFramePages.adapter) return list;
+            return w.AppFramePages.adapter(name).then(function (frame) {
+                var chosen = new WeakMap(), composite = {};
+                Object.keys(list).concat(Object.keys(frame)).forEach(function (key) {
+                    if (typeof list[key] !== 'function' && typeof frame[key] !== 'function') return;
+                    composite[key] = function (context) {
+                        var target = key === 'supports' || !chosen.has(context) ? list : chosen.get(context);
+                        if (key === 'supports') {
+                            return Promise.resolve(typeof list.supports === 'function' ? list.supports.apply(list, arguments) : true).then(function (ok) {
+                                if (ok !== false) { chosen.set(context, list); return true; }
+                                chosen.set(context, frame); return frame.supports ? frame.supports(context) : true;
+                            });
+                        }
+                        if (key === 'create') { target = chosen.get(arguments[1]) || list; return target.create.apply(target, arguments); }
+                        return typeof target[key] === 'function' ? target[key].apply(target, arguments) : undefined;
+                    };
+                });
+                return composite;
+            });
+        });
+    }
+
     function loadChecksheet() {
         return Promise.all([text(page), stylesheet('css/form_style.css'), script('EFSE_Js/viewsitelist_pm_grouplist.js'), script('EFSE_Js/controls-ele.js'), script('js/app_list_window.js'), stylesheet('font-awesome-4.7.0/css/font-awesome.min.css')]).then(function (loaded) {
             var parsed = new DOMParser().parseFromString(loaded[0], 'text/html');
@@ -364,6 +389,6 @@
     }
 
     w.AppPages = {};
-    w.AppShell.register(page, { load: loadChecksheet });
-    w.AppShell.register(taskPage, { load: loadTasks });
+    w.AppShell.register(page, { load: function () { return withFrame(page, loadChecksheet()); } });
+    w.AppShell.register(taskPage, { load: function () { return withFrame(taskPage, loadTasks()); } });
 })(window, document);
