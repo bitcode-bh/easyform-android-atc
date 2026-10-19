@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class DataQueriesTest {
-    private static final String[] NAMES = {"flowMapping", "taskByTid", "taskCountByFlag"};
+    private static final String[] NAMES = {"flowMapping", "taskByTid", "taskCountByFlag", "pendingUploads"};
 
     @Test public void everyQueryIsFixedTextWithOnePlaceholderPerDeclaredValue() {
         for (String name : NAMES) {
@@ -17,6 +17,13 @@ public class DataQueriesTest {
             assertEquals(name, query.names.length, placeholders);
             assertTrue(name, query.sql.startsWith("SELECT "));
         }
+    }
+
+    @Test public void aQueryWithNoValuesTakesNoArguments() throws Exception {
+        DataQueries.Query query = DataQueries.find("pendingUploads");
+        assertEquals(0, DataQueries.bind(query, null).length);
+        assertEquals(0, DataQueries.bind(query, new JSONObject()).length);
+        try { DataQueries.bind(query, new JSONObject().put("flag", "1")); fail(); } catch (IllegalArgumentException expected) { }
     }
 
     @Test public void unknownOrMissingNamesAreRefused() {

@@ -98,3 +98,13 @@ test('the shared bridge follows the window cordova object, which the shell fills
     const bridge = AppBridge.shared();
     await reject(bridge.taskByTid(1), 'bridge-unavailable');
 });
+
+test('the upload summary counts tasks, files, photos and videos, and ignores anything else in the row', async () => {
+    const { AppBridge } = load(), h = host(), bridge = AppBridge.create(h);
+    const pending = bridge.outbox();
+    assert.equal(h.calls[0].args[0].name, 'pendingUploads');
+    h.calls[0].ok(JSON.stringify({ rows: [{ tasks: '2', files: '3', photos: '4', videos: '1', other: '9' }] }));
+    assert.deepEqual(JSON.parse(JSON.stringify(await pending)), { tasks: 2, files: 3, photos: 4, videos: 1, total: 10 });
+    const empty = bridge.outbox(); h.calls[1].ok(JSON.stringify({ rows: [] }));
+    assert.deepEqual(JSON.parse(JSON.stringify(await empty)), { tasks: 0, files: 0, photos: 0, videos: 0, total: 0 });
+});

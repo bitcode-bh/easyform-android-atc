@@ -45,3 +45,10 @@ test('a bar with live controls in it is left to the page', () => {
     assert.match(source, /LIVE = 'input,textarea,select/);
     assert.match(source, /source\.querySelector\(LIVE\)\) return null/);
 });
+
+test('the upload badge reads "N waiting to upload" and is empty when nothing is waiting', () => {
+    const { syncLabel } = load().AppChrome;
+    assert.equal(syncLabel({ total: 3 }), '3 waiting to upload');
+    assert.equal(syncLabel({ total: 1 }), '1 waiting to upload');
+    for (const none of [{ total: 0 }, {}, null, undefined, { total: 'x' }, { total: -2 }]) assert.equal(syncLabel(none), '');
+});

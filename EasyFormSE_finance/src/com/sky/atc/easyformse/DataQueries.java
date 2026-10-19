@@ -47,6 +47,13 @@ final class DataQueries {
         all.put("taskByTid", new Query("SELECT tid, server_task_id, task_id, step FROM task_master WHERE tid = ?", "tid", INT));
         // How many tasks are in a given state (for example waiting to upload).
         all.put("taskCountByFlag", new Query("SELECT COUNT(*) AS n FROM task_master WHERE flag = ?", "flag", TEXT));
+        // What is still waiting to upload: forms (tasks and their files), photos and videos. These are the same
+        // conditions the pending-status page counts; GPS points are left out because they queue all day by design.
+        all.put("pendingUploads", new Query("SELECT "
+                + "(SELECT COUNT(*) FROM task_master WHERE flag = 1 OR flag = 3) AS tasks, "
+                + "(SELECT COUNT(*) FROM f_master WHERE flag = 0) AS files, "
+                + "(SELECT COUNT(*) FROM p_master WHERE flag = 0) AS photos, "
+                + "(SELECT COUNT(*) FROM video WHERE issend_track = 0) AS videos"));
         QUERIES = Collections.unmodifiableMap(all);
     }
 

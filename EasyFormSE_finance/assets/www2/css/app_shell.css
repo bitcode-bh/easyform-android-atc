@@ -41,3 +41,5 @@ html[data-app-shell] .popup { transition-duration: 1ms !important; }
 .app-chrome { position: fixed; z-index: 9000; -webkit-tap-highlight-color: transparent; }
 .app-chrome[hidden] { display: none; }
 .app-chrome * { box-sizing: border-box; }
+.app-chrome-sync { position: fixed; right: 12px; z-index: 8999; padding: 4px 10px; border-radius: 999px; background: var(--app-primary, #2b3087); color: #fff; font: 600 12px/1.4 var(--app-font, sans-serif); opacity: .92; pointer-events: none; }
+.app-chrome-sync[hidden] { display: none; }

@@ -87,6 +87,34 @@
         new w.MutationObserver(function () { if (!pages.querySelector('.app-frame-page')) clear(); }).observe(pages, { childList: true });
     }
 
+    // "3 waiting to upload": what the phone still has to send, read from the same data the pending-status page counts.
+    function syncLabel(summary) {
+        var total = summary && Number(summary.total);
+        if (!(total > 0)) return '';
+        return total + ' waiting to upload';
+    }
+    var badge, syncTimer;
+    function showSync(summary) {
+        var text = syncLabel(summary);
+        if (!badge && text) {
+            badge = d.createElement('div'); badge.id = 'app-chrome-sync'; badge.className = 'app-chrome-sync';
+            badge.setAttribute('role', 'status'); d.body.appendChild(badge);
+        }
+        if (!badge) return;
+        badge.textContent = text; badge.hidden = !text || hidden;
+        var bottom = containers.bottom && current.bottom && !containers.bottom.hidden ? containers.bottom.getBoundingClientRect().height : 0;
+        badge.style.bottom = Math.round(bottom + 10) + 'px';
+    }
+    function refreshSync() {
+        if (!w.AppBridge || d.hidden) return;
+        w.AppBridge.shared().outbox().then(showSync, function () { });
+    }
+    function startSync() {
+        if (syncTimer || !w.AppBridge) return;
+        syncTimer = w.setInterval(refreshSync, 30000);
+        refreshSync();
+    }
+
     function container(kind) {
         if (containers[kind]) return containers[kind];
         var node = d.createElement('div');
@@ -136,14 +164,14 @@
     }
 
     function setHidden(value) {
-        hidden = value;
+        hidden = value; if (badge) badge.hidden = badge.hidden || value;
         Object.keys(containers).forEach(function (kind) { if (current[kind]) containers[kind].hidden = value; });
     }
 
     // Takes over the page's bars; returns a handle that releases them when the page is left.
     function attach(win, frame) {
         if (!enabled()) return { detach: function () { } };
-        watchPages();
+        watchPages(); startSync(); refreshSync();
         var watchers = [], timer = 0, stopped = false, sources = {};
         function build() {
             timer = 0;
@@ -188,5 +216,5 @@
         current = {}; Object.keys(containers).forEach(function (kind) { containers[kind].hidden = true; });
     }
 
-    w.AppChrome = { attach: attach, clear: clear, enabled: enabled, glyphText: glyphText };
+    w.AppChrome = { attach: attach, clear: clear, enabled: enabled, glyphText: glyphText, syncLabel: syncLabel };
 })(window, document);

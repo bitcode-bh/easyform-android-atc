@@ -7,7 +7,7 @@
  *
  *   bridge.query(name, args)  -> Promise<rows[]>      any query DataQueries declares
  *   bridge.exec(service, action, args) -> Promise<value>   any other plugin call, same error handling
- *   bridge.flowMapping(moduleId) / taskByTid(tid) / taskCountByFlag(flag)   the named reads pages use
+ *   bridge.flowMapping(moduleId) / taskByTid(tid) / taskCountByFlag(flag) / outbox()   the named reads pages use
  *
  * Errors: 'bridge-unavailable' (no native side), 'bridge-timeout', 'bridge-retired' (the page was left), or the code
  * the native side sent ('data-invalid', 'data-unavailable'). Results are cancelled with retire() when a page is left.
@@ -66,6 +66,14 @@
             flowMapping: function (moduleId) { return query('flowMapping', { moduleid: moduleId }); },
             taskByTid: function (tid) { return query('taskByTid', { tid: tid }); },
             taskCountByFlag: function (flag) { return query('taskCountByFlag', { flag: flag }).then(function (rows) { return rows.length ? Number(rows[0].n) || 0 : 0; }); },
+            // What is waiting to upload, as numbers: { tasks, files, photos, videos, total }.
+            outbox: function () {
+                return query('pendingUploads', {}).then(function (rows) {
+                    var row = rows[0] || {}, result = { tasks: Number(row.tasks) || 0, files: Number(row.files) || 0, photos: Number(row.photos) || 0, videos: Number(row.videos) || 0 };
+                    result.total = result.tasks + result.files + result.photos + result.videos;
+                    return result;
+                });
+            },
             pending: function () { return open; },
             retire: function () { retired = true; }
         };
