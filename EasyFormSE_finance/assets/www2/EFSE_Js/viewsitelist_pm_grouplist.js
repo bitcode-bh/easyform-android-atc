@@ -133,7 +133,7 @@ function get_checklist_data_for_task() {
                 data: query,
                 p: "1"
             });
-            cordova.exec(onsuccess_get_checklist_data_for_task, onfail_get_checklist_data_for_task, 'SqlitePlugin', 'showValues', q_jsonobj);
+            AppBridge.on(cordova).read(onsuccess_get_checklist_data_for_task, onfail_get_checklist_data_for_task, 'flowMapping', { moduleid: moduleid });
         }
     } catch (e) {
         alert1(e + '_get_checklist_data_for_task()')
@@ -1692,8 +1692,7 @@ function get_task_json_for_getting_cl_latlong() {
             data: query,
             p: "0"
         });
-        cordova.exec(onsuccess_get_task_json_for_getting_cl_latlong, onfail_get_task_json_for_getting_cl_latlong, 'SqlitePlugin',
-            'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_task_json_for_getting_cl_latlong, onfail_get_task_json_for_getting_cl_latlong, 'formDataByStep', { tid: t_id, c_id: check_type, step: step });
     } catch (e) {
         alert1(e + '_get_task_json_for_getting_cl_latlong()');
         loading_hide();
@@ -1741,8 +1740,7 @@ function get_customer_json_for_getting_cl_latlong(check_type) {
             data: query,
             p: "0"
         });
-        cordova.exec(onsuccess_get_customer_json_for_getting_cl_latlong, onfail_get_customer_json_for_getting_cl_latlong,
-            'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_customer_json_for_getting_cl_latlong, onfail_get_customer_json_for_getting_cl_latlong, 'formDataByStep', { tid: t_id, c_id: check_type, step: step });
     } catch (e) {
         alert1(e + '_get_customer_json_for_getting_cl_latlong()');
         loading_hide();

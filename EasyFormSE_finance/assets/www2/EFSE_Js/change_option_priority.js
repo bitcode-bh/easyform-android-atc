@@ -46,7 +46,7 @@ function check_in_task(tid) {
         data: query,
         p: "1"
     });
-    cordova.exec(onsuccess_check_in_task, onfail_check_in_task, 'SqlitePlugin', 'showValues', q_jsonobj);
+    AppBridge.on(cordova).read(onsuccess_check_in_task, onfail_check_in_task, 'formAndChecksheetByTypeFive', { tid: tid });
 }
 
 function onsuccess_check_in_task(e) {
@@ -105,7 +105,7 @@ function onsuccess_change_option_priority() {
             data: query,
             p: "1"
         });
-        cordova.exec(set_old_priority, onfail_onsuccess_change_option_priority, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(set_old_priority, onfail_onsuccess_change_option_priority, 'formAndChecksheetByTypeFive', { tid: priority_tid });
     } catch (e) {
         alert1(e + '_onsuccess_change_option_priority()');
     }
@@ -157,7 +157,7 @@ function select_task_to_change_priority() {
             data: query,
             p: "1"
         });
-        cordova.exec(update_priority_of_task, onfail_select_task_to_change_priority, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(update_priority_of_task, onfail_select_task_to_change_priority, 'formAndChecksheetByTypeFive', { tid: priority_tid });
     } catch (e) {
         alert1(e + '_select_task_to_change_priority()');
     }

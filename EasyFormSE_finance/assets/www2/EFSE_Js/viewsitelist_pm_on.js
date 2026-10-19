@@ -3209,7 +3209,7 @@ stop_trip_on_task_delete = (ser_task_id) => {
         data: query,
         p: "1"
     });
-    cordova.exec(function (e) {
+    AppBridge.on(cordova).read(function (e) {
 
         actions.update_server_task_entry_online_SB(ser_task_id);
 
@@ -3226,10 +3226,10 @@ stop_trip_on_task_delete = (ser_task_id) => {
         cordova.exec(function (e) { }, function (e) { }, 'TripPlugin', 'anAction', q_jsonobj);
 
     }, function (e) {
-        // tid not found
+        
         actions.update_server_task_entry_online_SB(ser_task_id);
 
-    }, 'SqlitePlugin', 'showValues', q_jsonobj);
+    }, 'taskByServerId', { server_task_id: ser_task_id });
 }
 
 
@@ -4567,7 +4567,7 @@ function get_tid_for_task_edit_onlline(t_ser_task_id, t_start_status) {
         });
 
         //alert1('query: ' + query);
-        cordova.exec(onsuccess_get_tid_for_task_edit_onlline, onfail_get_tid_for_task_edit_onlline, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_tid_for_task_edit_onlline, onfail_get_tid_for_task_edit_onlline, 'taskByServerId', { server_task_id: t_ser_task_id });
     }
     catch (e) {
         alert1(e + '_redirect_on_task_edit_form_online');

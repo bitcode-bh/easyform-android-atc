@@ -17,6 +17,7 @@
     if (w.AppBridge) return;
 
     function failure(code) { var error = new Error(code); error.code = code; return error; }
+    var failure_ = failure;
 
     function create(host, options) {
         options = options || {};
@@ -61,8 +62,27 @@
                 return Array.isArray(rows) ? rows : [];
             });
         }
+        // For a page's existing handlers: runs a named query and gives success the string SqlitePlugin.showValues used to
+        // return (rows as JSON, nulls as "Unknown", the device id on every row), so the handler does not change. Values are
+        // sent as text, as they would have been inside the SQL string, and are bound natively, never joined into it.
+        // A page handler that throws is reported as an uncaught error, as it was when native called it directly,
+        // not swallowed by the promise and not mistaken for a failed read.
+        function call(handler, value) {
+            if (typeof handler !== 'function') return;
+            try { handler(value); } catch (error) { setTimeout(function () { throw error; }, 0); }
+        }
+        function read(success, failure, name, args) {
+            var given = {};
+            Object.keys(args || {}).forEach(function (key) { given[key] = String(args[key]); });
+            exec('DataBridge', 'query', [{ name: name, args: given, compat: true }]).then(function (value) {
+                var result = parse(value);
+                if (!result || !Array.isArray(result.rows)) throw failure_('bridge-bad-result');
+                return JSON.stringify(result.rows);
+            }).then(function (text) { call(success, text); },
+                function (error) { call(failure, error && error.code || 'bridge-failed'); });
+        }
         return {
-            exec: exec, query: query, sql: sql,
+            exec: exec, query: query, sql: sql, read: read,
             flowMapping: function (moduleId) { return query('flowMapping', { moduleid: moduleId }); },
             taskByTid: function (tid) { return query('taskByTid', { tid: tid }); },
             taskCountByFlag: function (flag) { return query('taskCountByFlag', { flag: flag }).then(function (rows) { return rows.length ? Number(rows[0].n) || 0 : 0; }); },
@@ -79,5 +99,18 @@
         };
     }
 
-    w.AppBridge = { create: create, shared: function () { return create(function () { return w.cordova; }); } };
+    var shared, over = typeof WeakMap === 'function' ? new WeakMap() : null;
+    w.AppBridge = {
+        create: create,
+        shared: function () { return shared || (shared = create(function () { return w.cordova; })); },
+        // A bridge over the cordova object a script already uses, so a page-owned `cordova` (one that drops answers after
+        // the page is left) keeps doing so. Pages write:  AppBridge.on(cordova).read(onSuccess, onFail, 'queryName', { ... })
+        // where they used to write:  cordova.exec(onSuccess, onFail, 'SqlitePlugin', 'showValues', [{ data: sql, p: '1' }])
+        on: function (host) {
+            if (!host || typeof host.exec !== 'function') return create(host);
+            var known = over && over.get(host);
+            if (!known) { known = create(host); if (over) over.set(host, known); }
+            return known;
+        }
+    };
 })(window);

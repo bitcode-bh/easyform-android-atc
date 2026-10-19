@@ -86,3 +86,42 @@ test('the named-query plugin is registered and its queries are the ones the brid
     const java = fs.readFileSync(path.join(app, 'src/com/sky/atc/easyformse/DataQueries.java'), 'utf8');
     for (const m of bridge.matchAll(/query\('([A-Za-z]+)'/g)) assert.match(java, new RegExp(`all\\.put\\("${m[1]}"`), m[1]);
 });
+
+// What DataQueries.java declares: query name -> the value names it takes.
+function declaredQueries() {
+    const java = fs.readFileSync(path.join(app, 'src/com/sky/atc/easyformse/DataQueries.java'), 'utf8');
+    const declared = new Map();
+    for (const m of java.matchAll(/all\.put\("([A-Za-z]+)", new Query\(([\s\S]*?)\)\);/g)) {
+        const names = [...m[2].matchAll(/"([A-Za-z_]+)",\s*(?:INT|TEXT)/g)].map(x => x[1]);
+        declared.set(m[1], names);
+    }
+    return declared;
+}
+
+test('every named read a page makes is declared natively, with exactly the values it declares', () => {
+    const declared = declaredQueries(), problems = [];
+    let checked = 0;
+    for (const file of walk(www)) {
+        if (file.endsWith(path.join('js', 'app_bridge.js'))) continue; // its comment shows the call with a placeholder name
+        const text = fs.readFileSync(file, 'utf8');
+        for (const m of text.matchAll(/AppBridge\.on\(cordova\)\.read\(/g)) {
+            const args = argumentsOf(text, m.index + m[0].length);
+            const name = /^'([A-Za-z]+)'$/.exec(args[2] || '');
+            const given = [...(args[3] || '').matchAll(/([A-Za-z_]+)\s*:/g)].map(x => x[1]);
+            const where = `${path.relative(www, file)}`;
+            if (!name || !declared.has(name[1])) { problems.push(`${where}: unknown query ${args[2]}`); continue; }
+            checked++;
+            const want = declared.get(name[1]);
+            if (given.slice().sort().join() !== want.slice().sort().join()) problems.push(`${where}: ${name[1]} takes (${want}) but is given (${given})`);
+        }
+    }
+    assert.deepEqual(problems, []);
+    assert.ok(checked >= 30, 'the migrated reads were found: ' + checked);
+});
+
+test('no page runs a read that a named query already covers', () => {
+    // The codemod (tools/ui_phase7/migrate_reads.py) finds nothing left to rewrite.
+    const { execFileSync } = require('node:child_process');
+    const out = execFileSync('python3', [path.join(app, '..', 'tools/ui_phase7/migrate_reads.py')], { cwd: path.join(app, '..'), encoding: 'utf8' });
+    assert.match(out, /would rewrite 0 call sites/);
+});

@@ -42,8 +42,8 @@ if (document.readyState === 'loading') {
     // feedback but not a second shell: the one in the parent window does the navigating.
     var inShellFrame = false;
     try { inShellFrame = !!(window.frameElement && window.frameElement.classList.contains('app-frame')); } catch (e) { }
-    document.write('<script src="js/phase1_ui.js"><\/script>' + (inShellFrame ? '' :
-        '<script src="js/app_shell.js"><\/script><script src="js/app_bridge.js"><\/script><script src="js/app_pages.js"><\/script><script src="js/app_chrome.js"><\/script><script src="js/app_frame_pages.js"><\/script>'));
+    document.write('<script src="js/phase1_ui.js"><\/script><script src="js/app_bridge.js"><\/script>' + (inShellFrame ? '' :
+        '<script src="js/app_shell.js"><\/script><script src="js/app_pages.js"><\/script><script src="js/app_chrome.js"><\/script><script src="js/app_frame_pages.js"><\/script>'));
 }
 // Reload the page that holds this one (the profile popup is a frame inside Home). When Home itself
 // runs in a shell frame, reloading its own address would load it without Cordova, so ask the shell
@@ -2377,7 +2377,7 @@ function send_bulk_approval_online(t_status, bulk_approval_checksheet) {
                 data: query,
                 p: "1"
             });
-            cordova.exec(function (e) {
+            AppBridge.on(cordova).read(function (e) {
                 var myArray = JSON.parse(e);
                 if (myArray == '' || myArray == null || myArray == undefined || myArray.length == 0) {
                     var flow_Array = JSON.parse(storage.getItem('flow_Array'));
@@ -2401,7 +2401,7 @@ function send_bulk_approval_online(t_status, bulk_approval_checksheet) {
 
                     open_additional_checksheet_for_bulk_approval(t_status, bulk_approval_checksheet);
                 }
-            }, onfail_request, 'SqlitePlugin', 'showValues', q_jsonobj);
+            }, onfail_request, 'flowMapping', { moduleid: moduleid });
         }
     }
     catch (e) {

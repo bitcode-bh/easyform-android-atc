@@ -1335,7 +1335,7 @@ function get_checksheet_id_for_task(flow_id) {
         data: query,
         p: "1"
     });
-    cordova.exec(SuccessCallBack_get_checksheetid_for_createtask, get_checksheetid_for_createtask_FailCallBack, 'SqlitePlugin', 'showValues', q_jsonobj);
+    AppBridge.on(cordova).read(SuccessCallBack_get_checksheetid_for_createtask, get_checksheetid_for_createtask_FailCallBack, 'flowChecksheet', { moduleid: flow_id });
 }
 
 function SuccessCallBack_get_checksheetid_for_createtask(e) {
@@ -1745,7 +1745,7 @@ function get_download_counter_selection() {
         data: query,
         p: "1"
     });
-    cordova.exec(onsuccess_get_download_counter_selection, actions.onfail_request, 'SqlitePlugin', 'showValues', q_jsonobj);
+    AppBridge.on(cordova).read(onsuccess_get_download_counter_selection, actions.onfail_request, 'downloadCounters', {});
 }
 
 function onsuccess_get_download_counter_selection(e) {

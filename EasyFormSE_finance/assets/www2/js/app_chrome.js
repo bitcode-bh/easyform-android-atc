@@ -196,7 +196,12 @@
             observer.observe(source, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['class', 'style', 'src', 'hidden', 'disabled'] });
             watchers.push(observer);
         });
-        var state = new w.MutationObserver(function () { setHidden(covered(win.document)); });
+        // Class changes happen all over a busy page; look for an open popup or panel at most every 80 ms.
+        var checking = 0;
+        var state = new w.MutationObserver(function () {
+            if (checking || stopped) return;
+            checking = w.setTimeout(function () { checking = 0; if (!stopped) setHidden(covered(win.document)); }, 80);
+        });
         state.observe(win.document.documentElement, { subtree: true, attributes: true, attributeFilter: ['class'] });
         watchers.push(state);
         // The page finishes drawing its bars after the page-ready event, so look again once it settles.
@@ -204,7 +209,7 @@
         return {
             refresh: later,
             detach: function () {
-                stopped = true; w.clearTimeout(timer);
+                stopped = true; w.clearTimeout(timer); w.clearTimeout(checking);
                 watchers.forEach(function (observer) { observer.disconnect(); });
                 // The bars stay until the next page replaces them, so changing pages does not blank them.
             }

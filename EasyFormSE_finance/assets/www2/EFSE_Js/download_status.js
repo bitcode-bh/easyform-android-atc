@@ -83,7 +83,7 @@ function get_download_counter() {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_get_download_counter, download_fail_callback, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_download_counter, download_fail_callback, 'downloadCounters', {});
     } catch (e) {
         alert1(e + '_get_download_counter()');
         $("#progressbar1").hide();

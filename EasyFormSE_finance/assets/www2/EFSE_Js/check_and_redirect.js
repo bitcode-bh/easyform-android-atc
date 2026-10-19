@@ -190,8 +190,7 @@ function get_last_photo_path() {
             data: query,
             p: "5" // call for getting last photo path
         });
-        cordova.exec(onsuccess_get_last_photo_path, onfail_get_last_photo_path,
-            'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_last_photo_path, onfail_get_last_photo_path, 'loginUsername', {});
     } catch (e) {
         alert1(e + '_get_last_photo_path');
         loading_hide();

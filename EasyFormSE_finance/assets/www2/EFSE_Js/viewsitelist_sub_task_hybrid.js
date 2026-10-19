@@ -17,7 +17,7 @@ function get_checklist_data_for_subtask_hybrid() {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_get_checklist_data_for_subtask_hybrid, onfail_get_checklist_data_for_subtask_hybrid, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_checklist_data_for_subtask_hybrid, onfail_get_checklist_data_for_subtask_hybrid, 'flowMapping', { moduleid: moduleid });
     } catch (e) {
         alert1(e + '_get_checklist_data_for_subtask_hybrid()');
         loading_hide();

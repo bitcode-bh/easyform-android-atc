@@ -20,7 +20,7 @@ function harness(files=[]){
  myApp:{popover:noop,popup:noop}});
  c.window=c;
  function load(file){vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),c,{filename:file});}
- load('EFSE_Js/common-functions.js');files.forEach(load);c.loading=noop;c.loading_hide=noop;c.alert1=noop;c.alert=noop;
+ load('EFSE_Js/common-functions.js');load('js/app_bridge.js');files.forEach(load);c.loading=noop;c.loading_hide=noop;c.alert1=noop;c.alert=noop;
  return {c,values,native,requests,labels,errors,load,timeouts,dispatchWindow:(name,event)=>(windowEvents.get(name)||[]).forEach(fn=>fn(event))};
 }
 for(const reverse of [false,true])test('page API callbacks keep their owner in '+(reverse?'reverse':'normal')+' script order',()=>{
@@ -70,9 +70,9 @@ for(const depth of [1,2,3])test('nested flow selection preserves '+depth+' navig
  values.flow_Array=Array.from({length:depth},(_,i)=>({wayflow:100+i}));
  const before=JSON.stringify(values.flow_Array),module=depth===1?10:100+depth-1;
  for(const name of ['get_checklist_data_for_task','get_checklist_data_for_subtask','get_checklist_data_for_subtask_hybrid']){
-  c[name]();assert.match(native.at(-1)[4][0].data,new RegExp("moduleid = '"+module+"'"));assert.equal(JSON.stringify(values.flow_Array),before);
+  c[name]();assert.deepEqual([native.at(-1)[2],native.at(-1)[3],native.at(-1)[4][0].name,native.at(-1)[4][0].args.moduleid],['DataBridge','query','flowMapping',String(module)]);assert.equal(JSON.stringify(values.flow_Array),before);
  }
- c.send_bulk_approval_online(1,9);assert.match(native.at(-1)[4][0].data,new RegExp("moduleid = '"+module+"'"));assert.equal(JSON.stringify(values.flow_Array),before);
+ c.send_bulk_approval_online(1,9);assert.deepEqual([native.at(-1)[4][0].name,native.at(-1)[4][0].args.moduleid],['flowMapping',String(module)]);assert.equal(JSON.stringify(values.flow_Array),before);
  c.onsuccess_get_checklist_data_for_task('[]');assert.equal(JSON.parse(requests.at(-1).data)[0].moduleid,module);assert.equal(JSON.stringify(values.flow_Array),before);
 });
 test('mapping cleanup preserves other roles, current ordering and the input array identity',()=>{
@@ -413,7 +413,7 @@ test('upload polling cannot overwrite the pending task list after a tab switch',
  const h=harness(['EFSE_Js/Upload_Option_Get_List.js']),page=ownedSecondaryTask(h,'AppUploadTaskController',10);
  page.values.survey_type=3;page.api.onsuccess_get_pending_trips_count('[{"issend":0}]');assert.equal(h.timeouts.size,1);
  const timer=[...h.timeouts.values()][0];page.values.survey_type=1;timer.fn();assert.equal(page.calls.length,0,'an upload-tab timer cannot fetch into another tab');
- page.values.survey_type=3;page.api.onsuccess_get_pending_trips_count('[{"issend":0}]');const current=[...h.timeouts.values()].at(-1);current.fn();assert.equal(page.calls.length,1);assert.match(page.calls[0][4][0].data,/select issend from lat_plug/);page.scope.dispose();
+ page.values.survey_type=3;page.api.onsuccess_get_pending_trips_count('[{"issend":0}]');const current=[...h.timeouts.values()].at(-1);current.fn();assert.equal(page.calls.length,1);assert.equal(page.calls[0][4][0].name,'pendingLocationPoints');page.scope.dispose();
 });
 
 function ownedHome(h, id) {

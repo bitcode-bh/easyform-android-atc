@@ -559,7 +559,7 @@ var MkDocDownload = function (obj, onsuccess_doc_down) {
                 data: query,
                 p: "1"
             });
-            cordova.exec(onsuccess_get_doc_download_id, onfail_get_doc_download_id, 'SqlitePlugin', 'showValues', q_jsonobj);
+            AppBridge.on(cordova).read(onsuccess_get_doc_download_id, onfail_get_doc_download_id, 'lastDownloadVideo', {});
         }
         catch (e) {
             alert1(e + '_get_doc_download_id()');
@@ -598,7 +598,7 @@ var MkDocDownload = function (obj, onsuccess_doc_down) {
                 data: query,
                 p: "8" // start document download
             });
-            cordova.exec(onsuccess_start_doc_download, onfail_start_doc_download, 'SqlitePlugin', 'showValues', q_jsonobj);
+            AppBridge.on(cordova).read(onsuccess_start_doc_download, onfail_start_doc_download, 'loginImei', {});
         }
         catch (e) {
             alert1(e + '_start_doc_download()');

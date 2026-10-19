@@ -305,7 +305,7 @@ function get_last_step_data_type17(calc_type4_array) {
             data: query,
             p: "0"
         });
-        cordova.exec(onsuccess_get_last_step_data_type17, onfail_get_last_step_data_type17, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_last_step_data_type17, onfail_get_last_step_data_type17, 'formDataByStep', { tid: t_id, c_id: check_type, step: step });
     } catch (e) {
         alert1(e + '_get_last_step_data_type17()');
         loading_hide();
@@ -1801,7 +1801,7 @@ function get_last_step_data_type17_eq(temp_calc_counter, eq_str) {
             data: query,
             p: "0"
         });
-        cordova.exec(onsuccess_get_last_step_data_type17_eq, onfail_get_last_step_data_type17_eq, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_last_step_data_type17_eq, onfail_get_last_step_data_type17_eq, 'formDataByStep', { tid: t_id, c_id: check_type, step: step });
     } catch (e) {
         alert1(e + '_get_last_step_data_type17_eq()');
         loading_hide();

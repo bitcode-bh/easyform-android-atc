@@ -87,14 +87,14 @@ function get_blank_checksheet(selected_check_type, step, RS_data, target_div, ta
             data: query,
             p: "1" // 1 for selecting values from table in json
         });
-        cordova.exec(function (e) {
+        AppBridge.on(cordova).read(function (e) {
             var myArray = JSON.parse(e);
             if (myArray.length > 0) {
                 var heading = myArray[0].subcategory;
                 var check_type = myArray[0].checksheetid;
                 var step = myArray[0].step;
-                var blank_data = itemObj._checkStrObj(myArray[0].data);  		// check_item
-                var buttons = itemObj._checkStrObj(myArray[0].buttons);  		// check_item
+                var blank_data = itemObj._checkStrObj(myArray[0].data);  		
+                var buttons = itemObj._checkStrObj(myArray[0].buttons);  		
 
                 let temp_RS_data = RS_data;
                 for (i = 0; i < blank_data.length; i++) {
@@ -115,7 +115,7 @@ function get_blank_checksheet(selected_check_type, step, RS_data, target_div, ta
             } else {
                 onfail_get_blank_checksheet('');
             }
-        }, onfail_get_blank_checksheet, 'SqlitePlugin', 'showValues', q_jsonobj);
+        }, onfail_get_blank_checksheet, 'checksheetStep', { checksheetid: selected_check_type, step: step });
     } catch (e) {
         alert1(e + '_get_blank_checksheet()');
         loading_hide();

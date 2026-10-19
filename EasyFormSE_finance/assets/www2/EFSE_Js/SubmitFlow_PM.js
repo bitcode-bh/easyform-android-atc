@@ -611,7 +611,7 @@ function get_mapped_checklist() {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_get_mapped_checklist, onfail_request, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_mapped_checklist, onfail_request, 'flowMapping', { moduleid: moduleid });
     } catch (e) {
         alert1(e + '_get_mapped_checklist()')
     }
@@ -792,7 +792,7 @@ function reverse_get_mapped_checklist(e) {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_reverse_get_mapped_checklist, onfail_request, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_reverse_get_mapped_checklist, onfail_request, 'flowMapping', { moduleid: moduleid });
     } catch (e) {
         alert1(e + '_reverse_get_mapped_checklist()');
     }

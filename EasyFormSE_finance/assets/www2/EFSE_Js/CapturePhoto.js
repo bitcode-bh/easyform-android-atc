@@ -848,7 +848,7 @@ function onPhotoDataSuccess() {
             data: query,
             p: "1"
         });
-        cordova.exec(showValuesSuccessCallBack_AS, showValuesFailCallBack_AS, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(showValuesSuccessCallBack_AS, showValuesFailCallBack_AS, 'loginImei', {});
     } catch (e) {
         storage.setItem('crash_status', JSON.stringify('0'));
         curr_btn_mode = "";

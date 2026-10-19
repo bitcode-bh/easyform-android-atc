@@ -110,7 +110,7 @@ function onPhotoDataSuccess_latlong(imageData) {
 			data : query,
 			p : "1"
 		});
-		cordova.exec(insert_photo_entry_latlong, onfail_onPhotoDataSuccess_latlong, 'SqlitePlugin', 'showValues', q_jsonobj);
+		AppBridge.on(cordova).read(insert_photo_entry_latlong, onfail_onPhotoDataSuccess_latlong, 'loginImei', {});
 	} catch (e) {
 		alert1(e + 'onPhotoDataSuccess_latlong()');
 		loading_hide();

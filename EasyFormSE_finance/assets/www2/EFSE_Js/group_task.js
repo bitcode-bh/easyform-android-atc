@@ -27,7 +27,7 @@ function read_blank_checksheet_group() {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_get_blank_checksheet, onfail_get_blank_checksheet, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_blank_checksheet, onfail_get_blank_checksheet, 'checksheetStep', { checksheetid: selected_check_type, step: step });
     } catch (e) {
         alert1(e + '_read_blank_checksheet_group()');
         loading_hide();

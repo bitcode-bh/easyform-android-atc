@@ -192,7 +192,7 @@ function onsuccess_capture_video() {
             data: query,
             p: "1"
         });
-        cordova.exec(insert_video_entry, onfail_insert_video, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(insert_video_entry, onfail_insert_video, 'loginImei', {});
     } catch (e) {
         alert1(e + '_onPhotoDataSuccess_video()');
         loading_hide();
@@ -468,7 +468,7 @@ var MkVideoDownload = function (obj, onsuccess_vdo_down) {
                 data: query,
                 p: "1"
             });
-            cordova.exec(onsuccess_get_video_download_id, onfail_get_video_download_id, 'SqlitePlugin', 'showValues', q_jsonobj);
+            AppBridge.on(cordova).read(onsuccess_get_video_download_id, onfail_get_video_download_id, 'lastDownloadVideo', {});
         }
         catch (e) {
             alert1(e + '_get_video_download_id()');
@@ -508,7 +508,7 @@ var MkVideoDownload = function (obj, onsuccess_vdo_down) {
                 data: query,
                 p: "8" // start video download
             });
-            cordova.exec(onsuccess_start_video_download, onfail_start_video_download, 'SqlitePlugin', 'showValues', q_jsonobj);
+            AppBridge.on(cordova).read(onsuccess_start_video_download, onfail_start_video_download, 'loginImei', {});
         }
         catch (e) {
             alert1(e + '_start_video_download()');

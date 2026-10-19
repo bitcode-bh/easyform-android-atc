@@ -1002,7 +1002,7 @@ function get_pending_trips_count() {
         data: query,
         p: "1"
     });
-    cordova.exec(onsuccess_get_pending_trips_count, onfail_get_pending_trips_count, 'SqlitePlugin', 'showValues', q_jsonobj);
+    AppBridge.on(cordova).read(onsuccess_get_pending_trips_count, onfail_get_pending_trips_count, 'pendingLocationPoints', {});
 }
 
 function onsuccess_get_pending_trips_count(e) {

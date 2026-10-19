@@ -108,3 +108,37 @@ test('the upload summary counts tasks, files, photos and videos, and ignores any
     const empty = bridge.outbox(); h.calls[1].ok(JSON.stringify({ rows: [] }));
     assert.deepEqual(JSON.parse(JSON.stringify(await empty)), { tasks: 0, files: 0, photos: 0, videos: 0, total: 0 });
 });
+
+const tick = () => new Promise(resolve => setImmediate(resolve));
+
+test('a page read asks for the old result shape and hands its handler the same string showValues returned', async () => {
+    const { AppBridge } = load(), h = host(), got = [];
+    AppBridge.on(h).read(text => got.push(text), code => got.push('fail:' + code), 'formDataByStep', { tid: 7, c_id: undefined, step: null });
+    const call = h.calls[0];
+    assert.deepEqual(JSON.parse(JSON.stringify(call.args)), [{ name: 'formDataByStep', args: { tid: '7', c_id: 'undefined', step: 'null' }, compat: true }]);
+    call.ok(JSON.stringify({ rows: [{ f_data: 'x', imei: 'dev' }] }));
+    await tick();
+    assert.deepEqual(got, ['[{"f_data":"x","imei":"dev"}]']);
+});
+
+test('a page read reports a native failure to the failure handler only, never an error thrown by the success handler', async () => {
+    const { AppBridge, timers } = load(), h = host(), failures = [];
+    AppBridge.on(h).read(() => { throw new Error('page handler bug'); }, code => failures.push(code), 'loginImei', {});
+    h.calls[0].ok(JSON.stringify({ rows: [] }));
+    await tick();
+    assert.deepEqual(failures, []);
+    // The handler's error is raised again as an uncaught error, so the page's error logging sees it.
+    assert.throws(() => timers.at(-1).fn(), /page handler bug/);
+    AppBridge.on(h).read(() => { }, code => failures.push(code), 'loginImei', {});
+    h.calls[1].fail('data-unavailable');
+    await tick();
+    assert.deepEqual(failures, ['data-unavailable']);
+});
+
+test('a bridge over a page-owned cordova object keeps using that object, and is shared per object', async () => {
+    const { AppBridge } = load(), a = host(), b = host();
+    assert.equal(AppBridge.on(a), AppBridge.on(a));
+    assert.notEqual(AppBridge.on(a), AppBridge.on(b));
+    AppBridge.on(b).read(() => { }, () => { }, 'loginImei', {});
+    assert.equal(a.calls.length, 0); assert.equal(b.calls.length, 1);
+});

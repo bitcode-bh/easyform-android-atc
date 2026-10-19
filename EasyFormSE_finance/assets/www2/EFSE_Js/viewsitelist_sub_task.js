@@ -86,7 +86,7 @@ function get_checklist_data_for_subtask() {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_get_checklist_data_for_subtask, onfail_get_checklist_data_for_subtask, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(onsuccess_get_checklist_data_for_subtask, onfail_get_checklist_data_for_subtask, 'flowMapping', { moduleid: moduleid });
     } catch (e) {
         alert1(e + '_get_checklist_data_for_subtask()')
     }

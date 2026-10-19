@@ -96,7 +96,7 @@ function get_pending_trips(e) {
             data: query,
             p: "1"
         });
-        cordova.exec(get_pending_videos, onfail_get_pending_data, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(get_pending_videos, onfail_get_pending_data, 'pendingLocationPoints', {});
     } catch (e) {
         alert1(e + '_get_pending_trips()');
         loading_hide();

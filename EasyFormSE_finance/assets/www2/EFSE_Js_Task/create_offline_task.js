@@ -421,7 +421,7 @@ function get_data_for_task() {
                 data: query,
                 p: "1"
             });
-            cordova.exec(onsuccess_get_data_for_task, onfail_get_data_for_task, 'SqlitePlugin', 'showValues', q_jsonobj);
+            AppBridge.on(cordova).read(onsuccess_get_data_for_task, onfail_get_data_for_task, 'flowMapping', { moduleid: moduleid });
         }
     } catch (e) {
         alert1(e + "_get_data_for_task()");

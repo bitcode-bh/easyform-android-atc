@@ -225,7 +225,7 @@ function onPhotoDataSuccess_sign() {
             data: query,
             p: "1"
         });
-        cordova.exec(insert_photo_entry_sign, onfail_onPhotoDataSuccess_sign, 'SqlitePlugin', 'showValues', q_jsonobj);
+        AppBridge.on(cordova).read(insert_photo_entry_sign, onfail_onPhotoDataSuccess_sign, 'loginImei', {});
     } catch (e) {
         alert1(e + '_onPhotoDataSuccess_sign()');
         loading_hide();

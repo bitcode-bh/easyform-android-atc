@@ -5,7 +5,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class DataQueriesTest {
-    private static final String[] NAMES = {"flowMapping", "taskByTid", "taskCountByFlag", "pendingUploads"};
+    private static final String[] NAMES = {"flowMapping", "taskByTid", "taskCountByFlag", "pendingUploads", "loginImei", "loginUsername",
+            "flowChecksheet", "formDataByStep", "formDataByValueStep", "formDataByTypeOneStep", "formDataByTypeFive", "formAndChecksheetByTypeFive",
+            "checksheetStep", "pendingLocationPoints", "lastDownloadVideo", "downloadCounters", "taskByServerId", "lastTaskByUser", "lastTaskIdsByUser"};
 
     @Test public void everyQueryIsFixedTextWithOnePlaceholderPerDeclaredValue() {
         for (String name : NAMES) {
@@ -24,6 +26,24 @@ public class DataQueriesTest {
         assertEquals(0, DataQueries.bind(query, null).length);
         assertEquals(0, DataQueries.bind(query, new JSONObject()).length);
         try { DataQueries.bind(query, new JSONObject().put("flag", "1")); fail(); } catch (IllegalArgumentException expected) { }
+    }
+
+    @Test public void compatModeBindsAnyValueAsAParameterSoItMatchesNothingInsteadOfFailing() throws Exception {
+        DataQueries.Query query = DataQueries.find("flowChecksheet");
+        assertArrayEquals(new String[]{"undefined"}, DataQueries.bind(query, new JSONObject().put("moduleid", "undefined"), false));
+        assertArrayEquals(new String[]{"1 OR 1=1"}, DataQueries.bind(query, new JSONObject().put("moduleid", "1 OR 1=1"), false));
+        assertArrayEquals(new String[]{""}, DataQueries.bind(query, new JSONObject().put("moduleid", ""), false));
+        try { DataQueries.bind(query, new JSONObject().put("moduleid", "1 OR 1=1"), true); fail(); } catch (IllegalArgumentException expected) { }
+        // Extra or missing values and over-long values are refused in both modes.
+        try { DataQueries.bind(query, new JSONObject().put("moduleid", "1").put("x", "2"), false); fail(); } catch (IllegalArgumentException expected) { }
+        try { DataQueries.bind(query, new JSONObject(), false); fail(); } catch (IllegalArgumentException expected) { }
+        try { DataQueries.bind(query, new JSONObject().put("moduleid", new String(new char[513]).replace('\0', '1')), false); fail(); } catch (IllegalArgumentException expected) { }
+    }
+
+    @Test public void multiValueQueriesTakeTheirValuesInDeclaredOrder() throws Exception {
+        DataQueries.Query query = DataQueries.find("formDataByStep");
+        JSONObject args = new JSONObject().put("step", "3").put("tid", "7").put("c_id", "9");
+        assertArrayEquals(new String[]{"7", "9", "3"}, DataQueries.bind(query, args, false));
     }
 
     @Test public void unknownOrMissingNamesAreRefused() {
