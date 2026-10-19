@@ -964,7 +964,7 @@ update_user_profile = () => {
         }
         else {
             setTimeout(function () {
-                window.parent.location.reload();
+                reload_parent_page();
             }, 100);
         }
     });
@@ -1068,7 +1068,7 @@ function onsucess_update_user_from_user_listing(e) {
                             back_button('EF_User_List');
                         }
                         else {
-                            window.parent.location.reload();
+                            reload_parent_page();
                         }
                     }
 

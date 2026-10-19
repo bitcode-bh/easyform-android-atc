@@ -132,7 +132,7 @@ function check_n_autocall_send_comment(t_server_task_id) {
                     //window.parent.$('.popup-profile .page').show();
 
                     setTimeout(function () {
-                        window.parent.location.reload();
+                        reload_parent_page();
                     }, 100);
                 }
                 else {

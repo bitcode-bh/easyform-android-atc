@@ -121,6 +121,48 @@ They do not validate the current source. No screenshots, recordings, settings or
 permission changes, submissions, or direct phone-database writes were performed.
 Repeat all fresh installation gates before deploying another build.
 
+## Frame pages for Home and the forms (branch `phase3-form-frames`)
+
+Home (`selection.html`), `viewsitedata.html` and `viewsitedata_task.html` can run in a frame of their
+own inside the shell (`js/app_frame_pages.js`). Off unless `ui_shell.pages[<page>]` is true; any failure
+falls back to the normal page load.
+
+**Why a frame.** The form pages keep about 70 variables of page state in about 35,000 lines of script, so
+they cannot share a document: a second form would open with the first one's answers. A frame is a separate
+script world and removing it on leave discards that state, with no change to the form code.
+
+**How it works.** The shell fetches the page text, removes the page's own `cordova.js` tag, and writes it
+into the frame. The frame shares the shell's `cordova` object (this app has no Cordova JS plugins; every
+plugin is a native class reached through `cordova.exec`) and the Java objects Android injects into the web
+page (`AndroidCallChecker`, `_cordovaNative`; a frame made with `document.open()` is not a page load, so
+Android does not inject them again). The frame reports the page's own address (`history.replaceState`),
+gets a `deviceready` event, has `changeurl` routed to the shell, and receives the hardware Back button. A page
+running in a frame does not load a second shell. The profile popup's `window.parent.location.reload()` goes
+through `reload_parent_page()`, which asks the shell to reopen Home instead.
+
+**Checked.**
+- `tools/ui_phase3/frame-page-check.py`: a fixture form in real Chrome with the app's file-access settings
+  (isolated state, Cordova callbacks, Back, `changeurl`, shared storage, native objects).
+- The real pages in the frame against the same pages at top level: same scripts, no errors (a first run
+  showed errors that were the lab's folder layout, not the frame).
+- On a phone (Motorola Edge 70, Android 17, test user): the "AI SELF SAFETY DECLARATION" checksheet loads in
+  the frame (27 controls, 16 options, images); Back reaches the form's own unsaved-changes prompt; a second
+  checksheet opens with its own 14 controls and the same default answer as on the normal page (nothing
+  carried over); Home in the frame matches the normal Home (9 cards, 116 list items, same modules).
+
+**Found only on the phone.** `AndroidCallChecker is not defined` stopped the checksheet loading. The fixture
+had no injected Java objects. A unit test now compares the shared list with `CordovaActivity.java`.
+
+**Not faster.** Home to Home on the phone, five runs each, median: normal page 409 ms, in the shell 437 ms.
+A frame loads all of the page's scripts, like a page load. The frame gives isolation and a consistent slide,
+not speed, so it does not meet the 150 ms tap target. Only the cached-template adapters (task list, site list)
+can approach that, and they cover only flows with the simplest settings; the test user's checksheet list falls
+back to the normal page ("page-unsupported").
+
+**Still open.** Eight-hour memory soak, two-phone timings, one-week pilot, encrypted drafts parity (needs
+`ui_field_drafts`), list windowing for the full-model list APIs. A form that is closed while a native call is
+pending keeps that callback in the shell until it returns (small, bounded).
+
 ## Remaining Phase 3 work
 
 1. Finish Home and both form lifecycle adapters, plus complete task/checksheet
