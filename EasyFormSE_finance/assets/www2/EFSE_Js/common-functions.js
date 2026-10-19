@@ -58,6 +58,14 @@ function reload_parent_page() {
     } catch (e) { }
     holder.location.reload();
 }
+// Back to Home lands on its top level, with the hero card, not on the module level the user came
+// through. The same reset the Home tab does (see home_tab_click in selection.js).
+function go_home_top() {
+    ['curr_btn_mode', 'id_Array', 'level_Array', 'list_json', 'cust_flow_Array'].forEach(function (key) {
+        try { storage.setItem(key, JSON.stringify('')); } catch (e) { }
+    });
+    changeurl("selection.html", 'back');
+}
 function alert1(alert_msg) {
     if (window.AppPhase1 && AppPhase1.enabled('notices')) {
         AppPhase1.notice(alert_msg);
@@ -684,7 +692,7 @@ function back_button(page) {
                     //    back_button('selection');
                     //}
                     //else {
-                    changeurl("selection.html", 'back');
+                    go_home_top();
                     //}
                 }
                 else {
@@ -770,7 +778,7 @@ function back_button(page) {
             storage.setItem('cust_flow_Array', JSON.stringify(''));
             ///
             localStorage.setItem('redirect_on_module', 'false');
-            changeurl("selection.html", 'back');
+            go_home_top();
         }
     }
     else if (page == 'viewsitedata') {
@@ -872,7 +880,7 @@ function back_button(page) {
             changeurl("Login.html", 'back');
         }
         else {
-            changeurl("selection.html", 'back');
+            go_home_top();
         }
     }
     else if (page == 'forgot_password') {
@@ -889,7 +897,7 @@ function back_button(page) {
         }
     }
     else if (page == 'support_page' || page == 'feature_filter' || page == 'feature_chart' || page == 'EF_Custome_Reports') {
-        changeurl("selection.html", 'back');
+        go_home_top();
     }
     else if (page == 'upload_pending_test') {
         changeurl("selection_survey.html", 'back');
@@ -922,7 +930,7 @@ function back_button(page) {
                 var data_json = JSON.parse(storage.getItem('list_json'));
                 if (data_json == "" || data_json == null || data_json == undefined) {
                     // in case fill attendance directly from module listing add attendance button
-                    changeurl("selection.html", 'back');
+                    go_home_top();
                     return false;
                 }
 
@@ -936,7 +944,7 @@ function back_button(page) {
                     var flow_Array = JSON.parse(storage.getItem('flow_Array'));
                     if (flow_Array == "" || flow_Array == null || flow_Array == undefined) {
                         // start trip from module listing >> task form open > press back button
-                        changeurl("selection.html", 'back');
+                        go_home_top();
                     }
                     else {
                         if (flow_Array.length == 1) {
@@ -959,7 +967,7 @@ function back_button(page) {
         }
     }
     else if (page == 'change_password') {
-        changeurl("selection.html", 'back');
+        go_home_top();
     }
     else if (page == 'signup') {
         changeurl("Login.html", 'back');
@@ -981,7 +989,7 @@ function back_button(page) {
                 changeurl(curr_page_name, 'back');
             }
             else {
-                changeurl("selection.html", 'back');
+                go_home_top();
             }
         }
     }

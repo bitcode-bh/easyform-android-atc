@@ -452,7 +452,7 @@
                 event.preventDefault();
                 if (w.AppComponents && w.AppComponents.dismissOverlay()) return;
                 if (current && current.adapter.onBack && current.adapter.onBack(current.context) === true) return;
-                if (!back()) w.changeurl('selection.html', 'back');
+                if (!back()) { if (w.go_home_top) w.go_home_top(); else w.changeurl('selection.html', 'back'); }
             };
             d.addEventListener('backbutton', nativeBack, false);
             w.changeurl(target.url, query.get('direction'));

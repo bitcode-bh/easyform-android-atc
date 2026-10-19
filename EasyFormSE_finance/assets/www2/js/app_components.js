@@ -40,7 +40,7 @@
         var slots = Math.max((options.back === false ? 0 : 1) + (options.leading ? 1 : 0), (options.actions || []).length);
         bar.style.setProperty('--shell-bar-edge', (slots * 44 + 12) + 'px');
         if (options.back !== false) left.appendChild(button({ icon: 'app-back-icon', label: 'Back', scope: options.scope,
-            action: options.onBack || function () { if (!w.AppShell.back()) w.changeurl('selection.html', 'back'); } }));
+            action: options.onBack || function () { if (!w.AppShell.back()) { if (w.go_home_top) w.go_home_top(); else w.changeurl('selection.html', 'back'); } } }));
         if (options.leading) left.appendChild(options.leading);
         if (options.search) {
             var searchOptions = Object.assign({}, options.search); searchOptions.scope = searchOptions.scope || options.scope;
