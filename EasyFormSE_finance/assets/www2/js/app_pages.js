@@ -63,15 +63,9 @@
         if (typeof result === 'string') { try { result = JSON.parse(result); } catch (e) { return null; } }
         return Array.isArray(result) ? result[0] : null;
     }
-    function read(context, query) {
-        return new Promise(function (resolve, reject) {
-            context.services.cordova.exec(function (raw) {
-                try { resolve({ raw: raw, rows: typeof raw === 'string' ? (raw.trim() ? JSON.parse(raw) : []) : raw }); }
-                catch (error) { reject(error); }
-            }, function () { reject(new Error('Unable to read checksheet mapping')); },
-            'SqlitePlugin', 'showValues', [{ data: query, p: '1' }]);
-        });
-    }
+    // The page's named reads of the phone's database (js/app_bridge.js); they end when the page is left.
+    function bridge(context) { return w.AppBridge.create(context.services.cordova); }
+
     // A flow the list adapter cannot show still opens inside the shell, in a frame running the original page.
     function withFrame(name, loading) {
         return loading.then(function (list) {
@@ -120,11 +114,12 @@
                         new URL(context.route, w.location.href).searchParams.has('task_id')) return false;
                     var module = parents.length === 1 ? value(storage, 'wayflow') : parents[parents.length - 1].wayflow;
                     if (module === '' || module === null || module === undefined || module === 0) return false;
-                    return read(context, "select data from flow_master where moduleid = '" + String(module).replace(/'/g, "''") + "'").then(function (result) {
-                        if (!Array.isArray(result.rows) || !result.rows.length) return false;
-                        var mapping; try { mapping = JSON.parse(result.rows[0].data); } catch (e) { return false; }
+                    return bridge(context).flowMapping(module).then(function (rows) {
+                        if (!rows.length) return false;
+                        var mapping; try { mapping = JSON.parse(rows[0].data); } catch (e) { return false; }
                         if (!Array.isArray(mapping) || mapping.some(function (row) { return row.sub_flow_id && row.sub_flow_id != 0; })) return false;
-                        instances.set(context, { settings: settings, mapping: result.raw, grouped: mapping.some(function (row) { return !!row.Group_Name; }) }); return true;
+                        // The list controller still reads its mapping in the shape the old SQL call returned.
+                        instances.set(context, { settings: settings, mapping: JSON.stringify(rows), grouped: mapping.some(function (row) { return !!row.Group_Name; }) }); return true;
                     });
                 },
                 create: function (document, context) {
@@ -234,11 +229,11 @@
                         (Array.isArray(settings.geofence) && settings.geofence.some(function (item) { return item.value === 'true'; }))) return false;
                     var module = value(storage, 'wayflow');
                     if (module === '' || module === null || module === undefined || module == 0) return false;
-                    return read(context, "select data from flow_master where moduleid = '" + String(module).replace(/'/g, "''") + "'").then(function (result) {
-                        if (!Array.isArray(result.rows) || !result.rows.length) return false;
-                        var mapping; try { mapping = JSON.parse(result.rows[0].data); } catch (e) { return false; }
+                    return bridge(context).flowMapping(module).then(function (rows) {
+                        if (!rows.length) return false;
+                        var mapping; try { mapping = JSON.parse(rows[0].data); } catch (e) { return false; }
                         if (!Array.isArray(mapping) || mapping.some(function (row) { return row.sub_flow_id && row.sub_flow_id != 0; })) return false;
-                        instances.set(context, { settings: settings, mapping: result.rows[0].data }); return true;
+                        instances.set(context, { settings: settings, mapping: rows[0].data }); return true;
                     });
                 },
                 create: function (document, context) {

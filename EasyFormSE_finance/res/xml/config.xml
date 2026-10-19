@@ -52,6 +52,10 @@
     <feature name="SqlitePlugin">
         <param name="android-package" value="com.sky.atc.easyformse.SqlitePlugin" />
     </feature>
+    <!-- named, parameterised reads for the pages (see DataQueries) -->
+    <feature name="DataBridge">
+        <param name="android-package" value="com.sky.atc.easyformse.DataBridge" />
+    </feature>
     <feature name="maulik">
         <param name="android-package" value="com.sky.atc.easyformse.maulik" />
     </feature>
