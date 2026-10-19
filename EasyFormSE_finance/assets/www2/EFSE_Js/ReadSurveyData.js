@@ -136,6 +136,7 @@ var act_form_flag;
 
 // read survey data
 function read_dynamic_surveydata_main(heading, check_type, step, data, buttons, form_flag_temp, disabled_flag, target_div, target_index) {
+    if (typeof AppFormDrafts !== 'undefined' && AppFormDrafts.beforeRender(arguments, function (args) { read_dynamic_surveydata_main.apply(null, args); })) return;
     try {
 
         curr_target_div = target_div;

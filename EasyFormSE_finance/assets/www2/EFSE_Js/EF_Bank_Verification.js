@@ -109,7 +109,7 @@ function onfail_bank_verification(e) {
     loading_hide();
 }
 
-function get_user_data() {
+function get_bank_user_data() {
     var company_id = JSON.parse(storage.getItem('company_id'));
     var aadhar_user_id = localStorage.getItem('aadhar_user_id');
 
@@ -120,11 +120,11 @@ function get_user_data() {
     });
 
     loading();
-    var getdata1 = new Webservicecall_REST(global_wcf_url + 'WCF_select_user_master_by_userid', JSON.stringify(Param_obj), onsucess_get_user_data, onfail);
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'WCF_select_user_master_by_userid', JSON.stringify(Param_obj), onsuccess_get_bank_user_data, onfail_request);
     getdata1.callOtherDomain();
 }
 
-function onsucess_get_user_data(invocation1) {
+function onsuccess_get_bank_user_data(invocation1) {
     try {
         var Search_data = invocation1.responseText;
         Search_data = eval('(' + Search_data + ')');
@@ -140,7 +140,7 @@ function onsucess_get_user_data(invocation1) {
 
             checksheet_id = message[0].checksheet_id;
 
-            Autofill_Json_value(Data);
+            autofill_bank_user_values(Data);
         }
         else {
             alert1(message);
@@ -153,7 +153,7 @@ function onsucess_get_user_data(invocation1) {
     }
 }
 
-function Autofill_Json_value(Data) {
+function autofill_bank_user_values(Data) {
     var name = bank_data.full_name;
     var account_number = $("#bank_account_num").val();
     var ifsc_details = $("#bank_ifsc_code").val();
@@ -179,10 +179,10 @@ function Autofill_Json_value(Data) {
             }
         }
     }
-    Update_user_data(Data);
+    update_bank_user_data(Data);
 }
 
-function Update_user_data(Json_data) {
+function update_bank_user_data(Json_data) {
     var company_id = JSON.parse(storage.getItem('company_id'));
     var aadhar_user_id = localStorage.getItem('aadhar_user_id');
 
@@ -208,11 +208,11 @@ function Update_user_data(Json_data) {
         'Check_User_Upadte_Or_Create': "Update"
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsucess_Update_Json_data, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsuccess_update_bank_user_data, onfail_request);
     getdata.callOtherDomain();
 }
 
-function onsucess_Update_Json_data(invocation1) {
+function onsuccess_update_bank_user_data(invocation1) {
     var Suc_Message = invocation1.responseText;
     Suc_Message = eval('(' + Suc_Message + ')');
     var status = Suc_Message[0].status;
@@ -239,11 +239,11 @@ function insert_bank_data() {
     });
 
     loading();
-    var getdata1 = new Webservicecall_REST(global_wcf_url + 'Insert_Adhar_and_bankdata', JSON.stringify(Param_obj), onsuccess_insert_aadhar_bank_data, onfail);
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'Insert_Adhar_and_bankdata', JSON.stringify(Param_obj), onsuccess_insert_bank_verification, onfail_request);
     getdata1.callOtherDomain();
 }
 
-function onsuccess_insert_aadhar_bank_data(invocation1) {
+function onsuccess_insert_bank_verification(invocation1) {
     var Search_data = invocation1.responseText;
     Search_data = eval('(' + Search_data + ')');
     var message = Search_data[0].message;

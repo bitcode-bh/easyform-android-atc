@@ -19,7 +19,7 @@
     height: 24px;
     font-size: 0 !important;
     vertical-align: middle;
-    background-color: #0f1729;
+    background-color: var(--app-icon-color, #0f1729);
     -webkit-mask: var(--tb-icon) center / 24px 24px no-repeat;
     mask: var(--tb-icon) center / 24px 24px no-repeat;
 }

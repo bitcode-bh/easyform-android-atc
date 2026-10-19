@@ -3,7 +3,14 @@
 // this module is meant to be reached from outside it.
 // See docs/PRD-Home-Operations-Dashboard.md §8.1.
 
-var HomeDashboard = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeDashboardController) return;
+    function create(options) {
+        options = options || {};
+        var $ = options.$ || function () { return w.jQuery.apply(w, arguments); };
+        var HomeDashboardResolver = options.resolver || w.HomeDashboardResolver;
+
     'use strict';
 
     // Maps HomeDashboardConfig.TYPES values to the widget modules that
@@ -14,14 +21,14 @@ var HomeDashboard = (function () {
     // dropped by HomeDashboardResolver.resolveProfile()'s isImplemented()
     // filter.
     var WIDGET_REGISTRY = {
-        task_summary: HomeWidgetTaskSummary,
-        site_summary: HomeWidgetSiteSummary,
-        upload_health: HomeWidgetUploadHealth,
-        trip_stats: HomeWidgetTripStats,
-        map_entry: HomeWidgetMapEntry,
-        attendance_chip: HomeWidgetAttendance,
-        notifications_summary: HomeWidgetNotifications,
-        feature_links: HomeWidgetFeatureLinks
+        task_summary: (options.widgets ? options.widgets.HomeWidgetTaskSummary : w.HomeWidgetTaskSummary),
+        site_summary: (options.widgets ? options.widgets.HomeWidgetSiteSummary : w.HomeWidgetSiteSummary),
+        upload_health: (options.widgets ? options.widgets.HomeWidgetUploadHealth : w.HomeWidgetUploadHealth),
+        trip_stats: (options.widgets ? options.widgets.HomeWidgetTripStats : w.HomeWidgetTripStats),
+        map_entry: (options.widgets ? options.widgets.HomeWidgetMapEntry : w.HomeWidgetMapEntry),
+        attendance_chip: (options.widgets ? options.widgets.HomeWidgetAttendance : w.HomeWidgetAttendance),
+        notifications_summary: (options.widgets ? options.widgets.HomeWidgetNotifications : w.HomeWidgetNotifications),
+        feature_links: (options.widgets ? options.widgets.HomeWidgetFeatureLinks : w.HomeWidgetFeatureLinks)
     };
 
     var _container = null;
@@ -114,10 +121,18 @@ var HomeDashboard = (function () {
         _activeWidgets = [];
     }
 
-    return {
+
+        var api = {
         init: init,
         refresh: refresh,
         isEnabled: isEnabled,
         destroy: destroy
     };
-})();
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+
+        if (options.scope) options.scope.defer(destroy);
+        return api;
+    }
+    w.AppHomeDashboardController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeDashboard = create();
+})(window);

@@ -1,6 +1,6 @@
 ﻿
 
-function get_user_data() {
+function get_user_update_data() {
     var company_id = JSON.parse(storage.getItem('company_id'));
     var aadhar_user_id = localStorage.getItem('aadhar_user_id');
 
@@ -11,11 +11,11 @@ function get_user_data() {
     });
 
     loading();
-    var getdata1 = new Webservicecall_REST(global_wcf_url + 'WCF_select_user_master_by_userid', JSON.stringify(Param_obj), onsucess_get_user_data, onfail);
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'WCF_select_user_master_by_userid', JSON.stringify(Param_obj), onsuccess_get_user_update_data, onfail_request);
     getdata1.callOtherDomain();
 }
 
-function onsucess_get_user_data(invocation1) {
+function onsuccess_get_user_update_data(invocation1) {
     try {
         var Search_data = invocation1.responseText;
         Search_data = eval('(' + Search_data + ')');
@@ -31,7 +31,7 @@ function onsucess_get_user_data(invocation1) {
 
             checksheet_id = message[0].checksheet_id;
 
-            Autofill_Json_value(Data);
+            autofill_user_update_user_values(Data);
         }
         else {
             alert1(message);
@@ -44,7 +44,7 @@ function onsucess_get_user_data(invocation1) {
     }
 }
 
-function Autofill_Json_value(Data) {
+function autofill_user_update_user_values(Data) {
     var txt_GST_number = $("#txt_GST_number").val();
     var txt_PAN = $("#txt_PAN").val();
     var txt_father_name = $("#txt_father_name").val();
@@ -83,10 +83,10 @@ function Autofill_Json_value(Data) {
             }
         }
     }
-    Update_user_data(Data);
+    update_user_update_user_data(Data);
 }
 
-function Update_user_data(Json_data) {
+function update_user_update_user_data(Json_data) {
     var company_id = JSON.parse(storage.getItem('company_id'));
     var aadhar_user_id = localStorage.getItem('aadhar_user_id');
 
@@ -112,11 +112,11 @@ function Update_user_data(Json_data) {
         'Check_User_Upadte_Or_Create': "Update"
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsucess_Update_Json_data, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsuccess_update_user_update_user_data, onfail_request);
     getdata.callOtherDomain();
 }
 
-function onsucess_Update_Json_data(invocation1) {
+function onsuccess_update_user_update_user_data(invocation1) {
     var Suc_Message = invocation1.responseText;
     Suc_Message = eval('(' + Suc_Message + ')');
     var status = Suc_Message[0].status;

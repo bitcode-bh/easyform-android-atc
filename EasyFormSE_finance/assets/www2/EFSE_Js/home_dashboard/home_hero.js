@@ -13,14 +13,32 @@
 // disappearing. Everything here reads existing data. Nothing is written to the
 // engine's tables, and the only thing stored is the chosen visit reason.
 
-var HomeHero = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeHeroController) return;
+    function create(options) {
+        options = options || {};
+        var actions = options.actions || w;
+        var $ = options.$ || function () { return w.jQuery.apply(w, arguments); };
+        var document = options.document || w.document;
+        var storage = options.services ? options.services.storage : w.storage;
+        var cordova = options.services ? options.services.cordova : { exec: function () { return w.cordova.exec.apply(w.cordova, arguments); } };
+        var HomeDashboardData = options.data || w.HomeDashboardData;
+        var TripListSheet = options.tripList || w.TripListSheet;
+        var setTimeout = options.scope ? function (fn, ms) { return options.scope.timeout(fn, ms); } : w.setTimeout.bind(w);
+        var setInterval = options.scope ? function (fn, ms) { return options.scope.interval(fn, ms); } : w.setInterval.bind(w);
+        var clearTimeout = options.scope && options.scope.clearTimeout ? options.scope.clearTimeout : w.clearTimeout.bind(w);
+        var clearInterval = options.scope && options.scope.clearInterval ? options.scope.clearInterval : w.clearInterval.bind(w);
+        var navigator = w.navigator;
+        if (options.scope && navigator && navigator.geolocation) navigator = { geolocation: { getCurrentPosition: function (success,failure,settings) { return w.navigator.geolocation.getCurrentPosition(options.scope.own(success),options.scope.own(failure),settings); } } };
+
     'use strict';
 
     var ROOT_ID = 'div_home_hero';
     var REASON_KEY = 'home_hero_site_visit_reason';
     // Last trip figures shown, so the card paints at once on the next visit to
     // Home instead of sitting on placeholders while the database is read.
-    var TRIPS_CACHE_KEY = 'home_hero_trips_last';
+    var TRIPS_CACHE_KEY = 'home_hero_trips_last' + (options.cacheScope || '');
     var REFRESH_MS = 60000;
     // The reason chosen while no nearest site is known is kept under this id.
     var TEST_SITE_ID = 'no-site';
@@ -69,7 +87,7 @@ var HomeHero = (function () {
     // so what the slide last showed is kept for the session and shown at once.
     // Without it the slide said "Not known yet / Location unavailable" for a
     // moment on every return to Home, until the phone's records were re-read.
-    var SITE_SNAP_KEY = 'home_hero_site_snapshot';
+    var SITE_SNAP_KEY = 'home_hero_site_snapshot' + (options.cacheScope || '');
     function saveSiteSnapshot() {
         if (!site.loaded) return;
         try {
@@ -1313,19 +1331,20 @@ var HomeHero = (function () {
         // Showing a saved copy of the list first was tried and measured on a
         // phone: the real list arrived 25 ms after it, so it gained nothing.
         function showPage() {
-            if (!list.children.length || typeof window.homeReveal !== 'function') return;
-            window.homeReveal();
+            if (!list.children.length || typeof (options.reveal || w.homeReveal) !== 'function') return;
+            (options.reveal || w.homeReveal)();
         }
     }
 
     function bindRestOnRow($root) {
         var root = $root[0], scroller = $root.closest('.page-content')[0];
         if (!root || !scroller) return;
-        AppListing.bind(scroller, {
+        var releaseListing = AppListing.bind(scroller, {
             head: root,
             rows: '#div_home_dashboard .hd-widget, #module_list > li',
             enabled: function () { return window.innerHeight >= FIXED_MIN_HEIGHT && root.offsetHeight && isHomeLevel(); }
         });
+        if (options.scope && releaseListing) options.scope.defer(releaseListing);
     }
 
     // ---- shell -------------------------------------------------------------
@@ -1406,7 +1425,7 @@ var HomeHero = (function () {
             ev.preventDefault();
             // Read once by the LMS as it opens.
             try { localStorage.setItem('lms_open_tab', $(this).attr('data-tab')); } catch (e) { }
-            if (typeof crossToLMS === 'function') crossToLMS('LMS_Dashboard.html');
+            if (typeof actions.crossToLMS === 'function') actions.crossToLMS('LMS_Dashboard.html');
             else if (typeof changeurl === 'function') changeurl('LMS_Dashboard.html');
             return false;
         });
@@ -1425,7 +1444,7 @@ var HomeHero = (function () {
         bindPassportFlip($root);
         $root.find('.hh-passport').off('click.homeHero').on('click.homeHero', function (ev) {
             ev.preventDefault();
-            var share = function () { if (typeof get_safety_passport === 'function') get_safety_passport(); };
+            var share = function () { if (typeof actions.get_safety_passport === 'function') actions.get_safety_passport(); };
             // Share on the slide itself goes straight to the passport page.
             if ($(ev.target).closest('.sp-share').length) { share(); return false; }
             if (typeof PermitCards !== 'undefined' && PermitCards.openPassport) PermitCards.openPassport(this.innerHTML, share);
@@ -1463,6 +1482,8 @@ var HomeHero = (function () {
     // Draw as soon as the page's markup exists; the database-backed figures
     // follow when Cordova is ready. The card used to wait on deviceready plus a
     // timer, which left a gap at the top of Home on every return to it.
+
+    function bindLegacyStartup() {
     var deviceIsReady = false;
     // Tab icon "pop": the tapped tab's icon swells and eases back.
     $(document).on('click.hhTabPop', '#div_new_tabbar .tab-link', function () {
@@ -1495,7 +1516,22 @@ var HomeHero = (function () {
         }, false);
     } catch (e) { }
 
-    return { render: render, refresh: refresh, setGeofenceValidator: setGeofenceValidator, setPermitProvider: setPermitProvider, isVendorTechnician: isVendorTechnician,
+    
+    }
+    if (!options.scope) bindLegacyStartup();
+
+        var api = { render: render, refresh: refresh, setGeofenceValidator: setGeofenceValidator, setPermitProvider: setPermitProvider, isVendorTechnician: isVendorTechnician,
         // exposed for tests
         _toRowEdge: AppListing.toRowEdge, _listingKpi: listingKpi, _isHomeLevel: isHomeLevel, _permitToShow: permitToShow, _span: span, _site: site, _siteStatus: siteStatus, _formatDistance: formatDistance, _nearestSite: nearestSite, _metresBetween: getDistanceFromLatLonInMeter };
-})();
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+
+        if (options.scope) options.scope.defer(function () {
+            if (listWatch) listWatch.disconnect();
+            $('#' + ROOT_ID).find('*').addBack().off();
+            site.sites = [];site.flowRadius = {};live.$slide=null;permits=[];
+        });
+        return api;
+    }
+    w.AppHomeHeroController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeHero = create();
+})(window);

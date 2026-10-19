@@ -8,12 +8,23 @@
  * It polls until myApp/Dom7 are ready, then binds the F7 'refresh' event.
  */
 
-(function () {
+(function(w){
+    'use strict';
+    if(w.AppHomeSearchController)return;
+    function create(options){
+        options=options||{};
+        var $=options.$||w.jQuery,document=options.document||w.document,myApp=options.services?options.services.app:w.myApp;
+        var setTimeout=options.scope?function(fn,ms){return options.scope.timeout(fn,ms);}:w.setTimeout.bind(w);
+        var setInterval=options.scope?function(fn,ms){return options.scope.interval(fn,ms);}:w.setInterval.bind(w);
+        var clearInterval=options.scope?options.scope.clearInterval:w.clearInterval.bind(w);
+        function listen(node,event,callback){if(options.scope)options.scope.on(node,event,callback);else node.addEventListener(event,callback,false);}
+
     var searchVisible = false;
 
     // Poll until Framework7 is ready (myApp + Dom7 exist)
     var bindAttempts = 0;
-    var bindInterval = setInterval(function () {
+    var bindInterval;
+    function bindRefresh() {
         bindAttempts++;
         if (bindAttempts > 200) {
             clearInterval(bindInterval);
@@ -27,7 +38,7 @@
         var $$ = Dom7;
 
         // Bind on the existing element right now
-        var ptrEl = $$('.pull-to-refresh-content');
+        var ptrEl = $(document.querySelectorAll('.pull-to-refresh-content'));
         if (ptrEl.length > 0) {
             ptrEl.on('refresh', function (e) {
                 // Immediately finish the pull-to-refresh animation
@@ -38,7 +49,7 @@
         }
 
         // Also bind via onPageInit for future navigations
-        myApp.onPageInit('list-view', function (page) {
+        if (!options.scope) myApp.onPageInit('list-view', function (page) {
             var ptr = $$(page.container).find('.pull-to-refresh-content');
             if (ptr.length > 0) {
                 ptr.on('refresh', function (e) {
@@ -47,7 +58,8 @@
                 });
             }
         });
-    }, 100);
+    }
+    if (options.scope) bindRefresh(); else bindInterval = setInterval(bindRefresh, 100);
 
     // The search field lives in the top bar itself: it is moved there once,
     // and while it is open it takes the place of the greeting and date.
@@ -83,7 +95,7 @@
         }
     }
 
-    window.closeHomeSearch = function () {
+    function closeHomeSearch() {
         var bar = document.getElementById('home_search_bar');
         var input = document.getElementById('home_search_input');
         var clearBtn = document.getElementById('home_search_clear');
@@ -104,7 +116,7 @@
     };
 
     // Handle search input for filtering
-    $(document).on('input', '#home_search_input', function () {
+    $(document).on('input.homeSearch', '#home_search_input', function () {
         var query = this.value.toLowerCase().trim();
         var clearBtn = document.getElementById('home_search_clear');
         if (clearBtn) {
@@ -114,14 +126,14 @@
     });
 
     // Enter key dismisses keyboard
-    $(document).on('keypress', '#home_search_input', function (e) {
+    $(document).on('keypress.homeSearch', '#home_search_input', function (e) {
         if (e.which === 13) {
             this.blur();
         }
     });
 
     // When keyboard hides (input loses focus), hide search bar
-    $(document).on('blur', '#home_search_input', function () {
+    $(document).on('blur.homeSearch', '#home_search_input', function () {
         setTimeout(function () {
             closeHomeSearch();
         }, 200);
@@ -129,7 +141,7 @@
 
     // Detect keyboard hide via window resize (especially for Android back button dismissing keyboard)
     var initialWindowHeight = window.innerHeight;
-    window.addEventListener('resize', function () {
+    listen(w, 'resize', function () {
         // If window resizes back to roughly initial height (keyboard closed) and search is visible
         if (searchVisible && window.innerHeight >= initialWindowHeight - 50) {
             var activeElement = document.activeElement;
@@ -141,7 +153,7 @@
     });
 
     // Android back button clears/closes search
-    document.addEventListener('backbutton', function (e) {
+    listen(w.document, 'backbutton', function (e) {
         if (searchVisible) {
             closeHomeSearch();
             e.preventDefault();
@@ -182,4 +194,12 @@
             row.style.display = visible || query === '' ? '' : 'none';
         }
     }
-})();
+
+        if(options.scope)options.scope.defer(function(){$(document).off('.homeSearch');});
+        var api={open:showSearchBar,close:closeHomeSearch,filter:filterHomeList,isOpen:function(){return searchVisible;}};
+        if(options.scope)Object.keys(api).forEach(function(key){api[key]=options.scope.own(api[key]);});
+        return api;
+    }
+    w.AppHomeSearchController={create:create};
+    if(!w.document.documentElement.hasAttribute||!w.document.documentElement.hasAttribute('data-app-shell'))w.closeHomeSearch=create().close;
+})(window);

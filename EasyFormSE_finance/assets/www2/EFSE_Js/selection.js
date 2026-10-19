@@ -1,3 +1,22 @@
+/* Home module, notification and trip actions own their page state. */
+(function (w) {
+    if (w.AppHomeController) return;
+    function create(options) {
+        options = options || {};
+        var state = options.state || w, actions = options.actions || w;
+        var $ = options.$ || function () { return w.$.apply(w, arguments); };
+        var document = options.document || w.document;
+        var storage = options.services ? options.services.storage : w.storage;
+        var cordova = options.services ? options.services.cordova : { exec: function () { return w.cordova.exec.apply(w.cordova, arguments); } };
+        var myApp = options.services ? options.services.app : { popup: function () { return w.myApp.popup.apply(w.myApp, arguments); }, closeModal: function () { return w.myApp.closeModal.apply(w.myApp, arguments); }, modal:function(){return w.myApp.modal.apply(w.myApp,arguments);} };
+        function Webservicecall_REST() { return Reflect.construct(options.services ? options.services.request : w.Webservicecall_REST, Array.prototype.slice.call(arguments)); }
+        function MkLocation() {
+            var location = options.location ? options.location() : new w.MkLocation();
+            this._getLocation = function (callback) { return location._getLocation(options.scope ? options.scope.guard(callback) : callback); };
+        }
+        var setTimeout = options.scope ? function (fn, ms) { return options.scope.timeout(fn, ms); } : w.setTimeout.bind(w);
+        function enable_back_button() { if (options.enableBack) options.enableBack(); else w.enable_back_button(); }
+        var check_for_auto_close_trip, trip_punchout_status, noti_Attendance_Click, check_for_glob_notification, got_it_notification_hide, got_it_notification, home_tab_click, stop_trip_manualy_from_module_listing;
 
 var value_counter = [];
 var module_navigation_generation = 0;
@@ -61,7 +80,7 @@ function get_counter_for_online_flow() {
                 'system_var': sys_var_Array
             });
 
-            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_OnlineTaskList_Native_Count', JSON.stringify(param_obj), onsuccess_get_counter_for_online_flow, onfail_get_counter_for_online_flow);
+            var getdata = new Webservicecall_REST(state.global_wcf_url + 'WCF_OnlineTaskList_Native_Count', JSON.stringify(param_obj), onsuccess_get_counter_for_online_flow, onfail_get_counter_for_online_flow);
             getdata.callOtherDomain();
         });
     }
@@ -141,8 +160,8 @@ function onsuccess_get_counter_for_online_flow(e) {
                 // The home dashboard's Sites card reads the cache just written
                 // above, and this counter finishes after that card has already
                 // rendered — so re-read it here. localStorage only; no refetch.
-                if (typeof HomeDashboard !== 'undefined' && HomeDashboard.refresh) {
-                    try { HomeDashboard.refresh(); } catch (err) { }
+                if ((options.dashboard || w.HomeDashboard) && (options.dashboard || w.HomeDashboard).refresh) {
+                    try { (options.dashboard || w.HomeDashboard).refresh(); } catch (err) { }
                 }
             }
             else {
@@ -272,7 +291,7 @@ function get_data_from_ufm() {
             get_data_from_ufm_FailCallBack(e);
         }, 'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
-        button_clicked = 0;
+        state.button_clicked = 0;
         loading_hide();
         alert1(e + "get_data_from_ufm");
     }
@@ -372,7 +391,7 @@ function SuccessCallBack_onload_get_data_from_ufm(e) {
                         // signed in against a tenant that has no work for them), so just stop and
                         // leave the page usable -- Home's own dashboard/navbar/tabbar still render,
                         // and the side menu (logout) stays reachable.
-                        button_clicked = 0;
+                        state.button_clicked = 0;
                         loading_hide();
                         enable_back_button();
                         return;
@@ -385,19 +404,19 @@ function SuccessCallBack_onload_get_data_from_ufm(e) {
                 }
             }
 
-            button_clicked = 0;
+            state.button_clicked = 0;
             loading_hide();
             enable_back_button();
         }
     } catch (e) {
-        button_clicked = 0;
+        state.button_clicked = 0;
         loading_hide();
         alert1(e + "SuccessCallBack_onload_get_data_from_ufm");
     }
 
 }
 function get_data_from_ufm_FailCallBack(e) {
-    button_clicked = 0;
+    state.button_clicked = 0;
     loading_hide();
     alert1(e + "get_data_from_ufm_FailCallBack");
 }
@@ -622,18 +641,19 @@ function get_list_of_modules(onRendered) {
             if (onRendered && generation === module_navigation_generation && context === module_navigation_context()) onRendered();
         }, function (e) {
             if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
-            loading_hide(); button_clicked = 0;
-            showValuesFailCallBack(e);
+            loading_hide(); state.button_clicked = 0;
+            onfail_home_values(e);
         }, 'SqlitePlugin', 'showValues', q_jsonobj);
 
     } catch (e) {
         //alert1(e + '_get_list_of_modules()');
-        button_clicked = 0;
+        state.button_clicked = 0;
         loading_hide();
     }
 }
 
 function SuccessCallBack_get_modules(e) {
+    var j;
     try {
         var myArray1 = JSON.parse(e);
         var geofance_counter = [];
@@ -642,7 +662,7 @@ function SuccessCallBack_get_modules(e) {
         var id_Array = JSON.parse(storage.getItem('id_Array'));
         var module_count = 0;
         var module_layout = localStorage.getItem('module_layout');
-        button_clicked = 0;                             //refresh button_clicked for issue of loading when click on flow(module-->flow) in ATC [28082020]
+        state.button_clicked = 0;                             //refresh button_clicked for issue of loading when click on flow(module-->flow) in ATC [28082020]
 
         $("#module_list").empty();
         $("#card_module_list").empty();
@@ -682,7 +702,7 @@ function SuccessCallBack_get_modules(e) {
                 var data_array = JSON.parse(myArray1[0].data);
                 var access_type = data_array[0].access_type;
                 if (access_type == '' || access_type == null || access_type == undefined || access_type == "mobile" || access_type == "both") {
-                    button_clicked = 0;
+                    state.button_clicked = 0;
                     //$("#module_list").append('<li><input type="hidden" id="hdn_' + myArray1[0].id + '" value=\'' + myArray1[0].data + '\'></li>');
                     $("#module_list").append("<li><input type='hidden' id='hdn_" + myArray1[0].id + "' value=\"" + encodeURIComponent(myArray1[0].data) + "\"></li>");
 
@@ -959,16 +979,16 @@ function SuccessCallBack_get_modules(e) {
                             if (udf_subtitle == "" || udf_subtitle == null || udf_subtitle == undefined) {
                                 udf_subtitle = udf_name;
 
-                                if (user_language != 'en') {
+                                if (state.user_language != 'en') {
                                     let language = myArray[0].language;
                                     if (language == "" || language == null || language == undefined || language == "null" || language == "Unknown" || language == "udenfined" || language == "[]") { }
                                     else {
-                                        language = itemObj._checkStrObj(language);
+                                        language = (options.itemObj || w.itemObj)._checkStrObj(language);
                                         language = language[0];
 
                                         if (isEmpty(language)) { }
                                         else {
-                                            udf_subtitle = language[user_language];
+                                            udf_subtitle = language[state.user_language];
                                         }
                                     }
                                 }
@@ -1069,11 +1089,11 @@ function compare_time_for_online_count() {
 // module click
 function redirect_on_module_click(flow_name, id, flow_id, type, role_id, flag_direction, tab_index) {
     try {
-        if (button_clicked != 1) {
+        if (state.button_clicked != 1) {
             loading();
-            button_clicked = 1;
+            state.button_clicked = 1;
             setTimeout(function () {
-                button_clicked = 0;
+                state.button_clicked = 0;
             }, 2000);
 
             if (flag_direction == 'redirect_on_chart') { }
@@ -1099,8 +1119,8 @@ function redirect_on_module_click(flow_name, id, flow_id, type, role_id, flag_di
 
             storage.setItem('survey_type', JSON.stringify(''));
 
-            if (form_flag == 14) {
-                var data_count = get_udf_data_for_subflow(id);
+            if (state.form_flag == 14) {
+                var data_count = actions.get_udf_data_for_subflow(id);
             }
             else {
                 var data_count = $("#hdn_" + id + "").val();
@@ -1379,7 +1399,7 @@ function get_checksheetid_for_createtask_FailCallBack(e) {
     alert1(e + 'get_checksheetid_for_createtask_FailCallBack()');
 }
 
-function showValuesFailCallBack(e) {
+function onfail_home_values(e) {
     alert1(e + '_selection_showValuesFailCallBack()');
     loading_hide();
 }
@@ -1438,7 +1458,7 @@ function check_for_new_user_notifications() {
     });
 
     loading();
-    var getdata = new Webservicecall_REST(global_wcf_url + 'NotificationApiCheck', JSON.stringify(param_obj), onsuccess_check_for_new_user_notifications, onfail);
+    var getdata = new Webservicecall_REST(state.global_wcf_url + 'NotificationApiCheck', JSON.stringify(param_obj), onsuccess_check_for_new_user_notifications, actions.onfail_request);
     getdata.callOtherDomain();
 }
 function onsuccess_check_for_new_user_notifications(e) {
@@ -1561,12 +1581,12 @@ function get_user_notifications() {
     var param_obj = [];
     param_obj.push({
         "user_id": user_id,
-        'offset': limit_range - default_range,
-        'fetch': increment_range
+        'offset': state.limit_range - state.default_range,
+        'fetch': state.increment_range
     });
 
     loading();
-    var getdata = new Webservicecall_REST(global_wcf_url + 'Get_NotificationList_For_User', JSON.stringify(param_obj), onsuccess_get_user_notifications, onfail);
+    var getdata = new Webservicecall_REST(state.global_wcf_url + 'Get_NotificationList_For_User', JSON.stringify(param_obj), onsuccess_get_user_notifications, actions.onfail_request);
     getdata.callOtherDomain();
 }
 function onsuccess_get_user_notifications(e) {
@@ -1577,7 +1597,7 @@ function onsuccess_get_user_notifications(e) {
         localStorage.setItem('new_notification', 'false');
         $(".notification-badge").css("opacity", "0");
 
-        var t_offset = limit_range - default_range;
+        var t_offset = state.limit_range - state.default_range;
         if (t_offset == 0) {
             $("#notification_list").empty();
         }
@@ -1702,7 +1722,7 @@ function update_status_in_download_table_selection() {
             q: "3", // check for GPS on/off and return flag (start download) 
             tid: "0"
         });
-        cordova.exec(onsuccess_update_status_in_download_table_selection, onfail, 'SqlitePlugin', 'insertValuse', q_jsonobj);
+        cordova.exec(onsuccess_update_status_in_download_table_selection, actions.onfail_request, 'SqlitePlugin', 'insertValuse', q_jsonobj);
     } catch (e) {
         alert1(e + '_update_status_in_download_table()');
     }
@@ -1725,7 +1745,7 @@ function get_download_counter_selection() {
         data: query,
         p: "1"
     });
-    cordova.exec(onsuccess_get_download_counter_selection, onfail, 'SqlitePlugin', 'showValues', q_jsonobj);
+    cordova.exec(onsuccess_get_download_counter_selection, actions.onfail_request, 'SqlitePlugin', 'showValues', q_jsonobj);
 }
 
 function onsuccess_get_download_counter_selection(e) {
@@ -1857,11 +1877,12 @@ function get_list_of_modules_online() {
 
         var common_global_wcf_url = JSON.parse(storage.getItem('common_global_wcf_url'));
         var getdata = new Webservicecall_REST(common_global_wcf_url + 'WCF_UserDefineFlowMaster_With_MultiRole_Port', JSON.stringify(param_obj), function (e) {
+    var j;
 
             try {
                 if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
                 module_list_request = null;
-                button_clicked = 0;
+                state.button_clicked = 0;
                 var responseText = JSON.parse(e.responseText);
                 var status = responseText[0].status;
                 if (status == 1) {
@@ -1875,7 +1896,7 @@ function get_list_of_modules_online() {
                         var data_array = JSON.parse(myArray1[0].data);
                         var access_type = data_array[0].access_type;
                         if (access_type == '' || access_type == null || access_type == undefined || access_type == "mobile" || access_type == "both") {
-                            button_clicked = 0;
+                            state.button_clicked = 0;
                             $("#module_list").append("<li><input type='hidden' id='hdn_" + myArray1[0].id + "' value=\"" + encodeURIComponent(myArray1[0].data) + "\"></li>");
                             redirect_on_module_click(myArray1[0].flow_name1, myArray1[0].id, myArray1[0].flow_id, myArray1[0].type, myArray1[0].role_id);
                         }
@@ -2188,13 +2209,13 @@ function get_list_of_modules_online() {
 
             }
             catch (e) {
-                loading_hide(); button_clicked = 0;
+                loading_hide(); state.button_clicked = 0;
                 alert1(e + "_get_list_of_modules_online_inner()");
             }
         }, function () {
             if (generation !== module_navigation_generation || context !== module_navigation_context()) return;
             module_list_request = null;
-            button_clicked = 0;
+            state.button_clicked = 0;
             loading_hide();
             enable_back_button();
             alert1('Could not load modules. Please check your connection and try again.');
@@ -2217,7 +2238,7 @@ function get_checksheet_id_for_task_online(flow_id) {
         'flow_id': flow_id
     });
 
-    var getdata = new Webservicecall_REST(common_global_wcf_url + 'WCF_GetChecksheetId_Port', JSON.stringify(param_obj), function (e) {
+    var getdata = new Webservicecall_REST(state.common_global_wcf_url + 'WCF_GetChecksheetId_Port', JSON.stringify(param_obj), function (e) {
         var responseText = JSON.parse(e.responseText);
         var status = responseText[0].status;
         if (status == 1) {
@@ -2239,7 +2260,7 @@ function get_checksheet_id_for_task_online(flow_id) {
             loading_hide();
             alert1(responseText[0].message);
         }
-    }, onfail);
+    }, actions.onfail_request);
     getdata.callOtherDomain();
 }
 
@@ -2276,7 +2297,8 @@ function get_today_attendance_for_notification_old() {
             });
 
             loading();
-            var getdata = new Webservicecall_REST(global_wcf_url + 'Get_Attendance', JSON.stringify(param_obj), function (e) {
+            var getdata = new Webservicecall_REST(state.global_wcf_url + 'Get_Attendance', JSON.stringify(param_obj), function (e) {
+    var i;
                 var res_text = e.responseText;
                 var result = eval('(' + res_text + ')');
                 var message = result[0].message;
@@ -2333,7 +2355,7 @@ function get_today_attendance_for_notification_old() {
                     alert1("Server: " + message)
                 }
                 loading_hide();
-            }, onfail);
+            }, actions.onfail_request);
             getdata.callOtherDomain();
         }
         //}
@@ -2446,7 +2468,7 @@ noti_Attendance_Click = () => {
 
     cordova.exec(function (e) {
         // attendance notification related storage has been successfull
-    }, onfail, 'AttendancePendingPlugin', '', q_jsonobj);
+    }, actions.onfail_request, 'AttendancePendingPlugin', '', q_jsonobj);
 }
 
 //redirect_on_module_click('Attendance' , 17718,4411,'Flow','6667')
@@ -2556,7 +2578,7 @@ noti_Attendance_Click = () => {
 
 function redirect_on_geotracking_click() {
     var q_jsonobj = [];
-    cordova.exec(onsuccess_redirect_on_geotracking_click, onfail, 'GeofenceTrackingPlugin', 'anAction', q_jsonobj);
+    cordova.exec(onsuccess_redirect_on_geotracking_click, actions.onfail_request, 'GeofenceTrackingPlugin', 'anAction', q_jsonobj);
 }
 
 function onsuccess_redirect_on_geotracking_click(e) { }
@@ -2567,7 +2589,7 @@ check_for_glob_notification = () => {
     Param_obj.push({
         companyId: store_company_id
     });
-    var getdata = new Webservicecall_REST(global_wcf_url + 'select_marquee', JSON.stringify(Param_obj), function (e) {
+    var getdata = new Webservicecall_REST(state.global_wcf_url + 'select_marquee', JSON.stringify(Param_obj), function (e) {
         var All_data = e.responseText;
         All_data = JSON.parse(All_data);
         var status = All_data[0].status;
@@ -2712,8 +2734,8 @@ home_tab_click = () => {
     $('#div_trip_list').hide();
     $('#div_page_content').show();
     $('#div_vertical_dashboard').hide();
-    if (typeof TripListSheet !== 'undefined' && TripListSheet.close) TripListSheet.close();
-    pageload_main();
+    if (typeof (options.tripList || w.TripListSheet) !== 'undefined' && (options.tripList || w.TripListSheet).close) (options.tripList || w.TripListSheet).close();
+    actions.pageload_main();
 }
 
 // stop trip manualy via module listing (task was created offline so get server task id)
@@ -2761,11 +2783,11 @@ stop_trip_manualy_from_module_listing = () => {
 
         var param_obj = [];
         param_obj.push({
-            'username': username,
+            'username': state.username,
             'height': 0,
             'tower': 0,
             'check_type': check_type,
-            'u_c': uniqcode,
+            'u_c': state.uniqcode,
             'siteid': siteid,
             'servertaskid': server_task_id,
             'status': Punchout_Status,
@@ -2785,7 +2807,7 @@ stop_trip_manualy_from_module_listing = () => {
         //alert1(JSON.stringify(param_obj));
         loading();
 
-        var getdata = new Webservicecall_REST(global_wcf_url + 'WCFTechnicianDataUpload', JSON.stringify(param_obj), function (e) {
+        var getdata = new Webservicecall_REST(state.global_wcf_url + 'WCFTechnicianDataUpload', JSON.stringify(param_obj), function (e) {
             var res_text = e.responseText;
             var result = eval('(' + res_text + ')');
             var message = result[0].message;
@@ -2822,7 +2844,7 @@ stop_trip_manualy_from_module_listing = () => {
                 alert1(message);
                 loading_hide();
             }
-        }, onfail);
+        }, actions.onfail_request);
         getdata.callOtherDomain();
       } catch (err) {
         loading_hide();
@@ -2925,3 +2947,203 @@ stop_trip_manualy_from_module_listing = () => {
 
 //    redirect_on_pm_site_click_online(selected_site, selected_site_name, selected_server_task_id, selected_start_status, selected_moduleid, selected_modulename, t_task_update, t_site_lat, t_site_long, t_survey_date, t_millisecond);
 //}
+
+function exit_app() {
+            vibrate_device();
+            var user_choice = confirm("Are you sure, you want to exit?");
+            if (user_choice == true) {
+                localStorage.setItem('view_biometric', 'false');
+
+                var q_jsonobj = [];
+                q_jsonobj.push({
+                    data: "",
+                    p: "23"
+                });
+                cordova.exec(onsuccess_exit_app, onfail_exit_app, 'SqlitePlugin', 'exitapp', q_jsonobj);
+            }
+        }
+
+function onsuccess_exit_app() { }
+
+function onfail_exit_app(e) { }
+
+function crossToLMS(url) {
+            try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { }
+            try { AppLoader.show(); } catch (e) { }
+            setTimeout(function () { changeurl(url); }, 200);
+            return false;
+        }
+
+function refreshHomeTripTab() {
+                try {
+                    if (!(options.data || w.HomeDashboardData)) return;
+                    var tab = document.getElementById('btn_start_trip');
+                    var lbl = document.getElementById('lbl_start_trip');
+                    if (!tab || !lbl) return;
+                    (options.data || w.HomeDashboardData).getTripStatus(function (result) {
+                        var dot = document.getElementById('trip_recording_dot');
+                        // No Start Trip for a role without trip (attendance
+                        // punch-out) setup, unless a trip is already running.
+                        var setUp = typeof trip_punchout_status !== 'function' || trip_punchout_status() !== null;
+                        tab.style.display = (setUp || result.active) ? '' : 'none';
+                        tab.classList.toggle('trip-live', !!result.active);
+                        if (result.active) {
+                            tab.classList.add('active');
+                            lbl.textContent = 'On Trip';
+                            if (dot) dot.style.display = 'block';
+                        } else {
+                            tab.classList.remove('active');
+                            lbl.textContent = 'Start Trip';
+                            if (dot) dot.style.display = 'none';
+                        }
+                    });
+                } catch (e) { }
+            }
+
+function homeTabbarTripClick() {
+                try {
+                    var tab = document.getElementById('btn_start_trip');
+                    var isActive = tab && tab.classList.contains('active');
+                    if (isActive) {
+                        if (typeof myApp !== 'undefined' && myApp.modal) {
+                            var endTripModal = myApp.modal({
+                                title: 'End Work Trip?',
+                                text: 'Your progress and completed tasks will be saved.',
+                                buttons: [
+                                    { text: 'Cancel' },
+                                    {
+                                        text: 'Finish Trip',
+                                        bold: true,
+                                        onClick: function () {
+                                            if (typeof actions.stop_trip_manualy_from_module_listing === 'function') {
+                                                actions.stop_trip_manualy_from_module_listing();
+                                            }
+                                        }
+                                    }
+                                ]
+                            });
+                            var $m = endTripModal ? $(endTripModal) : $('.modal.modal-in').last();
+                            $m.addClass('end-trip-modal');
+                        } else if (typeof actions.stop_trip_manualy_from_module_listing === 'function') {
+                            actions.stop_trip_manualy_from_module_listing();
+                        }
+                    } else {
+                        if (typeof actions.noti_Attendance_Click === 'function') {
+                            actions.noti_Attendance_Click();
+                        }
+                    }
+                    setTimeout(refreshHomeTripTab, 800);
+                } catch (e) { }
+                return false;
+            }
+
+function setHomeGreeting() {
+function salutation() {
+                    var h = new Date().getHours();
+                    if (h < 12) return 'Good morning';
+                    if (h < 17) return 'Good afternoon';
+                    return 'Good evening';
+                }
+function today() {
+                    var d = new Date();
+                    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+                }
+                    try {
+                        var nameEl = document.getElementById('home_greet_name');
+                        var subEl = document.getElementById('home_greet_sub');
+                        var uname = state.username ? String(state.username) : '';
+                        if (nameEl) nameEl.textContent = salutation() + (uname ? ', ' + uname : '');
+                        if (subEl) subEl.textContent = today();
+                    } catch (e) { }
+                }
+
+        var api = {
+            exit_app: exit_app,
+            onsuccess_exit_app: onsuccess_exit_app,
+            onfail_exit_app: onfail_exit_app,
+            crossToLMS: crossToLMS,
+            refreshHomeTripTab: refreshHomeTripTab,
+            homeTabbarTripClick: homeTabbarTripClick,
+            setHomeGreeting: setHomeGreeting,
+            module_navigation_context: module_navigation_context,
+            get_counter_for_online_flow: get_counter_for_online_flow,
+            onsuccess_get_counter_for_online_flow: onsuccess_get_counter_for_online_flow,
+            onfail_get_counter_for_online_flow: onfail_get_counter_for_online_flow,
+            check_for_notification: check_for_notification,
+            onsuccess_check_for_notification: onsuccess_check_for_notification,
+            onfail_check_for_notification: onfail_check_for_notification,
+            get_udf_pid: get_udf_pid,
+            get_data_from_ufm: get_data_from_ufm,
+            SuccessCallBack_onload_get_data_from_ufm: SuccessCallBack_onload_get_data_from_ufm,
+            get_data_from_ufm_FailCallBack: get_data_from_ufm_FailCallBack,
+            onload_get_counter_of_module_flow_new: onload_get_counter_of_module_flow_new,
+            SuccessCallBack_onload_get_counter_of_module_flow: SuccessCallBack_onload_get_counter_of_module_flow,
+            set_count_value_to_module: set_count_value_to_module,
+            get_list_of_modules: get_list_of_modules,
+            SuccessCallBack_get_modules: SuccessCallBack_get_modules,
+            compare_time_for_online_count: compare_time_for_online_count,
+            redirect_on_module_click: redirect_on_module_click,
+            redirect_on_plugin_click: redirect_on_plugin_click,
+            onsuccess_redirect_on_plugin_click: onsuccess_redirect_on_plugin_click,
+            onfail_redirect_on_plugin_click: onfail_redirect_on_plugin_click,
+            redirect_on_chart_click: redirect_on_chart_click,
+            redirect_on_custom_report_click: redirect_on_custom_report_click,
+            redirect_on_user_module_click: redirect_on_user_module_click,
+            add_user_module_to_list: add_user_module_to_list,
+            get_checksheet_id_for_task: get_checksheet_id_for_task,
+            SuccessCallBack_get_checksheetid_for_createtask: SuccessCallBack_get_checksheetid_for_createtask,
+            get_checksheetid_for_createtask_FailCallBack: get_checksheetid_for_createtask_FailCallBack,
+            onfail_home_values: onfail_home_values,
+            get_flow_counter_FailCallBack: get_flow_counter_FailCallBack,
+            compare_time_for_user_notification: compare_time_for_user_notification,
+            check_for_new_user_notifications: check_for_new_user_notifications,
+            onsuccess_check_for_new_user_notifications: onsuccess_check_for_new_user_notifications,
+            get_user_notifications: get_user_notifications,
+            onsuccess_get_user_notifications: onsuccess_get_user_notifications,
+            close_notification_popup: close_notification_popup,
+            numFormatter: numFormatter,
+            check_table_availabililty: check_table_availabililty,
+            update_status_in_download_table_selection: update_status_in_download_table_selection,
+            onsuccess_update_status_in_download_table_selection: onsuccess_update_status_in_download_table_selection,
+            get_download_counter_selection: get_download_counter_selection,
+            onsuccess_get_download_counter_selection: onsuccess_get_download_counter_selection,
+            get_list_of_modules_online: get_list_of_modules_online,
+            get_checksheet_id_for_task_online: get_checksheet_id_for_task_online,
+            get_today_attendance_for_notification_old: get_today_attendance_for_notification_old,
+            get_today_attendance_for_notification: get_today_attendance_for_notification,
+            redirect_on_geotracking_click: redirect_on_geotracking_click,
+            onsuccess_redirect_on_geotracking_click: onsuccess_redirect_on_geotracking_click,
+            check_for_auto_close_trip: check_for_auto_close_trip,
+            trip_punchout_status: trip_punchout_status,
+            noti_Attendance_Click: noti_Attendance_Click,
+            check_for_glob_notification: check_for_glob_notification,
+            got_it_notification_hide: got_it_notification_hide,
+            got_it_notification: got_it_notification,
+            home_tab_click: home_tab_click,
+            stop_trip_manualy_from_module_listing: stop_trip_manualy_from_module_listing
+        };
+        Object.defineProperties(api, {
+            value_counter: { enumerable: true, get: function () { return value_counter; }, set: function (value) { value_counter = value; } },
+            module_navigation_generation: { enumerable: true, get: function () { return module_navigation_generation; }, set: function (value) { module_navigation_generation = value; } },
+            module_list_request: { enumerable: true, get: function () { return module_list_request; }, set: function (value) { module_list_request = value; } },
+            module_navigation_uses_online: { enumerable: true, get: function () { return module_navigation_uses_online; }, set: function (value) { module_navigation_uses_online = value; } },
+            featured_options_display: { enumerable: true, get: function () { return featured_options_display; }, set: function (value) { featured_options_display = value; } },
+            download_start_requested: { enumerable: true, get: function () { return download_start_requested; }, set: function (value) { download_start_requested = value; } }
+        });
+        if (options.scope) {
+            Object.keys(api).forEach(function (name) { if (typeof api[name] === 'function') api[name] = options.scope.guard(api[name]); });
+            options.scope.defer(function () {
+                module_navigation_generation++;
+                if (module_list_request) { module_list_request.cancel(); module_list_request = null; }
+                value_counter = [];
+            });
+        }
+        return api;
+    }
+    w.AppHomeController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) {
+        var legacy = create();
+        Object.keys(legacy).forEach(function (name) { Object.defineProperty(w, name, Object.getOwnPropertyDescriptor(legacy, name)); });
+    }
+})(window);

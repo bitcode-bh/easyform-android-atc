@@ -121,7 +121,7 @@ function checknsubmit_on_click(go_to_chk_no, updatestep) {
 }
 
 // Submit 3 - Update Task Status and Submit
-var last_submit_button_Array = [];
+
 function updatetasknsubmit_on_click(go_to_chk_no, t_shortest_path, t_status, t_dependency, t_trip, stillviolation_event, btn_check_type) {
     try {
 

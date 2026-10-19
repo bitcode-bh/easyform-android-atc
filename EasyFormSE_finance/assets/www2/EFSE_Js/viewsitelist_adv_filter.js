@@ -563,7 +563,7 @@ function get_type20_ddl_list_for_filter(value_new_ary, index, search_val) {
             //});
 
             loading_hide();
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
 
     }
@@ -1216,7 +1216,7 @@ function get_saved_advanced_filter_data() {
                     alert1(message);
                     loading_hide();
                 }
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
         else {
@@ -1310,7 +1310,7 @@ function save_advanced_filtered_data(t_flag) {
                         loading_hide();
                     }
 
-                }, onfail);
+                }, onfail_request);
                 getdata.callOtherDomain();
             }
         }
@@ -1339,7 +1339,7 @@ function save_advanced_filtered_data(t_flag) {
                 }
                 loading_hide();
 
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     }
@@ -1596,7 +1596,7 @@ function delete_selected_filter() {
                     loading_hide();
                 }
 
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     }

@@ -18,8 +18,8 @@ const context = vm.createContext({
 });
 vm.runInContext(fn(common, 'show_request_failure'), context);
 vm.runInContext(fn(common, 'onfail_logout_on_click_online'), context);
-vm.runInContext(fn(login, 'onfail'), context);
-for (const callback of [context.onfail, context.onfail_logout_on_click_online]) {
+vm.runInContext(fn(login, 'onfail_login'), context);
+for (const callback of [context.onfail_login, context.onfail_logout_on_click_online]) {
     for (const [error, title, message] of [
         [{type: 'network', reason: 'offline'}, 'Network Error', 'No internet'],
         [{type: 'network', reason: 'dns'}, 'Network Error', 'could not find'],

@@ -8,6 +8,7 @@
            // alert("value_js_set =" + value);
 
             var xmlString = $.jStorage.set(name, JSON.parse(value));
+            if (name === 'list_json' && window.AppShell) AppShell.flowChanged(value);
            // var xmlString = $.jStorage.set(name,value);
            // alert("naejs = " + xmlString);
             var filePath = name;

@@ -1,3 +1,14 @@
+/* Page-owned completed task list. Legacy exports remain compatible. */
+(function (w) {
+    if (w.AppCompletedTaskController) return;
+    function create(options) {
+        options = options || {};
+        var state = options.state || w;
+        var $ = options.$ || function () { return w.$.apply(w, arguments); };
+        var storage = options.services ? options.services.storage : w.storage;
+        var cordova = options.services ? options.services.cordova : { exec: function () { return w.cordova.exec.apply(w.cordova, arguments); } };
+        function Webservicecall_REST() { return Reflect.construct(options.services ? options.services.request : w.Webservicecall_REST, Array.prototype.slice.call(arguments)); }
+        function enable_back_button() { if (options.enableBack) options.enableBack(); else w.enable_back_button(); }
 ﻿
 // Get list of completed sites from server
 function get_list_of_completed_sites() {
@@ -9,14 +20,14 @@ function get_list_of_completed_sites() {
         var selected_module_id = JSON.parse(storage.getItem('wayflow'));
         var getdataarray = [];
         getdataarray.push({
-            'user_name': username,
-            'u_c': uniqcode,
+            'user_name': state.username,
+            'u_c': state.uniqcode,
             'module_id': selected_module_id, // this is flow id
             'input': "", // "" for all sites
-            'limit': limit_range
+            'limit': state.limit_range
         });
 
-        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Get_Completed_Task_By_Module', JSON.stringify(getdataarray), onsuccess_get_list_of_completed_sites, onfail_get_list_of_completed_sites);
+        var getdata = new Webservicecall_REST(state.global_wcf_url + 'WCF_Get_Completed_Task_By_Module', JSON.stringify(getdataarray), onsuccess_get_list_of_completed_sites, onfail_get_list_of_completed_sites);
         getdata.callOtherDomain();
     } catch (e) {
         alert1(e + '_get_list_of_completed_sites()');
@@ -26,8 +37,8 @@ function get_list_of_completed_sites() {
 
 // serarch site list
 function search_completed_site_list() {
-    limit_range = default_range; // set default range limit
-    query_type = 2; // search site listing
+    state.limit_range = state.default_range; // set default range limit
+    state.query_type = 2; // search site listing
     get_list_of_completed_sites_by_search();
 }
 
@@ -46,14 +57,14 @@ function get_list_of_completed_sites_by_search() {
                 loading();
                 var getdataarray = [];
                 getdataarray.push({
-                    'user_name': username,
-                    'u_c': uniqcode,
+                    'user_name': state.username,
+                    'u_c': state.uniqcode,
                     'module_id': selected_module_id, // this is flow id
                     'input': search_keyword,
-                    'limit': limit_range
+                    'limit': state.limit_range
                 });
 
-                var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Get_Completed_Task_By_Module', JSON.stringify(getdataarray), onsuccess_get_list_of_completed_sites, onfail_get_list_of_completed_sites);
+                var getdata = new Webservicecall_REST(state.global_wcf_url + 'WCF_Get_Completed_Task_By_Module', JSON.stringify(getdataarray), onsuccess_get_list_of_completed_sites, onfail_get_list_of_completed_sites);
                 getdata.callOtherDomain();
             }
         } else {
@@ -87,7 +98,7 @@ function onsuccess_get_list_of_completed_sites(e) {
             $("#tabCount_Comp").html(myArray.length);
             $("#tabCount_Comp").addClass('numberCircle');
             for (var i = 0; i < myArray.length; i++) {
-                var param = "Generate_PDFFile('" + myArray[i].task_id + "')";
+                var param = (options.action ? options.action("Generate_PDFFile", [String(myArray[i].task_id)]) : "Generate_PDFFile('" + myArray[i].task_id + "')");
                 var list_item = '<li onclick ="' + param + '"><a href="#" class="item-link item-content">';
                 list_item += '<div class="item-inner item-no-pad"><div class="item-title">';
                 list_item += '<label style="font-size:11pt; font-weight:bold">' + myArray[i].customeruniq + '</label><br />';
@@ -99,7 +110,7 @@ function onsuccess_get_list_of_completed_sites(e) {
             }
 
             var li_length = $("#site_list > li").length;
-            if (li_length >= limit_range) {
+            if (li_length >= state.limit_range) {
                 $(".op-show-btns").show();
                 $("#btn_SeeAll").show();
                 $("#btn_SeeMore").show();
@@ -129,8 +140,8 @@ function onsuccess_get_list_of_completed_sites(e) {
 
 // download latest site from server on refresh button click through select query
 function refresh_completed_site_list() {
-    limit_range = default_range; // set default range limit
-    query_type = 1; // regular site listing
+    state.limit_range = state.default_range; // set default range limit
+    state.query_type = 1; // regular site listing
     get_list_of_completed_sites();
 }
 
@@ -147,6 +158,7 @@ function onfail_get_list_of_completed_sites(e) {
 // ///////////
 
 function Generate_PDFFile(server_task_id) {
+    var c, p;
     try {
         var module_id = JSON.parse(storage.getItem('wayflow'));
         var username = JSON.parse(storage.getItem('username'));
@@ -207,7 +219,7 @@ function Generate_PDFFile(server_task_id) {
                 'pdf_is_main': pdf_is_main
             });
 
-            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_PDF_Creation_WSapi', JSON.stringify(Param_obj), onsuccess_Generate_PDFFile, onfail_Generate_PDFFile);
+            var getdata = new Webservicecall_REST(state.global_wcf_url + 'WCF_PDF_Creation_WSapi', JSON.stringify(Param_obj), onsuccess_Generate_PDFFile, onfail_Generate_PDFFile);
             getdata.callOtherDomain();
         }
     } catch (e) {
@@ -237,7 +249,7 @@ function onsuccess_Generate_PDFFile(e) {
             path = path + '&ud=' + user_id + '&uc=' + uniqcode;
 
             loading_hide();
-            Download_PDFFile(path);
+            download_server_pdf(path);
         } else {
             alert1('Error In PDF Createtion Report.');
             loading_hide();
@@ -251,24 +263,48 @@ function onfail_Generate_PDFFile(e) {
     loading_hide();
 }
 
-function Download_PDFFile(t_path) {
+function download_server_pdf(t_path) {
     try {
         var q_jsonobj = [];
         q_jsonobj.push({
             path: t_path,
             name: ""
         });
-        cordova.exec(onsuccess_Download_PDFFile, onfail_Download_PDFFile, 'pdf_download', 'anAction', q_jsonobj);
+        cordova.exec(onsuccess_download_server_pdf, onfail_download_server_pdf, 'pdf_download', 'anAction', q_jsonobj);
     } catch (e) {
         alert1(e + '_Download_PDFFile()');
     }
 }
 
-function onsuccess_Download_PDFFile(e) {
+function onsuccess_download_server_pdf(e) {
     // user has pressed back
 }
 
-function onfail_Download_PDFFile(e) {
+function onfail_download_server_pdf(e) {
     alert1("Network Error !");
     loading_hide();
 }
+
+        var api = {
+            get_list_of_completed_sites: get_list_of_completed_sites,
+            search_completed_site_list: search_completed_site_list,
+            get_list_of_completed_sites_by_search: get_list_of_completed_sites_by_search,
+            onsuccess_get_list_of_completed_sites: onsuccess_get_list_of_completed_sites,
+            refresh_completed_site_list: refresh_completed_site_list,
+            onfail_get_list_of_completed_sites: onfail_get_list_of_completed_sites,
+            Generate_PDFFile: Generate_PDFFile,
+            onsuccess_Generate_PDFFile: onsuccess_Generate_PDFFile,
+            onfail_Generate_PDFFile: onfail_Generate_PDFFile,
+            download_server_pdf: download_server_pdf,
+            onsuccess_download_server_pdf: onsuccess_download_server_pdf,
+            onfail_download_server_pdf: onfail_download_server_pdf
+        };
+        if (options.scope) Object.keys(api).forEach(function (name) { api[name] = options.scope.guard(api[name]); });
+        return api;
+    }
+    w.AppCompletedTaskController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute("data-app-shell")) {
+        var legacy = create();
+        Object.keys(legacy).forEach(function (name) { Object.defineProperty(w, name, Object.getOwnPropertyDescriptor(legacy, name)); });
+    }
+})(window);

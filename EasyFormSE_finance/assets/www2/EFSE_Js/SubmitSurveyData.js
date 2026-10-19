@@ -292,6 +292,8 @@ var comment_state_array = [];
 var validation_breach_count = 0;
 var concat_statement_found = 0;
 function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, target_div, target_index) {
+    var draft_submit_args = arguments;
+    if (typeof AppFormDrafts !== 'undefined' && AppFormDrafts.beforeSubmit(arguments, function () { validate_and_submit_surveydata_main.apply(null, draft_submit_args); })) return;
     try {
         auto_click_calc_type = "normal_submit";
 
@@ -4353,7 +4355,7 @@ function validate_and_submit_surveydata_main(go_to_chk_no, form_flag, data, targ
                                 }
                             }
 
-                        }, onfail, 'AttendanceTaskCreatePlugin', '', q_jsonobj);
+                        }, onfail_request, 'AttendanceTaskCreatePlugin', '', q_jsonobj);
                     }
                     else {
                         // normal task create
@@ -4914,6 +4916,7 @@ function update_old_entry() {
 
 // save global variables for current task (site)
 function save_global_variables() {
+    if (typeof AppFormDrafts !== 'undefined') AppFormDrafts.acknowledge();
     try {
 
         if (curr_btn_mode == "autosave") {
@@ -5255,7 +5258,7 @@ function read_blank_checksheet() {
             data: query,
             p: "1" // 1 for selecting values from table in json
         });
-        cordova.exec(success_check_survey_entry_next_read, showValuesFailCallBack, 'SqlitePlugin', 'showValues', q_jsonobj);
+        cordova.exec(success_check_survey_entry_next_read, onfail_survey_values, 'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
         alert1(e + '_read_blank_checksheet()');
         loading_hide();
@@ -5382,7 +5385,7 @@ function onfail_get_checksheet_from_server(e) {
     alert1("Network Error, Please Try Again !");
 }
 
-function showValuesFailCallBack(e) {
+function onfail_survey_values(e) {
     // alert1(e + '_SubmitSurveyData_showValuesFailCallBack()');
     var step = step_Array[step_Array.length - 1];
     var selected_check_type = JSON.parse(storage.getItem('check_type'));

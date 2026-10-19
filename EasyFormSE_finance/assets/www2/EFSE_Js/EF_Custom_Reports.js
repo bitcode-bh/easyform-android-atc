@@ -42,7 +42,7 @@ function get_OSM_ID(t_val) {
         "CompanyId": company_id
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_OSM_ID, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_OSM_ID, onfail_custom_report);
     getdata.callOtherDomain();
 }
 
@@ -100,7 +100,7 @@ function get_FR_ID(t_val) {
         "CompanyId": company_id
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_FR_ID, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_FR_ID, onfail_custom_report);
     getdata.callOtherDomain();
 }
 
@@ -191,7 +191,7 @@ function get_OSM_data(selected_OSM_ID) {
         "CompanyId": company_id
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_OSM_data, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_OSM_data, onfail_custom_report);
     getdata.callOtherDomain();
 
 }
@@ -240,7 +240,7 @@ function get_FR_data(selected_FR_ID) {
         "CompanyId": company_id
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_OSM_data, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_OSM_data, onfail_custom_report);
     getdata.callOtherDomain();
 
 }
@@ -295,7 +295,7 @@ function get_sub_data(t_OSM_ID, t_MATCODE, t_CIRCLE) {
         "CompanyId": company_id
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_sub_data, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_sub_data, onfail_custom_report);
     getdata.callOtherDomain();
 
 }
@@ -344,7 +344,7 @@ function get_task_form_data(t_task_id) {
         "CompanyId": company_id
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_task_form_data, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'rowquerydatafetch', JSON.stringify(Param_obj), onsuccess_get_task_form_data, onfail_custom_report);
     getdata.callOtherDomain();
 
 }
@@ -472,7 +472,7 @@ function update_log(t_Json_data) {
         });
 
         var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_InsertQuestionMaster_Log_EF_1_0_0_0', JSON.stringify(param_obj),
-                    onsuccess_update_log, onfail);
+                    onsuccess_update_log, onfail_custom_report);
         getdata.callOtherDomain();
     } catch (e) {
         alert1(e + '_update_log()');
@@ -723,7 +723,7 @@ function createtable(json, tbl_id) {
     });
 }
 
-function onfail(e) {
+function onfail_custom_report(e) {
     alert1('No data found.');
 }
 

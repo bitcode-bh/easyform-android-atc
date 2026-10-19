@@ -24,7 +24,7 @@ function get_sub_tasks(t_server_task_id) {
         var Param_obj = [];
         Param_obj.push({ 'key': 'isdelete', 'value': 0 }, { 'key': 'parenttaskid', 'value': view_full_task_id }, { 'key': 'flow_id', 'value': flow_id });
 
-        var getdata = new Webservicecall_REST(global_wcf_url + 'Task/GetTaskBasicDataWithJson', JSON.stringify(Param_obj), onsuccess_get_sub_tasks, onfail);
+        var getdata = new Webservicecall_REST(global_wcf_url + 'Task/GetTaskBasicDataWithJson', JSON.stringify(Param_obj), onsuccess_get_sub_tasks, onfail_task_comment);
         getdata.callOtherDomain();
     }
 }
@@ -96,7 +96,7 @@ function get_comment() {
         "que_id": 0
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Get_Data_From_Mobile_Notification_Master', JSON.stringify(param_obj), onsuccess_get_comment, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Get_Data_From_Mobile_Notification_Master', JSON.stringify(param_obj), onsuccess_get_comment, onfail_task_comment);
     getdata.callOtherDomain();
 }
 function onsuccess_get_comment(e) {
@@ -227,7 +227,7 @@ function get_task_history() {
         "task_id": view_full_task_id
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'Wcf_Get_task_history', JSON.stringify(param_obj), onsuccess_get_task_history, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'Wcf_Get_task_history', JSON.stringify(param_obj), onsuccess_get_task_history, onfail_task_comment);
     getdata.callOtherDomain();
 }
 function onsuccess_get_task_history(e) {
@@ -679,7 +679,7 @@ function send_new_mail() {
         if (to_email_str == "") {
             alert1("Add at least one recipient mail ID...");
         }
-        else if (IsEmail(to_email_str) == false) {
+        else if (isTaskCommentEmail(to_email_str) == false) {
             alert1("Please enter valid Email Id !");
         }
         else if (cc_email_str != "" && validateEmails(cc_email_str) == false) {
@@ -714,7 +714,7 @@ function send_new_mail() {
             //alert1('param_obj: ' + JSON.stringify(param_obj));
 
             loading();
-            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Mobile_Notification_Master', JSON.stringify(param_obj), onsuccess_send_new_mail, onfail);
+            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Mobile_Notification_Master', JSON.stringify(param_obj), onsuccess_send_new_mail, onfail_task_comment);
             getdata.callOtherDomain();
         }
     }
@@ -751,7 +751,7 @@ function onsuccess_send_new_mail(e) {
     }
 }
 
-function IsEmail(email) {
+function isTaskCommentEmail(email) {
     var regex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
     if (!regex.test(email)) {
         return false;
@@ -765,7 +765,7 @@ function validateEmails(string) {
         var result = string.replace(/\s/g, "").split(/,|;/);
         var errors = [];
         for (var i = 0; i < result.length; i++) {
-            if (!IsEmail(result[i])) {
+            if (!isTaskCommentEmail(result[i])) {
                 errors[i] = result[i] + ' is not valid.';
             }
         }
@@ -822,7 +822,7 @@ function send_comment() {
     });
 
     loading();
-    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Mobile_Notification_Master', JSON.stringify(param_obj), onsuccess_send_comment, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Mobile_Notification_Master', JSON.stringify(param_obj), onsuccess_send_comment, onfail_task_comment);
     getdata.callOtherDomain();
 }
 function onsuccess_send_comment(e) {
@@ -931,7 +931,7 @@ function getPosition(string, subString, index) {
     return string.split(subString, index).join(subString).length;
 }
 
-function onfail(e) {
+function onfail_task_comment(e) {
     alert1(e + '_onfail()');
 }
 
@@ -1130,7 +1130,7 @@ function add_login_user_to_task() {
             alert1(message, "danger");
         }
         loading_hide();
-    }, onfail);
+    }, onfail_task_comment);
     getdata.callOtherDomain();
 }
 
@@ -1404,7 +1404,7 @@ function get_checksheet_list() {
                 alert1(e);
                 loading_hide();
             }
-        }, onfail);
+        }, onfail_task_comment);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -1805,77 +1805,16 @@ var glob_statusId_ary = [];
 var glob_statusName_ary = [];
 var glob_statusColor_ary = [];
 var glob_textColor_ary = [];
+var legacy_task_status_reader;
 get_statusName_from_numericStatus = (page_name) => {
-    try {
-        var company_id = JSON.parse(storage.getItem('company_id'));
-        company_id = company_id.replace(/"/g, "");
-        var flow_id = JSON.parse(storage.getItem('wayflow'));
-
-        var Company_data = [];
-        Company_data.push({
-            "Company_id": company_id,
-            "Flow_id": flow_id,
-            "Flag": "get_data"
-        });
-
-        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Get_ddl_Data', JSON.stringify(Company_data), function (e) {
-            var response = JSON.parse(e.responseText);
-            var status = response[0].status;
-            var message = response[0].message;
-            if (status == 1) {
-                var Data = response[0]["data"];
-                Data = JSON.parse(Data);
-                var FSM_Data = Data[0]["FSM_Data"];
-
-                var status_id_ary = [];
-                var status_name_ary = [];
-                var status_color_ary = [];
-                var status_textColor_ary = [];
-                for (i = 0; i < FSM_Data.length; i++) {
-                    var Status_Name = FSM_Data[i].Status_Name;
-                    var Status = FSM_Data[i].Status;
-                    var status_color = FSM_Data[i].color;
-                    var status_textColor = FSM_Data[i].text_color;
-                    if (status_color == "" || status_color == null || status_color == undefined) {
-                        status_color = "gray";
-                    }
-
-                    status_id_ary[Status_Name] = Status;
-                    status_name_ary[Status] = Status_Name;
-                    status_color_ary[Status_Name] = status_color;
-                    status_textColor_ary[Status_Name] = status_textColor;
-                }
-
-                glob_statusId_ary = status_id_ary;
-                glob_statusName_ary = status_name_ary;
-                glob_statusColor_ary = status_color_ary;
-                glob_textColor_ary = status_textColor_ary;
-            }
-            else {
-                alert1(message);
-            }
-
-            if (page_name == "select_survey") {
-                create_tabs_by_status();
-            }
-
-            loading_hide();
-
-        }, function (e) {
-            // onfail
-
-            if (page_name == "select_survey") {
-                create_tabs_by_status();
-            }
-
-            loading_hide();
-        });
-        getdata.callOtherDomain();
+    if (!legacy_task_status_reader) {
+        legacy_task_status_reader = AppTaskStatus.create({ storage: storage, request: Webservicecall_REST }, window,
+            function (page) {
+                try { if (page == "select_survey") create_tabs_by_status(); }
+                finally { loading_hide(); }
+            }, alert1);
     }
-    catch (e) {
-        loading_hide();
-        alert1(e + '_get_statusName_from_numericStatus');
-    }
+    return legacy_task_status_reader.load(page_name);
 }
 
 function send_comment_for_status_change(s_task_id, s_old_status, s_new_status) {
@@ -1921,7 +1860,7 @@ function send_comment_for_status_change(s_task_id, s_old_status, s_new_status) {
             else {
                 mk_notify(message, "danger");
             }
-        }, onfail);
+        }, onfail_task_comment);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -2101,7 +2040,7 @@ get_task_wise_user_for_jitsi_call = (another_user_name, t_ser_task_id, t_module_
                 loading_hide();
                 alert(Data_Json[0].message);
             }
-        }, onfail);
+        }, onfail_task_comment);
         getdata.callOtherDomain();
     }
     catch (e) {

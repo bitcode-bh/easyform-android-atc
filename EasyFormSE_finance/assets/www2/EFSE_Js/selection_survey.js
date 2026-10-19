@@ -1,5 +1,22 @@
+/* Page-owned task tabs, search, pagination and creation. Legacy exports remain compatible. */
+(function (w) {
+    if (w.AppTaskNavigationController) return;
+    function create(options) {
+        options = options || {};
+        var state = options.state || w, actions = options.actions || w;
+        var $ = options.$ || function () { return w.$.apply(w, arguments); };
+        var document = options.document || w.document;
+        var storage = options.services ? options.services.storage : w.storage;
+        var cordova = options.services ? options.services.cordova : { exec: function () { return w.cordova.exec.apply(w.cordova, arguments); } };
+        var myApp = options.services ? options.services.app : { popup: function () { return w.myApp.popup.apply(w.myApp, arguments); }, closeModal: function () { return w.myApp.closeModal.apply(w.myApp, arguments); } };
+        function Webservicecall_REST() { return Reflect.construct(options.services ? options.services.request : w.Webservicecall_REST, Array.prototype.slice.call(arguments)); }
+        var setTimeout = options.scope ? function (fn, ms) { return options.scope.timeout(fn, ms); } : w.setTimeout.bind(w);
+        var clearTimeout = options.scope && options.scope.clearTimeout ? options.scope.clearTimeout : w.clearTimeout.bind(w);
+        function savedLists() { return options.scope ? options.savedLists : w.AppPhase1Lists; }
+        function disable_back_button() { if (options.disableBack) options.disableBack(); else w.disable_back_button(); }
 ﻿
 function create_tabs_by_status() {
+    var i;
     try {
         $('#div_tab_bar').empty();
         storage.setItem('checksheet_type_filter', JSON.stringify('1'));
@@ -19,11 +36,11 @@ function create_tabs_by_status() {
         var list_data = JSON.parse(data_json);
         var tab_name = list_data[0].tab_name;
         if (tab_name == '' || tab_name == null || tab_name == undefined) {
-            var param = "select_survey_type_tab('1','0')";
+            var param = (options.action ? options.action("select_survey_type_tab", ["1", "0"]) : "select_survey_type_tab('1','0')");
             tab_str += '<a href="#tab1" id="f7_survey_td_0" class="tab-link" onclick=' + param + ' style="text-decoration: none; display: inline-table; width:50%; text-align:center; padding-top: 14px">PENDING<div id="tabCount_0" class="numberCircle">0</div></a>';
-            var param = "select_survey_type_tab('2','1')";
+            var param = (options.action ? options.action("select_survey_type_tab", ["2", "1"]) : "select_survey_type_tab('2','1')");
             tab_str += '<a href="#tab2" id="f7_survey_td_1" class="tab-link" onclick=' + param + ' style="text-decoration: none; display: inline-table; width:50%; text-align:center; padding-top: 14px">COMPLETED<div id="tabCount_Comp" class="numberCircle">0</div></a>';
-            var param = "select_survey_type_tab('3','2')";
+            var param = (options.action ? options.action("select_survey_type_tab", ["3", "2"]) : "select_survey_type_tab('3','2')");
             tab_str += '<a href="#tab3" id="f7_survey_td_2" class="tab-link tab-upload" onclick=' + param + ' style="text-decoration: none; display: none; width:50%; text-align:center; padding-top: 14px">UPLOAD<div id="tabCount_Up" class="numberCircle">0</div></a>';
             tab_str += '<span class="tab-link-highlight" style="display:none !important; width: 50% !important; transform: translate3d(0%, 0px, 0px);"></span>';
             $('#div_tab_bar').append(tab_str);
@@ -57,7 +74,7 @@ function create_tabs_by_status() {
                 }
                 else {
                     var ios_device = localStorage.getItem('ios_device');
-                    if (ios_device == 'iphone' || F7_device == 'android') {
+                    if (ios_device == 'iphone' || state.F7_device == 'android') {
                         var tab_per = '100%';
                     }
                     else {
@@ -67,7 +84,7 @@ function create_tabs_by_status() {
             }
             else {
                 var ios_device = localStorage.getItem('ios_device');
-                if (ios_device == 'iphone' || F7_device == 'android') {
+                if (ios_device == 'iphone' || state.F7_device == 'android') {
                     var tab_per = '50%';
                 }
                 else {
@@ -80,18 +97,18 @@ function create_tabs_by_status() {
             for (i = 0; i < len; i++) {
                 var access_type = list_data_Array[i].access_type;
                 if (access_type == '' || access_type == null || access_type == undefined || access_type == "mobile" || access_type == "both") {
-                    var param = "select_survey_type_tab('1','" + i + "')";
+                    var param = (options.action ? options.action("select_survey_type_tab", ["1", String(i)]) : "select_survey_type_tab('1','" + i + "')");
                     tab_str += '<a href="#tab1" id="f7_survey_td_' + i + '" class="tab-link" onclick=' + param + ' style="text-decoration: none; display: inline-table; width:' + tab_per + '; min-width:' + tab_per + '; padding:0 10px; text-align:center; padding-top: 14px">' + list_data_Array[i].tab_name + '<div id="tabCount_' + i + '" style="color: ' + tab_cnt_color + ' !important;"></div></a>';
                 }
             }
 
             if (completed_value == "" || completed_value == null || completed_value == undefined || completed_value == "true") {
-                var param = "select_survey_type_tab('2','" + len + "')";
+                var param = (options.action ? options.action("select_survey_type_tab", ["2", String(len)]) : "select_survey_type_tab('2','" + len + "')");
                 //tab_str += '<a href="#tab2" id="f7_survey_td_' + len + '" class="tab-link" onclick=' + param + ' style="text-decoration: none; display: inline-table; width:' + tab_per + '; text-align:center; padding-top: 14px">COMPLETED<div id="tabCount_Comp" class="numberCircle">0</div></a>';
                 //tab_str += '<a href="#tab2" id="f7_survey_td_' + len + '" class="tab-link" onclick=' + param + ' style="text-decoration: none; display: inline-table; width:' + tab_per + '; min-width:' + tab_per + '; text-align:center; padding-top: 14px">COMPLETED</a>';
                 tab_str += '<a href="#tab2" id="f7_survey_td_' + len + '" class="tab-link" onclick=' + param + ' style="text-decoration: none; display: inline-table; width:' + tab_per + '; min-width:' + tab_per + '; padding:0 10px; text-align:center; padding-top: 14px">COMPLETED<div id="tabCount_Comp" style="color: ' + tab_cnt_color + ' !important;"></div></a>';
             }
-            var param = "select_survey_type_tab('3','" + (len + 1) + "')";
+            var param = (options.action ? options.action("select_survey_type_tab", ["3", String(len + 1)]) : "select_survey_type_tab('3','" + (len + 1) + "')");
             //tab_str += '<a href="#tab3" id="f7_survey_td_' + (len + 1) + '" class="tab-link" onclick=' + param + ' style="text-decoration: none; display: inline-table; width:' + tab_per + '; text-align:center; padding-top: 14px">UPLOAD<div id="tabCount_Up" class="numberCircle">0</div></a>';
             //tab_str += '<a href="#tab3" id="f7_survey_td_' + (len + 1) + '" class="tab-link tab-upload" onclick=' + param + ' style="text-decoration: none; display: none; width:' + tab_per + '; min-width:' + tab_per + '; text-align:center; padding-top: 14px">UPLOAD</a>';
             tab_str += '<a href="#tab3" id="f7_survey_td_' + (len + 1) + '" class="tab-link tab-upload" onclick=' + param + ' style="text-decoration: none; display: none; width:' + tab_per + '; min-width:' + tab_per + '; padding:0 10px; text-align:center; padding-top: 14px">UPLOAD<div id="tabCount_Up" style="color: ' + tab_cnt_color + ' !important;"></div></a>';
@@ -151,13 +168,14 @@ function create_tabs_by_status() {
             $('.tab-upload').css("display", "inline-table");
             $('#div_tab_bar a').css("width", "50%");
 
-            get_list_of_UP_sites();
+            actions.get_list_of_UP_sites();
         }
         else {
             $("#refresh_btn").css("visibility", "visible");
             $('#f7_survey_td_' + tab_index + '').addClass('active');
             $('#f7_survey_td_' + tab_index + '').css('border-bottom', '6px solid rgba(255, 255, 255, .5)');
-            get_user_latlong_pm();
+            if (savedLists()) savedLists().restore('site_list');
+            actions.get_user_latlong_pm();
         }
 
     }
@@ -248,28 +266,29 @@ function select_survey_type_tab(selection_type, tab_index) {
         else {
             $('.lst_upl').attr('id', 'site_list');
         }
-        clearTimeout(up_Timer1);
+        clearTimeout(state.up_Timer1);
         storage.setItem('survey_type', JSON.stringify(selection_type));
 
         // default listing
-        limit_range = default_range; // set default range limit
-        query_type = 1; // regular site listing
-        aggregate_sum = 0;
-        aggregate_min = 0;
-        aggregate_max = 0;
+        state.limit_range = state.default_range; // set default range limit
+        state.query_type = 1; // regular site listing
+        state.aggregate_sum = 0;
+        state.aggregate_min = 0;
+        state.aggregate_max = 0;
         // //
 
         if (selection_type == 1) {
             // pending
-            get_user_latlong_pm();
+            if (savedLists()) savedLists().restore('site_list');
+            actions.get_user_latlong_pm();
         } else if (selection_type == 2) {
             // completed
             $("#btn_Submit").hide();
-            get_list_of_completed_sites();
+            actions.get_list_of_completed_sites();
         } else if (selection_type == 3) {
             // upload pending
             $("#btn_Submit").hide();
-            get_list_of_UP_sites();
+            actions.get_list_of_UP_sites();
         }
     } catch (e) {
         alert1(e + '_select_survey_type_tab()');
@@ -385,7 +404,7 @@ function check_last_dummy_entry() {
         //var query = "select tid, checksheetid, moduleid, task_id from task_master where username = '" + username + "' ORDER BY tid desc limit 1";
 
         var selected_module_id = JSON.parse(storage.getItem('wayflow'));
-        var query = "select tid, checksheetid, moduleid, task_id from task_master where username = '" + username + "' and moduleid='" + selected_module_id + "' and server_task_id=0 ORDER BY tid desc limit 1";
+        var query = "select tid, checksheetid, moduleid, task_id from task_master where username = '" + state.username + "' and moduleid='" + selected_module_id + "' and server_task_id=0 ORDER BY tid desc limit 1";
 
         var q_jsonobj = [];
         q_jsonobj.push({
@@ -442,11 +461,11 @@ function onfail_check_last_dummy_entry(e) {
 
 function insert_new_dummy_entry() {
 
-    if (typeof curr_listing_udf == "undefined") {
-        curr_listing_udf = "";
+    if (typeof state.curr_listing_udf == "undefined") {
+        state.curr_listing_udf = "";
     }
 
-    if (curr_listing_udf == "" || curr_listing_udf == null || curr_listing_udf == undefined) {
+    if (state.curr_listing_udf == "" || state.curr_listing_udf == null || state.curr_listing_udf == undefined) {
         //normal task creation
         insert_new_dummy_entry_post();
     }
@@ -468,7 +487,7 @@ function get_checksheet_id_from_flow_id() {
             'flow_id': selected_module_id
         });
 
-        var getdata = new Webservicecall_REST(common_global_wcf_url + 'WCF_GetChecksheetId_Port', JSON.stringify(param_obj), onsuccess_get_checksheet_id_from_flow_id, onfail_get_checksheet_id_from_flow_id);
+        var getdata = new Webservicecall_REST(state.common_global_wcf_url + 'WCF_GetChecksheetId_Port', JSON.stringify(param_obj), onsuccess_get_checksheet_id_from_flow_id, onfail_get_checksheet_id_from_flow_id);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -531,7 +550,7 @@ function insert_new_dummy_entry_post() {
         match_temp_id = "";
     }
 
-    if (F7_device == 'ios') {
+    if (state.F7_device == 'ios') {
         checksheetid = checksheetid.substring(0, checksheetid.length - 0);
     }
     else {
@@ -559,7 +578,7 @@ function onsuccess_insert_task(e) {
 
         //var query = "select tid, checksheetid from task_master where username = '" + username + "' ORDER BY tid desc limit 1";
 
-        var query = "select tid, checksheetid from task_master where username = '" + username + "' and moduleid ='" + selected_module_id + "'  ORDER BY tid desc limit 1";
+        var query = "select tid, checksheetid from task_master where username = '" + state.username + "' and moduleid ='" + selected_module_id + "'  ORDER BY tid desc limit 1";
 
         var q_jsonobj = [];
         q_jsonobj.push({
@@ -595,13 +614,13 @@ function onsuccess_get_tid_from_task(e) {
             var task_with_customer = list_data[0].task_with_customer;
             if (task_with_customer == "true") {
                 //open popup of cust-list on task create(+) btn click
-                get_udf_for_cust_list();
+                actions.get_udf_for_cust_list();
             }
             else {
                 var type37_len = $("div[id^='div_subtask_']").length;
                 if (type37_len > 0) {
                     myApp.popup('.popup-new-task-create');
-                    data_to_read_task();
+                    actions.data_to_read_task();
                 }
                 else {
                     changeurl("viewsitedata_task.html");
@@ -633,14 +652,14 @@ function toggle_search_div() {
     var search_value = list_data[0].search;
     // if true user can show
     if (search_value == "true") {
-        if (toggle_search == 0) {
+        if (state.toggle_search == 0) {
             // show search div
             $("#div_Search").slideDown();
-            toggle_search = 1;
+            state.toggle_search = 1;
         } else {
             // hide search div
             $("#div_Search").slideUp();
-            toggle_search = 0;
+            state.toggle_search = 0;
         }
     } else {
         alert1("access limited !");
@@ -652,7 +671,7 @@ function show_search_bar() {
     $('.head-title').hide();
     $('.head-menu').hide();
     $('.head-search').show();
-    if (F7_device == 'android') {
+    if (state.F7_device == 'android') {
         $('.tabbar').slideUp(100);
         $('#tab1').css('padding-top', '57px');
         $('#tab2').css('padding-top', '57px');
@@ -664,7 +683,7 @@ function show_columnwise_search_bar() {
     $('.head-title').hide();
     $('.head-menu').hide();
     $('.columnwise-head-search').show();
-    if (F7_device == 'android') {
+    if (state.F7_device == 'android') {
         $('.tabbar').slideUp(100);
         $('#tab1').css('padding-top', '57px');
         $('#tab2').css('padding-top', '57px');
@@ -679,8 +698,8 @@ function onfail_get_list_of_modules(e) {
 
 // common selection survey function
 function search_site_list_common() {
-    limit_range = default_range; // set default range limit
-    query_type = 2; // search site listing
+    state.limit_range = state.default_range; // set default range limit
+    state.query_type = 2; // search site listing
     $("#btn_SeeAll").show();
     $("#btn_SeeMore").show();
 
@@ -699,31 +718,31 @@ function search_site_list_common() {
         if (survey_mode == "online") {
             var redirect = list_data[0].redirect;
             if (redirect == 'customer') {
-                get_list_of_customer_by_search_online();
+                actions.get_list_of_customer_by_search_online();
             } else {
-                get_list_of_pm_sites_by_search_online();
+                actions.get_list_of_pm_sites_by_search_online();
             }
         } else {
-            get_list_of_pm_sites_by_search();
+            actions.get_list_of_pm_sites_by_search();
         }
     } else if (selected_survey_type == 2) {
         // completed list
-        get_list_of_completed_sites_by_search();
+        actions.get_list_of_completed_sites_by_search();
     } else if (selected_survey_type == 3) {
         // upload pending list
-        get_list_of_UP_sites_by_search();
+        actions.get_list_of_UP_sites_by_search();
     }
 }
 
 // call on click of pm see all button
 function see_all_site_list_common() {
-    limit_range = 1000; // set max limit
+    state.limit_range = 1000; // set max limit
     see_more_n_see_all_common();
 }
 
 // call on click of pm show more button
 function see_more_site_list_common() {
-    limit_range = limit_range + increment_range;
+    state.limit_range = state.limit_range + state.increment_range;
     var checksheet_type_filter = JSON.parse(storage.getItem('checksheet_type_filter'));
     if (checksheet_type_filter == '9' || checksheet_type_filter == '10') {
         get_list_of_pm_sites_by_filter_online();
@@ -744,39 +763,39 @@ function see_more_n_see_all_common() {
             survey_mode = "offline";
         }
 
-        if (query_type == 1 || query_type == 3) {
+        if (state.query_type == 1 || state.query_type == 3) {
             if (selected_survey_type == 1) {
                 if (survey_mode == "online") {
                     var redirect = list_data[0].redirect;
                     if (redirect == 'customer') {
-                        get_list_of_customer_online();
+                        actions.get_list_of_customer_online();
                     } else {
-                        get_list_of_task_for_compare_online();
+                        actions.get_list_of_task_for_compare_online();
                     }
                 } else {
-                    get_list_of_pm_sites();
+                    actions.get_list_of_pm_sites();
                 }
             } else if (selected_survey_type == 2) {
-                get_list_of_completed_sites();
+                actions.get_list_of_completed_sites();
             } else if (selected_survey_type == 3) {
-                get_list_of_UP_sites();
+                actions.get_list_of_UP_sites();
             }
         } else {
             if (selected_survey_type == 1) {
                 if (survey_mode == "online") {
                     var redirect = list_data[0].redirect;
                     if (redirect == 'customer') {
-                        get_list_of_customer_by_search_online();
+                        actions.get_list_of_customer_by_search_online();
                     } else {
-                        get_list_of_pm_sites_by_search_online();
+                        actions.get_list_of_pm_sites_by_search_online();
                     }
                 } else {
-                    get_list_of_pm_sites_by_search();
+                    actions.get_list_of_pm_sites_by_search();
                 }
             } else if (selected_survey_type == 2) {
-                get_list_of_completed_sites_by_search();
+                actions.get_list_of_completed_sites_by_search();
             } else if (selected_survey_type == 3) {
-                get_list_of_UP_sites_by_search();
+                actions.get_list_of_UP_sites_by_search();
             }
         }
     } catch (e) {
@@ -797,7 +816,7 @@ function refresh_site_list_common() {
     var selected_survey_type = JSON.parse(storage.getItem('survey_type'));
     if (selected_survey_type == 1) {
         try {
-            refresh_pm_site_list();
+            actions.refresh_pm_site_list();
         }
         catch (e) {
             // in case background sub task submit from checksheet page
@@ -810,14 +829,14 @@ function refresh_site_list_common() {
             changeurl("selection_survey.html");
         }
     } else if (selected_survey_type == 2) {
-        refresh_completed_site_list();
+        actions.refresh_completed_site_list();
     } else if (selected_survey_type == 3) {
-        refresh_UP_site_list();
+        actions.refresh_UP_site_list();
     }
 }
 
 // filter checksheet (for online flow)
-var checksheet_AllData_fix;
+var task_filter_checksheet_data;
 function get_checksheet_details_filter() {
     try {
         myApp.popup('.popup-filter');
@@ -843,7 +862,7 @@ function get_checksheet_details_filter() {
 
             loading();
             var Getchecksheetdata_json = JSON.stringify(Getchecksheetdata);
-            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetdataForEditChecksheet', JSON.stringify(Getchecksheetdata_json), onsuccess_get_checksheet_details_filter, onfail_get_checksheet_details_filter);
+            var getdata = new Webservicecall_REST(state.global_wcf_url + 'WCF_GetdataForEditChecksheet', JSON.stringify(Getchecksheetdata_json), onsuccess_get_checksheet_details_filter, onfail_get_checksheet_details_filter);
             getdata.callOtherDomain();
         }
     }
@@ -880,10 +899,10 @@ function onsuccess_get_checksheet_details_filter(e) {
             localStorage.setItem("checksheet_type_filter", '9');
             storage.setItem('checksheet_type_filter', JSON.stringify('9'));
 
-            checksheet_AllData_fix = JSON.stringify(myArray);
+            task_filter_checksheet_data = JSON.stringify(myArray);
             $("#container_div").empty();
             storage.setItem('check_type', JSON.stringify(check_type));
-            read_dynamic_checksheet("", check_type, "", data, "", 9, 0);
+            actions.read_dynamic_checksheet("", check_type, "", data, "", 9, 0);
         }
         else {
             var message = myData[0].message;
@@ -901,19 +920,19 @@ function onfail_get_checksheet_details_filter(e) {
     loading_hide();
 }
 
-function get_survey_json() {
+function get_task_filter_survey_json() {
     try {
         $("#site_list").empty();
-        limit_range = default_range; // set default range limit
+        state.limit_range = state.default_range; // set default range limit
 
         var arr = localStorage.getItem('checksheet_data');
         var AllData = localStorage.getItem('checksheet_AllData');
-        var filter_button_Data = JSON.parse(checksheet_AllData_fix);
+        var filter_button_Data = JSON.parse(task_filter_checksheet_data);
         localStorage.setItem('checksheet_AllData', JSON.stringify(filter_button_Data));
 
-        validate_and_submit_surveydata(1, 9, JSON.parse(arr));
+        actions.validate_and_submit_surveydata(1, 9, JSON.parse(arr));
 
-        if (Validation_True == 0) {
+        if (state.Validation_True == 0) {
             myApp.closeModal('.popup-filter');
             //var filter_button_Data = JSON.parse(localStorage.getItem('checksheet_AllData'));
             //var where_Json = filter_button_Data[0].Filter_button[0].WHERE[0].AND[0].JSON;
@@ -932,6 +951,7 @@ function get_survey_json() {
 }
 
 function get_list_of_pm_sites_by_filter_online() {
+    var f;
     try {
 
         var filter_button_Data = JSON.parse(localStorage.getItem('checksheet_AllData'));
@@ -958,7 +978,7 @@ function get_list_of_pm_sites_by_filter_online() {
             var multiflow_list = list_data[0].multiflow_list;
 
             var company_id = JSON.parse(storage.getItem('company_id'));
-            if (global_wcf_url == "https://securitywcf.easyform.in/EF_Service.svc/v1/") { }
+            if (state.global_wcf_url == "https://securitywcf.easyform.in/EF_Service.svc/v1/") { }
             else {
                 Condition_Data = [];
             }
@@ -982,7 +1002,7 @@ function get_list_of_pm_sites_by_filter_online() {
                 var t_push_array = t_push_data;
             } else {
                 var t_push_array = [];
-                Condition_Data = pass_required_values_to_condition(Condition_Data);
+                Condition_Data = actions.pass_required_values_to_condition(Condition_Data);
 
                 // check and set system variable to condition
                 var user_id = JSON.parse(storage.getItem('user_id'));
@@ -1012,11 +1032,11 @@ function get_list_of_pm_sites_by_filter_online() {
                 if (orderby == "distance") {
                     var order_by = Condition_Data[0].order_by;
                     if (order_by == undefined) {
-                        Condition_Data[0].ORDER_BY[0].DATA[0].USER_LAT = user_lat;
-                        Condition_Data[0].ORDER_BY[0].DATA[0].USER_LONG = user_long;
+                        Condition_Data[0].ORDER_BY[0].DATA[0].USER_LAT = state.user_lat;
+                        Condition_Data[0].ORDER_BY[0].DATA[0].USER_LONG = state.user_long;
                     } else {
-                        Condition_Data[0].order_by[0].data[0].user_lat = user_lat;
-                        Condition_Data[0].order_by[0].data[0].user_long = user_long;
+                        Condition_Data[0].order_by[0].data[0].user_lat = state.user_lat;
+                        Condition_Data[0].order_by[0].data[0].user_long = state.user_long;
                     }
                 }
 
@@ -1044,9 +1064,9 @@ function get_list_of_pm_sites_by_filter_online() {
                         Condition_Data[0].WHERE[0].AND[0].TABLE.push(parent_task_condition[0]);
                     }
                     Condition_Data[0].STATIC_JOINS = user_id;
-                    Condition_Data[0].LIMIT[0].OFFSET = limit_range - default_range;
+                    Condition_Data[0].LIMIT[0].OFFSET = state.limit_range - state.default_range;
                     //Condition_Data[0].LIMIT[0].OFFSET = 0;
-                    Condition_Data[0].LIMIT[0].FETCH = increment_range;
+                    Condition_Data[0].LIMIT[0].FETCH = state.increment_range;
                 } else if (where2 == undefined && where3 == undefined) {
                     Condition_Data[0].Where[0].And[0].Table.push(status_condition[0]);
                     Condition_Data[0].Where[0].And[0].Table.push(flowid_condition[0]);
@@ -1054,9 +1074,9 @@ function get_list_of_pm_sites_by_filter_online() {
                         Condition_Data[0].Where[0].And[0].Table.push(parent_task_condition[0]);
                     }
                     Condition_Data[0].Static_Joins = user_id;
-                    Condition_Data[0].LIMIT[0].OFFSET = limit_range - default_range;
+                    Condition_Data[0].LIMIT[0].OFFSET = state.limit_range - state.default_range;
                     //Condition_Data[0].LIMIT[0].OFFSET = 0;
-                    Condition_Data[0].LIMIT[0].FETCH = increment_range;
+                    Condition_Data[0].LIMIT[0].FETCH = state.increment_range;
                 } else {
                     Condition_Data[0].where[0].and[0].table.push(status_condition[0]);
                     Condition_Data[0].where[0].and[0].table.push(flowid_condition[0]);
@@ -1064,9 +1084,9 @@ function get_list_of_pm_sites_by_filter_online() {
                         Condition_Data[0].where[0].and[0].table.push(parent_task_condition[0]);
                     }
                     Condition_Data[0].static_joins = user_id;
-                    Condition_Data[0].limit[0].offset = limit_range - default_range;
+                    Condition_Data[0].limit[0].offset = state.limit_range - state.default_range;
                     //Condition_Data[0].limit[0].offset = 0;
-                    Condition_Data[0].limit[0].fetch = increment_range;
+                    Condition_Data[0].limit[0].fetch = state.increment_range;
                 }
 
                 for (f = 0; f < t_where_Table.length; f++) {
@@ -1220,15 +1240,15 @@ function get_list_of_pm_sites_by_filter_online() {
             var param_obj = [];
             param_obj.push({
                 'Flow_Id': selected_module_id,
-                'lat': user_lat,
-                'long': user_long,
+                'lat': state.user_lat,
+                'long': state.user_long,
                 'search': "",
-                'limit': limit_range,
+                'limit': state.limit_range,
                 'condition': Condition_Data,
                 'system_var': t_push_array,
                 'searchValue': '',
-                'offset': limit_range - default_range,
-                'fetch': increment_range,
+                'offset': state.limit_range - state.default_range,
+                'fetch': state.increment_range,
                 'checksheet_id': checksheet_id,
                 'status': status_array,
                 'udf_id': udf_id,
@@ -1239,20 +1259,20 @@ function get_list_of_pm_sites_by_filter_online() {
             var appversion = JSON.parse(storage.getItem('appversion'));
             var auth = [];
             auth.push({
-                "username": username,
-                "devicetype": F7_device,
+                "username": state.username,
+                "devicetype": state.F7_device,
                 "appid": "",
-                "u_c": uniqcode,
+                "u_c": state.uniqcode,
                 "appversion": appversion
             });
 
-            if (global_wcf_url == "https://securitywcf.easyform.in/EF_Service.svc/v1/") {
+            if (state.global_wcf_url == "https://securitywcf.easyform.in/EF_Service.svc/v1/") {
                 //Security URL
-                var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_OnlineTaskList_Native_colour_coding', JSON.stringify(param_obj), onsuccess_get_list_of_pm_sites_online, onfail_get_list_of_pm_sites_online);
+                var getdata = new Webservicecall_REST(state.global_wcf_url + 'WCF_OnlineTaskList_Native_colour_coding', JSON.stringify(param_obj), actions.onsuccess_get_list_of_pm_sites_online, actions.onfail_get_list_of_pm_sites_online);
             }
             else {
                 //other URL
-                var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_OnlineTaskList_colour_coding', JSON.stringify(param_obj), onsuccess_get_list_of_pm_sites_online, onfail_get_list_of_pm_sites_online);
+                var getdata = new Webservicecall_REST(state.global_wcf_url + 'WCF_OnlineTaskList_colour_coding', JSON.stringify(param_obj), actions.onsuccess_get_list_of_pm_sites_online, actions.onfail_get_list_of_pm_sites_online);
             }
             getdata.callOtherDomain();
         }
@@ -1271,6 +1291,7 @@ function get_list_of_pm_sites_by_filter_online() {
 /////////////////////////////////////----------- offline task listing filter -------------------------
 // filter task listing (offline task listing)
 function filter_search_task() {
+    var f;
     try {
         $('li[name^="ddl_filter_"]').attr('data', '');
 
@@ -1301,7 +1322,7 @@ function filter_search_task() {
             $('li[name="ddl_filter_' + ddl_header + '"]').attr('data', t_data_val);
         }
 
-        var param = "get_filtered_task_listing()";
+        var param = (options.action ? options.action("get_filtered_task_listing", []) : "get_filtered_task_listing()");
         $('#apply_filter').empty().append('<a href="#" class="link" onclick="' + param + '">APPLY</a>');
     }
     catch (e) {
@@ -1365,7 +1386,7 @@ function sub_filter_popup_task(label) {
         $('#div_filter_popup').empty();
         $('#div_filter_popup').append(opt);
         $('#div_filter_bottom').empty();
-        var param_done = "get_selected_filter_option_task('" + label + "')";
+        var param_done = (options.action ? options.action("get_selected_filter_option_task", [String(label)]) : "get_selected_filter_option_task('" + label + "')");
         $("#lbl_selected_chk").text(selected_ary_val.length);
         $('#div_filter_bottom').append('<a href="#" class="link" onclick="' + param_done + '">Select</a>');
     }
@@ -1375,6 +1396,7 @@ function sub_filter_popup_task(label) {
 }
 
 function get_selected_filter_option_task(label) {
+    var j;
     var answer = [];
     var checkbox = document.getElementsByName('filter-checkbox');
     for (j = 0; j < checkbox.length; j++) {
@@ -1392,6 +1414,7 @@ function clear_selected_filter_option_offline_task() {
 }
 
 function get_filtered_task_listing() {
+    var c, s, i, v;
     try {
         $('.no_record').remove();
         var data_json = JSON.parse(storage.getItem('list_json'));
@@ -1541,14 +1564,14 @@ function advance_column_search(t_flag, fltr_type) {
         if (dis_save_filter == "" || dis_save_filter == null || dis_save_filter == undefined || dis_save_filter.indexOf("Save Filter?") > -1) {
             $("#tbl_advance_colSearch").empty();
 
-            if (subflow_udf_id == '' || subflow_udf_id == null || subflow_udf_id == undefined) {
+            if (state.subflow_udf_id == '' || state.subflow_udf_id == null || state.subflow_udf_id == undefined) {
                 // Get maintask columndata
                 var data_json = JSON.parse(storage.getItem('list_json'));
                 var list_data = JSON.parse(data_json);
             }
             else {
                 // Get subtask columndata                
-                var data_count = get_udf_data_for_subflow(subflow_udf_id);
+                var data_count = actions.get_udf_data_for_subflow(state.subflow_udf_id);
                 var list_data = JSON.parse(data_count);
 
             }
@@ -1644,7 +1667,7 @@ function advance_column_search(t_flag, fltr_type) {
             }
 
             $("#tbl_advance_colSearch").append(str);
-            display_saved_adv_filter();
+            actions.display_saved_adv_filter();
         }
 
     }
@@ -1708,28 +1731,28 @@ function get_column_seach_obj() {
                 var type8_val = $("#fltr_date_ddl_" + coldata_index + " option:selected").attr('name');
                 if (type8_val == "is_between") {
                     var start_date = $("#dt_tp_Start_" + coldata_index + "").val();
-                    start_date = convert_fix_format_date_on_submit(start_date, 'date');
+                    start_date = actions.convert_fix_format_date_on_submit(start_date, 'date');
                     var end_date = $("#dt_tp_End_" + coldata_index + "").val();
-                    end_date = convert_fix_format_date_on_submit(end_date, 'date');
+                    end_date = actions.convert_fix_format_date_on_submit(end_date, 'date');
                     var search_str = [start_date + ' 00:00', end_date + ' 23:59'];
                 }
                 else if (type8_val == "is_before") {
                     var date_range = $("#dt_tp_Start_" + coldata_index + "").val();
-                    date_range = convert_fix_format_date_on_submit(date_range, 'date');
+                    date_range = actions.convert_fix_format_date_on_submit(date_range, 'date');
                     var search_str = ['01/01/1920 00:00', date_range + ' 23:59'];
                 }
                 else if (type8_val == "is_after") {
                     var date_range = $("#dt_tp_Start_" + coldata_index + "").val();
-                    date_range = convert_fix_format_date_on_submit(date_range, 'date');
+                    date_range = actions.convert_fix_format_date_on_submit(date_range, 'date');
                     var search_str = [date_range + ' 00:00', '3020/01/01 23:59'];
                 }
                 else {
                     var search_str = $(this).parents('li').find(".fltr-cndtn-inner").find("#lbl_tp_info_" + coldata_index + "").text();
                     search_str = search_str.split(' - ');
                     var date1 = search_str[0];
-                    date1 = convert_fix_format_date_on_submit(date1, 'datetime');
+                    date1 = actions.convert_fix_format_date_on_submit(date1, 'datetime');
                     var date2 = search_str[1];
-                    date2 = convert_fix_format_date_on_submit(date2, 'datetime');
+                    date2 = actions.convert_fix_format_date_on_submit(date2, 'datetime');
                     search_str[0] = date1;
                     search_str[1] = date2;
                 }
@@ -1802,13 +1825,13 @@ function reset_input_search_data() {
         });
         $(".fltr-cndtn-outer").hide();
         $(".div-delete-filter").hide();
-        $("#ddl_OrderBy").val(ddl_orderby);
-        $("#ddl_OrderType").val(ddl_order_type);
+        $("#ddl_OrderBy").val(state.ddl_orderby);
+        $("#ddl_OrderType").val(state.ddl_order_type);
 
         // filter with forward backward 23012023
         localStorage.setItem('searchCol_obj', "");
 
-        get_list_of_pm_sites_by_search_online('', 'clear_filter');
+        actions.get_list_of_pm_sites_by_search_online('', 'clear_filter');
     }
     catch (e) {
         alert1(e + '_reset_input_search_data()');
@@ -1840,7 +1863,7 @@ function get_saved_filter_data(tab_index) {
             'Filter_Name': ''
         });
 
-        var getdata = new Webservicecall_REST(global_wcf_url + 'Select_Default_Filter', JSON.stringify(param_obj), function (e) {
+        var getdata = new Webservicecall_REST(state.global_wcf_url + 'Select_Default_Filter', JSON.stringify(param_obj), function (e) {
             var myArray = JSON.parse(e.responseText);
             var status = myArray[0].status;
             var message = myArray[0].message;
@@ -1871,7 +1894,7 @@ function get_saved_filter_data(tab_index) {
                 alert1(message + '_get_saved_advanced_filter_data');
                 loading_hide();
             }
-        }, onfail);
+        }, actions.onfail_request);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -1907,7 +1930,7 @@ function view_calendar_task() {
                 'module_id': selected_module_id
             });
 
-            cordova.exec(onsuccess_view_calendar_task, onfail, 'ViewTaskByCalendar', 'anAction', q_jsonobj);
+            cordova.exec(onsuccess_view_calendar_task, actions.onfail_request, 'ViewTaskByCalendar', 'anAction', q_jsonobj);
         }
     }
     catch (e) {
@@ -1931,7 +1954,7 @@ function onsuccess_view_calendar_task(e) {
         var t_millisecond = myArray[0].ser_milli;
         var t_task_update = 1;
 
-        redirect_on_pm_site_click_online(selected_site, selected_site_name, selected_server_task_id, selected_start_status, selected_moduleid, selected_modulename, t_task_update, t_site_lat, t_site_long, t_survey_date, t_millisecond);
+        actions.redirect_on_pm_site_click_online(selected_site, selected_site_name, selected_server_task_id, selected_start_status, selected_moduleid, selected_modulename, t_task_update, t_site_lat, t_site_long, t_survey_date, t_millisecond);
     }
     catch (e) {
         alert1(e + '_onsuccess_view_calendar_task');
@@ -1962,6 +1985,7 @@ function init_calendar_default() {
 }
 
 function init_calendar(event_array) {
+    var i;
     $('.fc-today-button').text('');
     $('#ddl_cal').empty();
     //$('#mdl_calendar').modal('show');
@@ -1984,11 +2008,11 @@ function init_calendar(event_array) {
 
     g_start_date = new Date(date.getFullYear(), date.getMonth(), 1);
     //g_start_date = convert_datetime_by_format(g_start_date, 'date');
-    g_start_date = convert_fix_format_date_on_submit(g_start_date, 'datetime');
+    g_start_date = actions.convert_fix_format_date_on_submit(g_start_date, 'datetime');
 
     g_end_date = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     //g_end_date = convert_datetime_by_format(g_end_date, 'date');
-    g_end_date = convert_fix_format_date_on_submit(g_end_date, 'date');
+    g_end_date = actions.convert_fix_format_date_on_submit(g_end_date, 'date');
     g_end_date = g_end_date + " 23:59";
 
     setTimeout(function () {
@@ -2046,11 +2070,11 @@ function init_calendar(event_array) {
                 var today_date = convert_date_for_fullcalendar(date);
                 g_start_date = new Date(date.getFullYear(), date.getMonth(), 1);
                 //g_start_date = convert_datetime_by_format(g_start_date, 'date');
-                g_start_date = convert_fix_format_date_on_submit(g_start_date, 'datetime');
+                g_start_date = actions.convert_fix_format_date_on_submit(g_start_date, 'datetime');
 
                 g_end_date = new Date(date.getFullYear(), date.getMonth() + 1, 0);
                 //g_end_date = convert_datetime_by_format(g_end_date, 'date');
-                g_end_date = convert_fix_format_date_on_submit(g_end_date, 'date');
+                g_end_date = actions.convert_fix_format_date_on_submit(g_end_date, 'date');
                 g_end_date = g_end_date + " 23:59";
                 get_task_for_calendar(g_start_date, g_end_date);
             });
@@ -2077,7 +2101,7 @@ function get_task_for_calendar(t_start_date, t_end_date) {
         });
     }
 
-    var qs_array = pass_required_values_to_push_array(JSON.stringify(t_push_data));
+    var qs_array = actions.pass_required_values_to_push_array(JSON.stringify(t_push_data));
     var t_push_array = JSON.parse(qs_array[0]);
     var ref_valid = qs_array[1];
 
@@ -2130,7 +2154,8 @@ function get_task_for_calendar(t_start_date, t_end_date) {
     });
 
     loading();
-    var getdata = new Webservicecall_REST(global_wcf_url + 'OnlineTaskListing', JSON.stringify(param_obj), function (e) {
+    var getdata = new Webservicecall_REST(state.global_wcf_url + 'OnlineTaskListing', JSON.stringify(param_obj), function (e) {
+    var k, i, d;
         var responseText = e.responseText;
         var data = JSON.parse(responseText);
         var status = data[0]["status"];
@@ -2214,7 +2239,7 @@ function get_task_for_calendar(t_start_date, t_end_date) {
             alert(data[0].message);
         }
         loading_hide();
-    }, onfail);
+    }, actions.onfail_request);
     getdata.callOtherDomain();
 }
 
@@ -2232,10 +2257,10 @@ function get_prev_next_btnval(datetxt) {
             t_end_date = new Date(t_end_date.getFullYear(), t_end_date.getMonth() + 1, 0);
 
             //t_start_date = convert_datetime_by_format(t_start_date, 'date');
-            start_date = convert_fix_format_date_on_submit(t_start_date, 'datetime');
+            start_date = actions.convert_fix_format_date_on_submit(t_start_date, 'datetime');
 
             //t_end_date = convert_datetime_by_format(t_end_date, 'date');
-            end_date = convert_fix_format_date_on_submit(t_end_date, 'date');
+            end_date = actions.convert_fix_format_date_on_submit(t_end_date, 'date');
             end_date = end_date + " 23:59";
         }
     }
@@ -2248,10 +2273,10 @@ function get_prev_next_btnval(datetxt) {
             var t_end_date = new Date(t_start_date.getFullYear(), t_start_date.getMonth() + 1, 0);
 
             //t_start_date = convert_datetime_by_format(t_start_date, 'date');
-            start_date = convert_fix_format_date_on_submit(t_start_date, 'datetime');
+            start_date = actions.convert_fix_format_date_on_submit(t_start_date, 'datetime');
 
             //t_end_date = convert_datetime_by_format(t_end_date, 'date');
-            end_date = convert_fix_format_date_on_submit(t_end_date, 'date');
+            end_date = actions.convert_fix_format_date_on_submit(t_end_date, 'date');
             end_date = end_date + " 23:59";
         }
     }
@@ -2261,3 +2286,77 @@ function get_prev_next_btnval(datetxt) {
 
     return [start_date, end_date];
 }
+
+        var api = {
+            create_tabs_by_status: create_tabs_by_status,
+            select_survey_type_tab: select_survey_type_tab,
+            create_new_task: create_new_task,
+            select_network_for_create_task: select_network_for_create_task,
+            select_network_for_create_task_POST: select_network_for_create_task_POST,
+            check_last_dummy_entry: check_last_dummy_entry,
+            onsuccess_check_last_dummy_entry: onsuccess_check_last_dummy_entry,
+            onfail_check_last_dummy_entry: onfail_check_last_dummy_entry,
+            insert_new_dummy_entry: insert_new_dummy_entry,
+            get_checksheet_id_from_flow_id: get_checksheet_id_from_flow_id,
+            onsuccess_get_checksheet_id_from_flow_id: onsuccess_get_checksheet_id_from_flow_id,
+            onfail_get_checksheet_id_from_flow_id: onfail_get_checksheet_id_from_flow_id,
+            insert_new_dummy_entry_post: insert_new_dummy_entry_post,
+            onsuccess_insert_task: onsuccess_insert_task,
+            onfail_insert_task: onfail_insert_task,
+            onsuccess_get_tid_from_task: onsuccess_get_tid_from_task,
+            onfail_get_tid_from_task: onfail_get_tid_from_task,
+            toggle_search_div: toggle_search_div,
+            show_search_bar: show_search_bar,
+            show_columnwise_search_bar: show_columnwise_search_bar,
+            onfail_get_list_of_modules: onfail_get_list_of_modules,
+            search_site_list_common: search_site_list_common,
+            see_all_site_list_common: see_all_site_list_common,
+            see_more_site_list_common: see_more_site_list_common,
+            see_more_n_see_all_common: see_more_n_see_all_common,
+            refresh_site_list_common: refresh_site_list_common,
+            get_checksheet_details_filter: get_checksheet_details_filter,
+            onsuccess_get_checksheet_details_filter: onsuccess_get_checksheet_details_filter,
+            onfail_get_checksheet_details_filter: onfail_get_checksheet_details_filter,
+            get_task_filter_survey_json: get_task_filter_survey_json,
+            get_list_of_pm_sites_by_filter_online: get_list_of_pm_sites_by_filter_online,
+            filter_search_task: filter_search_task,
+            sub_filter_popup_task: sub_filter_popup_task,
+            get_selected_filter_option_task: get_selected_filter_option_task,
+            clear_selected_filter_option_offline_task: clear_selected_filter_option_offline_task,
+            get_filtered_task_listing: get_filtered_task_listing,
+            advance_column_search: advance_column_search,
+            get_column_seach_obj: get_column_seach_obj,
+            reset_input_search_data: reset_input_search_data,
+            get_saved_filter_data: get_saved_filter_data,
+            view_calendar_task: view_calendar_task,
+            onsuccess_view_calendar_task: onsuccess_view_calendar_task,
+            convert_date_for_fullcalendar: convert_date_for_fullcalendar,
+            init_calendar_default: init_calendar_default,
+            init_calendar: init_calendar,
+            get_task_for_calendar: get_task_for_calendar,
+            get_prev_next_btnval: get_prev_next_btnval
+        };
+        Object.defineProperties(api, {
+            active_Tab: { enumerable: true, get: function () { return active_Tab; }, set: function (value) { active_Tab = value; } },
+            task_filter_checksheet_data: { enumerable: true, get: function () { return task_filter_checksheet_data; }, set: function (value) { task_filter_checksheet_data = value; } },
+            glob_Calendar: { enumerable: true, get: function () { return glob_Calendar; }, set: function (value) { glob_Calendar = value; } },
+            g_event_array: { enumerable: true, get: function () { return g_event_array; }, set: function (value) { g_event_array = value; } },
+            last_obj_search: { enumerable: true, get: function () { return last_obj_search; }, set: function (value) { last_obj_search = value; } },
+            cal_date: { enumerable: true, get: function () { return cal_date; }, set: function (value) { cal_date = value; } },
+            cal_flag: { enumerable: true, get: function () { return cal_flag; }, set: function (value) { cal_flag = value; } },
+            current_view: { enumerable: true, get: function () { return current_view; }, set: function (value) { current_view = value; } },
+            g_start_date: { enumerable: true, get: function () { return g_start_date; }, set: function (value) { g_start_date = value; } },
+            g_end_date: { enumerable: true, get: function () { return g_end_date; }, set: function (value) { g_end_date = value; } }
+        });
+        if (options.scope) {
+            Object.keys(api).forEach(function (name) { if (typeof api[name] === "function") api[name] = options.scope.guard(api[name]); });
+            options.scope.defer(function () { clearTimeout(state.up_Timer1); if (glob_Calendar && typeof glob_Calendar.destroy === "function") glob_Calendar.destroy(); });
+        }
+        return api;
+    }
+    w.AppTaskNavigationController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute("data-app-shell")) {
+        var legacy = create();
+        Object.keys(legacy).forEach(function (name) { Object.defineProperty(w, name, Object.getOwnPropertyDescriptor(legacy, name)); });
+    }
+})(window);

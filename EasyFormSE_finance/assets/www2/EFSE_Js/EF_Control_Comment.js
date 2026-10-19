@@ -120,7 +120,7 @@ function append_cntrl_commnet_ui_on_btn_click(checksheet_id, t_comment_data, cnt
             //var message = 'Username has commented on Que Name: This is sample comment';
             var Inserted_DTTM = comment_data[c].Inserted_DTTM;
             var d = new Date(Inserted_DTTM)
-            var h_modified_date = formatAMPM(d);
+            var h_modified_date = formatControlCommentTime(d);
 
             var Que_id = comment_data[c].Que_id;
             var checksheet_id = comment_data[c].Checksheet_id;
@@ -268,7 +268,7 @@ function send_cntrl_comment_for_filled_form() {
                 $(".cls-cmnt-cntrl[cntrl_checksheet_id=" + curr_cmnt_chksht_id + "][cntrl_que_id=" + glob_cntrl_que_id + "]").trigger('click');
 
 
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     }
@@ -278,7 +278,7 @@ function send_cntrl_comment_for_filled_form() {
     }
 }
 
-function formatAMPM(date) {
+function formatControlCommentTime(date) {
     var month_Array = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     var hours = date.getHours();

@@ -1,4 +1,5 @@
 ﻿
+var kyff_filter_checksheet_data;
 function get_filter_checksheet_id() {
     try {
         loading();
@@ -33,7 +34,7 @@ function onsuccess_get_filter_checksheet_id(e) {
                 var myArray = JSON.parse(data);
             }
 
-            get_checksheet_details(myArray[0].id);
+            get_kyff_filter_checksheet_details(myArray[0].id);
         }
         else {
             alert1("checksheet id not found, please assign filter checksheet for this menu !");
@@ -50,7 +51,7 @@ function onfail_get_filter_checksheet_id(e) {
     alert1(e + '_onfail_get_filter_checksheet_id()');
     loading_hide();
 }
-function get_checksheet_details(checksheet_id) {
+function get_kyff_filter_checksheet_details(checksheet_id) {
     try {
         if (checksheet_id == 0) {
             alert1("checksheet id is 0");
@@ -71,7 +72,7 @@ function get_checksheet_details(checksheet_id) {
             });
 
             var Getchecksheetdata_json = JSON.stringify(Getchecksheetdata);
-            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetdataForEditChecksheet', JSON.stringify(Getchecksheetdata_json), onsuccess_get_checksheet_details, onfail_get_checksheet_details);
+            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetdataForEditChecksheet', JSON.stringify(Getchecksheetdata_json), onsuccess_get_kyff_filter_checksheet_details, onfail_get_kyff_filter_checksheet_details);
             getdata.callOtherDomain();
         }
     }
@@ -80,7 +81,7 @@ function get_checksheet_details(checksheet_id) {
         loading_hide();
     }
 }
-function onsuccess_get_checksheet_details(e) {
+function onsuccess_get_kyff_filter_checksheet_details(e) {
     try {
         var result = e.responseText;
         var myData = eval('' + result + '');
@@ -107,7 +108,7 @@ function onsuccess_get_checksheet_details(e) {
         localStorage.setItem("checksheet_data", JSON.stringify(data));
         localStorage.setItem("checksheet_AllData", JSON.stringify(myArray));
         localStorage.setItem("checksheet_type_filter", '9');
-        checksheet_AllData_fix = JSON.stringify(myArray);
+        kyff_filter_checksheet_data = JSON.stringify(myArray);
 
         read_dynamic_checksheet("", check_type, "", data, "", 9, 0);
         //check_n_show_search_button();
@@ -117,7 +118,7 @@ function onsuccess_get_checksheet_details(e) {
         loading_hide();
     }
 }
-function onfail_get_checksheet_details(e) {
+function onfail_get_kyff_filter_checksheet_details(e) {
     alert1(e + '_onfail_get_checksheet_details()');
     loading_hide();
 }
@@ -125,11 +126,11 @@ function onfail_get_checksheet_details(e) {
 // Search Filter Where Condition
 var OFFSET = 0;
 var FETCH = 50;
-function get_survey_json() {
+function get_kyff_filter_survey_json() {
     try {
         var arr = localStorage.getItem('checksheet_data');
         var AllData = localStorage.getItem('checksheet_AllData');
-        var filter_button_Data = JSON.parse(checksheet_AllData_fix);
+        var filter_button_Data = JSON.parse(kyff_filter_checksheet_data);
         localStorage.setItem('checksheet_AllData', JSON.stringify(filter_button_Data));
         validate_and_submit_surveydata(1, 9, JSON.parse(arr));
 

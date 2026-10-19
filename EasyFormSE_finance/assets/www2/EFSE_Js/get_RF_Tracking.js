@@ -245,7 +245,7 @@ function onPhotoDataSuccess_autofill(t_query_type, imageData, img_id_type22, img
             storage.setItem('crash_status', JSON.stringify('0'));
             curr_btn_mode = "";
             loading_hide();
-        }, onfail, 'SqlitePlugin', 'insertValuse', q_jsonobj);
+        }, onfail_request, 'SqlitePlugin', 'insertValuse', q_jsonobj);
     } catch (e) {
         alert1(e + "_onPhotoDataSuccess_autofill()")
         storage.setItem('crash_status', JSON.stringify('0'));

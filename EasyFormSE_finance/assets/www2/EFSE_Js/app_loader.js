@@ -110,5 +110,5 @@ var AppLoader = (function () {
         tileOff = setTimeout(removeTile, TILE_LINGER_MS);
     }
 
-    return { html: html, pending: pending, show: show, hide: hide, isUp: isUp, busy: busy, idle: idle };
+    return { html: html, drawing: function () { return SVG; }, pending: pending, show: show, hide: hide, isUp: isUp, busy: busy, idle: idle };
 })();

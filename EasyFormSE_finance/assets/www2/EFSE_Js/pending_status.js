@@ -2,10 +2,10 @@
 var last_photo_count = 0;
 var last_video_count = 0;
 var last_trip_count = 0;
-var last_task_count = 0;
+var pending_last_task_count = 0;
 
 // change downloading label autmatically
-function starttimer() {
+function update_upload_wait_label() {
     var wait_label = document.getElementById("lbl_uploading");
     wait_label.innerHTML = wait_label.innerHTML == "Uploading..." ? "Please Wait..."
 			: "Uploading...";
@@ -82,8 +82,8 @@ function get_pending_trips(e) {
     try {
         var myArray = JSON.parse(e);
         $('#lbl_pen_t_counter').text(myArray.length);
-        if (last_task_count != myArray.length) {
-            last_task_count = myArray.length;
+        if (pending_last_task_count != myArray.length) {
+            pending_last_task_count = myArray.length;
             $("#lbl_pen_t_counter").addClass('mk_vibrate');
             setTimeout(function () {
                 $("#lbl_pen_t_counter").removeClass('mk_vibrate');

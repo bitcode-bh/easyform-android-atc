@@ -1,7 +1,7 @@
 ﻿var last_step_count = 0;
 var last_navigation_count = 0;
 var last_module_count = 0;
-var last_task_count = 0;
+var download_last_task_count = 0;
 var last_flow_count = 0;
 
 // update start download flag
@@ -64,7 +64,7 @@ function onfail_update_status_in_download_table(e) {
 }
 
 // change downloading label autmatically
-function starttimer() {
+function update_download_wait_label() {
     var wait_label = document.getElementById("lbl_downloading");
     wait_label.innerHTML = wait_label.innerHTML == "Collecting Data..." ? "Please Wait..." : "Collecting Data...";
 }
@@ -257,8 +257,8 @@ function onsuccess_get_download_counter(e) {
             myApp.setProgressbar('#task_download_progressbar', task_pro_value);
             $('#task_lbl_pb_counter').text(task_pro_value + '%');
         }
-        if (last_task_count != curr_t_a_count) {
-            last_task_count = curr_t_a_count;
+        if (download_last_task_count != curr_t_a_count) {
+            download_last_task_count = curr_t_a_count;
             $("#lbl_curr_t_a_counter").addClass('mk_vibrate');
             setTimeout(function () {
                 $("#lbl_curr_t_a_counter").removeClass('mk_vibrate');

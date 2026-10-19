@@ -6,7 +6,13 @@
 // .getTripStats() reports no active trip -- mirrors how the Start Trip tab
 // bar action already reads the same trip_status signal.
 
-var HomeWidgetTripStats = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeWidgetTripStatsController) return;
+    function create(options) {
+        options = options || {};
+        var HomeDashboardData = options.data || w.HomeDashboardData;
+
     'use strict';
 
     function render(container, cfg) {
@@ -57,5 +63,11 @@ var HomeWidgetTripStats = (function () {
         });
     }
 
-    return { render: render, refresh: refresh };
-})();
+
+        var api = { render: render, refresh: refresh };
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+        return api;
+    }
+    w.AppHomeWidgetTripStatsController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeWidgetTripStats = create();
+})(window);

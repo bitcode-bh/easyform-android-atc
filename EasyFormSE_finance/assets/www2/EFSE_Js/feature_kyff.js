@@ -28,7 +28,7 @@ function get_KYFF_report_data() {
             'u_c': uniqcode
         });
 
-        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Select_KYFF', JSON.stringify(paramObj), onsuccess_get_KYFF_report_data, onfail);
+        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Select_KYFF', JSON.stringify(paramObj), onsuccess_get_KYFF_report_data, onfail_kyff);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -116,7 +116,7 @@ function get_technician_report_data() {
             'u_c': uniqcode
         });
 
-        var getdata = new Webservicecall_POST(global_url + 'UserWebService.asmx/Get_Dynamic_TV_Report', 'data=' + encodeURIComponent(JSON.stringify(paramObj)) + '&auth1=' + encodeURIComponent(JSON.stringify(auth)), onsuccess_get_technician_report_data, onfail);
+        var getdata = new Webservicecall_POST(global_url + 'UserWebService.asmx/Get_Dynamic_TV_Report', 'data=' + encodeURIComponent(JSON.stringify(paramObj)) + '&auth1=' + encodeURIComponent(JSON.stringify(auth)), onsuccess_get_technician_report_data, onfail_kyff);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -185,7 +185,7 @@ function get_live_alram_report_data() {
             'u_c': uniqcode
         });
 
-        var getdata = new Webservicecall_POST(global_url + 'UserWebService.asmx/Get_Dynamic_TV_Report', 'data=' + encodeURIComponent(JSON.stringify(paramObj)) + '&auth1=' + encodeURIComponent(JSON.stringify(auth)), onsuccess_get_live_alram_report_data, onfail);
+        var getdata = new Webservicecall_POST(global_url + 'UserWebService.asmx/Get_Dynamic_TV_Report', 'data=' + encodeURIComponent(JSON.stringify(paramObj)) + '&auth1=' + encodeURIComponent(JSON.stringify(auth)), onsuccess_get_live_alram_report_data, onfail_kyff);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -234,7 +234,7 @@ function onsuccess_get_live_alram_report_data(e) {
 }
 
 
-function onfail(e) {
+function onfail_kyff(e) {
     alert1('Network error, Please try again...!');
     loading_hide();
 }

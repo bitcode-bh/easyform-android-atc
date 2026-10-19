@@ -314,7 +314,7 @@ function check_survey_entry_next_read_group_post(server_task_id, target_div, ind
                 loading_hide();
                 alert1(responseText[0].message);
             }
-        }, onfail);
+        }, onfail_group_task);
         getdata.callOtherDomain();
 
     } catch (e) {
@@ -710,7 +710,7 @@ function update_task_status_on_pm_checksheet_submit_group() {
                     alert1(message);
                     loading_hide();
                 }
-            }, onfail);
+            }, onfail_group_task);
             getdata.callOtherDomain();
         }
     }
@@ -813,7 +813,7 @@ function onfail_Insert_Update_Question_Log_group(e) {
     alert1(e + '_onfail_Insert_Update_Question_Log_group()');
 }
 
-function onfail(e) {
+function onfail_group_task(e) {
     loading_hide();
     alert1(e)
 }

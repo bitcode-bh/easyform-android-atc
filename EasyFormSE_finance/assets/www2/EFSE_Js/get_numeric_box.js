@@ -16,7 +16,7 @@ function get_ar_measurement(t_ele_id, t_type, t_target_class) {
                                  var curr_img_div_id = JSON.parse(storage.getItem('ar_measure_ele_id'));
                                  var smallImage = document.getElementById(curr_img_div_id);
                                  smallImage.value = code;
-                             }, onfail_plugin, 'ARMeasure', 'anAction', q_jsonobj);
+                             }, onfail_numeric_plugin, 'ARMeasure', 'anAction', q_jsonobj);
     }
     else {
         // new plugin for outdoor tower height measurement
@@ -46,7 +46,7 @@ function get_ar_measurement(t_ele_id, t_type, t_target_class) {
                 var imageData = myArray[0].photo_path;
                 fill_ar_photo_to_bottom_img(imageData, t_target_class);
             }
-        }, onfail_plugin, 'ArMeasurePlugin', 'anAction', q_jsonobj);
+        }, onfail_numeric_plugin, 'ArMeasurePlugin', 'anAction', q_jsonobj);
     }
 }
 
@@ -66,13 +66,13 @@ function open_whatsapp(num_id) {
                 'mob_number': mob_number
             });
 
-            cordova.exec(onsuccess_plugin, onfail_plugin, 'openWhatsappPlugin', 'anAction', q_jsonobj);
+            cordova.exec(onsuccess_numeric_plugin, onfail_numeric_plugin, 'openWhatsappPlugin', 'anAction', q_jsonobj);
         }
     }
 }
 
-function onsuccess_plugin(e) { }
-function onfail_plugin(e) { }
+function onsuccess_numeric_plugin(e) { }
+function onfail_numeric_plugin(e) { }
 
 get_image_param_for_upload = (t_target_class) => {
 

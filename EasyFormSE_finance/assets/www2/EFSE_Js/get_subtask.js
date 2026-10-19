@@ -136,7 +136,7 @@ get_udf_data_by_id = (t_new_id, sub_udf_id) => {
             alert1(message);
             loading_hide();
         }
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 
 }
@@ -279,7 +279,7 @@ get_sub_task_listing = (t_new_id, sub_udf_id, sub_flow_id) => {
             'order_by': order_by_obj
         });
 
-        var getdata = new Webservicecall_REST(global_wcf_url + 'OnlineTaskListing', JSON.stringify(param_obj), onsuccess_get_subtask_listing, onfail);
+        var getdata = new Webservicecall_REST(global_wcf_url + 'OnlineTaskListing', JSON.stringify(param_obj), onsuccess_get_subtask_listing, onfail_request);
         getdata.callOtherDomain();
     }
 }
@@ -417,7 +417,7 @@ get_sub_task_listing_by_search_online = (t_new_id, sub_udf_id, sub_flow_id) => {
             'order_by': order_by_obj
         });
 
-        var getdata = new Webservicecall_REST(global_wcf_url + 'OnlineTaskListing', JSON.stringify(param_obj), onsuccess_get_subtask_listing, onfail);
+        var getdata = new Webservicecall_REST(global_wcf_url + 'OnlineTaskListing', JSON.stringify(param_obj), onsuccess_get_subtask_listing, onfail_request);
         getdata.callOtherDomain();
     }
 }
@@ -1160,7 +1160,7 @@ get_blank_task_checksheet = (t_checksheet_id) => {
             var message = responseText[0].message;
             mk_notify(message, "error");
         }
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 }
 
@@ -1236,7 +1236,7 @@ function remove_last_subtask_cntrl_online(ser_task_id, selected_start_status, cu
                     alert(message);
                     loading_hide();
                 }
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     }
@@ -1270,7 +1270,7 @@ function Task_Edit_Subtask(server_task_id) {
     Param_obj.push({
         'task_id': server_task_id
     });
-    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Select_TaskId_Wise_Task_Master_And_Sub', JSON.stringify(Param_obj), onsuccess_Task_Edit_Subtask, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Select_TaskId_Wise_Task_Master_And_Sub', JSON.stringify(Param_obj), onsuccess_Task_Edit_Subtask, onfail_request);
     getdata.callOtherDomain();
 }
 

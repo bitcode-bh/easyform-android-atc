@@ -1,6 +1,7 @@
 
 // Init App
 var myApp = new Framework7({
+    ajaxLinks: 'a[href]',
     modalTitle: 'Framework7', // Enable Material theme
     material: true,
     animationPages: false,
@@ -28,8 +29,8 @@ var $$ = Dom7;
 var mainView = myApp.addView('.view-main', {
 });
 // Add another view, which is in right panel
-var rightView = myApp.addView('.view-right', {
-});
+var rightView = document.querySelector('.view-right') ? myApp.addView('.view-right', {
+}) : undefined;
 
 // Show/hide preloader for remote ajax loaded pages
 // Probably should be removed on a production/local app

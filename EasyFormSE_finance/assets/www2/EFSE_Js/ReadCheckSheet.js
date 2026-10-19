@@ -193,6 +193,7 @@ function read_dynamic_checksheet_main(heading, check_type, step, data, buttons, 
 }
 
 function read_dynamic_checksheet_main_POST(heading, check_type, step, data, buttons, form_flag_temp, disabled_flag, target_div, target_index) {
+    if (typeof AppFormDrafts !== 'undefined' && AppFormDrafts.beforeRender(arguments, function (args) { read_dynamic_checksheet_main_POST.apply(null, args); })) return;
     try {
         curr_target_div = target_div;
         set_system_variable();
@@ -5433,7 +5434,7 @@ function highlight_car_que_group(t_Car_que_id_Array) {
         'checksheet_id': checksheet_id
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'GetdataForQueidUsingTaskid', JSON.stringify(Param_obj), onsuccess_highlight_car_que_group, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'GetdataForQueidUsingTaskid', JSON.stringify(Param_obj), onsuccess_highlight_car_que_group, onfail_request);
     getdata.callOtherDomain();
 }
 function onsuccess_highlight_car_que_group(e) {
@@ -5515,13 +5516,4 @@ function set_system_variable() {
 set_switch_hidden_ans = (t_obj) => {
     let text = $(t_obj).html();
     $(t_obj).parent(".switch-hidden").find(".spn_hdn_switch").text(text);
-}
-
-function isEmpty(obj) {
-    return (
-        obj &&
-        typeof obj === "object" &&
-        !Array.isArray(obj) &&
-        Object.keys(obj).length === 0
-    );
 }

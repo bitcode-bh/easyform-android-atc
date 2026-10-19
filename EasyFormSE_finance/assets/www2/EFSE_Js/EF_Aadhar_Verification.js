@@ -1,5 +1,5 @@
 ﻿
-var timer, otp_sent_count = 0;
+var aadhar_otp_timer, otp_sent_count = 0;
 
 function autofill_aadhar_number() {
     var user_data = localStorage.getItem('profile_user_data');
@@ -95,14 +95,14 @@ function onsuccess_get_otp(e) {
             $("#btn_Resend_OTP").hide();
             $("#spn_timer").show();
             $("#spn_timer").html(0);
-            timer = setInterval(function () {
+            aadhar_otp_timer = setInterval(function () {
                 var sec = parseInt($("#spn_timer").html());
                 sec = sec + 1;
                 $("#spn_timer").html(sec);
                 if (sec == 60) {
                     $("#spn_timer").hide();
                     $("#btn_Resend_OTP").show();
-                    clearInterval(timer);
+                    clearInterval(aadhar_otp_timer);
                 }
             }, 1000);
 
@@ -223,7 +223,7 @@ function onfail_submit_otp(e) {
     loading_hide();
 }
 
-function get_user_data() {
+function get_aadhar_user_data() {
     var company_id = JSON.parse(storage.getItem('company_id'));
     var aadhar_user_id = localStorage.getItem('aadhar_user_id');
 
@@ -234,11 +234,11 @@ function get_user_data() {
     });
 
     loading();
-    var getdata1 = new Webservicecall_REST(global_wcf_url + 'WCF_select_user_master_by_userid', JSON.stringify(Param_obj), onsucess_get_user_data, onfail);
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'WCF_select_user_master_by_userid', JSON.stringify(Param_obj), onsuccess_get_aadhar_user_data, onfail_request);
     getdata1.callOtherDomain();
 }
 
-function onsucess_get_user_data(invocation1) {
+function onsuccess_get_aadhar_user_data(invocation1) {
     try {
         var Search_data = invocation1.responseText;
         Search_data = eval('(' + Search_data + ')');
@@ -254,7 +254,7 @@ function onsucess_get_user_data(invocation1) {
 
             checksheet_id = message[0].checksheet_id;
 
-            Autofill_Json_value(Data);
+            autofill_aadhar_user_values(Data);
 
         }
         else {
@@ -268,7 +268,7 @@ function onsucess_get_user_data(invocation1) {
     }
 }
 
-function Autofill_Json_value(Data) {
+function autofill_aadhar_user_values(Data) {
 
     var name = aadhar_data.full_name;
     var d_o_b = aadhar_data.dob;
@@ -319,10 +319,10 @@ function Autofill_Json_value(Data) {
         }
     }
 
-    Update_user_data(Data);
+    update_aadhar_user_data(Data);
 }
 
-function Update_user_data(Json_data) {
+function update_aadhar_user_data(Json_data) {
     var company_id = JSON.parse(storage.getItem('company_id'));
     var aadhar_user_id = localStorage.getItem('aadhar_user_id');
 
@@ -348,11 +348,11 @@ function Update_user_data(Json_data) {
         'Check_User_Upadte_Or_Create': "Update"
     });
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsucess_Update_Json_data, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsuccess_update_aadhar_user_data, onfail_request);
     getdata.callOtherDomain();
 }
 
-function onsucess_Update_Json_data(invocation1) {
+function onsuccess_update_aadhar_user_data(invocation1) {
     var Suc_Message = invocation1.responseText;
     Suc_Message = eval('(' + Suc_Message + ')');
     var status = Suc_Message[0].status;
@@ -380,11 +380,11 @@ function insert_aadhar_data() {
     });
 
     loading();
-    var getdata1 = new Webservicecall_REST(global_wcf_url + 'Insert_Adhar_and_bankdata', JSON.stringify(Param_obj), onsuccess_insert_aadhar_bank_data, onfail);
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'Insert_Adhar_and_bankdata', JSON.stringify(Param_obj), onsuccess_insert_aadhar_verification, onfail_request);
     getdata1.callOtherDomain();
 }
 
-function onsuccess_insert_aadhar_bank_data(invocation1) {
+function onsuccess_insert_aadhar_verification(invocation1) {
     var Search_data = invocation1.responseText;
     Search_data = eval('(' + Search_data + ')');
     var message = Search_data[0].message;

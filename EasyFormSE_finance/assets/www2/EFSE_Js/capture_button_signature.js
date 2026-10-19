@@ -93,7 +93,7 @@ function capture_Photo_sign() {
     }
 }
 
-var curr_photo_id, curr_query_type;
+var signature_photo_id, signature_query_type;
 // check photo for insert or update
 function check_photo_entry_sign(imageData) {
     try {
@@ -137,13 +137,13 @@ function check_photo_entry_sign(imageData) {
 }
 
 function onsuccess_check_photo_entry_sign(e) {
-    curr_photo_id = e;
-    curr_query_type = 'update';
+    signature_photo_id = e;
+    signature_query_type = 'update';
     onPhotoDataSuccess_sign();
 }
 
 function onfail_check_photo_entry_sign(e) {
-    curr_query_type = 'insert';
+    signature_query_type = 'insert';
     onPhotoDataSuccess_sign();
 }
 
@@ -276,13 +276,13 @@ function insert_photo_entry_sign(e) {
         var img_div = JSON.parse(storage.getItem('sign_div_id'));
         var prop_name = $("#" + img_div + "").attr('name');
 
-        if (curr_query_type == 'insert') {
+        if (signature_query_type == 'insert') {
             var query = "INSERT INTO p_master (tid, que_id, checksheetid, p_name, p_url, p_key, p_value ,p_type, flag, Ph_id, it_id, millisecond, match_temp_id, que_name) VALUES('"
                 + t_id + "','" + img_que_id + "','" + check_type + "','" + p_name + "','" + img_path + "','" + step + "','image','image/jpg','0','"
                 + type22_img_que_id + "', '" + t_row_index_no + "', '" + time + "', '" + match_temp_id + "', '" + prop_name + "');";
         }
         else {
-            var query = "update p_master set p_url='" + img_path + "', p_name='" + p_name + "', millisecond='" + time + "', flag='0' where pid='" + curr_photo_id + "'";
+            var query = "update p_master set p_url='" + img_path + "', p_name='" + p_name + "', millisecond='" + time + "', flag='0' where pid='" + signature_photo_id + "'";
         }
 
         //alert1(query);
@@ -344,7 +344,7 @@ function get_full_view_image_type9_F7(src) {
     try {
         myApp.closeModal('.popover-type9');
 
-        if (glob_curr_form_flag == 7) {
+        if (signature_form_flag == 7) {
             setTimeout(function () {
                 $('.photo-browser-popup').find('a').removeAttr('class');
                 $('.photo-browser-popup').find('a').addClass('link');
@@ -397,7 +397,7 @@ function get_full_view_image_type9_F7(src) {
 }
 
 ///customer signature click
-var glob_curr_form_flag;
+var signature_form_flag;
 function CaptureClick_sign_Customer(item_id, que_id, img_div, form_flag_temp, null_img) {
     try {
         myApp.closeModal('.popover-type9');
@@ -405,7 +405,7 @@ function CaptureClick_sign_Customer(item_id, que_id, img_div, form_flag_temp, nu
         storage.setItem('sign_que_id', JSON.stringify(que_id));
         storage.setItem('sign_div_id', JSON.stringify(img_div));
         storage.setItem('camera_type', JSON.stringify('9'));
-        glob_curr_form_flag = form_flag_temp;
+        signature_form_flag = form_flag_temp;
 
         var company_id = JSON.parse(storage.getItem('company_id'));
 
@@ -527,7 +527,7 @@ function check_customer_sign_entry(e) {
     try {
         loading_hide();
 
-        var curr_form_flag = glob_curr_form_flag;
+        var curr_form_flag = signature_form_flag;
         var response = JSON.parse(e);
         var photo_id = response[0].photo_id;
         var curr_file_size_mb = response[0].photo_size;

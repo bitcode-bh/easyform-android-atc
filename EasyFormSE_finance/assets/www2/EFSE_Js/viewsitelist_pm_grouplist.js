@@ -1,13 +1,27 @@
-﻿
+/* One controller per checksheet page; legacy exports keep full-reload pages working. */
+(function (w) {
+    if (w.AppChecksheetController) return;
+    function create(options) {
+        options = options || {};
+        var $ = options.$ || function () { return w.$.apply(w, arguments); };
+        var storage = options.services ? options.services.storage : w.storage;
+        var cordova = options.services ? options.services.cordova : {
+            exec: function () { return w.cordova.exec.apply(w.cordova, arguments); }
+        };
+        function Webservicecall_REST() {
+            return Reflect.construct(options.services ? options.services.request : w.Webservicecall_REST, Array.prototype.slice.call(arguments));
+        }
+        var setTimeout = options.scope ? function (fn, ms) { return options.scope.timeout(fn, ms); } : w.setTimeout.bind(w);
+        var clearTimeout = options.scope && options.scope.clearTimeout ? options.scope.clearTimeout : w.clearTimeout.bind(w);
+        var server_dt_Counter = 0, last_query;
+        function savedLists() { return options.scope ? options.savedLists : w.AppPhase1Lists; }
+        function enable_back_button() {
+            if (options.enableBack) options.enableBack();
+            else w.enable_back_button();
+        }
+
 // get formatted date
-function getFormattedDate(date) {
-    var year = date.getFullYear();
-    var month = (1 + date.getMonth()).toString();
-    month = month.length > 1 ? month : '0' + month;
-    var day = date.getDate().toString();
-    day = day.length > 1 ? day : '0' + day;
-    return year + '/' + month + '/' + day;
-}
+
 
 // Get distance between two point in Meters
 // compare server date with current date
@@ -104,7 +118,7 @@ function onfail_get_server_date(e) {
 function get_checklist_data_for_task() {
     try {
         var flow_Array = JSON.parse(storage.getItem('flow_Array'));
-        if (flow_Array.length = 1) {
+        if (flow_Array.length === 1) {
             var moduleid = JSON.parse(storage.getItem('wayflow'));
         } else {
             var moduleid = flow_Array[flow_Array.length - 1].wayflow;
@@ -133,7 +147,7 @@ function onsuccess_get_checklist_data_for_task(e) {
             // table not available get data from server
 
             var flow_Array = JSON.parse(storage.getItem('flow_Array'));
-            if (flow_Array.length = 1) {
+            if (flow_Array.length === 1) {
                 var moduleid = JSON.parse(storage.getItem('wayflow'));
             } else {
                 var moduleid = flow_Array[flow_Array.length - 1].wayflow;
@@ -193,7 +207,7 @@ function get_checklist_data_for_task_post() {
     if (cl_geofence == 'true') {
         var cl_geofence_Array = list_data[0].checklist_geo_data;
         var cust_checksheet_id = '';
-        for (g = 0; g < cl_geofence_Array.length; g++) {
+        for (var g = 0; g < cl_geofence_Array.length; g++) {
             var ref_check_type = cl_geofence_Array[g].ref_check_type;
             if (ref_check_type == 3) {
                 cust_checksheet_id = cl_geofence_Array[g].ref_checksheet_id;
@@ -223,7 +237,7 @@ function get_list_of_pm_checksheets() {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_get_list_of_pm_checksheets, onfail_get_list_of_pm_checksheets, 'SqlitePlugin', 'showValues', q_jsonobj);
+        cordova.exec((savedLists() ? savedLists().response('checksheet_list', onsuccess_get_list_of_pm_checksheets) : onsuccess_get_list_of_pm_checksheets), onfail_get_list_of_pm_checksheets, 'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
         alert1(e + '_get_list_of_pm_checksheets()');
         loading_hide();
@@ -240,7 +254,15 @@ function onsuccess_get_list_of_pm_checksheets(e) {
         var blue_index = 0;
         var checksheet_displaying = 0;
         var myArray = JSON.parse(e);
+        if ((!Array.isArray(myArray) || myArray.length === 0) && savedLists() &&
+            savedLists().failed('checksheet_list', 'The selected task is not available locally.')) {
+            enable_back_button();
+            loading_hide();
+            return;
+        }
+        if (options.beginRender) options.beginRender();
         $("#checksheet_list").empty();
+        var pending_rows = options.renderRows ? [] : null;
         var breakpoint = 0;
 
         var data_json = JSON.parse(storage.getItem('list_json'));
@@ -311,7 +333,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                     var len1 = myArray1.length;
                     var role_id = JSON.parse(storage.getItem('role_id'));
 
-                    for (y = 0; y < len1; y++) {
+                    for (var y = 0; y < len1; y++) {
                         var c_role_id = myArray1[y].role_id;
                         if (c_role_id == role_id) {
                             myArray1[y]['dynamic_checksheet'] = 'true';
@@ -335,7 +357,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                 // Creating new global var
                 var checksheet_dependency = [];
                 var new_checksheet_list = [];
-                for (j = 0; j < checksheet_list.length; j++) {
+                for (var j = 0; j < checksheet_list.length; j++) {
                     var is_mandatory = checksheet_list[j].is_mandatory;
                     var is_disabled = checksheet_list[j].is_disabled;
                     var is_submited = checksheet_list[j].is_submited;
@@ -384,7 +406,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                 var new_checklist_obj = myArray1[0].new_checklist;
                 if (new_checklist_obj == null || new_checklist_obj == undefined || new_checklist_obj == "" || new_checklist_obj == "Unknown") {
                     var new_checksheet_list = [];
-                    for (j = 0; j < checksheet_list.length; j++) {
+                    for (var j = 0; j < checksheet_list.length; j++) {
                         var is_mandatory = checksheet_list[j].is_mandatory;
                         var is_disabled = checksheet_list[j].is_disabled;
                         var is_submited = checksheet_list[j].is_submited;
@@ -428,24 +450,17 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                     old_checksheet_list = remove_unused_object_from_global_var(checksheet_list, old_checksheet_list);
 
                     // merge global var/ second user login (on server 1st user global var saved (siklu))
-                    for (k = 0; k < checksheet_list.length; k++) {
+                    var old_checksheet_rows = index_list_rows(old_checksheet_list, ['checksheetid', 'start_status', 'sub_flow_id', 'role_id'], 'viewsitelist_pm_grouplist.html');
+                    for (var k = 0; k < checksheet_list.length; k++) {
                         var loc_checksheetid = checksheet_list[k].checksheetid;
                         var loc_start_status = checksheet_list[k].start_status;
                         var loc_sub_flow_id = checksheet_list[k].sub_flow_id;
                         var loc_chk_found = 0;
                         var role_id = checksheet_list[k].role_id
 
-                        for (m = 0; m < old_checksheet_list.length; m++) {
-                            var ser_checksheetid = old_checksheet_list[m].checksheetid;
-                            var ser_start_status = old_checksheet_list[m].start_status;
-                            var ser_sub_flow_id = old_checksheet_list[m].sub_flow_id;
-                            var ser_role_id = old_checksheet_list[m].role_id
-
-                            if (ser_checksheetid == loc_checksheetid && ser_start_status == loc_start_status && ser_sub_flow_id == loc_sub_flow_id && role_id == ser_role_id) {
-                                loc_chk_found++;
-                                break;
-                            }
-                        }
+                        var old_matches = old_checksheet_rows.indices([loc_checksheetid, loc_start_status, loc_sub_flow_id, role_id]);
+                        var m = old_matches.length ? old_matches[0] : -1;
+                        loc_chk_found = old_matches.length;
 
                         if (loc_chk_found > 0) {
                             // server checksheet found in local checklist
@@ -513,6 +528,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
             var curr_btn_mode = JSON.parse(storage.getItem('curr_btn_mode'));
             var group_name_array = [];
             var group_btn_color_array = [];
+            var rendered_checksheet_rows = index_list_rows(new_checksheet_list, ['checksheetid', 'start_status'], 'viewsitelist_pm_grouplist.html');
             for (var i = 0; i < checksheet_list.length; i++) {
                 var icon_str = '';
                 var checksheetid = checksheet_list[i].checksheetid;
@@ -542,7 +558,9 @@ function onsuccess_get_list_of_pm_checksheets(e) {
 
                         // check is_submitted from new checklist in global var
                         var d_checksheetid = checksheet_list[i].checksheetid;
-                        for (n = 0; n < new_checksheet_list.length; n++) {
+                        var rendered_matches = rendered_checksheet_rows.indices([d_checksheetid, c_start_status]);
+                        for (var checklist_cursor = 0; checklist_cursor < rendered_matches.length; checklist_cursor++) {
+                            var n = rendered_matches[checklist_cursor];
                             var g_checksheetid = new_checksheet_list[n].checksheetid;
                             var g_start_status = new_checksheet_list[n].start_status;
                             var g_role_id = new_checksheet_list[n].role_id;
@@ -572,7 +590,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                             if (c_start_status == start_status) {
                                 // checksheet status match with current status
 
-                                for (g = 0; g < status_array.length; g++) {
+                                for (var g = 0; g < status_array.length; g++) {
                                     if (c_start_status == status_array[g]) {
                                         // checksheet belongs to flow status array
                                         st_found = 1;
@@ -582,7 +600,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                             }
                         }
                         else {
-                            for (g = 0; g < status_array.length; g++) {
+                            for (var g = 0; g < status_array.length; g++) {
                                 if (c_start_status == status_array[g]) {
                                     // checksheet belongs to flow status array
                                     st_found = 1;
@@ -612,7 +630,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                             if (cl_geofence == 'true') {
                                 var cl_geofence_radius = parseInt(list_data[0].checklist_radius);
                                 var cl_geofence_Array = list_data[0].checklist_geo_data;
-                                for (g = 0; g < cl_geofence_Array.length; g++) {
+                                for (var g = 0; g < cl_geofence_Array.length; g++) {
                                     var geo_checksheet_id = cl_geofence_Array[g].checksheet_id;
                                     var ref_checksheet_id = cl_geofence_Array[g].ref_checksheet_id;
                                     var ref_check_type = cl_geofence_Array[g].ref_check_type;
@@ -631,14 +649,14 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                                         var t_finaljsonobj = JSON.parse(storage.getItem('cl_geo_task_json'));
                                     }
 
-                                    var data = itemObj._checkStrObj(t_finaljsonobj[0].data);  		// check_item
-                                    for (k = 0; k < data.length; k++) {
+                                    var data = (options.itemObj || w.itemObj)._checkStrObj(t_finaljsonobj[0].data);  		// check_item
+                                    for (var k = 0; k < data.length; k++) {
                                         if (lat_que_id == data[k].que_id) {
                                             var checksheet_lat = data[k].ans;
                                             break;
                                         }
                                     }
-                                    for (k1 = 0; k1 < data.length; k1++) {
+                                    for (var k1 = 0; k1 < data.length; k1++) {
                                         if (long_que_id == data[k1].que_id) {
                                             var checksheet_long = data[k1].ans;
                                             break;
@@ -738,7 +756,9 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                                         var enable = 0;  // enabled it there is no reference
                                     }
                                     else {
-                                        for (p = 0; p < new_checksheet_list.length; p++) {
+                                        var reference_matches = rendered_checksheet_rows.indices([Ref_checksheet_id, c_start_status]);
+                                        for (var reference_cursor = 0; reference_cursor < reference_matches.length; reference_cursor++) {
+                                            var p = reference_matches[reference_cursor];
                                             if (Ref_checksheet_id == new_checksheet_list[p].checksheetid && c_start_status == new_checksheet_list[p].start_status) {
                                                 var ref_is_submited = new_checksheet_list[p].is_submited;
                                                 var ref_c_name = new_checksheet_list[p].c_name;
@@ -857,6 +877,25 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                                 bgr_found++;
                             }
 
+                            if (options.action) {
+                                if (param.indexOf('check_old_task_for_checksheet(') === 0) {
+                                    var completed = back_color == "green";
+                                    param = options.action('check_old_task_for_checksheet', [checksheet_list[i].checksheetid,
+                                        checksheet_list[i].c_name, server_task_id, checksheet_list[i].start_status,
+                                        checksheet_list[i].end_status, checksheet_list[i].last_step, reject_status,
+                                        completed ? '1' : '0', completed ? 'true' : 'false', is_disabled,
+                                        is_readchecksheet, is_online, i, checksheet_list[i].Group_Name, is_icon_display].map(String));
+                                } else if (param.indexOf('grey_button_click(') === 0) {
+                                    param = options.action('grey_button_click', [tat_date, end_tat_date, dependent, tat_type].map(String));
+                                } else if (param.indexOf('grey2_button_click(') === 0) {
+                                    param = options.action('grey2_button_click', [String(ref_c_name)]);
+                                } else if (param === 'red_button_click()') {
+                                    param = options.action('red_button_click', []);
+                                } else {
+                                    throw new Error('Checksheet action is not yet migrated');
+                                }
+                            }
+
                             if (back_color == "green") {
                                 back_color = "#4caf50";
                             }
@@ -876,7 +915,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                             else {
                                 var media_data = JSON.parse(is_delete_photo);
                                 if (media_data.length > 0) {
-                                    for (dm = 0; dm < media_data.length; dm++) {
+                                    for (var dm = 0; dm < media_data.length; dm++) {
                                         var checksheet_name = media_data[dm].c_name;
                                         if (checksheet_list[i].c_name == checksheet_name) {
                                             main_back_color = 'background-color: #ffcccc';
@@ -928,7 +967,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                                 }
                                 else {
                                     group_name_array.push(group_name);
-                                    list_item += '<li class="list_grp_checksheet" onclick="show_hide_group_checksheet()" style="font-weight:bold;border-right: 0px solid #2196f3;"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i id="icon_group_checksheet" class="fa fa-plus-square-o" style="color: #000;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + group_name + '</div></div></a></li>';
+                                    list_item += '<li class="list_grp_checksheet" onclick="' + (options.action ? options.action('show_hide_group_checksheet', []) : 'show_hide_group_checksheet()') + '" style="font-weight:bold;border-right: 0px solid #2196f3;"><a class="item-content button" style="padding-left:20px; ' + main_back_color + '"><div class="item-media"><i id="icon_group_checksheet" class="fa fa-plus-square-o" style="color: #000;"></i></div><div class="item-inner item-no-pad" style="padding-right:5px"><div class="item-title">' + group_name + '</div></div></a></li>';
                                 }
                             }
                             //////////////////////
@@ -973,7 +1012,8 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                             }
                             list_item += '</div></div></div></a>';
                             list_item += '</li>';
-                            $("#checksheet_list").append(list_item);
+                            if (pending_rows) pending_rows.push(list_item);
+                            else $("#checksheet_list").append(list_item);
                             checksheet_displaying++;
 
                             $('.cls_task_ico').click(function (event) {
@@ -994,6 +1034,8 @@ function onsuccess_get_list_of_pm_checksheets(e) {
             var list_item = '<li><input type="button" value="No Checksheet Found !"  class="theme_Selection_btn"></li>';
             $("#checksheet_list").append(list_item);
         }
+
+        if (pending_rows) options.renderRows(pending_rows);
 
         // remove autoscroll after checksheet submit - atc - 09062020
         ////when checksheet is submitted or go back from checksheet from, scroll that checksheet to top 
@@ -1064,7 +1106,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
 
                 var btn_str = '<p class="buttons-row" style="margin-top: 10px; display: block">';
                 var btn_len = buttons.length;
-                for (b = 0; b < btn_len; b++) {
+                for (var b = 0; b < btn_len; b++) {
                     var placement = buttons[b].placement;
                     if (placement == 'checksheet' || placement == 'all') {
                         var view_dependancy = buttons[b].view_dependancy;
@@ -1077,7 +1119,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                             var dependancy_status = buttons[b].dependancy_status;
                             var dlen = dependancy_status.length
                             var t_status = myArray[0].status;
-                            for (s = 0; s < dlen; s++) {
+                            for (var s = 0; s < dlen; s++) {
                                 if (dependancy_status[s] == t_status) {
                                     enabled = true;
                                     break;
@@ -1088,7 +1130,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                             var checksheet_id = buttons[b].checksheet_id;
                             var btn_status = buttons[b].status;
                             var submit_message = buttons[b].submit_message;
-                            punchout_entry = buttons[b].punchout_entry;
+                            var punchout_entry = buttons[b].punchout_entry;
                             if (punchout_entry == '' || punchout_entry == null || punchout_entry == undefined) {
                                 punchout_entry = '0';
                             }
@@ -1148,7 +1190,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
                     duration = 0;
                 }
 
-                punchin_detail = [{ 'in_ms': in_ms, 'duration': duration }];
+                var punchin_detail = [{ 'in_ms': in_ms, 'duration': duration }];
                 localStorage.setItem('punchin_detail', JSON.stringify(punchin_detail));
 
                 if (punch_flag == '0' || punch_flag == '' || punch_flag == null || punch_flag == undefined || punch_flag == 'Unknown' || punch_flag == 'null' || punch_flag == 'NA' || punch_flag == '-1') {
@@ -1186,7 +1228,7 @@ function onsuccess_get_list_of_pm_checksheets(e) {
             /////////////////////////////////
 
             //$("#tbl_chk_details").show();
-            var li_length = $("#checksheet_list li").length;
+            var li_length = pending_rows ? pending_rows.length : $("#checksheet_list li").length;
             if (li_length > 5) {
                 $("#txtsearch").show();
             } else {
@@ -1324,6 +1366,11 @@ function onsuccess_get_list_of_pm_checksheets(e) {
         loading_hide();
 
     } catch (e) {
+        if (savedLists() && savedLists().failed('checksheet_list', e)) {
+            enable_back_button();
+            loading_hide();
+            return;
+        }
         alert1("breakpoint: " + breakpoint);
         alert1(e + '_onsuccess_get_list_of_pm_checksheets');
         loading_hide();
@@ -1365,10 +1412,40 @@ function show_hide_group_checksheet(t_elem) {
 }
 
 
+// Each selection owns its native/server replies until the page leaves.
+var checksheet_open_generation = 0;
+var pending_checksheet_step_request;
+function guard_checksheet_open(callback) {
+    var generation = checksheet_open_generation;
+    return function () {
+        if (generation === checksheet_open_generation) return callback.apply(this, arguments);
+    };
+}
+function invalidate_checksheet_open() {
+    checksheet_open_generation++;
+    var request = pending_checksheet_step_request;
+    pending_checksheet_step_request = null;
+    if (request && typeof request.cancel === 'function') {
+        try { request.cancel(); } catch (error) { console.error('Checksheet request cleanup:', error); }
+    }
+}
+function retire_checksheet_open(event) {
+    invalidate_checksheet_open();
+    // A cached document's timers are paused/resumed by the WebView itself.
+    if (!event || !event.persisted) clearTimeout(cont_update_punch_ms);
+}
+if (options.scope) {
+    options.scope.on(w, 'pagehide', retire_checksheet_open);
+    options.scope.defer(retire_checksheet_open);
+} else {
+    w.addEventListener('pagehide', retire_checksheet_open);
+}
+
 // checking old task status from task master
 function check_old_task_for_checksheet(selected_check_type, selected_checksheet_name, selected_server_task_id, selected_start_status, selected_end_status,
     selected_last_step, reject_status, server_call_flag, loc_task_update, c_is_disabled, c_is_readchecksheet, c_is_online, c_index, c_group_name, c_is_icon_display) {
     try {
+        invalidate_checksheet_open();
 
         loading();
 
@@ -1413,16 +1490,16 @@ function check_old_task_for_checksheet(selected_check_type, selected_checksheet_
             data: query,
             p: "1" // 1 for selecting values from table (in json)
         });
-        cordova.exec(onsuccess_check_old_task, onfail_check_old_task, 'SqlitePlugin', 'showValues', q_jsonobj);
+        cordova.exec(guard_checksheet_open(onsuccess_check_old_task), guard_checksheet_open(onfail_check_old_task), 'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
         alert1(e + '_check_old_task_for_checksheet()');
         loading_hide();
     }
 }
 
-var start_step = 'last_blank';
 function onsuccess_check_old_task(e) {
     try {
+        var start_step = 'last_blank';
         var myArray = JSON.parse(e);
         if (myArray.length > 0) {
             // alert1("Old task is pending...starting old task...");
@@ -1447,7 +1524,7 @@ function onsuccess_check_old_task(e) {
                     else {
                         var check_type = JSON.parse(storage.getItem('check_type'));
                         var len = checksheet_start_step.length;
-                        for (i = 0; i < len; i++) {
+                        for (var i = 0; i < len; i++) {
                             var checkhseet_id = checksheet_start_step[i].id;
                             if (check_type == checkhseet_id) {
                                 start_step = checksheet_start_step[i].step;
@@ -1468,7 +1545,7 @@ function onsuccess_check_old_task(e) {
                     //if delete media is found then start checksheet with first step always
                     var media_data = JSON.parse(is_delete_photo);
                     if (media_data.length > 0) {
-                        for (dm = 0; dm < media_data.length; dm++) {
+                        for (var dm = 0; dm < media_data.length; dm++) {
                             var dm_checksheet_name = media_data[dm].c_name;
                             var curr_checksheet_name = JSON.parse(storage.getItem('checksheet_name'));
                             if (curr_checksheet_name == dm_checksheet_name) {
@@ -1508,7 +1585,7 @@ function get_last_log_step_for_chekchseet() {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_get_last_log_step_for_chekchseet, onfail_get_last_log_step_for_chekchseet, 'SqlitePlugin', 'showValues', q_jsonobj);
+        cordova.exec(guard_checksheet_open(onsuccess_get_last_log_step_for_chekchseet), guard_checksheet_open(onfail_get_last_log_step_for_chekchseet), 'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
         alert1(e + '_get_last_log_step_for_chekchseet()');
     }
@@ -1536,7 +1613,7 @@ function onsuccess_get_last_log_step_for_chekchseet(e) {
 
         var last_step = step;
         var temp_step_Array = [];
-        for (i = 1; i <= last_step; i++) {
+        for (var i = 1; i <= last_step; i++) {
             temp_step_Array.push(i); // push steps in array upto last step
         }
 
@@ -1551,7 +1628,7 @@ function onfail_get_last_log_step_for_chekchseet(e) {
     try {
         var last_step = 1;
         var temp_step_Array = [];
-        for (i = 1; i <= last_step; i++) {
+        for (var i = 1; i <= last_step; i++) {
             temp_step_Array.push(i); // push steps in array upto last step
         }
 
@@ -1574,14 +1651,15 @@ function get_last_log_step_for_chekchseet_group_task() {
     });
 
     loading();
-    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetMaxstep', JSON.stringify(Param_obj), function (e) {
+    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetMaxstep', JSON.stringify(Param_obj), guard_checksheet_open(function (e) {
+        pending_checksheet_step_request = null;
         var res_text = e.responseText;
         var result = eval('(' + res_text + ')');
         var status = result[0].status;
         if (status == 1) {
             var last_step = result[0].data;
             var temp_step_Array = [];
-            for (i = 1; i <= last_step; i++) {
+            for (var i = 1; i <= last_step; i++) {
                 temp_step_Array.push(i); // push steps in array upto last step
             }
 
@@ -1593,7 +1671,11 @@ function get_last_log_step_for_chekchseet_group_task() {
             alert1("Server: " + message);
             loading_hide();
         }
-    }, onfail);
+    }), guard_checksheet_open(function (error) {
+        pending_checksheet_step_request = null;
+        onfail_request(error);
+    }));
+    pending_checksheet_step_request = getdata;
     getdata.callOtherDomain();
 }
 
@@ -1624,7 +1706,7 @@ function onsuccess_get_task_json_for_getting_cl_latlong(e) {
         // alert1("Survey Found ! - Reading from file master table...");
         var myArray = JSON.parse(e);
         var data = myArray[0].data;
-        data = itemObj._checkStrObj(data);  		// check_item
+        data = (options.itemObj || w.itemObj)._checkStrObj(data);  		// check_item
 
         storage.setItem('cl_geo_task_json', JSON.stringify(data));
         var cust_checksheet_id = JSON.parse(storage.getItem('cust_checksheet_id'));
@@ -1760,6 +1842,11 @@ function grey_button_click(tat_date, end_tat_date, dependent, tat_type) {
 }
 
 
+// A mapped prerequisite blocks this checksheet until it is completed.
+function grey2_button_click(name) {
+    alert1("Please complete " + name + " first !");
+}
+
 // click on red button
 function red_button_click() {
     alert1("Please complete above checksheet first !");
@@ -1771,6 +1858,7 @@ function onfail_check_old_task(e) {
 }
 
 function onfail_get_list_of_pm_checksheets(e) {
+    if (savedLists() && savedLists().keep('checksheet_list')) { loading_hide(); return; }
     alert1(e + '_onfail_get_list_of_pm_checksheets()');
     loading_hide();
 }
@@ -2085,49 +2173,23 @@ function onsuccess_get_trip_location(myArray) {
 
 // remove unused object from global var (removed recently from mapping) - 15122020
 function remove_unused_object_from_global_var(mapped_checksheet, t_global_var) {
-
     var role_id = JSON.parse(storage.getItem('role_id'));
-
-    var g_len = t_global_var.length;
-    var removal_index_Array = [];
-    for (g = 0; g < g_len; g++) {
-        var g_role_id = t_global_var[g].role_id;
-        if (g_role_id == role_id) {
-            var g_checksheetid = t_global_var[g].checksheetid;
-            var g_start_status = t_global_var[g].start_status;
-            var g_sub_flow_id = t_global_var[g].sub_flow_id;
-
-            var m_len = mapped_checksheet.length;
-            var mapping_found = 0;
-            for (mp = 0; mp < m_len; mp++) {
-                var m_checksheetid = mapped_checksheet[mp].checksheetid;
-                var m_start_status = mapped_checksheet[mp].start_status;
-                var m_sub_flow_id = mapped_checksheet[mp].sub_flow_id;
-
-                if (m_checksheetid == g_checksheetid && m_start_status == g_start_status && m_sub_flow_id == g_sub_flow_id) {
-                    mapping_found++;
-                    break;
-                }
-            }
-
-            if (mapping_found == 0) {
-                removal_index_Array.push(g);
-            }
+    var mapped = index_list_rows(mapped_checksheet, ['checksheetid', 'start_status', 'sub_flow_id'], 'viewsitelist_pm_grouplist.html');
+    var keep = 0;
+    for (var g = 0; g < t_global_var.length; g++) {
+        var row = t_global_var[g];
+        if (row.role_id != role_id || mapped.indices([row.checksheetid, row.start_status, row.sub_flow_id]).length) {
+            t_global_var[keep++] = row;
         }
     }
-
-    removal_index_Array.sort(function (a, b) { return b - a });
-    for (r = 0; r < removal_index_Array.length; r++) {
-        t_global_var.splice(removal_index_Array[r], 1);
-    }
-
+    t_global_var.length = keep;
     return t_global_var;
 }
 
 let get_is_submitted_from_global_var = (t_checksheetid, c_start_status, role_id) => {
     let is_submitted = 0;
     var new_checksheet_list = JSON.parse(storage.getItem('new_checklist'));
-    for (i = 0; i < new_checksheet_list.length; i++) {
+    for (var i = 0; i < new_checksheet_list.length; i++) {
         var checksheetid = new_checksheet_list[i].checksheetid;
         var start_status = new_checksheet_list[i].start_status;
         var c_role_id = new_checksheet_list[i].role_id;
@@ -2151,3 +2213,81 @@ let get_is_submitted_from_global_var = (t_checksheetid, c_start_status, role_id)
 // before_days = 0;
 // gap_days = 3;
 
+
+        var api = {
+            check_server_date: check_server_date,
+            get_server_date: get_server_date,
+            onsuccess_get_server_date: onsuccess_get_server_date,
+            onfail_get_server_date: onfail_get_server_date,
+            get_checklist_data_for_task: get_checklist_data_for_task,
+            onsuccess_get_checklist_data_for_task: onsuccess_get_checklist_data_for_task,
+            get_checklist_data_for_task_post: get_checklist_data_for_task_post,
+            get_list_of_pm_checksheets: get_list_of_pm_checksheets,
+            onsuccess_get_list_of_pm_checksheets: onsuccess_get_list_of_pm_checksheets,
+            show_hide_group_checksheet: show_hide_group_checksheet,
+            guard_checksheet_open: guard_checksheet_open,
+            invalidate_checksheet_open: invalidate_checksheet_open,
+            retire_checksheet_open: retire_checksheet_open,
+            check_old_task_for_checksheet: check_old_task_for_checksheet,
+            onsuccess_check_old_task: onsuccess_check_old_task,
+            get_last_log_step_for_chekchseet: get_last_log_step_for_chekchseet,
+            onsuccess_get_last_log_step_for_chekchseet: onsuccess_get_last_log_step_for_chekchseet,
+            onfail_get_last_log_step_for_chekchseet: onfail_get_last_log_step_for_chekchseet,
+            get_last_log_step_for_chekchseet_group_task: get_last_log_step_for_chekchseet_group_task,
+            get_task_json_for_getting_cl_latlong: get_task_json_for_getting_cl_latlong,
+            onsuccess_get_task_json_for_getting_cl_latlong: onsuccess_get_task_json_for_getting_cl_latlong,
+            onfail_get_task_json_for_getting_cl_latlong: onfail_get_task_json_for_getting_cl_latlong,
+            get_customer_json_for_getting_cl_latlong: get_customer_json_for_getting_cl_latlong,
+            onsuccess_get_customer_json_for_getting_cl_latlong: onsuccess_get_customer_json_for_getting_cl_latlong,
+            onfail_get_customer_json_for_getting_cl_latlong: onfail_get_customer_json_for_getting_cl_latlong,
+            get_distance_confirmation_pm_checksheet: get_distance_confirmation_pm_checksheet,
+            alert_checksheet_distance: alert_checksheet_distance,
+            grey_button_click: grey_button_click,
+            grey2_button_click: grey2_button_click,
+            red_button_click: red_button_click,
+            onfail_check_old_task: onfail_check_old_task,
+            onfail_get_list_of_pm_checksheets: onfail_get_list_of_pm_checksheets,
+            onfail_get_checklist_data_for_task: onfail_get_checklist_data_for_task,
+            get_punching_location: get_punching_location,
+            check_punching_geo_fence: check_punching_geo_fence,
+            toggle_checksheet_by_punchin_punchout: toggle_checksheet_by_punchin_punchout,
+            toggle_checksheet_by_pause_continue: toggle_checksheet_by_pause_continue,
+            punchinout_get_location: punchinout_get_location,
+            change_punch_flag: change_punch_flag,
+            onsuccess_change_punch_flag: onsuccess_change_punch_flag,
+            onfail_change_punch_flag: onfail_change_punch_flag,
+            update_punch_milli_to_task: update_punch_milli_to_task,
+            onsuccess_update_punch_milli_to_task: onsuccess_update_punch_milli_to_task,
+            onfail_update_punch_milli_to_task: onfail_update_punch_milli_to_task,
+            continous_update_punch_milli: continous_update_punch_milli,
+            parseMillisecondsIntoReadableTime: parseMillisecondsIntoReadableTime,
+            get_trip_location: get_trip_location,
+            onsuccess_get_trip_location: onsuccess_get_trip_location,
+            remove_unused_object_from_global_var: remove_unused_object_from_global_var
+        };
+        Object.defineProperties(api, {
+            in_ms: { enumerable: true, get: function () { return in_ms; }, set: function (value) { in_ms = value; } },
+            duration: { enumerable: true, get: function () { return duration; }, set: function (value) { duration = value; } },
+            last_var_obj: { enumerable: true, get: function () { return last_var_obj; }, set: function (value) { last_var_obj = value; } },
+            checksheet_open_generation: { enumerable: true, get: function () { return checksheet_open_generation; }, set: function (value) { checksheet_open_generation = value; } },
+            pending_checksheet_step_request: { enumerable: true, get: function () { return pending_checksheet_step_request; }, set: function (value) { pending_checksheet_step_request = value; } },
+            temp_punch_flag: { enumerable: true, get: function () { return temp_punch_flag; }, set: function (value) { temp_punch_flag = value; } },
+            temp_location_Array: { enumerable: true, get: function () { return temp_location_Array; }, set: function (value) { temp_location_Array = value; } },
+            curr_punch_flag: { enumerable: true, get: function () { return curr_punch_flag; }, set: function (value) { curr_punch_flag = value; } },
+            cont_update_punch_ms: { enumerable: true, get: function () { return cont_update_punch_ms; }, set: function (value) { cont_update_punch_ms = value; } },
+            get_is_submitted_from_global_var: { enumerable: true, get: function () { return get_is_submitted_from_global_var; }, set: function (value) { get_is_submitted_from_global_var = value; } },
+        });
+        if (options.scope) Object.keys(api).forEach(function (name) {
+            if (typeof api[name] === 'function') api[name] = options.scope.guard(api[name]);
+        });
+        return api;
+    }
+    w.AppChecksheetController = { create: create };
+    // The persistent shell uses create() explicitly. It never runs a legacy startup.
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) {
+        var legacy = create();
+        Object.keys(legacy).forEach(function (name) {
+            Object.defineProperty(w, name, Object.getOwnPropertyDescriptor(legacy, name));
+        });
+    }
+})(window);

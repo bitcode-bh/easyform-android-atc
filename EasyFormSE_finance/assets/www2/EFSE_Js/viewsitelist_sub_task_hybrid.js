@@ -5,7 +5,7 @@
 function get_checklist_data_for_subtask_hybrid() {
     try {
         var flow_Array = JSON.parse(storage.getItem('flow_Array'));
-        if (flow_Array.length = 1) {
+        if (flow_Array.length === 1) {
             var moduleid = JSON.parse(storage.getItem('wayflow'));
         } else {
             var moduleid = flow_Array[flow_Array.length - 1].wayflow;
@@ -1097,8 +1097,8 @@ function append_child_flows_to_list_hybrid(new_checksheet_list, start_status, su
     }
 }
 
-var sub_flow_data = [];
 function redirect_on_pre_subflow_click_hybrid(udf_id, selected_start_status, selected_end_status, reject_status, loc_task_update, back_color, is_online, type, flow_id, flow_name1, role_id) {
+    invalidate_checksheet_open();
     storage.setItem('c_start_status', JSON.stringify(selected_start_status));
     storage.setItem('sub_flow_end_status', JSON.stringify(selected_end_status));
     storage.setItem('sub_flow_reject_status', JSON.stringify(reject_status));
@@ -1106,13 +1106,14 @@ function redirect_on_pre_subflow_click_hybrid(udf_id, selected_start_status, sel
     storage.setItem('loc_task_update', JSON.stringify(loc_task_update));
     storage.setItem('loc_flow_update', JSON.stringify(loc_task_update));
     storage.setItem('c_is_online', JSON.stringify(is_online));
-    sub_flow_data.push({
+    // The native fallback belongs to this tap, never a previous subflow.
+    var sub_flow_data = [{
         id: udf_id,
         type: type,
         flow_id: flow_id,
         flow_name1: flow_name1,
         rollid: role_id
-    })
+    }];
 
     if (udf_id == "" || udf_id == null || udf_id == undefined || udf_id == 0) {
         alert1("UDF Id is not mapped with this sub flow!");
@@ -1124,11 +1125,13 @@ function redirect_on_pre_subflow_click_hybrid(udf_id, selected_start_status, sel
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_redirect_on_pre_subflow_click_hybrid, onfail_redirect_on_pre_subflow_click_hybrid, 'SqlitePlugin', 'showValues', q_jsonobj);
+        cordova.exec(guard_checksheet_open(function (e) {
+            onsuccess_redirect_on_pre_subflow_click_hybrid(e, sub_flow_data);
+        }), guard_checksheet_open(onfail_redirect_on_pre_subflow_click_hybrid), 'SqlitePlugin', 'showValues', q_jsonobj);
     }
 }
 
-function onsuccess_redirect_on_pre_subflow_click_hybrid(e) {
+function onsuccess_redirect_on_pre_subflow_click_hybrid(e, sub_flow_data) {
     try {
         var myArray = JSON.parse(e);
         if (myArray.length == 0) {
@@ -1257,7 +1260,7 @@ function get_checklist_data_for_subtask_hybrid_online(moduleid) {
                 alert1(responseText[0].message);
             }
 
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
 
     } catch (e) {

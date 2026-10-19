@@ -78,7 +78,7 @@
             pageload_main();
             function pageload_main() {
                 if (typeof (myApp) != "undefined") {
-                    label_timer = setInterval(starttimer, 1500);
+                    label_timer = setInterval(update_download_wait_label, 1500);
                     //var skip_button_str = localStorage.getItem('skip_button_str');
                     //if (skip_button_str == '' || skip_button_str == null || skip_button_str == undefined || skip_button_str == "undefined") { }
                     //else {

@@ -1,7 +1,15 @@
 // In-page trip list (bottom-bar Trips). Same card language as Home
 // #module_list. Range chips: Week / Month (MTD, default) / Quarter / Custom.
 
-var TripListSheet = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppTripListSheetController) return;
+    function create(options) {
+        options = options || {};
+        var $ = options.$ || function () { return w.jQuery.apply(w, arguments); };
+        var document = options.document || w.document;
+        var HomeDashboardData = options.data || w.HomeDashboardData;
+
     'use strict';
 
     var range = 'month';
@@ -927,7 +935,7 @@ var TripListSheet = (function () {
         $('#div_page_content').show();
         setChrome(false);
         // Home's trip summary follows whatever changed while Trips was open.
-        try { if (typeof HomeHero !== 'undefined') HomeHero.refresh(); } catch (e) { }
+        try { if (typeof (options.hero || w.HomeHero) !== 'undefined') (options.hero || w.HomeHero).refresh(); } catch (e) { }
         return false;
     }
 
@@ -962,8 +970,16 @@ var TripListSheet = (function () {
     }
 
     try {
-        $(document).ready(bindOnce);
+        if (options.scope) bindOnce(); else $(document).ready(bindOnce);
     } catch (e) { }
 
-    return { open: open, close: close, isOpen: isOpen, summary: summary };
-})();
+
+        var api = { open: open, close: close, isOpen: isOpen, summary: summary };
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+
+        if (options.scope) options.scope.defer(function () { $(document).off('.tripFilter .tripCustom'); });
+        return api;
+    }
+    w.AppTripListSheetController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.TripListSheet = create();
+})(window);

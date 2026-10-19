@@ -6,7 +6,14 @@
 // .popup-notifications panel and fetches. This card is a read-only preview
 // of the same data, not a second notification UI.
 
-var HomeWidgetNotifications = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeWidgetNotificationsController) return;
+    function create(options) {
+        options = options || {};
+        var actions = options.actions || w;
+        var HomeDashboardData = options.data || w.HomeDashboardData;
+
     'use strict';
 
     var _limit = 3;
@@ -22,8 +29,8 @@ var HomeWidgetNotifications = (function () {
         var root = container.find('[data-widget="notifications_summary"]');
         root.off('click.hdNoti').on('click.hdNoti', function () {
             try {
-                if (typeof get_user_notifications === 'function') {
-                    get_user_notifications();
+                if (typeof actions.get_user_notifications === 'function') {
+                    actions.get_user_notifications();
                 }
             } catch (e) { }
         });
@@ -54,5 +61,11 @@ var HomeWidgetNotifications = (function () {
         });
     }
 
-    return { render: render, refresh: refresh };
-})();
+
+        var api = { render: render, refresh: refresh };
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+        return api;
+    }
+    w.AppHomeWidgetNotificationsController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeWidgetNotifications = create();
+})(window);

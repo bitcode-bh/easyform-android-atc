@@ -1,7 +1,20 @@
+/* Page-owned upload-pending task list. Legacy exports remain compatible. */
+(function (w) {
+    if (w.AppUploadTaskController) return;
+    function create(options) {
+        options = options || {};
+        var state = options.state || w;
+        var $ = options.$ || function () { return w.$.apply(w, arguments); };
+        var storage = options.services ? options.services.storage : w.storage;
+        var cordova = options.services ? options.services.cordova : { exec: function () { return w.cordova.exec.apply(w.cordova, arguments); } };
+        var setTimeout = options.scope ? function (fn, ms) { return options.scope.timeout(function () { if (!options.isCurrentList || options.isCurrentList(3)) return fn.apply(this, arguments); }, ms); } : w.setTimeout.bind(w);
+        function enable_back_button() { if (options.enableBack) options.enableBack(); else w.enable_back_button(); }
+        function disable_back_button() { if (options.disableBack) options.disableBack(); else w.disable_back_button(); }
 ﻿
 // Get distance between two point in Meters
 // Get list of sites
 function get_list_of_UP_sites_temp() {
+    var c, s, k;
     // alert1("Getting site list...");
     try {
         disable_back_button();
@@ -66,13 +79,13 @@ function get_list_of_UP_sites_temp() {
         }
 
         if (orderby == "distance") {
-            var lat_radian = 3.14 * (user_lat) / 180;
+            var lat_radian = 3.14 * (state.user_lat) / 180;
             var equa_distance = Math.pow(Math.cos(lat_radian), 2);
 
             var query = "select tm.tid,tm.moduleid,tm.module_name,tm.siteid,tm.site_name,tm.lat,tm.long,tm.data,tm.site_address,tm.status,tm.survey_date, tm.server_task_id, tm.is_delete_photo, fm.f_data, fm.step, fm.c_id from task_master tm INNER JOIN f_master fm ON tm.tid = fm.tid left join lat_plug lp on lp.tid=tm.tid where tm.moduleid = '"
                 + selected_module_id
                 + "' and tm.username = '"
-                + username
+                + state.username
                 + "' and fm.c_id in("
                 + cid_array
                 + ") and fm.step in("
@@ -80,17 +93,17 @@ function get_list_of_UP_sites_temp() {
                 + ")and (tm.flag=1 or tm.flag=3) and tm.status != -1 or lp.issend = 0 "
                 + p_tid_str
                 + " order by (("
-                + user_lat
+                + state.user_lat
                 + "-tm.lat)*("
-                + user_lat
+                + state.user_lat
                 + "-tm.lat)+("
-                + user_long
+                + state.user_long
                 + "-tm.long)*("
-                + user_long
+                + state.user_long
                 + "-tm.long)*"
                 + equa_distance
                 + ")"
-                + order_type + " limit " + limit_range + "";
+                + order_type + " limit " + state.limit_range + "";
 
         } else {
             //var query = "select tm.tid,tm.moduleid,tm.module_name,tm.siteid,tm.site_name,tm.lat,tm.long,tm.data,tm.site_address,tm.status,tm.survey_date, tm.server_task_id, tm.is_delete_photo, fm.f_data, fm.step, fm.c_id from task_master tm INNER JOIN f_master fm ON tm.tid = fm.tid left join lat_plug lp on lp.tid=tm.tid where tm.moduleid = '"
@@ -110,8 +123,8 @@ function get_list_of_UP_sites_temp() {
             //		+ " limit " + limit_range + "";
 
             var query = "select tid,moduleid,module_name,siteid,site_name,lat,long,data,site_address,status,survey_date, server_task_id, is_delete_photo, list_html from task_master where moduleid = '"
-                + selected_module_id + "' and username = '" + username + "' and (flag=1 or flag=3) and status != -1"
-                + p_tid_str + " ORDER BY " + orderby + " " + order_type + " limit " + limit_range + "";
+                + selected_module_id + "' and username = '" + state.username + "' and (flag=1 or flag=3) and status != -1"
+                + p_tid_str + " ORDER BY " + orderby + " " + order_type + " limit " + state.limit_range + "";
 
         }
         //alert1(query);
@@ -127,7 +140,7 @@ function get_list_of_UP_sites_temp() {
         // + ") and fm.step in("
         // + step_array + ")and tm.flag=1 limit " + limit_range + "";
 
-        if (up_Click == 0) {
+        if (state.up_Click == 0) {
             var p_value = "6"; // call for upload to native
         } else {
             var p_value = "1";
@@ -150,13 +163,14 @@ function get_list_of_UP_sites_temp() {
 
 // successfull getting site list
 function onsuccess_get_list_of_UP_sites_temp(e) {
+    var c, p, s, dm, m;
     try {
         var tid_Array = [];
         var test_c_id = [];
         var myArray = JSON.parse(e);
 
         $("#site_list").empty();
-        if (myArray.length < limit_range) {
+        if (myArray.length < state.limit_range) {
             $("#btn_SeeAll").hide();
             $("#btn_SeeMore").hide();
         }
@@ -285,14 +299,14 @@ function onsuccess_get_list_of_UP_sites_temp(e) {
                             if (tid == myArray[i].tid && checksheetID == myArray[i].c_id && step == myArray[i].step) {
                                 var site_lat = myArray[i].lat;
                                 var site_long = myArray[i].long;
-                                var distance = getDistanceFromLatLonInMeter(user_lat, user_long, site_lat, site_long);
+                                var distance = getDistanceFromLatLonInMeter(state.user_lat, state.user_long, site_lat, site_long);
                                 distance = parseInt(distance);
                                 distance_desplay = distance;
                                 position_flag++;
                                 var f_data = myArray[i].f_data;
-                                f_data = itemObj._checkStrObj(f_data);  		// check_item
+                                f_data = (options.itemObj || w.itemObj)._checkStrObj(f_data);  		// check_item
                                 var data = f_data[0].data;
-                                data = itemObj._checkStrObj(data);  		// check_item
+                                data = (options.itemObj || w.itemObj)._checkStrObj(data);  		// check_item
                                 break;
                             }
                             if (i == myArray.length - 1 && position_flag == 0) {
@@ -302,14 +316,14 @@ function onsuccess_get_list_of_UP_sites_temp(e) {
                         else {
                             if (tid == myArray[i].tid) {
                                 var system_var_Array = [];
-                                var company_id = window.storage.getItem('company_id');
-                                var user_id = window.storage.getItem('user_id');
-                                var module_id = JSON.parse(window.storage.getItem('wayflow'));
-                                var module_name = JSON.parse(window.storage.getItem('wayflow_name'));
-                                var role_id = window.storage.getItem('role_id');
-                                var role_name = window.storage.getItem('role_name');
-                                var circle_id = window.storage.getItem('circle_id');
-                                var circle_name = window.storage.getItem('circle_name');
+                                var company_id = storage.getItem('company_id');
+                                var user_id = storage.getItem('user_id');
+                                var module_id = JSON.parse(storage.getItem('wayflow'));
+                                var module_name = JSON.parse(storage.getItem('wayflow_name'));
+                                var role_id = storage.getItem('role_id');
+                                var role_name = storage.getItem('role_name');
+                                var circle_id = storage.getItem('circle_id');
+                                var circle_name = storage.getItem('circle_name');
                                 system_var_Array["company_id"] = company_id;
                                 system_var_Array["user_id"] = user_id;
                                 system_var_Array["module_id"] = module_id;
@@ -321,7 +335,7 @@ function onsuccess_get_list_of_UP_sites_temp(e) {
                                 system_var_Array["task_id"] = myArray[i].server_task_id;
 
                                 var ans_lable = system_var_Array[system_var];
-                                if (F7_device == 'ios') {
+                                if (state.F7_device == 'ios') {
                                     ans_lable = ans_lable.toString();
                                 }
                                 ans_lable = ans_lable.replace(/['"]+/g, '');
@@ -345,7 +359,7 @@ function onsuccess_get_list_of_UP_sites_temp(e) {
                                 if (data[q].type == "20" || data[q].type == "8") {
                                     var ans_lable = data[q].ans[0];
                                 } else if (data[q].type == "22") {
-                                    var json_inv_calc = itemObj._checkStrObj(data[q].ans[0]);  		// check_item
+                                    var json_inv_calc = (options.itemObj || w.itemObj)._checkStrObj(data[q].ans[0]);  		// check_item
 
                                     var sum_finaljson = json_inv_calc[0].sum_finaljson;
                                     for (m = 0; m < sum_finaljson.length; m++) {
@@ -443,8 +457,8 @@ function onsuccess_get_list_of_UP_sites_temp(e) {
 
             // here
 
-            up_Timer1 = setTimeout(function () {
-                up_Click = 1;
+            state.up_Timer1 = setTimeout(function () {
+                state.up_Click = 1;
                 get_list_of_UP_sites();
             }, 3000);
         } else {
@@ -466,8 +480,8 @@ function onsuccess_get_list_of_UP_sites_temp(e) {
 
 
 function search_UP_site_list() {
-    limit_range = default_range; // set default range limit
-    query_type = 2; // search site listing
+    state.limit_range = state.default_range; // set default range limit
+    state.query_type = 2; // search site listing
     $("#btn_SeeAll").show();
     $("#btn_SeeMore").show();
     get_list_of_UP_sites_by_search();
@@ -475,6 +489,7 @@ function search_UP_site_list() {
 
 // Get list of sites by search
 function get_list_of_UP_sites_by_search_temp() {
+    var c, s, k;
     // alert1("Getting site list by search...");
     try {
         var search_keyword = $("#txtsearch").val();
@@ -539,7 +554,7 @@ function get_list_of_UP_sites_by_search_temp() {
             }
 
             if (orderby == "distance") {
-                var lat_radian = 3.14 * (user_lat) / 180;
+                var lat_radian = 3.14 * (state.user_lat) / 180;
                 var equa_distance = Math.pow(Math.cos(lat_radian), 2);
 
                 var query = "select tm.tid,tm.moduleid,tm.module_name,tm.siteid,tm.site_name,tm.lat,tm.long,tm.data,tm.site_address,tm.status,tm.survey_date, tm.server_task_id, tm.is_delete_photo, fm.f_data, fm.step, fm.c_id from task_master tm INNER JOIN f_master fm ON tm.tid = fm.tid left join lat_plug lp on lp.tid=tm.tid where (siteid like '%"
@@ -549,7 +564,7 @@ function get_list_of_UP_sites_by_search_temp() {
                     + "%') and tm.moduleid = '"
                     + selected_module_id
                     + "' and tm.username = '"
-                    + username
+                    + state.username
                     + "' and fm.c_id in("
                     + cid_array
                     + ") and fm.step in("
@@ -557,18 +572,18 @@ function get_list_of_UP_sites_by_search_temp() {
                     + ")and (tm.flag=1 or tm.flag=3) and tm.status != -1 or lp.issend = 0 "
                     + p_tid_str
                     + " order by (("
-                    + user_lat
+                    + state.user_lat
                     + "-tm.lat)*("
-                    + user_lat
+                    + state.user_lat
                     + "-tm.lat)+("
-                    + user_long
+                    + state.user_long
                     + "-tm.long)*("
-                    + user_long
+                    + state.user_long
                     + "-tm.long)*"
                     + equa_distance
                     + ")"
                     + order_type
-                    + " limit " + limit_range + "";
+                    + " limit " + state.limit_range + "";
 
             } else {
                 var query = "select tm.tid,tm.moduleid,tm.module_name,tm.siteid,tm.site_name,tm.lat,tm.long,tm.data,tm.site_address,tm.status,tm.survey_date, tm.server_task_id, tm.is_delete_photo, fm.f_data, fm.step, fm.c_id from task_master tm INNER JOIN f_master fm ON tm.tid = fm.tid left join lat_plug lp on lp.tid=tm.tid where (siteid like '%"
@@ -578,7 +593,7 @@ function get_list_of_UP_sites_by_search_temp() {
                     + "%') and tm.moduleid = '"
                     + selected_module_id
                     + "' and tm.username = '"
-                    + username
+                    + state.username
                     + "' and fm.c_id in("
                     + cid_array
                     + ") and fm.step in("
@@ -589,7 +604,7 @@ function get_list_of_UP_sites_by_search_temp() {
                     + orderby
                     + " "
                     + order_type
-                    + " limit " + limit_range + "";
+                    + " limit " + state.limit_range + "";
             }
 
             // var query = "select tid, siteid, site_name, lat, long, data,
@@ -662,9 +677,9 @@ function get_list_of_UP_sites_New(search_keyword) {
             search_str = "(siteid like '%" + search_keyword + "%' or site_name like '%" + search_keyword + "%') and ";
         }
 
-        var query = "select tid, p_tid, moduleid, module_name, siteid, site_name, server_task_id, lat, long, survey_date, millisecond, is_delete_photo, is_delete_log, is_delete_sub, is_valid_log, status, response_status, columndata from task_master where " + search_str + " moduleid = '" + selected_module_id + "' and username = '" + username + "' and (flag=1 or flag=3) and status != -1" + p_tid_str + "";
+        var query = "select tid, p_tid, moduleid, module_name, siteid, site_name, server_task_id, lat, long, survey_date, millisecond, is_delete_photo, is_delete_log, is_delete_sub, is_valid_log, status, response_status, columndata from task_master where " + search_str + " moduleid = '" + selected_module_id + "' and username = '" + state.username + "' and (flag=1 or flag=3) and status != -1" + p_tid_str + "";
 
-        if (up_Click == 0) {
+        if (state.up_Click == 0) {
             var p_value = "6"; // call for upload to native
         } else {
             var p_value = "1";
@@ -686,13 +701,14 @@ function get_list_of_UP_sites_New(search_keyword) {
 
 // successfull getting site list
 function onsuccess_get_list_of_UP_sites(e) {
+    var dm;
     try {
         var tid_Array = [];
         var test_c_id = [];
         var myArray = JSON.parse(e);
 
         $("#site_list").empty();
-        if (myArray.length < limit_range) {
+        if (myArray.length < state.limit_range) {
             $("#btn_SeeAll").hide();
             $("#btn_SeeMore").hide();
         }
@@ -749,7 +765,7 @@ function onsuccess_get_list_of_UP_sites(e) {
                     list_item += '</div>';
 
                     //// display task info on swipe to right
-                    var info_param = "view_task_details_from_task_master('', " + tid + ")";
+                    var info_param = (options.action ? options.action("view_task_details_from_task_master", ["", tid]) : "view_task_details_from_task_master('', " + tid + ")");
                     list_item += '<div class="swipeout-actions-left cls_remove">';
                     list_item += '<a href="#" class="action1" onclick="' + info_param + '">Details</a>';
                     list_item += '</div>';
@@ -762,7 +778,7 @@ function onsuccess_get_list_of_UP_sites(e) {
                     list_item = list_HTML.replace('</li>', '');
 
                     // display task info on swipe to right
-                    var info_param = "view_task_details_from_task_master('', " + tid + ")";
+                    var info_param = (options.action ? options.action("view_task_details_from_task_master", ["", tid]) : "view_task_details_from_task_master('', " + tid + ")");
                     list_item += '<div class="swipeout-actions-left cls_remove" >';
                     list_item += '<a href="#" class="action1" onclick="' + info_param + '">Details</a>';
                     list_item += '</div>';
@@ -915,7 +931,7 @@ function onsuccess_get_list_of_UP_sites(e) {
                 if (dlt_media_chksht_type == "5") {
                     // force edit due to delete media case
                     var msg = 'Some media files may deleted from the device, please recapture and submit again!';
-                    var param = "redirect_on_task_edit_form(" + myArray[t].tid + ", '" + task_status + "', '" + msg + "')";
+                    var param = (options.action ? options.action("redirect_on_task_edit_form", [myArray[t].tid, String(task_status), String(msg)]) : "redirect_on_task_edit_form(" + myArray[t].tid + ", '" + task_status + "', '" + msg + "')");
                     $("#site_list li:last-child").attr('onclick', param);
                 }
                 if (dlt_media_chksht_type == "1") {
@@ -931,21 +947,21 @@ function onsuccess_get_list_of_UP_sites(e) {
                     var p_tid = myArray[t].p_tid;
 
                     if (survey_mode == "online") {
-                        var param = "redirect_on_pm_site_click_online('" + siteid + "','" + site_name + "', '" + ser_task_id + "', '" + task_status + "','" + moduleid + "', '" + module_name + "','" + task_update + "', '" + site_lat + "', '" + site_long + "', '" + survey_date + "', '" + ser_milli + "')";
+                        var param = (options.action ? options.action("redirect_on_pm_site_click_online", [String(siteid), String(site_name), String(ser_task_id), String(task_status), String(moduleid), String(module_name), String(task_update), String(site_lat), String(site_long), String(survey_date), String(ser_milli)]) : "redirect_on_pm_site_click_online('" + siteid + "','" + site_name + "', '" + ser_task_id + "', '" + task_status + "','" + moduleid + "', '" + module_name + "','" + task_update + "', '" + site_lat + "', '" + site_long + "', '" + survey_date + "', '" + ser_milli + "')");
                     }
                     else {
-                        var param = "redirect_on_pm_site_click('" + siteid + "', '" + myArray[t].tid + "', '" + task_status + "','" + moduleid + "', '" + module_name + "', '" + site_name + "', '" + site_lat + "', '" + site_long + "','" + t + "' , '" + encodeURIComponent(is_delete_photo) + "', '" + p_tid + "')";
+                        var param = (options.action ? options.action("redirect_on_pm_site_click", [String(siteid), String(myArray[t].tid), String(task_status), String(moduleid), String(module_name), String(site_name), String(site_lat), String(site_long), String(t), String(encodeURIComponent(is_delete_photo)), String(p_tid)]) : "redirect_on_pm_site_click('" + siteid + "', '" + myArray[t].tid + "', '" + task_status + "','" + moduleid + "', '" + module_name + "', '" + site_name + "', '" + site_lat + "', '" + site_long + "','" + t + "' , '" + encodeURIComponent(is_delete_photo) + "', '" + p_tid + "')");
                     }
                     $("#site_list li:last-child").attr('onclick', param);
                 }
                 else if (response_status == 14) {
                     // force edit due to task duplication
                     var msg = 'Some details of this task may same as the previous one, please make appropriate changes and submit again!';
-                    var param = "redirect_on_task_edit_form(" + myArray[t].tid + ", '" + task_status + "', '" + msg + "')";
+                    var param = (options.action ? options.action("redirect_on_task_edit_form", [myArray[t].tid, String(task_status), String(msg)]) : "redirect_on_task_edit_form(" + myArray[t].tid + ", '" + task_status + "', '" + msg + "')");
                     $("#site_list li:last-child").attr('onclick', param);
                 }
                 else if (panel_found == 0) {
-                    var param = "Upload_pending_task_data(" + tid + ")";
+                    var param = (options.action ? options.action("Upload_pending_task_data", [tid]) : "Upload_pending_task_data(" + tid + ")");
                     $("#site_list li:last-child").attr('onclick', param);
                 }
 
@@ -957,8 +973,8 @@ function onsuccess_get_list_of_UP_sites(e) {
                 event.stopPropagation();
             });
 
-            up_Timer1 = setTimeout(function () {
-                up_Click = 1;
+            state.up_Timer1 = setTimeout(function () {
+                state.up_Click = 1;
                 get_list_of_UP_sites();
             }, 5000);
         } else {
@@ -1034,8 +1050,8 @@ function Upload_pending_task_data(task_id) {
 
 // download latest site from server on refresh button click through select query
 function refresh_UP_site_list() {
-    limit_range = default_range; // set default range limit
-    query_type = 1; // regular site listing
+    state.limit_range = state.default_range; // set default range limit
+    state.query_type = 1; // regular site listing
     $("#btn_SeeAll").show();
     $("#btn_SeeMore").show();
     get_list_of_UP_sites();
@@ -1071,3 +1087,30 @@ function onfail_get_list_of_UP_sites(e) {
 // get_list_of_UP_sites_by_search();
 // }
 // }
+
+        var api = {
+            get_list_of_UP_sites_temp: get_list_of_UP_sites_temp,
+            onsuccess_get_list_of_UP_sites_temp: onsuccess_get_list_of_UP_sites_temp,
+            search_UP_site_list: search_UP_site_list,
+            get_list_of_UP_sites_by_search_temp: get_list_of_UP_sites_by_search_temp,
+            get_list_of_UP_sites: get_list_of_UP_sites,
+            get_list_of_UP_sites_by_search: get_list_of_UP_sites_by_search,
+            get_list_of_UP_sites_New: get_list_of_UP_sites_New,
+            onsuccess_get_list_of_UP_sites: onsuccess_get_list_of_UP_sites,
+            get_pending_trips_count: get_pending_trips_count,
+            onsuccess_get_pending_trips_count: onsuccess_get_pending_trips_count,
+            onfail_get_pending_trips_count: onfail_get_pending_trips_count,
+            redirect_on_UP_site_click: redirect_on_UP_site_click,
+            Upload_pending_task_data: Upload_pending_task_data,
+            refresh_UP_site_list: refresh_UP_site_list,
+            onfail_get_list_of_UP_sites: onfail_get_list_of_UP_sites
+        };
+        if (options.scope) Object.keys(api).forEach(function (name) { api[name] = options.scope.guard(api[name]); });
+        return api;
+    }
+    w.AppUploadTaskController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute("data-app-shell")) {
+        var legacy = create();
+        Object.keys(legacy).forEach(function (name) { Object.defineProperty(w, name, Object.getOwnPropertyDescriptor(legacy, name)); });
+    }
+})(window);

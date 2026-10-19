@@ -11,7 +11,14 @@
 // only clears pending_status.html's own "recently uploaded" display table,
 // not anything the upload engine itself depends on.
 
-var HomeWidgetUploadHealth = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeWidgetUploadHealthController) return;
+    function create(options) {
+        options = options || {};
+        var cordova = options.services ? options.services.cordova : { exec: function () { return w.cordova.exec.apply(w.cordova, arguments); } };
+        var HomeDashboardData = options.data || w.HomeDashboardData;
+
     'use strict';
 
     function render(container, cfg) {
@@ -59,5 +66,11 @@ var HomeWidgetUploadHealth = (function () {
         } catch (e) { }
     }
 
-    return { render: render, refresh: refresh };
-})();
+
+        var api = { render: render, refresh: refresh };
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+        return api;
+    }
+    w.AppHomeWidgetUploadHealthController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeWidgetUploadHealth = create();
+})(window);

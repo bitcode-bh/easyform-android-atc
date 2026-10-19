@@ -989,7 +989,7 @@ function get_survey_json_Chart_Custmize(e_chart_type, main_chart_id, imgdiv, div
                         loading_hide();
                     }
 
-                }, onfail);
+                }, onfail_request);
                 getdata.callOtherDomain();
             }
         }

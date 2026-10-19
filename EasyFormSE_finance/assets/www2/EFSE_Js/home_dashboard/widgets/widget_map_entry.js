@@ -8,7 +8,12 @@
 // network/native call); tapping OPEN MAP is the one place that actually calls
 // TripSiteMap.open(), the real native map entry point.
 
-var HomeWidgetMapEntry = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeWidgetMapEntryController) return;
+    function create(options) {
+        options = options || {};
+
     'use strict';
 
     var _cfg = null;
@@ -80,5 +85,11 @@ var HomeWidgetMapEntry = (function () {
         root.find('.hd-map-sub').text(subLabel());
     }
 
-    return { render: render, refresh: refresh };
-})();
+
+        var api = { render: render, refresh: refresh };
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+        return api;
+    }
+    w.AppHomeWidgetMapEntryController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeWidgetMapEntry = create();
+})(window);

@@ -2823,7 +2823,7 @@ function get_data_to_fill_ul_New(obj_id, temp_cell_value, temp_btnSearch_Counter
 
                     var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Dynamic_Filter_Table_Data_N', JSON.stringify(param_obj), function (e) {
                         onsuccess_get_data_to_fill_ul_New(e, fill_btnSearch_Counter);
-                    }, onfail);
+                    }, onfail_request);
                     getdata.callOtherDomain();
                 }
                 else {
@@ -2845,7 +2845,7 @@ function get_data_to_fill_ul_New(obj_id, temp_cell_value, temp_btnSearch_Counter
                     loading();
                     var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Type20Filter', JSON.stringify(param_obj), function (e) {
                         onsuccess_get_data_to_fill_ul_New(e, fill_btnSearch_Counter);
-                    }, onfail);
+                    }, onfail_request);
                     getdata.callOtherDomain();
                 }
             }
@@ -3179,7 +3179,7 @@ function get_template_checksheet_from_server(checksheet_id) {
                 var message = responseText[0].message;
                 alert1("Server: " + message);
             }
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
     } catch (e) {
         alert1(e + '_get_template_checksheet_from_server');
@@ -6801,7 +6801,7 @@ function get_nodes_by_template_id_from_searchable(t_template_id, t_new_id) {
             mk_notify(message, "danger");
             loading_hide();
         }
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 }
 
@@ -6983,9 +6983,23 @@ function type20_tag_rows(list) {
         var empty = $(this).hasClass('no-record') || title === 'No Data Found !' || title === '';
         $(this).toggleClass('type20-placeholder', title === 'Select Value');
         $(this).toggleClass('type20-empty', empty);
+        // Preserve the server's empty-state message and Create actions.
+        if ($(this).is('.no-record, .li-new-cust')) $(this).addClass('searchbar-ignore');
         if (!empty && title !== 'Select Value') real++;
     });
-    $(list).closest('.popup-type20-dropdown').toggleClass('t20-no-options', real === 0);
+    var popup = $(list).closest('.popup-type20-dropdown');
+    popup.toggleClass('t20-no-options', real === 0);
+    var form = popup.find('.searchbar-init')[0];
+    var searchbar = form && form.f7Searchbar;
+    if (searchbar) {
+        // The generic selector can also match another popup's/user list.
+        searchbar.searchList = Dom7(list);
+        // Server results/pagination replace or append rows without a key event.
+        // F7 caches the last query, so invalidate it before filtering new rows.
+        var query = searchbar.input.val().trim();
+        searchbar.search('', true);
+        if (query) searchbar.search(query, true);
+    }
 }
 $(function () {
     $('.popup-type20-dropdown #type20_ddl_list').each(function () {
@@ -7007,7 +7021,7 @@ $(document).on('click', '.popup-type20-dropdown .searchbar-cancel', function () 
 $(document).on('blur', '.popup-type20-dropdown #F7_type20_ddl_Search input[type=search]', function () {
     var input = this;
     setTimeout(function () {
-        if (!input.value) $(input).closest('.popup-type20-dropdown').removeClass('t20-search-open');
+        if (!input.value && document.activeElement !== input) $(input).closest('.popup-type20-dropdown').removeClass('t20-search-open');
     }, 150);
 });
 

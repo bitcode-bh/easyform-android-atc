@@ -12,7 +12,7 @@ function fn(text, name) {
 const taskRead = fn(source('EFSE_Js_Task/GetCheckSheet_Task.js'), 'onsuccess_check_for_notification_task');
 const submit = source('EFSE_Js/SubmitSurveyData.js');
 const callbackStart = submit.indexOf('// successfull attendance task create');
-const callbackEnd = submit.indexOf("}, onfail, 'AttendanceTaskCreatePlugin'", callbackStart);
+const callbackEnd = submit.indexOf("}, onfail_request, 'AttendanceTaskCreatePlugin'", callbackStart);
 assert(callbackStart > 0 && callbackEnd > callbackStart);
 const taskCreated = 'function taskCreated(e) {\n' + submit.slice(callbackStart, callbackEnd) + '\n}';
 const trips = source('EFSE_Js/get_trip_info.js');

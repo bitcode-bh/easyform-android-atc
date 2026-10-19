@@ -1,8 +1,23 @@
+/* Page-owned offline task operations; legacy entry points remain compatible. */
+(function (w) {
+    if (w.AppTaskListController) return;
+    function create(options) {
+        options = options || {};
+        var state = options.state || w, actions = options.actions || w;
+        var $ = options.$ || function () { return w.$.apply(w, arguments); };
+        var document = options.document || w.document;
+        var storage = options.services ? options.services.storage : w.storage;
+        var cordova = options.services ? options.services.cordova : { exec: function () { return w.cordova.exec.apply(w.cordova, arguments); } };
+        var setTimeout = options.scope ? function (fn, ms) { return options.scope.timeout(function () { if (!options.isCurrentList || options.isCurrentList(1)) return fn.apply(this, arguments); }, ms); } : w.setTimeout.bind(w);
+        var clearTimeout = options.scope && options.scope.clearTimeout ? options.scope.clearTimeout : w.clearTimeout.bind(w);
+        function savedLists() { return options.scope ? options.savedLists : w.AppPhase1Lists; }
+        function enable_back_button() { if (options.enableBack) options.enableBack(); else w.enable_back_button(); }
+        function disable_back_button() { if (options.disableBack) options.disableBack(); else w.disable_back_button(); }
 ﻿
 // This page is only for F7
 
 // change downloading label automatically
-function starttimer() {
+function update_site_refresh_wait_label() {
     var wait_label = document.getElementById("lbl_refreshing");
     wait_label.innerHTML = wait_label.innerHTML == "Refreshing..." ? "Please Wait..."
         : "Refreshing...";
@@ -55,21 +70,21 @@ function onsuccess_refresh_user_latlong_pm(e) {
     }
 
     try {
-        user_lat = parseFloat(lat);
+        state.user_lat = parseFloat(lat);
     } catch (e) {
-        user_lat = 0;
+        state.user_lat = 0;
     }
     try {
-        user_long = parseFloat(long);
+        state.user_long = parseFloat(long);
     } catch (e) {
-        user_long = 0;
+        state.user_long = 0;
     }
     try {
-        user_accuracy = parseFloat(accuracy);
+        state.user_accuracy = parseFloat(accuracy);
     } catch (e) {
-        user_accuracy = 0;
+        state.user_accuracy = 0;
     }
-    var user_lat_long_str = user_lat + " | " + user_long;
+    var user_lat_long_str = state.user_lat + " | " + state.user_long;
     $("#lbl_ref_latlong").html(user_lat_long_str);
     $("#img_refresh_latlong").attr("src", "images/refresh.png");
 
@@ -88,9 +103,9 @@ function onsuccess_refresh_user_latlong_pm(e) {
     }
 
     var user_track_array = [{
-        'user_lat': user_lat,
-        'user_long': user_long,
-        'user_accuracy': user_accuracy
+        'user_lat': state.user_lat,
+        'user_long': state.user_long,
+        'user_accuracy': state.user_accuracy
     }];
     storage.setItem('user_track_details', JSON.stringify(user_track_array));
 }
@@ -140,24 +155,24 @@ function onsuccess_get_user_latlong(e) {
         }
 
         try {
-            user_lat = parseFloat(lat);
+            state.user_lat = parseFloat(lat);
         } catch (e) {
-            user_lat = 0;
+            state.user_lat = 0;
         }
         try {
-            user_long = parseFloat(long);
+            state.user_long = parseFloat(long);
         } catch (e) {
-            user_long = 0;
+            state.user_long = 0;
         }
         try {
-            user_accuracy = parseFloat(accuracy);
+            state.user_accuracy = parseFloat(accuracy);
         } catch (e) {
-            user_accuracy = 0;
+            state.user_accuracy = 0;
         }
 
         var gprs = myArray[0].gprs;
         var gps = myArray[0].gps;
-        var user_lat_long_str = user_lat + " | " + user_long;
+        var user_lat_long_str = state.user_lat + " | " + state.user_long;
         $("#lbl_ref_latlong").html(user_lat_long_str);
 
         if (gprs == "1") {
@@ -176,9 +191,9 @@ function onsuccess_get_user_latlong(e) {
 
         var address = myArray[0].address;
         var user_track_array = [{
-            'user_lat': user_lat,
-            'user_long': user_long,
-            'user_accuracy': user_accuracy,
+            'user_lat': state.user_lat,
+            'user_long': state.user_long,
+            'user_accuracy': state.user_accuracy,
             'user_address': address,
             'user_gprs': gprs,
             'user_gps': gps
@@ -189,12 +204,12 @@ function onsuccess_get_user_latlong(e) {
 
     } catch (e) {
         // alert1('Problem while getting GPS lat long, Please change your position !');
-        user_lat = 0;
-        user_long = 0;
-        user_accuracy = 0;
+        state.user_lat = 0;
+        state.user_long = 0;
+        state.user_accuracy = 0;
 
         var user_lat_long_str = "<td><img src='images/offline.png' style='width:14px; height:14px; margin-right:1%' /> <label style='font-size:8pt; vertical-align:text-top'>Offline</label></td><td style='text-align: right'><img src='images/gps_off.png' style='width:14px; height:14px; margin-right:1%; margin-top:1px' /><label style='vertical-align:top'>"
-            + user_lat + " | " + user_long + "</label><img id='img_refresh_latlong' onclick='refresh_user_latlong_pm()' src='images/refresh.png' style='width:14px; height:14px; margin-left:1%; margin-top:1px' /></td>";
+            + state.user_lat + " | " + state.user_long + "</label><img id='img_refresh_latlong' onclick='refresh_user_latlong_pm()' src='images/refresh.png' style='width:14px; height:14px; margin-left:1%; margin-top:1px' /></td>";
 
         $("#lbl_user_lat_long_pm td").remove();
         $("#lbl_user_lat_long_pm").append(user_lat_long_str);
@@ -209,10 +224,10 @@ function onsuccess_get_user_latlong(e) {
         if (survey_mode == "online") {
             var redirect = list_data[0].redirect;
             if (redirect == 'customer') {
-                get_list_of_customer_online();
+                actions.get_list_of_customer_online();
             } else {
                 // get_list_of_pm_sites_online();
-                get_list_of_task_for_compare_online();
+                actions.get_list_of_task_for_compare_online();
             }
         } else {
             get_list_of_pm_sites();
@@ -248,16 +263,16 @@ function get_active_trips() {
         if (survey_mode == "online") {
             var redirect = list_data[0].redirect;
             if (redirect == 'customer') {
-                get_list_of_customer_online();
+                actions.get_list_of_customer_online();
             } else {
                 // get_list_of_pm_sites_online();
-                get_list_of_task_for_compare_online();
+                actions.get_list_of_task_for_compare_online();
             }
         } else {
             get_list_of_pm_sites();
         }
 
-    }, function () { alert1(e) }, 'SqlitePlugin', 'showValues', q_jsonobj);
+    }, function (e) { alert1(e) }, 'SqlitePlugin', 'showValues', q_jsonobj);
 
 
 
@@ -277,6 +292,7 @@ function get_list_of_pm_sites() {
 }
 
 function get_list_of_pm_sites_New(search_keyword) {
+    var c, k, m, s;
     try {
         disable_back_button();
         //loading();
@@ -349,11 +365,11 @@ function get_list_of_pm_sites_New(search_keyword) {
                 search_str = "(task_master.display_siteid like '%" + search_keyword + "%' or task_master.site_name like '%" + search_keyword + "%') and ";
             }
 
-            var limit_offset = parseInt(limit_range - default_range);
+            var limit_offset = parseInt(state.limit_range - state.default_range);
             if (orderby == "distance") {
-                var lat_radian = 3.14 * (user_lat) / 180;
+                var lat_radian = 3.14 * (state.user_lat) / 180;
                 var equa_distance = Math.pow(Math.cos(lat_radian), 2);
-                var dynamic_orderby_str = "((" + user_lat + "-tm.lat)*(" + user_lat + "-tm.lat)+(" + user_long + "-tm.long)*(" + user_long + "-tm.long)*" + equa_distance + ") ";
+                var dynamic_orderby_str = "((" + state.user_lat + "-tm.lat)*(" + state.user_lat + "-tm.lat)+(" + state.user_long + "-tm.long)*(" + state.user_long + "-tm.long)*" + equa_distance + ") ";
             }
             else if (orderby == "assigndate") {
                 var dynamic_orderby_str = orderbystr;
@@ -376,7 +392,7 @@ function get_list_of_pm_sites_New(search_keyword) {
 
                     var query = "select tm.flag, tm.tower_type as udf_id, tm.rate, tm.tid, tm.p_tid, tm.moduleid,tm.module_name,tm.siteid,tm.site_name,tm.lat,tm.long,tm.data,tm.site_address,tm.status,tm.survey_date,tm.survey_ms, tm.server_task_id, tm.is_delete_photo, tm.is_delete_log, tm.is_delete_sub, tm.is_valid_log, tm.list_html, tm.columndata, tm.response_status, fm.f_data, fm.step, fm.c_id from "
                         + "(select * from task_master where " + search_str + " task_master.moduleid = '" + selected_module_id + "' and task_master.username = '" + username + "' and task_master.is_down_complete=1 and task_master.status in(" + status_array + ") " + p_tid_str + ""
-                        + upload_pending_query + " limit " + default_range + " offset " + limit_offset + ") as tm INNER JOIN f_master fm ON tm.tid = fm.tid where fm.c_id in(" + cid_array + ") and fm.step in(" + step_array + ") ORDER BY " + dynamic_orderby_str + " " + order_type + "";
+                        + upload_pending_query + " limit " + state.default_range + " offset " + limit_offset + ") as tm INNER JOIN f_master fm ON tm.tid = fm.tid where fm.c_id in(" + cid_array + ") and fm.step in(" + step_array + ") ORDER BY " + dynamic_orderby_str + " " + order_type + "";
                 }
                 else {
                     var mf_query_str = '';
@@ -403,7 +419,7 @@ function get_list_of_pm_sites_New(search_keyword) {
                     cid_array.push(["5002, 5003, 5004"]);
                     var query = "select tm.flag, tm.tower_type as udf_id, tm.rate, tm.tid, tm.p_tid, tm.moduleid,tm.module_name,tm.siteid,tm.site_name,tm.lat,tm.long,tm.data,tm.site_address,tm.status,tm.survey_date,tm.survey_ms, tm.server_task_id, tm.is_delete_photo, tm.is_delete_log, tm.is_delete_sub, tm.is_valid_log, tm.list_html, tm.columndata, tm.response_status, fm.f_data, fm.step, fm.c_id from "
                         + "(select * from task_master where " + search_str + " " + mf_query_str + " and task_master.username = '" + username + "' and task_master.is_down_complete=1 " + p_tid_str + ""
-                        + upload_pending_query + " limit " + default_range + " offset " + limit_offset + ") as tm INNER JOIN f_master fm ON tm.tid = fm.tid where fm.c_id in(" + cid_array + ") and fm.step in(" + step_array + ") ORDER BY " + dynamic_orderby_str + " " + order_type + "";
+                        + upload_pending_query + " limit " + state.default_range + " offset " + limit_offset + ") as tm INNER JOIN f_master fm ON tm.tid = fm.tid where fm.c_id in(" + cid_array + ") and fm.step in(" + step_array + ") ORDER BY " + dynamic_orderby_str + " " + order_type + "";
                 }
             }
             else {
@@ -414,7 +430,7 @@ function get_list_of_pm_sites_New(search_keyword) {
 
                 var query = "select tm.flag, tm.tower_type as udf_id, tm.rate, tm.tid, tm.p_tid, tm.moduleid,tm.module_name,tm.siteid,tm.site_name,tm.lat,tm.long,tm.data,tm.site_address,tm.status,tm.survey_date,tm.survey_ms, tm.server_task_id, tm.is_delete_photo, tm.is_delete_log, tm.is_delete_sub, tm.is_valid_log, tm.list_html, tm.columndata, tm.response_status, fm.f_data, fm.step, fm.c_id from "
                     + "(select * from task_master where " + search_str + " task_master.moduleid = '" + selected_module_id + "' and task_master.is_down_complete=1 and task_master.status in(" + status_array + ") " + p_tid_str + ""
-                    + upload_pending_query + " limit " + default_range + " offset " + limit_offset + ") as tm INNER JOIN f_master fm ON tm.tid = fm.tid where fm.c_id in(" + cid_array + ") and fm.step in(" + step_array + ") ORDER BY " + dynamic_orderby_str + " " + order_type + "";
+                    + upload_pending_query + " limit " + state.default_range + " offset " + limit_offset + ") as tm INNER JOIN f_master fm ON tm.tid = fm.tid where fm.c_id in(" + cid_array + ") and fm.step in(" + step_array + ") ORDER BY " + dynamic_orderby_str + " " + order_type + "";
             }
             //alert1(query);
 
@@ -423,7 +439,7 @@ function get_list_of_pm_sites_New(search_keyword) {
                 data: query,
                 p: "1"
             });
-            cordova.exec(onsuccess_get_list_of_pm_sites, onfail_get_list_of_pm_sites, 'SqlitePlugin', 'showValues', q_jsonobj);
+            cordova.exec((savedLists() ? savedLists().response('site_list', onsuccess_get_list_of_pm_sites) : onsuccess_get_list_of_pm_sites), onfail_get_list_of_pm_sites, 'SqlitePlugin', 'showValues', q_jsonobj);
         }
     } catch (e) {
         alert1(e + '_get_list_of_pm_sites()');
@@ -437,7 +453,7 @@ function get_list_of_pm_sites_by_search() {
         if (search_keyword != "") {
             get_list_of_pm_sites_New(search_keyword);
         } else {
-            var limit_offset = parseInt(limit_range - default_range);
+            var limit_offset = parseInt(state.limit_range - state.default_range);
             if (limit_offset == 0) {
                 alert1("Please enter search keyword !");
             }
@@ -454,6 +470,7 @@ function get_list_of_pm_sites_by_search() {
 var no_udf_id_found = 0;
 var task_refresh_timer;
 function onsuccess_get_list_of_pm_sites(e) {
+    var b, c, dm, g, m, p, s;
     try {
         no_udf_id_found = 0;
         var no_data_found = 0;
@@ -465,7 +482,7 @@ function onsuccess_get_list_of_pm_sites(e) {
         //alert1(JSON.stringify(myArray));
         if (typeof TripSiteMap !== 'undefined') { TripSiteMap.cacheListing(myArray); }
 
-        var limit_offset = parseInt(limit_range - default_range);
+        var limit_offset = parseInt(state.limit_range - state.default_range);
         if (limit_offset == 0) {
             var filter_ddl_Array = [];
         }
@@ -489,7 +506,7 @@ function onsuccess_get_list_of_pm_sites(e) {
         //list_data[0].colwise_align = 'true';
         //list_data[0].buttons = [];
 
-        active_Tab = JSON.parse(storage.getItem('tab_index'));
+        state.active_Tab = JSON.parse(storage.getItem('tab_index'));
         var Columndata_json = list_data[0].columndata;
         var staticdata = list_data[0].staticdata;
         var task_removable = list_data[0].task_removable;
@@ -500,7 +517,7 @@ function onsuccess_get_list_of_pm_sites(e) {
         var CommentUI = list_data[0].CommentUI;
         var site_route = list_data[0].site_route;
         var latlong_api = list_data[0].latlong_api;
-        var company_id = window.storage.getItem('company_id');
+        var company_id = storage.getItem('company_id');
 
         if (customer_info == "" || customer_info == null || customer_info == undefined) {
             customer_info = "true";
@@ -515,12 +532,12 @@ function onsuccess_get_list_of_pm_sites(e) {
         }
 
         if (F7_device == 'ios') {
-            var clickable_param = "mk_notify('This information is read only !')";
-            var upload_param = "mk_notify('Task is uploading, please wait... !')";
+            var clickable_param = (options.action ? options.action("mk_notify", ["This information is read only !"]) : "mk_notify('This information is read only !')");
+            var upload_param = (options.action ? options.action("mk_notify", ["Task is uploading, please wait... !"]) : "mk_notify('Task is uploading, please wait... !')");
         }
         else {
-            var clickable_param = "alert1('This information is read only !')";
-            var upload_param = "alert1('Task is uploading, please wait... !')";
+            var clickable_param = (options.action ? options.action("alert1", ["This information is read only !"]) : "alert1('This information is read only !')");
+            var upload_param = (options.action ? options.action("alert1", ["Task is uploading, please wait... !"]) : "alert1('Task is uploading, please wait... !')");
         }
 
         var status_array = list_data[0].status;
@@ -603,32 +620,31 @@ function onsuccess_get_list_of_pm_sites(e) {
             }
         }
 
-        if (myArray.length > 0) {
-            // remove duplicate tid
-            for (var q = 0; q < myArray.length; q++) {
-                var tid_temp = myArray[q].tid;
-                var f_step = myArray[q].step;
-                var f_cid = myArray[q].c_id;
-                var f_data = myArray[q].f_data;
-
-                var tid_check = 0;
-                for (s = 0; s < tid_Array.length; s++) {
-                    if (tid_Array[s] == tid_temp) {
-                        tid_check++;
-                    }
-                }
-                if (tid_check == 0) {
-                    tid_Array.push(tid_temp);
-                    var site_lat = myArray[q].lat;
-                    var site_long = myArray[q].long;
-                    var distance = getDistanceFromLatLonInMeter(user_lat, user_long, site_lat, site_long);
-                    distance = parseInt(distance);
-                    distance_array.push({
-                        'tid': tid_temp,
-                        'distance': distance
-                    });
-                }
+        var indexed_task_rows = index_list_rows(myArray, 'tid', 'selection_survey.html');
+        var pending_task_rows = indexed_task_rows.indexed ? document.createDocumentFragment() : null;
+        var pending_visible_tasks = 0;
+        var initial_visible_tasks = $("#site_list > li:not(:hidden)").length;
+        function append_task_row(html) {
+            if (!pending_task_rows) { $("#site_list").append(html); return; }
+            var previous = pending_task_rows.lastChild;
+            $(pending_task_rows).append(html);
+            for (var node = previous ? previous.nextSibling : pending_task_rows.firstChild; node; node = node.nextSibling) {
+                if (node.nodeType === 1 && node.tagName === 'LI') pending_visible_tasks++;
             }
+        }
+        function finish_task_rows() {
+            if (pending_task_rows) $("#site_list").append(pending_task_rows);
+            var dynamic_rows = staticdata == '' || staticdata == null;
+            if (dynamic_rows) $("#site_list").find('li').addClass('swipeout');
+            for (var row_no = 0; row_no < tid_Array.length; row_no++) $("#img_remove_" + row_no).show();
+            var controls = dynamic_rows ? '.cls_remove, .cls_fence, .cls_task_ico' : '.cls_remove';
+            $(controls).off('click.mwfmTaskList').on('click.mwfmTaskList', function (event) { event.stopPropagation(); });
+        }
+        tid_Array = indexed_task_rows.ids.slice();
+        for (var q = 0; q < indexed_task_rows.firstIndices.length; q++) {
+            var first_row = myArray[indexed_task_rows.firstIndices[q]];
+            var distance = getDistanceFromLatLonInMeter(state.user_lat, state.user_long, first_row.lat, first_row.long);
+            distance_array.push({ tid: first_row.tid, distance: parseInt(distance) });
         }
 
 
@@ -743,19 +759,19 @@ function onsuccess_get_list_of_pm_sites(e) {
                         if (site_route == "true") {                                     //display site route on map [23042021]
                             if (latlong_api == "" || latlong_api == null || latlong_api == undefined) {
                                 if (d_header == "Lat 1") {
-                                    var lat1 = t_ans;
+                                    var lat1 = state.t_ans;
                                     multiple_LatLong_ary[0]['Lat 1'] = lat1;
                                 }
                                 else if (d_header == "Lat 2") {
-                                    var lat2 = t_ans;
+                                    var lat2 = state.t_ans;
                                     multiple_LatLong_ary[0]['Lat 2'] = lat2;
                                 }
                                 else if (d_header == "Long 1") {
-                                    var long1 = t_ans;
+                                    var long1 = state.t_ans;
                                     multiple_LatLong_ary[0]['Long 1'] = long1;
                                 }
                                 else if (d_header == "Long 2") {
-                                    var long2 = t_ans;
+                                    var long2 = state.t_ans;
                                     multiple_LatLong_ary[0]['Long 2'] = long2;
                                 }
                             }
@@ -790,11 +806,11 @@ function onsuccess_get_list_of_pm_sites(e) {
                         // set filters
                         if (t == 0) {
                             var ddl_header = header.replace(/ /g, "__");
-                            var param = "sub_filter_popup_task('" + ddl_header + "')";
+                            var param = (options.action ? options.action("sub_filter_popup_task", [String(ddl_header)]) : "sub_filter_popup_task('" + ddl_header + "')");
                             var opt = ""
                             opt += '<li name="ddl_filter_' + ddl_header + '" data=""><a onclick="' + param + '" href="#"class="item-link item-content"><div class="item-inner">';
                             opt += '<div class="item-title">' + header + '</div><div class="item-text" name="filter_sub_label_' + ddl_header + '" style="color: #8e8e93 !important;"></div></div></a></li>';
-                            var param = "get_options_for_search_task('" + ddl_header + "')"
+                            var param = (options.action ? options.action("get_options_for_search_task", [String(ddl_header)]) : "get_options_for_search_task('" + ddl_header + "')")
                             $('#lst_filter').append(opt);
                         }
 
@@ -813,7 +829,9 @@ function onsuccess_get_list_of_pm_sites(e) {
                             }
                         }
 
-                        for (var i = 0; i < myArray.length; i++) {
+                        var task_row_indices = indexed_task_rows.indices(tid);
+                        for (var row_cursor = 0; row_cursor < task_row_indices.length; row_cursor++) {
+                            var i = task_row_indices[row_cursor];
                             if (tid == myArray[i].tid) {
 
                                 var task_status = myArray[i].status;
@@ -836,7 +854,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                         var back_color = 'white';
                                     }
                                     else {
-                                        var li_length = $("#site_list > li:not(:hidden)").length;
+                                        var li_length = pending_task_rows ? initial_visible_tasks + pending_visible_tasks : $("#site_list > li:not(:hidden)").length;
                                         if (li_length % 2 == 0) {
                                             var back_color = back_color_odd;
                                         }
@@ -878,11 +896,11 @@ function onsuccess_get_list_of_pm_sites(e) {
 
                                 if (geo_falg == 0) {
                                     var geofance_flag = list_data[0].geofence[0].value;
-                                    var param2 = "get_user_latlong_for_map('" + myArray[i].lat + "', '" + myArray[i].long + "')";
+                                    var param2 = (options.action ? options.action("get_user_latlong_for_map", [String(myArray[i].lat), String(myArray[i].long)]) : "get_user_latlong_for_map('" + myArray[i].lat + "', '" + myArray[i].long + "')");
                                     var geofanceradius = parseInt(list_data[0].geofanceradius);
                                     var site_lat = myArray[i].lat;
                                     var site_long = myArray[i].long;
-                                    var distance = getDistanceFromLatLonInMeter(user_lat, user_long, site_lat, site_long);
+                                    var distance = getDistanceFromLatLonInMeter(state.user_lat, state.user_long, site_lat, site_long);
                                     distance = parseInt(distance);
                                     distance_desplay = distance;
                                     //distance = 0;
@@ -1008,12 +1026,12 @@ function onsuccess_get_list_of_pm_sites(e) {
                                     if (dlt_media_chksht_type == "5") {
                                         // force edit due to delete media case
                                         var msg = 'Some media files may deleted from the device, please recapture and submit again!';
-                                        var param = "redirect_on_task_edit_form(" + myArray[i].tid + ", '" + task_status + "', '" + msg + "')";
+                                        var param = (options.action ? options.action("redirect_on_task_edit_form", [myArray[i].tid, String(task_status), String(msg)]) : "redirect_on_task_edit_form(" + myArray[i].tid + ", '" + task_status + "', '" + msg + "')");
                                     }
                                     else if (response_status == 14) {
                                         // force edit due to task duplication
                                         var msg = 'Some details of this task may same as the previous one, please make appropriate changes and submit again!';
-                                        var param = "redirect_on_task_edit_form(" + myArray[i].tid + ", '" + task_status + "', '" + msg + "')";
+                                        var param = (options.action ? options.action("redirect_on_task_edit_form", [myArray[i].tid, String(task_status), String(msg)]) : "redirect_on_task_edit_form(" + myArray[i].tid + ", '" + task_status + "', '" + msg + "')");
                                     }
                                     else if (task_clickable == 'false' || task_clickable == 'disable_all') {
                                         var param = clickable_param;
@@ -1023,11 +1041,11 @@ function onsuccess_get_list_of_pm_sites(e) {
                                         if (user_column == "" || user_column == null || user_column == undefined) {
                                             if (geofance_flag == "true") {
                                                 // geofence is true
-                                                var alert_param = "alert_task_distance('" + distance + "','" + geofanceradius + "','" + user_accuracy + "','" + user_lat + "','" + user_long + "','" + site_lat + "','" + site_long + "', '" + myArray[i].site_name + "')";
+                                                var alert_param = (options.action ? options.action("alert_task_distance", [String(distance), String(geofanceradius), String(state.user_accuracy), String(state.user_lat), String(state.user_long), String(site_lat), String(site_long), String(myArray[i].site_name)]) : "alert_task_distance('" + distance + "','" + geofanceradius + "','" + state.user_accuracy + "','" + state.user_lat + "','" + state.user_long + "','" + site_lat + "','" + site_long + "', '" + myArray[i].site_name + "')");
 
-                                                if (distance < (geofanceradius + user_accuracy)) {
+                                                if (distance < (geofanceradius + state.user_accuracy)) {
                                                     var near_site = 1; // inside site radius
-                                                    var param = "redirect_on_pm_site_click_PRE('" + myArray[i].siteid + "', '" + myArray[i].tid + "', '" + task_status + "','" + myArray[i].moduleid + "', '" + myArray[i].module_name + "', '" + myArray[i].site_name + "', '" + myArray[i].lat + "', '" + myArray[i].long + "','" + i + "', '" + encodeURIComponent(is_delete_photo) + "', '" + myArray[i].p_tid + "', '" + myArray[i].server_task_id + "','" + user_accuracy + "','" + geofanceradius + "', '" + myArray[i].survey_date + "')";
+                                                    var param = (options.action ? options.action("redirect_on_pm_site_click_PRE", [String(myArray[i].siteid), String(myArray[i].tid), String(task_status), String(myArray[i].moduleid), String(myArray[i].module_name), String(myArray[i].site_name), String(myArray[i].lat), String(myArray[i].long), String(i), String(encodeURIComponent(is_delete_photo)), String(myArray[i].p_tid), String(myArray[i].server_task_id), String(state.user_accuracy), String(geofanceradius), String(myArray[i].survey_date)]) : "redirect_on_pm_site_click_PRE('" + myArray[i].siteid + "', '" + myArray[i].tid + "', '" + task_status + "','" + myArray[i].moduleid + "', '" + myArray[i].module_name + "', '" + myArray[i].site_name + "', '" + myArray[i].lat + "', '" + myArray[i].long + "','" + i + "', '" + encodeURIComponent(is_delete_photo) + "', '" + myArray[i].p_tid + "', '" + myArray[i].server_task_id + "','" + state.user_accuracy + "','" + geofanceradius + "', '" + myArray[i].survey_date + "')");
                                                 } else {
 
 
@@ -1048,8 +1066,8 @@ function onsuccess_get_list_of_pm_sites(e) {
                                                     var t_new_column_obj = encodeURIComponent(new_column_obj);
 
                                                     near_site = 0; // outside site radius
-                                                    var param = "get_distance_confirmation_pm('" + myArray[i].siteid + "', '" + myArray[i].tid + "','" + myArray[i].moduleid + "', '" + myArray[i].module_name + "', '" + myArray[i].server_task_id + "', '" + myArray[i].site_name
-                                                        + "','" + user_lat + "','" + user_long + "','" + user_accuracy + "','" + geofanceradius + "','" + site_lat + "','" + site_long + "','" + t_new_column_obj + "')";
+                                                    var param = (options.action ? options.action("get_distance_confirmation_pm", [String(myArray[i].siteid), String(myArray[i].tid), String(myArray[i].moduleid), String(myArray[i].module_name), String(myArray[i].server_task_id), String(myArray[i].site_name), String(state.user_lat), String(state.user_long), String(state.user_accuracy), String(geofanceradius), String(site_lat), String(site_long), String(t_new_column_obj)]) : "get_distance_confirmation_pm('" + myArray[i].siteid + "', '" + myArray[i].tid + "','" + myArray[i].moduleid + "', '" + myArray[i].module_name + "', '" + myArray[i].server_task_id + "', '" + myArray[i].site_name
+                                                        + "','" + state.user_lat + "','" + state.user_long + "','" + state.user_accuracy + "','" + geofanceradius + "','" + site_lat + "','" + site_long + "','" + t_new_column_obj + "')");
                                                 }
 
                                                 let distance_str = convert_meter_to_km(distance);
@@ -1062,7 +1080,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                                 }
                                             }
                                             else {
-                                                var param = "redirect_on_pm_site_click('" + myArray[i].siteid + "', '" + myArray[i].tid + "', '" + task_status + "','" + myArray[i].moduleid + "', '" + myArray[i].module_name + "', '" + myArray[i].site_name + "', '" + myArray[i].lat + "', '" + myArray[i].long + "','" + i + "', '" + encodeURIComponent(is_delete_photo) + "', '" + myArray[i].p_tid + "')";
+                                                var param = (options.action ? options.action("redirect_on_pm_site_click", [String(myArray[i].siteid), String(myArray[i].tid), String(task_status), String(myArray[i].moduleid), String(myArray[i].module_name), String(myArray[i].site_name), String(myArray[i].lat), String(myArray[i].long), String(i), String(encodeURIComponent(is_delete_photo)), String(myArray[i].p_tid)]) : "redirect_on_pm_site_click('" + myArray[i].siteid + "', '" + myArray[i].tid + "', '" + task_status + "','" + myArray[i].moduleid + "', '" + myArray[i].module_name + "', '" + myArray[i].site_name + "', '" + myArray[i].lat + "', '" + myArray[i].long + "','" + i + "', '" + encodeURIComponent(is_delete_photo) + "', '" + myArray[i].p_tid + "')");
 
                                                 if (geofance_distance == 'true') {
                                                     let distance_str = convert_meter_to_km(distance);
@@ -1087,7 +1105,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                             };
                                             user_column_obj = JSON.stringify(user_column_obj);
                                             var t_user_column_obj = encodeURIComponent(user_column_obj);
-                                            var param = "get_current_user_latlong('" + geofance_flag + "', '" + geofanceradius + "', '" + t_user_column_obj + "')";
+                                            var param = (options.action ? options.action("get_current_user_latlong", [String(geofance_flag), String(geofanceradius), String(t_user_column_obj)]) : "get_current_user_latlong('" + geofance_flag + "', '" + geofanceradius + "', '" + t_user_column_obj + "')");
                                         }
                                     }
 
@@ -1123,18 +1141,18 @@ function onsuccess_get_list_of_pm_sites(e) {
                                         latlong_str = encodeURIComponent(latlong_str);
                                         //var param_site_route = "plugin_call_for_site_route_map('" + latlong_str + "')";
                                         var ser_task_id = myArray[i].server_task_id;
-                                        var param_site_route = "display_site_route_on_map('" + latlong_api + "', '" + ser_task_id + "', '" + latlong_str + "')";
+                                        var param_site_route = (options.action ? options.action("display_site_route_on_map", [String(latlong_api), String(ser_task_id), String(latlong_str)]) : "display_site_route_on_map('" + latlong_api + "', '" + ser_task_id + "', '" + latlong_str + "')");
                                         icon_str += '<i class="fa fa-map-marker cls_task_ico" style="font-size: 32px; margin-bottom:6px" onclick="' + param_site_route + '"></i>';
                                     }
 
                                     // check for pdf download option
                                     if (pdf_site_list == 'true') {
-                                        var param_pdf = "Generate_PDFFile('" + myArray[i].server_task_id + "')";
+                                        var param_pdf = (options.action ? options.action("Generate_PDFFile", [String(myArray[i].server_task_id)]) : "Generate_PDFFile('" + myArray[i].server_task_id + "')");
                                         icon_str += '<i class="fa fa-file-pdf-o cls_task_ico" style="font-size: 32px; margin-bottom:4px" onclick="' + param_pdf + '"></i>';
                                     }
 
                                     if (weather_display == 'true') {
-                                        var param_weather = "view_weather_for_site('" + myArray[i].lat + "', '" + myArray[i].long + "')";
+                                        var param_weather = (options.action ? options.action("view_weather_for_site", [String(myArray[i].lat), String(myArray[i].long)]) : "view_weather_for_site('" + myArray[i].lat + "', '" + myArray[i].long + "')");
                                         icon_str += '<i class="fa fa-cloud cls_task_ico" style="font-size: 30px" onclick="' + param_weather + '"></i>';
                                     }
 
@@ -1142,13 +1160,13 @@ function onsuccess_get_list_of_pm_sites(e) {
                                         var customer_id = myArray[i].siteid;
                                         if (customer_id == 0) { }
                                         else {
-                                            var param_cust_info = "view_customer_detail_task('" + customer_id + "')";
+                                            var param_cust_info = (options.action ? options.action("view_customer_detail_task", [String(customer_id)]) : "view_customer_detail_task('" + customer_id + "')");
                                             icon_str += '<i class="fa fa-info-circle cls_task_ico" style="font-size: 32px" onclick="' + param_cust_info + '"></i>';
                                         }
                                     }
 
                                     if (CommentUI == 'true') {
-                                        var param_commentUI = "get_sub_tasks('" + myArray[i].server_task_id + "')";
+                                        var param_commentUI = (options.action ? options.action("get_sub_tasks", [String(myArray[i].server_task_id)]) : "get_sub_tasks('" + myArray[i].server_task_id + "')");
                                         icon_str += '<i class="fa fa-comments cls_task_ico" style="font-size: 30px; margin-bottom:4px" onclick="' + param_commentUI + '"></i>';
                                     }
 
@@ -1164,8 +1182,8 @@ function onsuccess_get_list_of_pm_sites(e) {
                                     if (tid == myArray[i].tid && checksheetID == myArray[i].c_id && step == myArray[i].step) {
                                         position_flag++;
                                         var f_data = myArray[i].f_data;
-                                        f_data = itemObj._checkStrObj(f_data);  		// check_item
-                                        data = itemObj._checkStrObj(f_data[0].data);  		// check_item
+                                        f_data = (options.itemObj || w.itemObj)._checkStrObj(f_data);  		// check_item
+                                        data = (options.itemObj || w.itemObj)._checkStrObj(f_data[0].data);  		// check_item
                                         break;
                                     }
                                 }
@@ -1174,8 +1192,8 @@ function onsuccess_get_list_of_pm_sites(e) {
                                     if (tid == myArray[i].tid && (checksheetID == myArray[i].c_id || myArray[i].c_id == '5002' || myArray[i].c_id == '5003' || myArray[i].c_id == '5004') && step == myArray[i].step) {
                                         position_flag++;
                                         var f_data = myArray[i].f_data;
-                                        f_data = itemObj._checkStrObj(f_data);  		// check_item
-                                        data = itemObj._checkStrObj(f_data[0].data);  		// check_item
+                                        f_data = (options.itemObj || w.itemObj)._checkStrObj(f_data);  		// check_item
+                                        data = (options.itemObj || w.itemObj)._checkStrObj(f_data[0].data);  		// check_item
                                         break;
                                     }
                                 }
@@ -1187,14 +1205,14 @@ function onsuccess_get_list_of_pm_sites(e) {
                             else {
                                 if (tid == myArray[i].tid) {
                                     var system_var_Array = [];
-                                    var company_id = window.storage.getItem('company_id');
-                                    var user_id = window.storage.getItem('user_id');
-                                    var module_id = JSON.parse(window.storage.getItem('wayflow'));
-                                    var module_name = JSON.parse(window.storage.getItem('wayflow_name'));
-                                    var role_id = window.storage.getItem('role_id');
-                                    var role_name = window.storage.getItem('role_name');
-                                    var circle_id = window.storage.getItem('circle_id');
-                                    var circle_name = window.storage.getItem('circle_name');
+                                    var company_id = storage.getItem('company_id');
+                                    var user_id = storage.getItem('user_id');
+                                    var module_id = JSON.parse(storage.getItem('wayflow'));
+                                    var module_name = JSON.parse(storage.getItem('wayflow_name'));
+                                    var role_id = storage.getItem('role_id');
+                                    var role_name = storage.getItem('role_name');
+                                    var circle_id = storage.getItem('circle_id');
+                                    var circle_name = storage.getItem('circle_name');
                                     system_var_Array["company_id"] = company_id;
                                     system_var_Array["user_id"] = user_id;
                                     system_var_Array["module_id"] = module_id;
@@ -1278,6 +1296,9 @@ function onsuccess_get_list_of_pm_sites(e) {
                                 }
                             }
                         }
+                        // Later legacy markup reads i; preserve its exhausted
+                        // sentinel as well as source indices when a row matched.
+                        if (row_cursor === task_row_indices.length) i = myArray.length;
 
                         var flag_test_fdata = 0;
                         var test_r = 0;
@@ -1307,7 +1328,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                     if (data[q].type == "20" || data[q].type == "21" || data[q].type == "8") {
                                         var ans_lable = data[q].ans[0];
                                     } else if (data[q].type == "22") {
-                                        var json_inv_calc = itemObj._checkStrObj(data[q].ans[0]);  		// check_item
+                                        var json_inv_calc = (options.itemObj || w.itemObj)._checkStrObj(data[q].ans[0]);  		// check_item
                                         var sum_finaljson = json_inv_calc[0].sum_finaljson;
                                         //alert1("sum_finaljson :" + JSON.stringify(sum_finaljson));
                                         for (m = 0; m < sum_finaljson.length; m++) {
@@ -1395,7 +1416,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                             if (old_priority == '' || old_priority == null || old_priority == undefined) {
                                                 old_priority = 'Select';
                                             }
-                                            var param_priority = "change_option_priority('#priority_ddl_" + i + "','" + myArray[i].siteid + "', '" + myArray[i].tid + "', '" + tid_Array.toString() + "')";
+                                            var param_priority = (options.action ? options.action("change_option_priority", [("#priority_ddl_" + String(i)), String(myArray[i].siteid), String(myArray[i].tid), String(tid_Array.toString())]) : "change_option_priority('#priority_ddl_" + i + "','" + myArray[i].siteid + "', '" + myArray[i].tid + "', '" + tid_Array.toString() + "')");
 
                                             list_item += '<td style="' + text_align + 'width: 50% !important; vertical-align: top;">';
                                             list_item += '<div class="item-title cls_disp_blk" style="color:' + color + ';font-size:' + font_size + 'pt;"><b>' + header + '</b>';
@@ -1463,7 +1484,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                         }
 
                                         var dd_border_color = $('.navbar').css('background-color');
-                                        var company_id = JSON.parse(window.storage.getItem('company_id'));
+                                        var company_id = JSON.parse(storage.getItem('company_id'));
 
                                         if (border == "true") {
                                             if (flow_Array.length > 1 && p == 0) {
@@ -1499,7 +1520,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                                             if (old_priority == '' || old_priority == null || old_priority == undefined) {
                                                 old_priority = 'Select';
                                             }
-                                            var param_priority = "change_option_priority('#priority_ddl_" + i + "','" + myArray[i].siteid + "', '" + myArray[i].tid + "', '" + tid_Array.toString() + "')";
+                                            var param_priority = (options.action ? options.action("change_option_priority", [("#priority_ddl_" + String(i)), String(myArray[i].siteid), String(myArray[i].tid), String(tid_Array.toString())]) : "change_option_priority('#priority_ddl_" + i + "','" + myArray[i].siteid + "', '" + myArray[i].tid + "', '" + tid_Array.toString() + "')");
 
                                             list_item += '<td colspan=2 style="' + text_align + 'width: 50% !important; vertical-align: top;">';
 
@@ -1679,9 +1700,9 @@ function onsuccess_get_list_of_pm_sites(e) {
                         icon_str += trip_str;
                     }
 
-                    let task_status_name = glob_statusName_ary[task_status];
-                    let task_status_bgcolor = glob_statusColor_ary[task_status_name];
-                    let task_status_text_color = glob_textColor_ary[task_status_name];
+                    let task_status_name = state.glob_statusName_ary[task_status];
+                    let task_status_bgcolor = state.glob_statusColor_ary[task_status_name];
+                    let task_status_text_color = state.glob_textColor_ary[task_status_name];
 
                     if (task_status_name == "" || task_status_name == null || task_status_name == undefined) {
                         task_status_name = task_status;
@@ -1742,8 +1763,8 @@ function onsuccess_get_list_of_pm_sites(e) {
                                         var param_btn = clickable_param;
                                     }
                                     else {
-                                        var param_btn = "update_task_by_shortcut_button('" + buttons[b].checksheet_id + "','" + buttons[b].status + "','" + myArray[t].siteid + "', '" + myArray[t].tid + "', '" + task_status + "','"
-                                            + myArray[t].moduleid + "', '" + myArray[t].module_name + "', '" + myArray[t].site_name + "', '" + myArray[t].server_task_id + "', '" + myArray[t].lat + "', '" + myArray[t].long + "', '" + myArray[t].survey_date + "', '" + myArray[t].survey_ms + "', '" + submit_message + "', '" + sb_trip + "')";
+                                        var param_btn = (options.action ? options.action("update_task_by_shortcut_button", [String(buttons[b].checksheet_id), String(buttons[b].status), String(myArray[t].siteid), String(myArray[t].tid), String(task_status), String(myArray[t].moduleid), String(myArray[t].module_name), String(myArray[t].site_name), String(myArray[t].server_task_id), String(myArray[t].lat), String(myArray[t].long), String(myArray[t].survey_date), String(myArray[t].survey_ms), String(submit_message), String(sb_trip)]) : "update_task_by_shortcut_button('" + buttons[b].checksheet_id + "','" + buttons[b].status + "','" + myArray[t].siteid + "', '" + myArray[t].tid + "', '" + task_status + "','"
+                                            + myArray[t].moduleid + "', '" + myArray[t].module_name + "', '" + myArray[t].site_name + "', '" + myArray[t].server_task_id + "', '" + myArray[t].lat + "', '" + myArray[t].long + "', '" + myArray[t].survey_date + "', '" + myArray[t].survey_ms + "', '" + submit_message + "', '" + sb_trip + "')");
                                     }
 
                                     if (buttons[b].checksheet_id == 0) {
@@ -1802,14 +1823,14 @@ function onsuccess_get_list_of_pm_sites(e) {
                     //------task remove-----------
                     var task_remove_str = '';
                     if (task_removable == 'true') {
-                        var param_remove_sub = "remove_last_subtask('" + tid + "')";
+                        var param_remove_sub = (options.action ? options.action("remove_last_subtask", [String(tid)]) : "remove_last_subtask('" + tid + "')");
                         task_remove_str += '<a  id="img_remove_' + t + '" href="#" class="swipeout-delete cls_remove" onclick ="' + param_remove_sub + '">Delete</a>';
                     }
 
                     //------task edit-----------
                     var task_edit_str = '';
                     if (task_editable == "true") {
-                        var param_edit_task = "redirect_on_task_edit_form(" + tid + ", '" + task_status + "','')";
+                        var param_edit_task = (options.action ? options.action("redirect_on_task_edit_form", [tid, String(task_status), ""]) : "redirect_on_task_edit_form(" + tid + ", '" + task_status + "','')");
                         task_edit_str += '<a id="btn_task_edit_' + tid + '"  onclick="' + param_edit_task + '" style="transform: translate3d(0, 0px, 0px);">Edit</a>';
                     }
 
@@ -1821,35 +1842,19 @@ function onsuccess_get_list_of_pm_sites(e) {
                     }
 
                     // display task info on swipe to right
-                    var info_param = "view_task_details_from_task_master('', " + tid + ")";
+                    var info_param = (options.action ? options.action("view_task_details_from_task_master", ["", tid]) : "view_task_details_from_task_master('', " + tid + ")");
                     list_item += '<div class="swipeout-actions-left">';
                     list_item += '<a href="#" class="action1" onclick="' + info_param + '">Details</a>';
                     list_item += '</div>';
 
                     list_item += '</li>';
-                    $("#site_list").append(list_item);
-
-                    var count = t + 1;
-                    //if (count == tid_Array.length) {
-                    $("#img_remove_" + t + "").show();
-                    $("#site_list").find('li').addClass("swipeout");
-                    //$("#site_list > li").last().addClass("swipeout");
-                    //}
-
-                    $('.cls_remove').click(function (event) {
-                        event.stopPropagation();
-                    });
-
-                    $('.cls_fence').click(function (event) {
-                        event.stopPropagation();
-                    });
-                    $('.cls_task_ico').click(function (event) {
-                        event.stopPropagation();
-                    });
+                    append_task_row(list_item);
                 } else {
                     // static data available
                     var tid = tid_Array[t];
-                    for (var j = 0; j < myArray.length; j++) {
+                    var static_row_indices = indexed_task_rows.indices(tid);
+                    for (var static_row_cursor = 0; static_row_cursor < static_row_indices.length; static_row_cursor++) {
+                        var j = static_row_indices[static_row_cursor];
                         if (tid == myArray[j].tid) {
                             var response_status = myArray[j].response_status;
 
@@ -1993,18 +1998,18 @@ function onsuccess_get_list_of_pm_sites(e) {
                             if (dlt_media_chksht_type == "5") {
                                 // force edit due to delete media case
                                 var msg = 'Some media files may deleted from the device, please recapture and submit again!';
-                                var param = "redirect_on_task_edit_form(" + myArray[i].tid + ", '" + myArray[j].status + "', '" + msg + "')";
+                                var param = (options.action ? options.action("redirect_on_task_edit_form", [myArray[i].tid, String(myArray[j].status), String(msg)]) : "redirect_on_task_edit_form(" + myArray[i].tid + ", '" + myArray[j].status + "', '" + msg + "')");
                             }
                             else if (response_status == 14) {
                                 // force edit due to task duplication
                                 var msg = 'Some details of this task may same as the previous one, please make appropriate changes and submit again!';
-                                var param = "redirect_on_task_edit_form(" + myArray[i].tid + ", '" + myArray[j].status + "', '" + msg + "')";
+                                var param = (options.action ? options.action("redirect_on_task_edit_form", [myArray[i].tid, String(myArray[j].status), String(msg)]) : "redirect_on_task_edit_form(" + myArray[i].tid + ", '" + myArray[j].status + "', '" + msg + "')");
                             }
                             else if (task_clickable == 'false' || task_clickable == 'disable_all') {
                                 param = clickable_param;
                             }
                             else {
-                                var param = "redirect_on_pm_site_click('" + siteid + "', '" + myArray[j].tid + "', '" + myArray[j].status + "','" + myArray[j].moduleid + "', '" + myArray[j].module_name + "', '" + sitename + "', '" + myArray[j].lat + "', '" + myArray[j].long + "','" + j + "' , '" + encodeURIComponent(is_delete_photo) + "', '" + myArray[j].p_tid + "')";
+                                var param = (options.action ? options.action("redirect_on_pm_site_click", [String(siteid), String(myArray[j].tid), String(myArray[j].status), String(myArray[j].moduleid), String(myArray[j].module_name), String(sitename), String(myArray[j].lat), String(myArray[j].long), String(j), String(encodeURIComponent(is_delete_photo)), String(myArray[j].p_tid)]) : "redirect_on_pm_site_click('" + siteid + "', '" + myArray[j].tid + "', '" + myArray[j].status + "','" + myArray[j].moduleid + "', '" + myArray[j].module_name + "', '" + sitename + "', '" + myArray[j].lat + "', '" + myArray[j].long + "','" + j + "' , '" + encodeURIComponent(is_delete_photo) + "', '" + myArray[j].p_tid + "')");
                             }
 
                             var list_item = '<li class="swipeout ' + cls_task_layout + '" value="' + myArray[j].rate + '" id ="lst_' + tid + '" onclick ="' + param + '" style="background-color:'
@@ -2012,7 +2017,7 @@ function onsuccess_get_list_of_pm_sites(e) {
 
                             list_item += '<label style="font-size:10pt; font-weight:bold" class="cls_search">' + staticdata + ' : ' + (t + 1) + '</label>';
 
-                            var param_remove_sub = "remove_last_subtask('" + myArray[j].tid + "')";
+                            var param_remove_sub = (options.action ? options.action("remove_last_subtask", [String(myArray[j].tid)]) : "remove_last_subtask('" + myArray[j].tid + "')");
                             list_item += '</div></div></a>';
                             //list_item += '<div style="display:none" class="swipeout-actions-right" id="img_remove_' + t + '"><a href="#" class="swipeout-delete cls_remove" onclick ="' + param_remove_sub + '">Delete</a></div>';
 
@@ -2020,14 +2025,14 @@ function onsuccess_get_list_of_pm_sites(e) {
                             //------task remove-----------
                             var task_remove_str = '';
                             if (flow_Array.length > 1 && task_removable == 'true') {
-                                var param_remove_sub = "remove_last_subtask('" + tid + "')";
+                                var param_remove_sub = (options.action ? options.action("remove_last_subtask", [String(tid)]) : "remove_last_subtask('" + tid + "')");
                                 task_remove_str += '<a  id="img_remove_' + t + '" href="#" class="swipeout-delete cls_remove" onclick ="' + param_remove_sub + '">Delete</a>';
                             }
 
                             //------task edit-----------
                             var task_edit_str = '';
                             if (task_editable == "true") {
-                                var param_edit_task = "redirect_on_task_edit_form(" + tid + ", '" + myArray[j].status + "', '')";
+                                var param_edit_task = (options.action ? options.action("redirect_on_task_edit_form", [tid, String(myArray[j].status), ""]) : "redirect_on_task_edit_form(" + tid + ", '" + myArray[j].status + "', '')");
                                 task_edit_str += '<a id="btn_task_edit_' + tid + '"  onclick="' + param_edit_task + '" style="transform: translate3d(0, 0px, 0px);">Edit</a>';
                             }
 
@@ -2039,7 +2044,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                             }
 
                             // display task info on swipe to right
-                            var info_param = "view_task_details_from_task_master('', " + tid + ")";
+                            var info_param = (options.action ? options.action("view_task_details_from_task_master", ["", tid]) : "view_task_details_from_task_master('', " + tid + ")");
                             list_item += '<div class="swipeout-actions-left">';
                             list_item += '<a href="#" class="action1" onclick="' + info_param + '">Details</a>';
                             list_item += '</div>';
@@ -2048,29 +2053,21 @@ function onsuccess_get_list_of_pm_sites(e) {
 
                             //store task_list html
                             list_item += '<input type="hidden" id="hdn_lst_html_' + myArray[j].tid + '" value="' + encodeURIComponent(myArray[j].list_html) + '">';
-                            $("#site_list").append(list_item);
-
-                            $('.cls_remove').click(function (event) {
-                                event.stopPropagation();
-                            });
-
-                            var count = t + 1;
-                            //if (count == tid_Array.length) {
-                            $("#img_remove_" + t + "").show();
-                            $("#site_list > li").last().addClass("swipeout");
-                            //}
+                            append_task_row(list_item);
                             break;
                         }
                     }
                 }
             }
 
+            finish_task_rows();
+
             var bulk_approval = list_data[0].bulk_approval;
             if (bulk_approval == 'true') {
-                $("#site_list li").on('taphold', function () {
+                $("#site_list li").off('taphold.mwfmTaskList').on('taphold.mwfmTaskList', function () {
                     $(this).find('input[name="li_chk"]').prop('checked', true);
-                    get_selected_chk_count();
-                    show_bulk_approval_panel();
+                    actions.get_selected_chk_count();
+                    actions.show_bulk_approval_panel();
                 });
 
                 var bulk_approval_status = list_data[0].bulk_approval_status;
@@ -2102,21 +2099,21 @@ function onsuccess_get_list_of_pm_sites(e) {
                 li_length = 0;
                 //$("#tabCount_0").html(li_length);  // for static 3 tabs
                 //$("#tabCount_0").addClass('numberCircle');
-                $("#tabCount_" + active_Tab + "").html(li_length);
-                $("#tabCount_" + active_Tab + "").addClass('numberCircle');
+                $("#tabCount_" + state.active_Tab + "").html(li_length);
+                $("#tabCount_" + state.active_Tab + "").addClass('numberCircle');
             }
             else {
-                $("#tabCount_" + active_Tab + "").html(li_length);
-                $("#tabCount_" + active_Tab + "").addClass('numberCircle');
+                $("#tabCount_" + state.active_Tab + "").html(li_length);
+                $("#tabCount_" + state.active_Tab + "").addClass('numberCircle');
                 if (li_length > 99) {
-                    $("#tabCount_" + active_Tab + "").css('width', '22px');
+                    $("#tabCount_" + state.active_Tab + "").css('width', '22px');
                 }
             }
             //$("#survey_td_1").html("Total : " + li_length + "");
 
             $("#tasklist_loader").hide();
             var flow_Array = JSON.parse(storage.getItem('flow_Array'));
-            if (flow_Array.length == 1 && li_length >= limit_range) {
+            if (flow_Array.length == 1 && li_length >= state.limit_range) {
                 $("#btn_SeeAll").show();
                 $("#btn_SeeMore").show();
 
@@ -2128,7 +2125,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                     // added 2nd or condition as show more not callled due to 1 pixel change 29112022
                     if (parseInt(scrollTop) === (parseInt(scrollHeight) - parseInt(offsetHeight)) || parseInt(scrollTop) === (parseInt(scrollHeight) - parseInt(offsetHeight) - 1)) {
                         $("#tasklist_loader").show();
-                        see_more_site_list_common();
+                        actions.see_more_site_list_common();
                     }
                 });
             }
@@ -2143,8 +2140,8 @@ function onsuccess_get_list_of_pm_sites(e) {
             if (f_li_text == "") {
                 $(".op-show-btns").hide();
                 //$("#survey_td_1").html("Total : 0");
-                $("#tabCount_" + active_Tab + "").html(0);
-                $("#tabCount_" + active_Tab + "").addClass('numberCircle');
+                $("#tabCount_" + state.active_Tab + "").html(0);
+                $("#tabCount_" + state.active_Tab + "").addClass('numberCircle');
                 var list_item = '<li><a href="#" class="item-link item-content"><div class="item-inner item-no-pad"><div class="item-title">No Record Found !</div></div></a></li>';
 
                 var auto_open_task_form_no_task = list_data[0].auto_open_task_form_no_task;
@@ -2153,21 +2150,19 @@ function onsuccess_get_list_of_pm_sites(e) {
                 }
                 var create_task = list_data[0].task;
                 if (auto_open_task_form_no_task == 'true' && create_task == "true") {
-                    create_new_task();
+                    actions.create_new_task();
                 }
             }
             $("#site_list").append(list_item);
         }
 
-        $("#site_list li").each(function () {
+        // The legacy rule uses the first row's height for every read-more link.
+        // Read it once rather than repeating the same layout query per row.
+        if ($("#site_list li").length) {
             var li_height = $("#site_list li").height();
-            if (li_height < 130) {  //130=max-height of li
-                $('.readmore-link').hide();
-            }
-            else {
-                $('.readmore-link').show();
-            }
-        });
+            if (li_height < 130) $('.readmore-link').hide();
+            else $('.readmore-link').show();
+        }
 
         var sub_task_limit = list_data[0].sub_task_limit;
         if (sub_task_limit == '' || sub_task_limit == null || sub_task_limit == undefined) {
@@ -2278,7 +2273,7 @@ function onsuccess_get_list_of_pm_sites(e) {
                 var user_choice = confirm(auto_open_confirm_msg);
                 if (user_choice == true) {
                     // auto open task form
-                    select_network_for_create_task();
+                    actions.select_network_for_create_task();
                 }
                 else {
                     get_list_of_UP_sites_count();
@@ -2292,6 +2287,7 @@ function onsuccess_get_list_of_pm_sites(e) {
             get_list_of_UP_sites_count();
         }
     } catch (e) {
+        if (pending_task_rows && pending_task_rows.childNodes.length) finish_task_rows();
         alert1(e + '_onsuccess_get_list_of_pm_sites()');
         var data_json = JSON.parse(storage.getItem('list_json'));
         var list_data = JSON.parse(data_json);
@@ -2343,7 +2339,7 @@ function remove_last_subtask(t_id) {
     }
 }
 
-function onfail_remove_last_subtask() {
+function onfail_remove_last_subtask(e) {
     alert1(e + '_onfail_remove_last_subtask()');
 }
 
@@ -2411,7 +2407,7 @@ function onsuccess_remove_photo_last_subtask(e) {
     }
 }
 
-function onfail_remove_photo_last_subtask() {
+function onfail_remove_photo_last_subtask(e) {
     alert1(e + '_onfail_remove_photo_last_subtask()');
 }
 // ////////////////---------- sub task remove end -------------/////////////
@@ -2598,7 +2594,7 @@ function onsuccess_get_green_site_data_offline(e) {
             new_column_obj = JSON.stringify(new_column_obj);
             var t_new_column_obj = encodeURIComponent(new_column_obj);
 
-            get_distance_confirmation_pm(selected_site, selected_tid, selected_moduleid, selected_modulename, selected_server_task_id, selected_site_name, user_lat, user_long, accuracy, radius, t_site_lat, t_site_long, t_new_column_obj);
+            get_distance_confirmation_pm(selected_site, selected_tid, selected_moduleid, selected_modulename, selected_server_task_id, selected_site_name, state.user_lat, state.user_long, accuracy, radius, t_site_lat, t_site_long, t_new_column_obj);
         }
         loading_hide();
     } catch (e) {
@@ -2614,6 +2610,7 @@ function onfail_get_green_site_data_offline(e) {
 
 // redirect page on pm site click when user near from site
 function redirect_on_pm_site_click(selected_site, selected_tid, selected_start_status, selected_moduleid, selected_modulename, selected_site_name, t_site_lat, t_site_long, t_index, t_deleted_media, t_p_tid) {
+    var c, d, h;
     try {
 
         localStorage.setItem('task_mode', 'click');
@@ -2631,7 +2628,7 @@ function redirect_on_pm_site_click(selected_site, selected_tid, selected_start_s
         }
         else {
             loading();
-            var list_HTML = document.getElementById("lst_" + selected_tid + "").innerHTML;
+            var list_HTML = options.rowHTML ? options.rowHTML(selected_tid, false) : document.getElementById("lst_" + selected_tid + "").innerHTML;
             localStorage.setItem('TaskListHTML', list_HTML);
             localStorage.setItem('is_shortcutbutton', 'false');
 
@@ -2722,7 +2719,7 @@ function redirect_on_pm_site_click(selected_site, selected_tid, selected_start_s
                     check_task_n_update_globalvar(selected_tid);
                 } else {
                     //changeurl("viewsitelist_pm_grouplist.html");
-                    check_child_flow_for_parent()                   //to skip single checksheet list
+                    actions.check_child_flow_for_parent()                   //to skip single checksheet list
                 }
             }
         }
@@ -2735,7 +2732,7 @@ function redirect_on_pm_site_click(selected_site, selected_tid, selected_start_s
 
 function update_task_list_html(selected_tid) {
     try {
-        var list_HTML = document.getElementById("lst_" + selected_tid + "").outerHTML;
+        var list_HTML = options.rowHTML ? options.rowHTML(selected_tid, true) : document.getElementById("lst_" + selected_tid + "").outerHTML;
         list_HTML = encodeURIComponent(list_HTML);
         var columndata_str = $('#lst_sys_var_' + selected_tid + '').val();
 
@@ -2765,7 +2762,7 @@ function onsuccess_update_task_list_html(e) {
             check_task_n_update_globalvar(selected_tid);
         } else {
             //changeurl("viewsitelist_pm_grouplist.html");
-            check_child_flow_for_parent()                   //to skip single checksheet list
+            actions.check_child_flow_for_parent()                   //to skip single checksheet list
         }
     }
     catch (e) {
@@ -2804,8 +2801,8 @@ function get_distance_confirmation_pm(selected_site, selected_tid,
             var t_new_column_obj = decodeURIComponent(t_new_column_obj);
             t_new_column_obj = JSON.parse(t_new_column_obj);
 
-            glob_taskclick_ary = [];
-            glob_taskclick_ary.push({
+            state.glob_taskclick_ary = [];
+            state.glob_taskclick_ary.push({
                 'site_id': selected_site,
                 'site_name': selected_site_name,
                 'server_task_id': selected_server_task_id,
@@ -2855,7 +2852,7 @@ function get_distance_confirmation_pm(selected_site, selected_tid,
                     storage.setItem('user_radius', JSON.stringify(t_user_radius));
                     storage.setItem('support_type', JSON.stringify('task'));
                     //changeurl('support_page.html');
-                    send_user_lat_long_native();
+                    actions.send_user_lat_long_native();
                 }
             }
         }
@@ -3002,19 +2999,19 @@ function onsuccess_refersh_pm_site_list(e) {
     var list_data = JSON.parse(data_json);
     var survey_mode = list_data[0].survey_mode;
     if (survey_mode == "online") {
-        limit_range = default_range; // set default range limit
-        query_type = 1; // regular site listing
-        aggregate_sum = 0;
-        aggregate_min = 0;
-        aggregate_max = 0;
+        state.limit_range = state.default_range; // set default range limit
+        state.query_type = 1; // regular site listing
+        state.aggregate_sum = 0;
+        state.aggregate_min = 0;
+        state.aggregate_max = 0;
         $("#site_list").empty();
         $("#cust_list").empty();
         get_user_latlong_pm();
     }
     else {
         setTimeout(function () {
-            limit_range = default_range; // set default range limit
-            query_type = 1; // regular site listing
+            state.limit_range = state.default_range; // set default range limit
+            state.query_type = 1; // regular site listing
             $("#site_list").empty();
             get_user_latlong_pm();
         }, 10000); // show loading screen for 10 sec
@@ -3025,9 +3022,9 @@ function onsuccess_refersh_pm_site_list(e) {
 function onfail_get_user_latlong(e) {
     // alert1('Problem while getting GPS lat long, Please change your position
     // !');
-    user_lat = 0;
-    user_long = 0;
-    user_accuracy = 0;
+    state.user_lat = 0;
+    state.user_long = 0;
+    state.user_accuracy = 0;
 
     var data_json = JSON.parse(storage.getItem('list_json'));
     var list_data = JSON.parse(data_json);
@@ -3038,10 +3035,10 @@ function onfail_get_user_latlong(e) {
     if (survey_mode == "online") {
         var redirect = list_data[0].redirect;
         if (redirect == 'customer') {
-            get_list_of_customer_online();
+            actions.get_list_of_customer_online();
         } else {
             // get_list_of_pm_sites_online();
-            get_list_of_task_for_compare_online();
+            actions.get_list_of_task_for_compare_online();
         }
     } else {
         get_list_of_pm_sites();
@@ -3050,10 +3047,11 @@ function onfail_get_user_latlong(e) {
 }
 
 function onfail_get_list_of_pm_sites(e) {
+    if (savedLists() && savedLists().keep('site_list')) { loading_hide(); return; }
     $("#site_list").empty();
     $("#tasklist_loader").hide();
-    $("#tabCount_" + active_Tab + "").html(0);
-    $("#tabCount_" + active_Tab + "").addClass('numberCircle');
+    $("#tabCount_" + state.active_Tab + "").html(0);
+    $("#tabCount_" + state.active_Tab + "").addClass('numberCircle');
     //$("#survey_td_1").html("Total : 0");
     var list_item = '<li><a href="#" class="item-link item-content"><div class="item-inner item-no-pad"><div class="item-title">No Record Found !</div></div></a></li>';
     $("#site_list").append(list_item);
@@ -3097,6 +3095,7 @@ function check_task_n_update_globalvar(selected_tid) {
 }
 
 function onsuccess_check_task_n_update_globalvar(e) {
+    var i;
     try {
         var myArray = JSON.parse(e);
         var update_flag = myArray[0].srnumber;
@@ -3111,7 +3110,7 @@ function onsuccess_check_task_n_update_globalvar(e) {
             || update_flag == 0 || update_flag == 2) {
             // new task
             //changeurl("viewsitelist_pm_grouplist.html");
-            check_child_flow_for_parent()                   //to skip single checksheet list
+            actions.check_child_flow_for_parent()                   //to skip single checksheet list
         } else {
             // old task
 
@@ -3189,6 +3188,7 @@ function check_subtask_n_update_globalvar() {
 }
 
 function onsuccess_check_subtask_n_update_globalvar(e) {
+    var i, j;
     try {
         var myArray = JSON.parse(e);
         if (myArray.length > 0) {
@@ -3212,13 +3212,13 @@ function onsuccess_check_subtask_n_update_globalvar(e) {
             }
             if (myArray1 == '' || myArray1 == null || myArray1 == undefined) {
                 //changeurl("viewsitelist_pm_grouplist.html");
-                check_child_flow_for_parent()                   //to skip single checksheet list
+                actions.check_child_flow_for_parent()                   //to skip single checksheet list
             } else {
                 update_subglobal_var_for_old_task(myArray1);
             }
         } else {
             //changeurl("viewsitelist_pm_grouplist.html");
-            check_child_flow_for_parent()                   //to skip single checksheet list
+            actions.check_child_flow_for_parent()                   //to skip single checksheet list
         }
     } catch (e) {
         alert1(e + '_onsuccess_check_subtask_n_update_globalvar()');
@@ -3253,7 +3253,7 @@ function update_subglobal_var_for_old_task(global_var_T) {
 
 function onsuccess_update_subglobal_var_for_old_task(e) {
     //changeurl("viewsitelist_pm_grouplist.html");
-    check_child_flow_for_parent()                   //to skip single checksheet list
+    actions.check_child_flow_for_parent()                   //to skip single checksheet list
 }
 
 function onfail_update_subglobal_var_for_old_task(e) {
@@ -3261,36 +3261,11 @@ function onfail_update_subglobal_var_for_old_task(e) {
 }
 
 // //////// Weather View Part ///////////////////////////
-function view_weather_for_site(temp_site_lat, temp_site_long) {
-    try {
-        storage.setItem('crash_status', JSON.stringify('2')); // crash status for map
 
-        var d = new Date();
-        var ms = d.getTime();
 
-        var q_jsonobj = [];
-        q_jsonobj.push({
-            time: ms,
-            lat: temp_site_lat,
-            lon: temp_site_long
-        });
-        //alert1(JSON.stringify(q_jsonobj));
 
-        cordova.exec(onsuccess_view_weather_for_site, onfail_view_weather_for_site,
-            'weather_plug', 'anAction', q_jsonobj);
-    } catch (e) {
-        alert1(e + '_get_user_latlong_for_map()');
-        loading_hide();
-    }
-}
 
-function onsuccess_view_weather_for_site(e) {
-    // successfull weather display
-}
 
-function onfail_view_weather_for_site(e) {
-    storage.setItem('crash_status', JSON.stringify('0')); // reset crash
-}
 
 
 function redirect_on_task_edit_form(selected_tid, t_start_status, msg) {
@@ -3314,3 +3289,75 @@ function redirect_on_task_edit_form(selected_tid, t_start_status, msg) {
 
 
 ////////
+        var api = {
+            update_site_refresh_wait_label: update_site_refresh_wait_label,
+            refresh_user_latlong_pm: refresh_user_latlong_pm,
+            onsuccess_refresh_user_latlong_pm: onsuccess_refresh_user_latlong_pm,
+            onfail_refresh_user_latlong_pm: onfail_refresh_user_latlong_pm,
+            get_user_latlong_pm: get_user_latlong_pm,
+            onsuccess_get_user_latlong: onsuccess_get_user_latlong,
+            get_active_trips: get_active_trips,
+            get_list_of_pm_sites: get_list_of_pm_sites,
+            get_list_of_pm_sites_New: get_list_of_pm_sites_New,
+            get_list_of_pm_sites_by_search: get_list_of_pm_sites_by_search,
+            onsuccess_get_list_of_pm_sites: onsuccess_get_list_of_pm_sites,
+            remove_last_subtask: remove_last_subtask,
+            onfail_remove_last_subtask: onfail_remove_last_subtask,
+            remove_log_last_subtask: remove_log_last_subtask,
+            onfail_remove_log_last_subtask: onfail_remove_log_last_subtask,
+            remove_photo_last_subtask: remove_photo_last_subtask,
+            onsuccess_remove_photo_last_subtask: onsuccess_remove_photo_last_subtask,
+            onfail_remove_photo_last_subtask: onfail_remove_photo_last_subtask,
+            get_list_of_UP_sites_count: get_list_of_UP_sites_count,
+            onsuccess_get_list_of_UP_sites_count: onsuccess_get_list_of_UP_sites_count,
+            put_udf_id_for_all_tasks: put_udf_id_for_all_tasks,
+            onsuccess_put_udf_id_for_all_tasks: onsuccess_put_udf_id_for_all_tasks,
+            onfail_put_udf_id_for_all_tasks: onfail_put_udf_id_for_all_tasks,
+            redirect_on_pm_site_click_PRE: redirect_on_pm_site_click_PRE,
+            onsuccess_get_green_site_data_offline: onsuccess_get_green_site_data_offline,
+            onfail_get_green_site_data_offline: onfail_get_green_site_data_offline,
+            redirect_on_pm_site_click: redirect_on_pm_site_click,
+            update_task_list_html: update_task_list_html,
+            onsuccess_update_task_list_html: onsuccess_update_task_list_html,
+            onfail_update_task_list_html: onfail_update_task_list_html,
+            get_distance_confirmation_pm: get_distance_confirmation_pm,
+            refresh_pm_site_list: refresh_pm_site_list,
+            alert_task_distance: alert_task_distance,
+            onsuccess_refersh_pm_site_list: onsuccess_refersh_pm_site_list,
+            onfail_get_user_latlong: onfail_get_user_latlong,
+            onfail_get_list_of_pm_sites: onfail_get_list_of_pm_sites,
+            onfail_refresh_pm_site_list: onfail_refresh_pm_site_list,
+            onfail_get_list_of_UP_sites_count: onfail_get_list_of_UP_sites_count,
+            check_task_n_update_globalvar: check_task_n_update_globalvar,
+            onsuccess_check_task_n_update_globalvar: onsuccess_check_task_n_update_globalvar,
+            onfail_check_task_n_update_globalvar: onfail_check_task_n_update_globalvar,
+            update_global_var_for_old_task: update_global_var_for_old_task,
+            onsuccess_update_global_var_for_old_task: onsuccess_update_global_var_for_old_task,
+            onfail_update_global_var_for_old_task: onfail_update_global_var_for_old_task,
+            check_subtask_n_update_globalvar: check_subtask_n_update_globalvar,
+            onsuccess_check_subtask_n_update_globalvar: onsuccess_check_subtask_n_update_globalvar,
+            onfail_check_subtask_n_update_globalvar: onfail_check_subtask_n_update_globalvar,
+            update_subglobal_var_for_old_task: update_subglobal_var_for_old_task,
+            onsuccess_update_subglobal_var_for_old_task: onsuccess_update_subglobal_var_for_old_task,
+            onfail_update_subglobal_var_for_old_task: onfail_update_subglobal_var_for_old_task,
+            redirect_on_task_edit_form: redirect_on_task_edit_form
+        };
+        Object.defineProperties(api, {
+            trip_New_Array: { enumerable: true, get: function () { return trip_New_Array; }, set: function (value) { trip_New_Array = value; } },
+            no_udf_id_found: { enumerable: true, get: function () { return no_udf_id_found; }, set: function (value) { no_udf_id_found = value; } },
+            task_refresh_timer: { enumerable: true, get: function () { return task_refresh_timer; }, set: function (value) { task_refresh_timer = value; } },
+            remove_tid: { enumerable: true, get: function () { return remove_tid; }, set: function (value) { remove_tid = value; } },
+            glob_off_taskclick_ary: { enumerable: true, get: function () { return glob_off_taskclick_ary; }, set: function (value) { glob_off_taskclick_ary = value; } }
+        });
+        if (options.scope) {
+            Object.keys(api).forEach(function (name) { if (typeof api[name] === 'function') api[name] = options.scope.guard(api[name]); });
+            options.scope.defer(function () { clearTimeout(task_refresh_timer); });
+        }
+        return api;
+    }
+    w.AppTaskListController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) {
+        var legacy = create();
+        Object.keys(legacy).forEach(function (name) { Object.defineProperty(w, name, Object.getOwnPropertyDescriptor(legacy, name)); });
+    }
+})(window);

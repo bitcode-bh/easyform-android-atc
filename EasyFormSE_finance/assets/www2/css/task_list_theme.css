@@ -50,3 +50,16 @@ body.task-list-screen,
     outline: 2px solid var(--app-action-blue, #2a3086);
     outline-offset: -3px;
 }
+
+/* Native rendering window for long lists; rows stay available to existing
+   search, selection, pagination and accessibility code. */
+#site_list.app-list-windowed > li {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 180px;
+}
+@media print {
+    #site_list.app-list-windowed > li {
+        content-visibility: visible;
+        contain-intrinsic-block-size: none;
+    }
+}

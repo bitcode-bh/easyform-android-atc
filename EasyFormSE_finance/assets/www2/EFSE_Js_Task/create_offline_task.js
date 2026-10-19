@@ -382,7 +382,7 @@ get_task_log_from_server = (selected_server_task_id) => {
 
             get_user_latlong_offline_task();
         }
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 }
 
@@ -480,7 +480,7 @@ function onsuccess_get_data_for_task_online() {
                 alert1(responseText[0].message);
             }
 
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
 
     } catch (e) {
@@ -709,6 +709,7 @@ function insert_offline_task(task_checklist_data) {
 
 // successful insert offline task
 function onsuccess_insert_offline_task(e) {
+    if (typeof AppFormDrafts !== 'undefined') AppFormDrafts.acknowledge();
     try {
         //alert1("Task has been added successfully !")
         var data_json = JSON.parse(storage.getItem('list_json'));

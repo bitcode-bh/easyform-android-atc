@@ -73,7 +73,7 @@ function onfail_check_child_flow_for_parent(e) {
 function get_checklist_data_for_subtask() {
     try {
         var flow_Array = JSON.parse(storage.getItem('flow_Array'));
-        if (flow_Array.length = 1) {
+        if (flow_Array.length === 1) {
             var moduleid = JSON.parse(storage.getItem('wayflow'));
         } else {
             var moduleid = flow_Array[flow_Array.length - 1].wayflow;
@@ -727,6 +727,7 @@ function redirect_on_subflow_click(flow_name1, id, flow_id, type, selected_start
             }
 
             if (user_choice == true) {
+                invalidate_checksheet_open();
                 button_clicked_subflow = 1;
                 setTimeout(function () {
                     button_clicked_subflow = 0;
@@ -820,23 +821,20 @@ function refresh_global_variables_subflow(flow_name1, id, flow_id, type, selecte
             tid: "0"
         });
 
-        cordova.exec(onsuccess_refresh_global_variables_subflow, onfail_refresh_global_variables_subflow, 'SqlitePlugin', 'insertValuse', q_jsonobj);
+        cordova.exec(guard_checksheet_open(function () {
+            onsuccess_refresh_global_variables_subflow(flow_name1, id, flow_id, type, role_id);
+        }), guard_checksheet_open(onfail_refresh_global_variables_subflow), 'SqlitePlugin', 'insertValuse', q_jsonobj);
     } catch (e) {
         alert1(e + '_refresh_global_variables_subflow()');
         loading_hide();
     }
 }
 
-function onsuccess_refresh_global_variables_subflow() {
-    var flow_name1 = JSON.parse(storage.getItem('redirect_flow_name1'));
-    var id = JSON.parse(storage.getItem('redirect_id'));
-    var flow_id = JSON.parse(storage.getItem('redirect_flow_id'));
-    var type = JSON.parse(storage.getItem('redirect_type'));
-    var role_id = JSON.parse(storage.getItem('redirect_role_id'));
+function onsuccess_refresh_global_variables_subflow(flow_name1, id, flow_id, type, role_id) {
     redirect_on_module_click(flow_name1, id, flow_id, type, role_id);
 }
 
-function onfail_refresh_global_variables_subflow() {
+function onfail_refresh_global_variables_subflow(e) {
     alert1(e + '_onfail_refresh_global_variables_subflow()');
 }
 

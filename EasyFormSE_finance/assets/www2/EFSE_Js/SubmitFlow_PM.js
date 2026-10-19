@@ -1,14 +1,7 @@
 ﻿// this part is for PM flow
 
 // get formatted date
-function getFormattedDate(date) {
-    var year = date.getFullYear();
-    var month = (1 + date.getMonth()).toString();
-    month = month.length > 1 ? month : '0' + month;
-    var day = date.getDate().toString();
-    day = day.length > 1 ? day : '0' + day;
-    return year + '/' + month + '/' + day;
-}
+
 
 // update current checksheet status in store checklist
 function update_current_checksheet_status() {
@@ -261,7 +254,7 @@ function save_global_variables_PV_online_new() {
                 loading_hide();
                 alert1(responseText[0].message);
             }
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
 
     }
@@ -618,7 +611,7 @@ function get_mapped_checklist() {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_get_mapped_checklist, onfail, 'SqlitePlugin', 'showValues', q_jsonobj);
+        cordova.exec(onsuccess_get_mapped_checklist, onfail_request, 'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
         alert1(e + '_get_mapped_checklist()')
     }
@@ -679,7 +672,7 @@ function get_mapped_checklist_online() {
                 alert1(responseText[0].message);
             }
 
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
 
     } catch (e) {
@@ -783,7 +776,7 @@ function reverse_check_for_valid_flowid_and_tid() {
         data: query,
         p: "1"
     });
-    cordova.exec(reverse_get_mapped_checklist, onfail, 'SqlitePlugin', 'showValues', q_jsonobj);
+    cordova.exec(reverse_get_mapped_checklist, onfail_request, 'SqlitePlugin', 'showValues', q_jsonobj);
 }
 
 var reverse_global_var;
@@ -799,7 +792,7 @@ function reverse_get_mapped_checklist(e) {
             data: query,
             p: "1"
         });
-        cordova.exec(onsuccess_reverse_get_mapped_checklist, onfail, 'SqlitePlugin', 'showValues', q_jsonobj);
+        cordova.exec(onsuccess_reverse_get_mapped_checklist, onfail_request, 'SqlitePlugin', 'showValues', q_jsonobj);
     } catch (e) {
         alert1(e + '_reverse_get_mapped_checklist()');
     }
@@ -860,7 +853,7 @@ function onsuccess_reverse_get_mapped_checklist_online() {
                 alert1(responseText[0].message);
             }
 
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
 
     } catch (e) {

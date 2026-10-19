@@ -1,5 +1,5 @@
 ﻿
-var last_submit_button_Array = [];
+
 function Insert_Update_Question_Log() {
     try {
         var finaljsonObj = curr_survey_data["finaljsonObj"];
@@ -41,7 +41,7 @@ function Insert_Update_Question_Log() {
                 alert1(message);
                 loading_hide();
             }
-        }, onfail);
+        }, onfail_online_checksheet);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -118,7 +118,7 @@ function check_n_autocall_send_comment(t_server_task_id) {
                         check_survey_entry_post();
                     }
                 }
-            }, onfail);
+            }, onfail_online_checksheet);
             getdata.callOtherDomain();
 
         }
@@ -277,7 +277,7 @@ function update_task_status_on_pm_checksheet_submit_online() {
                     alert(message);
                     loading_hide();
                 }
-            }, onfail);
+            }, onfail_online_checksheet);
             getdata.callOtherDomain();
         }
     } catch (e) {
@@ -287,7 +287,7 @@ function update_task_status_on_pm_checksheet_submit_online() {
 }
 
 
-function onfail(e) {
+function onfail_online_checksheet(e) {
     alert1(e + '_onfail()');
     loading_hide();
 }

@@ -1897,7 +1897,7 @@ function onPhotoDataSuccess_old_photo() {
             q: "0",
             tid: ""
         });
-        cordova.exec(insertValuesSuccessCallBack_PM_old_photo, onfail, 'SqlitePlugin', 'insertValuse', q_jsonobj);
+        cordova.exec(insertValuesSuccessCallBack_PM_old_photo, onfail_request, 'SqlitePlugin', 'insertValuse', q_jsonobj);
     } catch (e) {
         storage.setItem('crash_status', JSON.stringify('0'));
         curr_btn_mode = "";
@@ -2077,7 +2077,7 @@ function verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, pho
                     alert1(Data_Json[0].message);
                     loading_hide();
                 }
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     }

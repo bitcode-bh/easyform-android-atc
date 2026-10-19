@@ -12,7 +12,7 @@ function get_target_ui_for_same_page() {
     });
 
     loading();
-    var getdata = new Webservicecall_REST(global_wcf_url + 'Wcf_Get_Page_Detail_info_Feature_WithId', JSON.stringify(Param_obj), onsuccess_get_target_ui_for_same_page, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'Wcf_Get_Page_Detail_info_Feature_WithId', JSON.stringify(Param_obj), onsuccess_get_target_ui_for_same_page, onfail_request);
     getdata.callOtherDomain();
 
     function onsuccess_get_target_ui_for_same_page(e) {
@@ -111,7 +111,7 @@ function get_user_checksheet() {
             alert1(message);
             loading_hide();
         }
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 }
 
@@ -164,12 +164,12 @@ function get_filter_checksheet() {
             alert1(message);
             loading_hide();
         }
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 }
 
 // get filter condition
-var checksheet_AllData_fix;
+var user_filter_checksheet_data;
 function get_filter_condition() {
     try {
         myApp.popup('.popup-filter-user');
@@ -184,7 +184,7 @@ function get_filter_condition() {
         });
 
         loading();
-        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetdataForEditChecksheet', JSON.stringify(Getchecksheetdata), onsuccess_get_filter_condition, onfail);
+        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetdataForEditChecksheet', JSON.stringify(Getchecksheetdata), onsuccess_get_filter_condition, onfail_request);
         getdata.callOtherDomain();
     } catch (e) {
         alert1(e + '_view_user_filter_checksheet()');
@@ -215,7 +215,7 @@ function onsuccess_get_filter_condition(e) {
             localStorage.setItem("checksheet_type_filter", '9');
             storage.setItem('checksheet_type_filter', JSON.stringify('9'));
 
-            checksheet_AllData_fix = JSON.stringify(myArray);
+            user_filter_checksheet_data = JSON.stringify(myArray);
             $("#container_div").empty();
 
             storage.setItem('check_type', JSON.stringify(check_type));
@@ -235,7 +235,7 @@ function submit_user_filter_form() {
     try {
         var arr = localStorage.getItem('checksheet_data');
         var AllData = localStorage.getItem('checksheet_AllData');
-        var filter_button_Data = JSON.parse(checksheet_AllData_fix);
+        var filter_button_Data = JSON.parse(user_filter_checksheet_data);
         localStorage.setItem('checksheet_AllData', JSON.stringify(filter_button_Data));
 
         validate_and_submit_surveydata_main(1, 9, JSON.parse(arr));
@@ -244,7 +244,7 @@ function submit_user_filter_form() {
             myApp.closeModal('.popup-filter-user');
             var filter_button_Data = JSON.parse(localStorage.getItem('checksheet_AllData'));
             var Push_array = filter_button_Data[0].Push_array;
-            get_user_data(Push_array);
+            get_user_list_data(Push_array);
         }
     } catch (e) {
         alert1(e + "_submit_user_filter_form()");
@@ -255,9 +255,9 @@ function submit_user_filter_form() {
 // user listing
 function get_user_list_by_supervisor() {
     var Push_array = [{ "value": "(*4*)", "type": "name", "sys_param": "", "ans": username }];
-    get_user_data(Push_array);
+    get_user_list_data(Push_array);
 }
-function get_user_data(Push_array) {
+function get_user_list_data(Push_array) {
     var company_id = JSON.parse(storage.getItem('company_id'));
     localStorage.setItem('company_feature_id', 23166);          //static for user listing
 
@@ -274,10 +274,10 @@ function get_user_data(Push_array) {
     });
 
     loading();
-    var getdata1 = new Webservicecall_REST(global_wcf_url + 'WCF_Find_ViewUser_SearchCondition', JSON.stringify(Param_obj), onsucess_get_user_data, onfail);
+    var getdata1 = new Webservicecall_REST(global_wcf_url + 'WCF_Find_ViewUser_SearchCondition', JSON.stringify(Param_obj), onsuccess_get_user_list_data, onfail_request);
     getdata1.callOtherDomain();
 }
-function onsucess_get_user_data(invocation1) {
+function onsuccess_get_user_list_data(invocation1) {
     try {
         var Search_data = invocation1.responseText;
         Search_data = eval('(' + Search_data + ')');
@@ -596,7 +596,7 @@ function get_user_attendance(t_user_id, t_username, t_photo_name, t_photo_url, c
                     alert1("Server: " + message)
                 }
                 loading_hide();
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     }
@@ -655,7 +655,7 @@ function get_blank_checksheet_from_server_create_user() {
             'trip_id': 0
         });
 
-        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetCheckSheetData_Port', JSON.stringify(param_obj), onsuccess_get_blank_checksheet_from_server_create_user, onfail);
+        var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_GetCheckSheetData_Port', JSON.stringify(param_obj), onsuccess_get_blank_checksheet_from_server_create_user, onfail_request);
         getdata.callOtherDomain();
     } catch (e) {
         alert1(e + '_get_blank_checksheet_from_server_create_user()');
@@ -752,7 +752,7 @@ function add_new_user_from_user_listing(t_jsonObj) {
 
     glob_user_json = Param_obj;
 
-    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Check_Customer_Or_User_Exists', JSON.stringify(Param_obj), check_new_user_exist, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Check_Customer_Or_User_Exists', JSON.stringify(Param_obj), check_new_user_exist, onfail_request);
     getdata.callOtherDomain();
 }
 function check_new_user_exist(invocation1) {
@@ -772,7 +772,7 @@ function check_new_user_exist(invocation1) {
             var Param_obj = [];
             Param_obj = glob_user_json;
 
-            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsucess_insert_new_user, onfail);
+            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsucess_insert_new_user, onfail_request);
             getdata.callOtherDomain();
         }
         else {
@@ -849,18 +849,18 @@ function get_user_data_for_delete(delete_user_id) {
 
                 checksheet_id = message[0].checksheet_id;
 
-                Autofill_Json_value(Data, delete_user_id);
+                autofill_user_list_user_values(Data, delete_user_id);
             }
             else {
                 alert1(message);
                 loading_hide();
             }
-        }, onfail);
+        }, onfail_request);
         getdata1.callOtherDomain();
     }
 }
 
-function Autofill_Json_value(Data, delete_user_id) {
+function autofill_user_list_user_values(Data, delete_user_id) {
     var t_cal_answer = $("#cal_delete").val();
     var cal_answer = convert_fix_format_date_on_submit(t_cal_answer, "date");
 
@@ -879,10 +879,10 @@ function Autofill_Json_value(Data, delete_user_id) {
             }
         }
     }
-    Update_user_data(Data, delete_user_id);
+    update_user_list_user_data(Data, delete_user_id);
 }
 
-function Update_user_data(Json_data, delete_user_id) {
+function update_user_list_user_data(Json_data, delete_user_id) {
     var company_id = JSON.parse(storage.getItem('company_id'));
 
     var Param_obj = [];
@@ -917,7 +917,7 @@ function Update_user_data(Json_data, delete_user_id) {
             alert1(message);
         }
         loading_hide();
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 }
 

@@ -157,7 +157,7 @@ function get_last_step_data() {
                     alert1(message + '_get_last_step_data');
                     loading_hide();
                 }
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     } catch (e) {
@@ -975,7 +975,7 @@ function update_task() {
             'call_type': "web"
         });
       
-        var getdata = new Webservicecall_REST(global_wcf_url + 'InsertUpdateDelete_MainAndSub_Task', JSON.stringify(Param_obj), onsuccess_update_task, onfail);
+        var getdata = new Webservicecall_REST(global_wcf_url + 'InsertUpdateDelete_MainAndSub_Task', JSON.stringify(Param_obj), onsuccess_update_task, onfail_request);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -1096,7 +1096,7 @@ update_question_log = () => {
             alert1(message);
         }
         loading_hide();
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 
 }
@@ -1212,7 +1212,7 @@ function Update_Json() {
     });
 
     loading_show("Updating Data");
-    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsucess_Update_Json, onfail);
+    var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_insert_Customer_Master_And_Sub_Type', JSON.stringify(Param_obj), onsucess_Update_Json, onfail_request);
     getdata.callOtherDomain();
 }
 function onsucess_Update_Json(invocation1) {

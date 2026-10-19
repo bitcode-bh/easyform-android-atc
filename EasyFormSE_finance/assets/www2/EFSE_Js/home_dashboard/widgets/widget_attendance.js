@@ -14,7 +14,14 @@
 // code (selection.js's get_today_attendance_for_notification_old(), never
 // called) with no live trigger condition to port faithfully.
 
-var HomeWidgetAttendance = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeWidgetAttendanceController) return;
+    function create(options) {
+        options = options || {};
+        var actions = options.actions || w;
+        var HomeDashboardData = options.data || w.HomeDashboardData;
+
     'use strict';
 
     function render(container, cfg) {
@@ -27,8 +34,8 @@ var HomeWidgetAttendance = (function () {
         var root = container.find('[data-widget="attendance_chip"]');
         root.off('click.hdAttendance').on('click.hdAttendance', function () {
             try {
-                if (typeof noti_Attendance_Click === 'function') {
-                    noti_Attendance_Click();
+                if (typeof actions.noti_Attendance_Click === 'function') {
+                    actions.noti_Attendance_Click();
                 }
             } catch (e) { }
         });
@@ -66,5 +73,11 @@ var HomeWidgetAttendance = (function () {
         });
     }
 
-    return { render: render, refresh: refresh };
-})();
+
+        var api = { render: render, refresh: refresh };
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+        return api;
+    }
+    w.AppHomeWidgetAttendanceController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeWidgetAttendance = create();
+})(window);

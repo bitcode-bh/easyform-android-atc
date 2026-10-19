@@ -749,7 +749,7 @@ function getButtonValue() {
                     // Biometric is NOT auto-enabled on login. The user opts in
                     // via the Home menu toggle (sets view_biometric).
 
-                    cordova.exec(default_login_response, onfail, 'SqlitePlugin', 'login_detail_plug1', login_obj);
+                    cordova.exec(default_login_response, onfail_login, 'SqlitePlugin', 'login_detail_plug1', login_obj);
                 }
             } else {
                 if (F7_device == 'android') {
@@ -1071,6 +1071,8 @@ function updateuniquecode_android(invocation, res_type) {
             storage.setItem('user_id', JSON.stringify(user_id));
             storage.setItem('user_name', JSON.stringify(user));
             storage.setItem('company_id', JSON.stringify(Company_id));
+            if (window.AppPhase1) AppPhase1.configure(result[0].ui_phase1);
+            if (window.AppShell) AppShell.configure(result[0].ui_shell);
             storage.setItem('role_id', JSON.stringify(role_id));
             storage.setItem('role_name', JSON.stringify(role_name));
             storage.setItem('circle_id', JSON.stringify(User_CircleId));
@@ -1677,7 +1679,7 @@ function get_blank_user_checksheet() {
 
                 check_2FA_with_face_detection();
             }
-        }, onfail);
+        }, onfail_login);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -1964,7 +1966,7 @@ function alertexit(button) {
     }
 }
 
-function onfail(e) {
+function onfail_login(e) {
     loading_hide();
     myApp.closeModal(".popover-login");
     show_request_failure(e);
@@ -2114,7 +2116,7 @@ function send_mail_for_app_link() {
                 alert1(message);
                 loading_hide();
             }
-        }, onfail);
+        }, onfail_login);
         getdata.callOtherDomain();
 
     }
@@ -2126,18 +2128,18 @@ function send_mail_for_app_link() {
 
 
 // show app info on 5 times click on hidden button
-var btn_cliked = 0, timer;
+var btn_cliked = 0, login_info_click_timer;
 function check_5_times_click() {
     btn_cliked++;
     if (btn_cliked >= 5) {
         btn_cliked = 0;
-        clearTimeout(timer);
+        clearTimeout(login_info_click_timer);
         var clickedLink = $("#btn_app_info");
         myApp.popover('.popover-app-info', clickedLink);
         fill_app_details();
     }
     if (btn_cliked == 1) {
-        timer = setTimeout(function () {
+        login_info_click_timer = setTimeout(function () {
             btn_cliked = 0;
         }, 4000);
     }
@@ -2535,7 +2537,7 @@ function verify_otp() {
         myApp.setProgressbar('#login_progressbar', 0);
         $("#lbl_progress_details").html("Verifying OTP");
 
-        cordova.exec(onsuccess_verify_otp, onfail, 'SqlitePlugin', 'login_detail_plug1', login_obj);
+        cordova.exec(onsuccess_verify_otp, onfail_login, 'SqlitePlugin', 'login_detail_plug1', login_obj);
     }
 }
 function onsuccess_verify_otp(invocation) {

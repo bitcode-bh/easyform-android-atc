@@ -334,7 +334,7 @@ get_dashboard_config_data = (dashboard_id, flag_dashboard) => {
             alert(e + '_get_dashboard_config_data()');
         }
         loading_hide();
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 }
 
@@ -1238,7 +1238,7 @@ get_chart_counter = (dashboard_menu_array, dashboard_id, card_view, flag_dashboa
                                 get_prev_trend_count(flag_dashboard);
                             }
                         }
-                    }, onfail);
+                    }, onfail_request);
                     getdata.callOtherDomain();
                 }
             }
@@ -4999,7 +4999,7 @@ delete_selected_dashboard_page = () => {
                 alert(e + '_delete_selected_dashboard_page()');
             }
             loading_hide();
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
     }
 }
@@ -5071,7 +5071,7 @@ copy_existing_dashboard = () => {
                     mk_notify(message);
                 }
                 loading_hide();
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     }
@@ -5259,7 +5259,7 @@ create_update_userdashboard = (page_name, flag_chart) => {
                     alert(e + '_create_update_userdashboard_inner()');
                 }
                 loading_hide();
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     }
@@ -5790,7 +5790,7 @@ get_prev_trend_count = (flag_dashboard) => {
                     mk_notify(message);
                     loading_hide();
                 }
-            }, onfail);
+            }, onfail_request);
             getdata.callOtherDomain();
         }
     }
@@ -5970,7 +5970,7 @@ get_chart_counter_for_linechart = (dashboard_menu_array, dashboard_id, card_view
                 mk_notify(message);
                 loading_hide();
             }
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
     }
 }

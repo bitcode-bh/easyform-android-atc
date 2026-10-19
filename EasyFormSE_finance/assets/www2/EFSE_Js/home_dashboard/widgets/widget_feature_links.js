@@ -10,7 +10,13 @@
 // toggle), and real attendance status is already covered by P2's
 // attendance_chip widget.
 
-var HomeWidgetFeatureLinks = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeWidgetFeatureLinksController) return;
+    function create(options) {
+        options = options || {};
+        var $ = options.$ || function () { return w.jQuery.apply(w, arguments); };
+
     'use strict';
 
     var LINKS = [
@@ -67,5 +73,11 @@ var HomeWidgetFeatureLinks = (function () {
     // Flags come from login and don't change mid-session; nothing to refresh.
     function refresh(container) { }
 
-    return { render: render, refresh: refresh };
-})();
+
+        var api = { render: render, refresh: refresh };
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+        return api;
+    }
+    w.AppHomeWidgetFeatureLinksController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeWidgetFeatureLinks = create();
+})(window);

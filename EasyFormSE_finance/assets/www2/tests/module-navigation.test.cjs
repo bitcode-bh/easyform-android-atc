@@ -4,37 +4,41 @@ const assert = require('node:assert/strict');
 const source = fs.readFileSync(__dirname + '/../EFSE_Js/selection.js', 'utf8');
 function harness() {
     const values = new Map([['id_Array', '[10]'], ['cust_flow_Array', '[]'], ['role_id_array', '1']]);
-    const calls = [], badges = new Map();
+    const calls = [], requests = [], notices = [], badges = new Map();
+    for (const [key,value] of Object.entries({level_Array:[],global_url:'https://example.invalid/',common_global_wcf_url:'https://example.invalid/',company_id:1,user_id:2,curr_btn_mode:'back'})) values.set(key,JSON.stringify(value));
     const store = { getItem: k => values.get(k) || null, setItem: (k, v) => values.set(k, v) };
     const c = vm.createContext({ storage: store, localStorage: store,
         cordova: { exec: (ok, fail, plugin, action, args) => calls.push({ ok, fail, args }) },
-        $: selector => ({ text: value => badges.set(selector, value) }),
-        alert1: () => {}, loading_hide: () => {}, button_clicked: 0 });
+        $: selector => { const chain = new Proxy(function () {}, { get: (_, key) => key === 'length' ? 0 : key === 'text' ? value => badges.set(selector, value) : chain, apply: () => chain }); return chain; },
+        Webservicecall_REST: function (url,data,success,failure) { requests.push({url,data,success,failure}); this.callOtherDomain=()=>{};this.cancel=()=>{}; },
+        document:{documentElement:{hasAttribute:()=>false}},setTimeout:()=>0,
+        alert1: message => notices.push(String(message)), loading:()=>{}, enable_back_button:()=>{}, loading_hide: () => {}, button_clicked: 0 });
+    c.window=c;
     vm.runInContext(source, c);
-    return { c, calls, values, badges };
+    return { c, calls, values, badges, requests, notices };
 }
 {
-    const { c } = harness();
-    let rendered, counts = 0;
-    c.get_list_of_modules = done => { rendered = done; };
-    c.onload_get_counter_of_module_flow_new = () => counts++;
+    const { c, calls } = harness();
     c.SuccessCallBack_onload_get_data_from_ufm(JSON.stringify([{ id: 11, type: 'Flow', data: '[{"status":"1"}]' }]));
-    assert.equal(counts, 0, 'badge queries cannot delay the first rendering');
-    rendered();
-    assert.equal(counts, 1);
+    assert.equal(calls.length,1,'first query renders the module list');
+    assert.match(calls[0].args[0].data,/SELECT \* FROM\s+User_Define_Flow_Master/i);
+    assert.doesNotMatch(calls[0].args[0].data,/task_master/i,'badge queries cannot delay first rendering');
+    calls[0].ok('[]');
+    assert.equal(calls.length,2,'badge count starts only after the render reply');
+    assert.match(calls[1].args[0].data,/task_master/i);
 }
 {
-    const { c, calls, values } = harness();
-    let renders = 0;
-    c.SuccessCallBack_onload_get_data_from_ufm = () => renders++;
+    const { c, calls, values, requests, notices } = harness();
     c.get_data_from_ufm();
     const first = calls[0];
     values.set('id_Array', '[20]');
     c.get_data_from_ufm();
-    first.ok('[]');
-    assert.equal(renders, 0, 'old module responses cannot redraw a new module');
+    first.ok('invalid retired reply');
+    assert.equal(requests.length,0,'old module responses cannot redraw a new module');
+    assert.deepEqual(notices,[],'retired replies are ignored before parsing');
     calls[1].ok('[]');
-    assert.equal(renders, 1);
+    assert.equal(requests.length,1,'current empty submenu starts its online fallback');
+    assert.equal(JSON.parse(requests[0].data)[0].p_id,20);
 }
 {
     const { c, calls, values, badges } = harness();
@@ -63,13 +67,12 @@ function harness() {
 console.log('Module rendering order, stale callbacks, badge refresh, and repeated tap tests passed');
 
 {
-    const { c, values } = harness();
-    let online = 0;
+    const { c, values, requests } = harness();
     values.set('Attendance', 'true');
     values.set('KYFF', 'True');
-    c.get_list_of_modules_online = () => online++;
     c.SuccessCallBack_onload_get_data_from_ufm('[]');
-    assert.equal(online, 1, 'a submenu missing locally must fetch online despite enabled home features');
+    assert.equal(requests.length, 1, 'a submenu missing locally must fetch online despite enabled home features');
+    assert.match(requests[0].url,/WCF_UserDefineFlowMaster_With_MultiRole_Port$/);
 }
 console.log('Empty local submenu fallback test passed');
 
@@ -78,7 +81,6 @@ console.log('Empty local submenu fallback test passed');
     let stopped = 0;
     values.set('id_Array', '[]');
     values.set('Attendance', 'true');
-    c.$ = () => ({ show() {} });
     c.loading_hide = () => stopped++;
     c.enable_back_button = () => {};
     c.SuccessCallBack_onload_get_data_from_ufm('[]');
@@ -87,16 +89,13 @@ console.log('Empty local submenu fallback test passed');
 console.log('Empty home loader cleanup test passed');
 
 {
-    const { c, values, calls } = harness();
+    const { c, values, calls, requests } = harness();
     values.set('level_Array', '[{"last_flow_name":"RSA"}]');
     values.set('flow_Array', '[]');
     values.set('Attendance', 'true');
     values.set('KYFF', 'True');
     c.module_navigation_uses_online = true;
-    c.$ = () => ({ length: 0, hide() {}, show() {}, is() { return false; } });
     c.loading = () => {};
-    let online = 0;
-    c.get_list_of_modules_online = () => online++;
     const common = fs.readFileSync(__dirname + '/../EFSE_Js/common-functions.js', 'utf8');
     const start = common.indexOf('function back_button(page) {');
     const end = common.indexOf('\nfunction ', start + 1);
@@ -105,6 +104,7 @@ console.log('Empty home loader cleanup test passed');
     assert.equal(values.get('id_Array'), '[]');
     assert.equal(values.get('level_Array'), '[]');
     calls[0].ok('[]');
-    assert.equal(online, 1, 'back from an online submenu must restore the online home list even with home features enabled');
+    assert.equal(requests.length,1,'back from an online submenu must restore the online home list even with home features enabled');
+    assert.equal(JSON.parse(requests[0].data)[0].p_id,0);
 }
 console.log('Submenu back-to-home regression test passed');

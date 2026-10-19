@@ -1,9 +1,50 @@
 ﻿
 var is_approval;
+// Form controls and submit/recovery callbacks deliberately share these arrays.
+// One owner prevents another page script from resetting them during lazy load.
+var glob_livelink_Array = [];
+var last_submit_button_Array = [];
+var form_livelink_generation = 0;
+function load_form_livelinks(onReady) {
+    var request = ++form_livelink_generation;
+    glob_livelink_Array = [];
+    last_submit_button_Array = [];
+    function finish(rows) {
+        if (request !== form_livelink_generation) return;
+        glob_livelink_Array = rows;
+        onReady();
+    }
+    cordova.exec(function (response) {
+        var rows = [];
+        try {
+            var data = typeof response === 'string' ? JSON.parse(response) : response;
+            if (Array.isArray(data)) rows = data.map(function (row) {
+                return { live_url: row.live_url, download_url_path: row.download_url_path };
+            });
+        } catch (error) { console.error('Unable to read local form links'); }
+        finish(rows);
+    }, function () { finish([]); }, 'SqlitePlugin', 'showValues', [{ data: 'select * from download_live_url', p: '1' }]);
+    return function () { if (request === form_livelink_generation) form_livelink_generation++; };
+}
+// Filtering a picker does not change an answer; real popup/array edits still do.
+function mark_form_answer_changed(control) {
+    if (control.type === 'search' || $(control).closest('.searchbar').length) return;
+    form_has_changed = "true";
+    if (window.AppFormDrafts) AppFormDrafts.changed();
+    $(control).closest("div.cntrl_main_div").css("border", "none");
+}
+// Expanding details inside a checkbox label must not select the task.
+document.addEventListener('click', function (event) {
+    if (event.target.closest && event.target.closest('.readmore-link')) event.preventDefault();
+}, true);
+if (document.readyState === 'loading') {
+    document.write('<script src="js/phase1_ui.js"><\/script><script src="js/app_shell.js"><\/script><script src="js/app_pages.js"><\/script>');
+}
 function alert1(alert_msg) {
-    //if (alert_msg.includes("()") == true) {
-    //    alert_msg = "Something went wrong!";
-    //}
+    if (window.AppPhase1 && AppPhase1.enabled('notices')) {
+        AppPhase1.notice(alert_msg);
+        return;
+    }
     alert(alert_msg);
 }
 
@@ -235,6 +276,92 @@ function loading1() {
     }
 }
 
+// Index a native/server result once, keeping source order and the legacy ==
+// ID matching (SQLite/server IDs can arrive as numbers or strings). Candidate
+// buckets are narrowed before equality checks; unusual object IDs fall back.
+function index_list_rows(rows, fields, page) {
+    fields = Array.isArray(fields) ? fields : [fields];
+    var config = page && window.AppShell && AppShell.settings();
+    var fallback = !!page && !(config && config.enabled && config.pages[page] === true);
+    var buckets = new Map(), ids = [], firstIndices = [];
+    function values(index) { return fields.map(function (field) { return rows[index][field]; }); }
+    function key(query) {
+        var parts = query.map(function (value) {
+            if (value == null) return 'null';
+            var type = typeof value;
+            if (type !== 'string' && type !== 'number' && type !== 'boolean') return null;
+            return isNaN(Number(value)) ? 's:' + value : 'n:' + Number(value);
+        });
+        return parts.indexOf(null) < 0 ? JSON.stringify(parts) : null;
+    }
+    function matches(index, query) {
+        return fields.every(function (field, i) { return rows[index][field] == query[i]; });
+    }
+    if (!fallback) rows.forEach(function (row, index) {
+        var query = values(index), token = key(query);
+        if (token === null) { fallback = true; return; }
+        var bucket = buckets.get(token);
+        if (!bucket) { bucket = { indices: [], first: [] }; buckets.set(token, bucket); }
+        if (!bucket.first.some(function (i) { return matches(i, query); })) {
+            bucket.first.push(index); firstIndices.push(index);
+        }
+        bucket.indices.push(index);
+    });
+    if (fallback) {
+        firstIndices = [];
+        rows.forEach(function (row, index) {
+            var query = values(index);
+            if (!firstIndices.some(function (i) { return matches(i, query); })) firstIndices.push(index);
+        });
+    }
+    ids = firstIndices.map(function (index) { return fields.length === 1 ? rows[index][fields[0]] : values(index); });
+    return { indexed: !fallback, ids: ids, firstIndices: firstIndices, indices: function (value) {
+        var query = fields.length === 1 ? [value] : value;
+        var token = key(query), bucket = buckets.get(token);
+        var candidates = fallback || token === null ? rows.map(function (row, i) { return i; }) : bucket ? bucket.indices : [];
+        return candidates.filter(function (index) { return matches(index, query); });
+    } };
+}
+
+// Framework7 1.4 listens for key/change events, but mobile IMEs, paste and
+// speech input can update the value with only an input event. Keep its native
+// filter and existing server-search debounce; do not synthesize another input.
+document.addEventListener('input', function (event) {
+    var input = event.target;
+    if (!input.matches || !input.matches('.searchbar-init input[type="search"]')) return;
+    var form = input.closest('.searchbar-init');
+    if (form.f7Searchbar) form.f7Searchbar.handleInput();
+});
+
+// A fast open/close can be coalesced into one paint, so F7's transitionEnd
+// callback never runs. Let F7 perform its own cleanup after the transition's
+// deadline; reopening cancels the fallback for the previous close.
+(function () {
+    var pending = new WeakMap();
+    function cancel(event) {
+        var popup = event.target;
+        if (!popup.classList || !popup.classList.contains('popup')) return;
+        clearTimeout(pending.get(popup)); pending.delete(popup);
+    }
+    document.addEventListener('open', cancel);
+    document.addEventListener('closed', cancel);
+    document.addEventListener('close', function (event) {
+        var popup = event.target;
+        if (!popup.classList || !popup.classList.contains('popup')) return;
+        cancel(event);
+        var style = getComputedStyle(popup);
+        var durations = style.transitionDuration.split(',').map(parseFloat);
+        var delays = style.transitionDelay.split(',').map(parseFloat);
+        var seconds = Math.max.apply(Math, durations.map(function (value, i) { return value + delays[i % delays.length]; }));
+        pending.set(popup, setTimeout(function () {
+            pending.delete(popup);
+            if (popup.isConnected && popup.classList.contains('modal-out') && !popup.classList.contains('modal-in')) {
+                popup.dispatchEvent(new Event('transitionend', { bubbles: true }));
+            }
+        }, (isFinite(seconds) ? seconds * 1000 : 0) + 50));
+    });
+})();
+
 function pre_init_F7() {
     try {
         //var F7_theme = JSON.parse(storage.getItem('F7_theme'));
@@ -254,6 +381,9 @@ function pre_init_F7() {
             link.type = 'text/css';
             link.href = 'css/styles_low_ios.css';
             document.head.appendChild(link);
+        }
+        if (window.AppPhase1 && AppPhase1.enabled('lazyScripts')) {
+            js.src = 'js/framework7_app.js';
         }
         document.body.appendChild(js);
         //get_internet_status_F7();
@@ -318,9 +448,10 @@ function back_button(page) {
     var privacy_popup = $('.popup-privacy-policy.modal-in:visible');
 
     if (popups.length > 0) {
-        // profile photo from profile menu popup is open
+        // Let Framework7 finish animated cleanup and release the photo browser.
+        var photoTransition = parseFloat(window.getComputedStyle(popups[0]).transitionDuration) > 0;
         myApp.closeModal('.photo-browser-popup.modal-in');
-        $('.photo-browser-popup').hide();
+        if (!photoTransition) popups.hide();
         return false;
     }
     else if (privacy_popup.length > 0) {
@@ -418,7 +549,7 @@ function back_button(page) {
                 storage.setItem('wayflow', JSON.stringify(wayflow));
                 storage.setItem('wayflow_name', JSON.stringify(wayflow_name));
                 storage.setItem('list_json', JSON.stringify(list_json));
-                changeurl("viewcustomerlist_on.html");
+                changeurl("viewcustomerlist_on.html", 'back');
             }
             else {
 
@@ -533,7 +664,7 @@ function back_button(page) {
                     //    back_button('selection');
                     //}
                     //else {
-                    changeurl("selection.html");
+                    changeurl("selection.html", 'back');
                     //}
                 }
                 else {
@@ -575,13 +706,13 @@ function back_button(page) {
 
                     if (flow_Array.length == 2) {
                         //back from 3rd level task listing [FT-14052025]
-                        changeurl("selection_survey.html");
+                        changeurl("selection_survey.html", 'back');
                     }
                     else {
                         var redirect = list_json[index].redirect;
                         if (redirect == 'customer') {
                             // Insolare, VIU
-                            changeurl("viewcustomerlist_on.html");
+                            changeurl("viewcustomerlist_on.html", 'back');
                         }
                         else {
                             //var chksheet_displaying = localStorage.getItem('last_subflow_count_' + flow_id);
@@ -590,7 +721,7 @@ function back_button(page) {
                                 back_button('viewsitelist_pm_grouplist');
                             }
                             else {
-                                changeurl("viewsitelist_pm_grouplist.html");
+                                changeurl("viewsitelist_pm_grouplist.html", 'back');
                                 //check_child_flow_for_parent();                          //backward skip for single subflow
                             }
                         }
@@ -619,7 +750,7 @@ function back_button(page) {
             storage.setItem('cust_flow_Array', JSON.stringify(''));
             ///
             localStorage.setItem('redirect_on_module', 'false');
-            changeurl("selection.html");
+            changeurl("selection.html", 'back');
         }
     }
     else if (page == 'viewsitedata') {
@@ -657,21 +788,22 @@ function back_button(page) {
                         loading_hide();
                     }
                     else {
-                        // no auto save log
-                        viewlist_checklist();
+                        // Explicitly confirmed discard also removes the encrypted draft.
+                        if (window.AppFormDrafts) AppFormDrafts.discard();
+                        viewlist_checklist('back');
                     }
                 }
             }
             else {
                 // no auto save log
-                viewlist_checklist();
+                viewlist_checklist('back');
             }
         }
     }
     else if (page == 'viewsitelist_pm_grouplist') {
         var flow_Array = JSON.parse(storage.getItem('flow_Array'));
         if (flow_Array.length == 1) {
-            changeurl("selection_survey.html");
+            changeurl("selection_survey.html", 'back');
             localStorage.setItem('is_subflow', 'false');
             set_common_localStorage('redirect_on_checksheet', 'true');
         } else {
@@ -686,7 +818,7 @@ function back_button(page) {
 
             var type = flow_Array[flow_Array.length - 1].type;
             if (type == 'Module' || type == 'Flow' || type == 'MultiFlow') {
-                changeurl("selection_survey.html");
+                changeurl("selection_survey.html", 'back');
             } else {
                 // group
                 flow_Array.pop();
@@ -710,37 +842,37 @@ function back_button(page) {
 
                 storage.setItem('flow_Array', JSON.stringify(flow_Array));
                 storage.setItem('curr_btn_mode', JSON.stringify(""));
-                changeurl("viewsitelist_pm_grouplist.html");
+                changeurl("viewsitelist_pm_grouplist.html", 'back');
             }
         }
     }
     else if (page == 'change_password') {
         var change_pwd_flag = localStorage.getItem('change_pwd_flag');
         if (change_pwd_flag == "login") {
-            changeurl("Login.html");
+            changeurl("Login.html", 'back');
         }
         else {
-            changeurl("selection.html");
+            changeurl("selection.html", 'back');
         }
     }
     else if (page == 'forgot_password') {
-        changeurl("Login.html");
+        changeurl("Login.html", 'back');
     }
     else if (page == 'pending_status') {
         var flag = JSON.parse(storage.getItem('pending_status_page'));
         if (flag == '1') {
             storage.setItem('pending_status_page', JSON.stringify('0'));
-            changeurl("selection_survey.html");
+            changeurl("selection_survey.html", 'back');
         } else {
             storage.setItem('pending_status_page', JSON.stringify('0'));
-            changeurl("Login.html");
+            changeurl("Login.html", 'back');
         }
     }
     else if (page == 'support_page' || page == 'feature_filter' || page == 'feature_chart' || page == 'EF_Custome_Reports') {
-        changeurl("selection.html");
+        changeurl("selection.html", 'back');
     }
     else if (page == 'upload_pending_test') {
-        changeurl("selection_survey.html");
+        changeurl("selection_survey.html", 'back');
     }
     else if (page == 'viewsitedata_task') {
         loading_hide();
@@ -766,24 +898,25 @@ function back_button(page) {
                 }
             }
             if (user_choice == true) {
+                if (form_has_changed == 'true' && window.AppFormDrafts) AppFormDrafts.discard();
                 var data_json = JSON.parse(storage.getItem('list_json'));
                 if (data_json == "" || data_json == null || data_json == undefined) {
                     // in case fill attendance directly from module listing add attendance button
-                    changeurl("selection.html");
+                    changeurl("selection.html", 'back');
                     return false;
                 }
 
                 var list_data = JSON.parse(data_json);
                 var redirect = list_data[0].redirect;
                 if (redirect == 'customer') {
-                    changeurl("viewcustomerlist_on.html");
+                    changeurl("viewcustomerlist_on.html", 'back');
                 } else {
                     storage.setItem('curr_btn_mode', JSON.stringify("back"));
 
                     var flow_Array = JSON.parse(storage.getItem('flow_Array'));
                     if (flow_Array == "" || flow_Array == null || flow_Array == undefined) {
                         // start trip from module listing >> task form open > press back button
-                        changeurl("selection.html");
+                        changeurl("selection.html", 'back');
                     }
                     else {
                         if (flow_Array.length == 1) {
@@ -797,7 +930,7 @@ function back_button(page) {
                             storage.setItem('siteid', JSON.stringify(selected_site));
                             storage.setItem('start_status', JSON.stringify(selected_start_status));
                         }
-                        changeurl("selection_survey.html");
+                        changeurl("selection_survey.html", 'back');
                     }
 
 
@@ -806,10 +939,10 @@ function back_button(page) {
         }
     }
     else if (page == 'change_password') {
-        changeurl("selection.html");
+        changeurl("selection.html", 'back');
     }
     else if (page == 'signup') {
-        changeurl("Login.html");
+        changeurl("Login.html", 'back');
     }
     else if (page == 'EF_User_List') {
         var zoom_popup = $('.zoom-img');
@@ -825,10 +958,10 @@ function back_button(page) {
                 if (curr_page_name == "" || curr_page_name == null || curr_page_name == undefined) {
                     curr_page_name = "selection.html";
                 }
-                changeurl(curr_page_name);
+                changeurl(curr_page_name, 'back');
             }
             else {
-                changeurl("selection.html");
+                changeurl("selection.html", 'back');
             }
         }
     }
@@ -838,7 +971,7 @@ function back_button(page) {
     //}
 }
 
-function viewlist_checklist() {
+function viewlist_checklist(direction) {
     if (enable_popup == 1) {
         //popup is enable
         clearTimeout(network_collapse_timer);
@@ -867,7 +1000,7 @@ function viewlist_checklist() {
                         back_button('viewsitelist_pm_grouplist');
                     }
                     else {
-                        changeurl("viewsitelist_pm_grouplist.html");
+                        changeurl("viewsitelist_pm_grouplist.html", direction);
                         //check_child_flow_for_parent();                          //backward skip for single checksheet
                     }
                 } else if (step_Array.length > 1) {
@@ -877,7 +1010,7 @@ function viewlist_checklist() {
                 else {
                     // rare case back issue - mk - 15072025
                     storage.setItem('curr_btn_mode', JSON.stringify("back"));
-                    changeurl("viewsitelist_pm_grouplist.html");
+                    changeurl("viewsitelist_pm_grouplist.html", direction);
                 }
             } else {
                 //back button disable
@@ -888,7 +1021,7 @@ function viewlist_checklist() {
                     back_button('viewsitelist_pm_grouplist');
                 }
                 else {
-                    changeurl("viewsitelist_pm_grouplist.html");
+                    changeurl("viewsitelist_pm_grouplist.html", direction);
                     //check_child_flow_for_parent();                          //backward skip for single checksheet
                 }
             }
@@ -1176,7 +1309,7 @@ function get_user_data_online() {
         else {
             render_profile_user_data(user_data);
         }
-    }, onfail);
+    }, onfail_request);
     getdata1.callOtherDomain();
 }
 
@@ -1255,7 +1388,7 @@ function get_blank_checksheet_profile(user_data, safety_passport) {
                 }
             } catch (err) { }
             show_profile_template(e.responseText);
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -2198,13 +2331,13 @@ function send_bulk_approval_online(t_status, bulk_approval_checksheet) {
             });
 
             loading();
-            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Bulk_approval', JSON.stringify(param_obj), onsuccess_send_bulk_approval_online, onfail);
+            var getdata = new Webservicecall_REST(global_wcf_url + 'WCF_Bulk_approval', JSON.stringify(param_obj), onsuccess_send_bulk_approval_online, onfail_request);
             getdata.callOtherDomain();
         }
         else {
             //added new logic for bulk approval checksheet if button dependency=checksheet   [FT - 22042024] 
             var flow_Array = JSON.parse(storage.getItem('flow_Array'));
-            if (flow_Array.length = 1) {
+            if (flow_Array.length === 1) {
                 var moduleid = JSON.parse(storage.getItem('wayflow'));
             } else {
                 var moduleid = flow_Array[flow_Array.length - 1].wayflow;
@@ -2240,7 +2373,7 @@ function send_bulk_approval_online(t_status, bulk_approval_checksheet) {
 
                     open_additional_checksheet_for_bulk_approval(t_status, bulk_approval_checksheet);
                 }
-            }, onfail, 'SqlitePlugin', 'showValues', q_jsonobj);
+            }, onfail_request, 'SqlitePlugin', 'showValues', q_jsonobj);
         }
     }
     catch (e) {
@@ -3106,16 +3239,15 @@ function convert_speech_to_text(eld_id) {
     speech_id = eld_id;
 
     var q_jsonobj = [];
-    cordova.exec(onsucess_convert_speech_to_text, onfail, 'SpeechtotextPlugin', 'anAction', q_jsonobj);
+    cordova.exec(onsucess_convert_speech_to_text, onfail_request, 'SpeechtotextPlugin', 'anAction', q_jsonobj);
 }
 
 function onsucess_convert_speech_to_text(e) {
     $(speech_id).val(e);
 }
 
-function onfail(e) {
-    //alert1(e + '_onfail()');
-    alert(e);
+function onfail_request(e) {
+    alert1(e);
     loading_hide();
 }
 
@@ -3898,7 +4030,7 @@ upload_autofill_photo = (old_id, old_cid, old_qd, new_id, new_ctype, new_cid, ne
                 mk_notify(message, "danger");
                 loading_hide();
             }
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -4203,7 +4335,7 @@ upload_autofill_photo_temp = (old_id, old_cid, old_qd, new_ctype, new_cid, new_q
 
             //myApp.hidePreloader();
 
-        }, onfail);
+        }, onfail_request);
         getdata.callOtherDomain();
     }
     catch (e) {
@@ -4362,7 +4494,7 @@ function get_safety_passport() {
                 build_user_safety_passport(user_data);
             }
         }
-    }, onfail);
+    }, onfail_request);
     getdata1.callOtherDomain();
 }
 
@@ -4803,7 +4935,7 @@ change_user_language = (lang) => {
             alert(message);
         }
         loading_hide();
-    }, onfail);
+    }, onfail_request);
     getdata1.callOtherDomain();
 }
 
@@ -4830,7 +4962,7 @@ change_user_language_menu = (lang) => {
             alert(message);
         }
         loading_hide();
-    }, onfail);
+    }, onfail_request);
     getdata1.callOtherDomain();
 }
 
@@ -5017,4 +5149,14 @@ function getDistanceFromLatLonInMeter(lat1, lon1, lat2, lon2) {
 
 function deg2rad(deg) {
     return deg * (Math.PI / 180);
+}
+
+// Shared date formatter used by checklist and flow navigation.
+function getFormattedDate(date) {
+    var year = date.getFullYear();
+    var month = (1 + date.getMonth()).toString();
+    month = month.length > 1 ? month : '0' + month;
+    var day = date.getDate().toString();
+    day = day.length > 1 ? day : '0' + day;
+    return year + '/' + month + '/' + day;
 }

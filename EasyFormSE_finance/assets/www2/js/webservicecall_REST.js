@@ -17,6 +17,7 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
     }
 
     var timer1;
+    var retry_request;
 
     var isIE8 = false;
     var invocation = createCrossDomainRequest();
@@ -40,6 +41,7 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
         clearTimeout(timer1);
         invocation.onreadystatechange = null;
         invocation.abort();
+        if (retry_request) { retry_request.cancel(); retry_request = null; }
     };
 
     this.callOtherDomain = function () {
@@ -59,8 +61,8 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
                     retryState.attempts = ++req_count;
                     invocation.abort();
                     mk_notify("Network Timeout! Retrying...");
-                    var t_getdata = new Webservicecall_REST(url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30, retryState);
-                    t_getdata.callOtherDomain();
+                    retry_request = new Webservicecall_REST(url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30, retryState);
+                    retry_request.callOtherDomain();
                 }
             }, timeout);
             if (isIE8) {
@@ -293,8 +295,8 @@ function Webservicecall_REST(url1, params, sucesscallback, failcallback, catchba
                     invocation.onreadystatechange = null;
                     invocation.abort();
                     //mk_notify("Network Failed! Retrying...");
-                    var t_getdata = new Webservicecall_REST(url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30, retryState);
-                    t_getdata.callOtherDomain();
+                    retry_request = new Webservicecall_REST(url1, params, sucesscallback, failcallback, catchback, settimeout, is_type30, retryState);
+                    retry_request.callOtherDomain();
                 }
 
 

@@ -29,7 +29,13 @@
 // already guards on TripMapProfile.resolve() internally), so this card never
 // needs its own isEnabled() gate the way P2's map_entry widget does.
 
-var HomeWidgetSiteSummary = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeWidgetSiteSummaryController) return;
+    function create(options) {
+        options = options || {};
+        var HomeDashboardData = options.data || w.HomeDashboardData;
+
     'use strict';
 
     function render(container, cfg) {
@@ -81,5 +87,11 @@ var HomeWidgetSiteSummary = (function () {
         });
     }
 
-    return { render: render, refresh: refresh };
-})();
+
+        var api = { render: render, refresh: refresh };
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+        return api;
+    }
+    w.AppHomeWidgetSiteSummaryController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeWidgetSiteSummary = create();
+})(window);

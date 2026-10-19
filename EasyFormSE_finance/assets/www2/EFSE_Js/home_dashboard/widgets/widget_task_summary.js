@@ -7,7 +7,14 @@
 // undecided by Product+Backend. Renders a single total (+ optional per-flow
 // breakdown), matching the number the rest of the app already shows.
 
-var HomeWidgetTaskSummary = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeWidgetTaskSummaryController) return;
+    function create(options) {
+        options = options || {};
+        var $ = options.$ || function () { return w.jQuery.apply(w, arguments); };
+        var HomeDashboardData = options.data || w.HomeDashboardData;
+
     'use strict';
 
     // Single-instance widget (only one dashboard on screen at a time), so
@@ -69,5 +76,11 @@ var HomeWidgetTaskSummary = (function () {
         });
     }
 
-    return { render: render, refresh: refresh };
-})();
+
+        var api = { render: render, refresh: refresh };
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+        return api;
+    }
+    w.AppHomeWidgetTaskSummaryController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeWidgetTaskSummary = create();
+})(window);

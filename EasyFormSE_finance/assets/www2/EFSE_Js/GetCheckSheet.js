@@ -1,38 +1,8 @@
 ﻿
 // default function on page load for initial check read
 
-var glob_livelink_Array = [];
 function data_to_read() {
-    var query = "select * from download_live_url";
-    var q_jsonobj = [];
-    q_jsonobj.push({
-        data: query,
-        p: "1"
-    });
-    cordova.exec(function (e) {
-        let myArray = JSON.parse(e);
-        if (myArray.length > 0) {
-
-            for (let l = 0; l < myArray.length; l++) {
-                let live_url = myArray[l].live_url;
-                let download_url_path = myArray[l].download_url_path;
-
-                glob_livelink_Array.push({
-                    "live_url": live_url,
-                    "download_url_path": download_url_path
-                });
-            }
-
-            data_to_read_post();
-        }
-        else {
-            data_to_read_post();
-        }
-    }, function (e) {
-        // fail
-        data_to_read_post();
-
-    }, 'SqlitePlugin', 'showValues', q_jsonobj);
+    return load_form_livelinks(data_to_read_post);
 }
 
 function data_to_read_post() {

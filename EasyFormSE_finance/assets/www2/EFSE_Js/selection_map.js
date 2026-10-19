@@ -15,7 +15,7 @@ get_user_latlong_for_map = () => {
         }
         initialize_map(lat, long);
 
-    }, onfail, 'maulik', 'nck', ["ds"]);
+    }, onfail_request, 'maulik', 'nck', ["ds"]);
 }
 function initialize_map(u_lat, u_long) {
 
@@ -128,7 +128,7 @@ function get_customer_data(u_lat, u_long) {
 
 
         }
-    }, onfail);
+    }, onfail_request);
     getdata.callOtherDomain();
 }
 

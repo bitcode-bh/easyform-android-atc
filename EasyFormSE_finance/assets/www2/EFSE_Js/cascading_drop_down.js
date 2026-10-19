@@ -108,7 +108,7 @@ function changeSelect(obj, item_id, inv_group_counter, selectCounter,
 		op_item += '<tr><td style="width:50%; padding:5px"><label style="float:right; font-weight:bold; margin-top:4%">TOTAL: </label></td><td style="width:50%; padding:5px"><input type="text" id="inv_sum_ans_'
 				+ inv_group_counter
 				+ '"style="color:gray; background-color:#F0F0F0; width:99%; height:25px; font-size: 11pt; font-weight:bold; font-family: calibri; height: 100%; border-radius:5px; text-align:center" disabled/></td></tr>';
-		op_item += '<tr><td style="width:50%"></td><td style="width:50%"><input type="button" style="width:99%; font-family: calibri; height: 25px; padding:1px; color:white; background-color:#337ab7; font-size:10pt; box-shadow:2px 2px 3px black; border:2px solid white; border-radius:20px" value="Get Invoice" onclick="get_item_price('
+		op_item += '<tr><td style="width:50%"></td><td style="width:50%"><input type="button" style="width:99%; font-family: calibri; height: 25px; padding:1px; color:white; background-color:#337ab7; font-size:10pt; box-shadow:2px 2px 3px black; border:2px solid white; border-radius:20px" value="Get Invoice" onclick="get_cascading_item_price('
 				+ item_id + ',' + inv_group_counter + ')"/></td></tr>';
 		op_item += '</table>';
 
@@ -121,7 +121,7 @@ function changeSelect(obj, item_id, inv_group_counter, selectCounter,
 	}
 }
 
-function get_item_price(item_id, btnInv_Counter) {
+function get_cascading_item_price(item_id, btnInv_Counter) {
 	// alert1("hi");
 	curr_survey_data["item_id_invoice"] = item_id;
 	// var length = item_Array_length;

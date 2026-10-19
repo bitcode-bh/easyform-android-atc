@@ -62,7 +62,7 @@ function capture_video_actual() {
     }
 }
 
-var curr_video_id, curr_query_type;
+var curr_video_id, video_query_type;
 // check photo for insert or update
 function check_video_entry(e) {
     try {
@@ -95,12 +95,12 @@ function check_video_entry(e) {
 
 function onsuccess_check_video_entry(e) {
     curr_video_id = e;
-    curr_query_type = 'update';
+    video_query_type = 'update';
     onsuccess_capture_video();
 }
 
 function onfail_check_video_entry(e) {
-    curr_query_type = 'insert';
+    video_query_type = 'insert';
     onsuccess_capture_video();
 }
 
@@ -248,7 +248,7 @@ function insert_video_entry(e) {
         var img_div = JSON.parse(storage.getItem('img_div_id'));
         var prop_name = $("#" + img_div + "").attr('name');
 
-        if (curr_query_type == 'insert') {
+        if (video_query_type == 'insert') {
             var query = "INSERT INTO video (tid, que_id, checksheetid, p_name, or_path, con_path, type, issend_track, CompanyId, CustomerUniq, Ph_id, it_id, millisecond, step_No, size, match_temp_id, que_name) VALUES('"
                 + t_id + "','" + img_que_id + "','" + check_type + "','" + p_name + "','" + video_path + "', '" + thumb_path + "', 'video', '0', '" + company_id + "', '" + siteid + "','"
                 + type22_img_que_id + "', '" + t_row_index_no + "', '" + time + "', '" + step + "', '" + video_size + "', '" + match_temp_id + "', '" + prop_name + "');";

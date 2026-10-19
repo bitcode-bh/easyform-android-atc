@@ -8,7 +8,15 @@
 // path there is an unbounded re-poll loop). Calling either from a background
 // Home refresh would visually hijack the screen or, worse, loop silently.
 
-var HomeDashboardData = (function () {
+(function (w) {
+    'use strict';
+    if (w.AppHomeDashboardDataController) return;
+    function create(options) {
+        options = options || {};
+        var storage = options.services ? options.services.storage : w.storage;
+        var cordova = options.services ? options.services.cordova : { exec: function () { return w.cordova.exec.apply(w.cordova, arguments); } };
+        function Webservicecall_REST() { return Reflect.construct(options.services ? options.services.request : w.Webservicecall_REST, Array.prototype.slice.call(arguments)); }
+
     'use strict';
 
     function sql(query, onSuccess, onFail) {
@@ -138,7 +146,7 @@ var HomeDashboardData = (function () {
 
         try {
             var getdata = new Webservicecall_REST(
-                global_wcf_url + 'WCF_OnlineTaskList_Native_Count',
+                (options.state || w).global_wcf_url + 'WCF_OnlineTaskList_Native_Count',
                 JSON.stringify(param_obj),
                 function (e) {
                     try {
@@ -377,7 +385,7 @@ var HomeDashboardData = (function () {
 
         try {
             var getdata = new Webservicecall_REST(
-                global_wcf_url + 'Get_Attendance',
+                (options.state || w).global_wcf_url + 'Get_Attendance',
                 JSON.stringify(param_obj),
                 function (e) {
                     try {
@@ -446,7 +454,7 @@ var HomeDashboardData = (function () {
         var param_obj = [{ user_id: user_id, offset: 0, fetch: limit }];
         try {
             var getdata = new Webservicecall_REST(
-                global_wcf_url + 'Get_NotificationList_For_User',
+                (options.state || w).global_wcf_url + 'Get_NotificationList_For_User',
                 JSON.stringify(param_obj),
                 function (e) {
                     try {
@@ -773,7 +781,8 @@ var HomeDashboardData = (function () {
         );
     }
 
-    return {
+
+        var api = {
         getEventsInRange: getEventsInRange,
         getTripEvents: getTripEvents,
         getSiteCatalog: getSiteCatalog,
@@ -792,4 +801,9 @@ var HomeDashboardData = (function () {
         getNotificationsSummary: getNotificationsSummary,
         getSiteSummary: getSiteSummary
     };
-})();
+        if (options.scope) Object.keys(api).forEach(function (key) { if (typeof api[key] === 'function') api[key] = (options.scope.own || options.scope.guard)(api[key]); });
+        return api;
+    }
+    w.AppHomeDashboardDataController = { create: create };
+    if (!w.document.documentElement.hasAttribute || !w.document.documentElement.hasAttribute('data-app-shell')) w.HomeDashboardData = create();
+})(window);

@@ -1,4 +1,5 @@
 var myApp = new Framework7({
+    ajaxLinks: 'a[href]',
     modalTitle: 'Framework7',
     animateNavBackIcon: true,
 });
@@ -12,10 +13,10 @@ var mainView = myApp.addView('.view-main', {
     dynamicNavbar: true,
 });
 // Add another view, which is in right panel
-var rightView = myApp.addView('.view-right', {
+var rightView = document.querySelector('.view-right') ? myApp.addView('.view-right', {
     // Enable Dynamic Navbar for this view
     dynamicNavbar: true
-});
+}) : undefined;
 
 // Show/hide preloader for remote ajax loaded pages
 // Probably should be removed on a production/local app
