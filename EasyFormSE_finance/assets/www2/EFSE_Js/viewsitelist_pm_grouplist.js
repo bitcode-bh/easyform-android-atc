@@ -3,7 +3,7 @@
     if (w.AppChecksheetController) return;
     function create(options) {
         options = options || {};
-        var $ = options.$ || function () { return w.$.apply(w, arguments); };
+        var $ = options.$ || new Proxy(function () { return w.$.apply(w, arguments); }, { get: function (target, name) { return w.$[name]; } }); // keeps jQuery's helpers ($.isArray, $.each, $.ajax) available
         var storage = options.services ? options.services.storage : w.storage;
         var cordova = options.services ? options.services.cordova : {
             exec: function () { return w.cordova.exec.apply(w.cordova, arguments); }

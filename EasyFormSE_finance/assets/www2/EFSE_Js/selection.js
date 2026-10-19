@@ -4,7 +4,7 @@
     function create(options) {
         options = options || {};
         var state = options.state || w, actions = options.actions || w;
-        var $ = options.$ || function () { return w.$.apply(w, arguments); };
+        var $ = options.$ || new Proxy(function () { return w.$.apply(w, arguments); }, { get: function (target, name) { return w.$[name]; } }); // keeps jQuery's helpers ($.isArray, $.each, $.ajax) available
         var document = options.document || w.document;
         var storage = options.services ? options.services.storage : w.storage;
         var cordova = options.services ? options.services.cordova : { exec: function () { return w.cordova.exec.apply(w.cordova, arguments); } };
