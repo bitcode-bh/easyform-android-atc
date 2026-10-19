@@ -508,7 +508,7 @@ var MkVideoDownload = function (obj, onsuccess_vdo_down) {
                 data: query,
                 p: "8" // start video download
             });
-            AppBridge.on(cordova).read(onsuccess_start_video_download, onfail_start_video_download, 'loginImei', {});
+            cordova.exec(onsuccess_start_video_download, onfail_start_video_download, 'SqlitePlugin', 'showValues', q_jsonobj);
         }
         catch (e) {
             alert1(e + '_start_video_download()');

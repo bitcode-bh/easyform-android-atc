@@ -11,7 +11,7 @@ function get_target_step_survey() {
 			data : query,
 			p : "0"
 		});
-		AppBridge.on(cordova).read(onsuccess_get_target_step_survey, onfail_get_target_step_survey, 'formDataByTypeOneStep', { tid: t_id, step: updatestep });
+		AppBridge.on(cordova).first(onsuccess_get_target_step_survey, onfail_get_target_step_survey, 'formDataByTypeOneStep', { tid: t_id, step: updatestep });
 	} catch (e) {
 		alert1(e + '_get_target_step_survey');
 		loading_hide();

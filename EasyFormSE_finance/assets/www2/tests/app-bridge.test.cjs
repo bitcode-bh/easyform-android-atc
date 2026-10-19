@@ -142,3 +142,18 @@ test('a bridge over a page-owned cordova object keeps using that object, and is 
     AppBridge.on(b).read(() => { }, () => { }, 'loginImei', {});
     assert.equal(a.calls.length, 0); assert.equal(b.calls.length, 1);
 });
+
+test('a first-column read gives the plain value, as the old p=0 read did, and no rows is "No data found"', async () => {
+    const { AppBridge } = load(), h = host(), got = [];
+    AppBridge.on(h).first(v => got.push(['ok', v]), e => got.push(['fail', e]), 'formDataByStep', { tid: 1, c_id: 2, step: 3 });
+    assert.equal(h.calls[0].args[0].first, true); assert.equal(h.calls[0].args[0].compat, true);
+    h.calls[0].ok(JSON.stringify({ rows: [{ f_data: 'abc', imei: 'd' }], first: 'abc' }));
+    AppBridge.on(h).first(v => got.push(['ok', v]), e => got.push(['fail', e]), 'formDataByStep', { tid: 1, c_id: 2, step: 3 });
+    h.calls[1].ok(JSON.stringify({ rows: [] }));
+    AppBridge.on(h).first(v => got.push(['ok', v]), e => got.push(['fail', e]), 'formDataByStep', { tid: 1, c_id: 2, step: 3 });
+    h.calls[2].ok(JSON.stringify({ rows: [{ f_data: 'Unknown' }], first: null }));
+    AppBridge.on(h).first(v => got.push(['ok', v]), e => got.push(['fail', e]), 'formDataByStep', { tid: 1, c_id: 2, step: 3 });
+    h.calls[3].fail('data-unavailable');
+    await tick();
+    assert.deepEqual(JSON.parse(JSON.stringify(got)), [['ok', 'abc'], ['fail', 'No data found'], ['ok', null], ['fail', 'data-unavailable']]);
+});

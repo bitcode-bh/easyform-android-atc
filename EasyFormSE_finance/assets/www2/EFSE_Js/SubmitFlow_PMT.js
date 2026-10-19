@@ -13,7 +13,7 @@ function check_all_step_status() {
 			data : query,
 			p : "0"
 		});
-		AppBridge.on(cordova).read(onsuccess_check_all_step_status, onfail_check_all_step_status, 'formDataByTypeOneStep', { tid: t_id, step: updatestep });
+		AppBridge.on(cordova).first(onsuccess_check_all_step_status, onfail_check_all_step_status, 'formDataByTypeOneStep', { tid: t_id, step: updatestep });
 	} catch (e) {
 		alert1(e + '_check_all_step_status');
 		loading_hide();

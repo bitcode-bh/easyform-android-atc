@@ -120,10 +120,12 @@ final class DataQueries {
         String[] values = bind(query, request.optJSONObject("args"), !compat);
         String imei = compat ? DeviceEventsUtils.getImei() : null;
         JSONArray rows = new JSONArray();
+        String firstValue = null;
         Cursor cursor = database.rawQuery(query.sql, values);
         try {
             String[] columns = cursor.getColumnNames();
             while (cursor.moveToNext()) {
+                if (rows.length() == 0 && columns.length > 0) firstValue = cursor.getString(0);
                 JSONObject row = new JSONObject();
                 for (int i = 0; i < columns.length; i++) {
                     String value = cursor.getString(i);
@@ -135,6 +137,9 @@ final class DataQueries {
         } finally {
             cursor.close();
         }
-        return new JSONObject().put("rows", rows);
+        JSONObject result = new JSONObject().put("rows", rows);
+        // first: what showValues returned for p=0, the first column of the first row, untouched (a null stays null).
+        if (request.optBoolean("first", false) && rows.length() > 0) result.put("first", firstValue == null ? JSONObject.NULL : firstValue);
+        return result;
     }
 }

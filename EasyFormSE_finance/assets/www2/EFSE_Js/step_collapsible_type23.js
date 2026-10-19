@@ -122,7 +122,7 @@ function get_last_step_data() {
                     data: query,
                     p: "0"
                 });
-                AppBridge.on(cordova).read(onsuccess_get_last_step_data, onfail_get_last_step_data, 'formDataByStep', { tid: t_id, c_id: check_type, step: step });
+                AppBridge.on(cordova).first(onsuccess_get_last_step_data, onfail_get_last_step_data, 'formDataByStep', { tid: t_id, c_id: check_type, step: step });
             } else {
                 // from server
                 select_detail_for_back_survey_collapse_form();

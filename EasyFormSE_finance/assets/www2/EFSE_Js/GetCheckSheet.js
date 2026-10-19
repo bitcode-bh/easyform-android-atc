@@ -147,7 +147,7 @@ function check_survey_entry_back_read(step) {
             data: query,
             p: "0"
         });
-        AppBridge.on(cordova).read(success_check_survey_entry_back_read, fail_check_survey_entry_back_read, 'formDataByValueStep', { tid: t_id, f_value: check_type, step: step });
+        AppBridge.on(cordova).first(success_check_survey_entry_back_read, fail_check_survey_entry_back_read, 'formDataByValueStep', { tid: t_id, f_value: check_type, step: step });
     } catch (e) {
         alert1(e + '_check_survey_entry_back_read()');
         loading_hide();

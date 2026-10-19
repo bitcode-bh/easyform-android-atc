@@ -598,7 +598,7 @@ var MkDocDownload = function (obj, onsuccess_doc_down) {
                 data: query,
                 p: "8" // start document download
             });
-            AppBridge.on(cordova).read(onsuccess_start_doc_download, onfail_start_doc_download, 'loginImei', {});
+            cordova.exec(onsuccess_start_doc_download, onfail_start_doc_download, 'SqlitePlugin', 'showValues', q_jsonobj);
         }
         catch (e) {
             alert1(e + '_start_doc_download()');

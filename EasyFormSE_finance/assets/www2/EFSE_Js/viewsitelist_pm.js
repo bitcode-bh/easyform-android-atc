@@ -2886,7 +2886,9 @@ function refresh_pm_site_list() {
             data: query,
             p: "4" // call for download to native
         });
-        AppBridge.on(cordova).read(onsuccess_refersh_pm_site_list, onfail_refresh_pm_site_list, 'loginUsername', {});
+        cordova.exec(onsuccess_refersh_pm_site_list,
+            onfail_refresh_pm_site_list, 'SqlitePlugin', 'showValues',
+            q_jsonobj);
         // }
     } catch (e) {
         alert1(e + '_refresh_pm_site_list');

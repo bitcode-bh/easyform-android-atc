@@ -9,6 +9,9 @@
  *   bridge.exec(service, action, args) -> Promise<value>   any other plugin call, same error handling
  *   bridge.flowMapping(moduleId) / taskByTid(tid) / taskCountByFlag(flag) / outbox()   the named reads pages use
  *
+ * Page reads keep the shape of the old SQL calls: read() gives the rows as the JSON string showValues returned (p=1), first() gives the
+ * first column of the first row (p=0).
+ *
  * Errors: 'bridge-unavailable' (no native side), 'bridge-timeout', 'bridge-retired' (the page was left), or the code
  * the native side sent ('data-invalid', 'data-unavailable'). Results are cancelled with retire() when a page is left.
  */
@@ -81,8 +84,21 @@
             }).then(function (text) { call(success, text); },
                 function (error) { call(failure, error && error.code || 'bridge-failed'); });
         }
+        // The old p=0 read: success gets only the first column of the first row, as a plain string; no rows is the failure
+        // "No data found", as it was.
+        function first(success, failure, name, args) {
+            var given = {};
+            Object.keys(args || {}).forEach(function (key) { given[key] = String(args[key]); });
+            exec('DataBridge', 'query', [{ name: name, args: given, compat: true, first: true }]).then(function (value) {
+                var result = parse(value);
+                if (!result || !Array.isArray(result.rows)) throw failure_('bridge-bad-result');
+                if (!result.rows.length) throw failure_('no-data');
+                return result.first;
+            }).then(function (text) { call(success, text); },
+                function (error) { call(failure, error && error.code === 'no-data' ? 'No data found' : (error && error.code || 'bridge-failed')); });
+        }
         return {
-            exec: exec, query: query, sql: sql, read: read,
+            exec: exec, query: query, sql: sql, read: read, first: first,
             flowMapping: function (moduleId) { return query('flowMapping', { moduleid: moduleId }); },
             taskByTid: function (tid) { return query('taskByTid', { tid: tid }); },
             taskCountByFlag: function (flag) { return query('taskCountByFlag', { flag: flag }).then(function (rows) { return rows.length ? Number(rows[0].n) || 0 : 0; }); },

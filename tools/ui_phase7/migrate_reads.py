@@ -85,6 +85,13 @@ def migrate(path, write):
         pushes = re.findall(r'data\s*:\s*' + re.escape(qv) + r'\b', window)
         if len(pushes) != 1:
             skipped.append((path, qv, 'data pushed %d times' % len(pushes))); continue
+        # showValues does different things for different p codes: 1 returns the rows, 0 returns only the first column of the
+        # first row as a plain string, and 3, 4, 5, 6, 7 and 8 also change data, start services or ignore the SQL.
+        push = re.search(r'\{[^{}]*?\bdata\s*:\s*' + re.escape(qv) + r'\b[^{}]*\}', window)
+        pcode = re.search(r'\bp\s*:\s*["\']?(\w+)["\']?', push.group(0)) if push else None
+        method = {'1': 'read', '0': 'first'}.get(pcode.group(1) if pcode else None)
+        if not method:
+            skipped.append((path, qv, 'p code %s' % (pcode.group(1) if pcode else 'missing'))); continue
         call = None
         for c in re.finditer(r'cordova\.exec\(', window):
             args, end = split_args(window, c.end())
@@ -98,7 +105,7 @@ def migrate(path, write):
         start, end, args = call
         # the call must come before the next statement that rebuilds this query variable's shape
         argobj = '{ ' + ', '.join('%s: %s' % (n, v) for n, v in zip(argnames, variables)) + ' }' if argnames else '{}'
-        replacement = "AppBridge.on(cordova).read(%s, %s, '%s', %s)" % (args[0], args[1], name, argobj)
+        replacement = "AppBridge.on(cordova).%s(%s, %s, '%s', %s)" % (method, args[0], args[1], name, argobj)
         edits.append((m.end() + start, m.end() + end, replacement, name))
     if not edits: return [], skipped
     for s, e, r, _ in sorted(edits, reverse=True):

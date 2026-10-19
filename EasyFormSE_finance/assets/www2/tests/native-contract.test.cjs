@@ -104,7 +104,7 @@ test('every named read a page makes is declared natively, with exactly the value
     for (const file of walk(www)) {
         if (file.endsWith(path.join('js', 'app_bridge.js'))) continue; // its comment shows the call with a placeholder name
         const text = fs.readFileSync(file, 'utf8');
-        for (const m of text.matchAll(/AppBridge\.on\(cordova\)\.read\(/g)) {
+        for (const m of text.matchAll(/AppBridge\.on\(cordova\)\.(?:read|first)\(/g)) {
             const args = argumentsOf(text, m.index + m[0].length);
             const name = /^'([A-Za-z]+)'$/.exec(args[2] || '');
             const given = [...(args[3] || '').matchAll(/([A-Za-z_]+)\s*:/g)].map(x => x[1]);
