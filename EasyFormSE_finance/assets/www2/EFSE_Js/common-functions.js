@@ -191,6 +191,8 @@ function logout_on_click_online() {
 
 function onsuccess_logout_on_click_online(e) {
 
+    // Saved task and checksheet rows must not stay readable on the phone after logout.
+    localStorage.removeItem('mwfm_phase1_lists');
     localStorage.setItem('view_biometric', 'false');
     lms_clear_vapt_cache();
     if (typeof HomeDashboard !== 'undefined' && HomeDashboard.destroy) HomeDashboard.destroy();
