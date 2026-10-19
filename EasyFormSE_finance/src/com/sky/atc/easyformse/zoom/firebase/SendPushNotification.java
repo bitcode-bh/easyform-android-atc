@@ -27,9 +27,9 @@ public class SendPushNotification {
 
     private static final String TOPIC = "/topics/sky";
     final private String FCM_API = "https://fcm.googleapis.com/fcm/send";
-    //final private String serverKey = "key=" + "AAAArctrOK4:APA91bF_aE3AU5ixZ49YBKp2wmuC1qOjHZrfwyWgKicKwm9tkGYl1Du__9pDzl4dGV48nHmKn9APjEc1TZ1iWR8oCg_qqIA7tjgN-NGJuRUR6CLdYMHImoCX09Yf8ahiy3-g3n_KWOHx";
-    //final private String serverKey = "key=" + "AAAACTDfIOY:APA91bGT3-Xo0MkYVhEfsGLtFSovEwlPdYZ13MtNoMRSWGBp0y3-kBXH6PZyAGc1AlM93gQ9Ofw2Ya_LY_6uvdDC_7k3WO1Rvfbm20U-A80AvtnImTKy9uWb0AG8j1wKzeuQgkrirg7P";
-    final private String serverKey = "key=" + "AAAAzs0z1Fo:APA91bHl4ku7oBt27uTU1MoZtYydISYKUs_vacBFjwCJB945CMqpUgmdYDif-6TwK17HMHil3P1vNl6t3BRi1nlsmYoe599mgO2esvclcb8l-MounhIa8bUJTuMQx2Yebc1XK_cUlbbr";
+    // The legacy FCM server key is no longer shipped in the app, and Google shut the legacy send API down in 2024.
+    // Pushes to other users are sent by the server (Firebase Admin / FCM v1).
+    final private String serverKey = "";
     final private String contentType = "application/json";
     //  public static String OpponentFCMID = "fI7vMR4_RgWMMNZAC9kwbB:APA91bGTemt_HsRFn_rM9fUHELIPD46022zghXnOv2XZ6m4WckERBFvGPEbrJnrCimkocFKyW3W4BJlQBbgXx5fKBJtlCOzytykNY7iJypcW32qLTCOAZQpQ5yvfB_AG_-HX1ha9T0uD";
     public static String OpponentFCMID;
@@ -39,6 +39,10 @@ public class SendPushNotification {
 
     public void sendNotification(JSONObject notification, final Context context) {
 
+        if (serverKey.isEmpty()) {
+            Log.w("##FIREBASE", "Client-side push is disabled; the server sends pushes");
+            return;
+        }
         Map<String, String> params = new HashMap<>();
         params.put("Authorization", serverKey);
         params.put("Content-Type", contentType);

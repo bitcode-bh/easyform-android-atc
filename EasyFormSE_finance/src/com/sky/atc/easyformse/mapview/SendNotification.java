@@ -22,7 +22,8 @@ public class SendNotification {
 
 //    private static final String FCM_API = "https://fcm.googleapis.com/fcm/send";
     private static final String FCM_API = "https://fcm.googleapis.com/v1/projects/wipro-86aed/messages:send";
-    private static final String serverKey = "key=" + "AAAAzs0z1Fo:APA91bHl4ku7oBt27uTU1MoZtYydISYKUs_vacBFjwCJB945CMqpUgmdYDif-6TwK17HMHil3P1vNl6t3BRi1nlsmYoe599mgO2esvclcb8l-MounhIa8bUJTuMQx2Yebc1XK_cUlbbr";
+    // The FCM server key is no longer shipped in the app; pushes to other users are sent by the server.
+    private static final String serverKey = "";
     private static final String contentType = "application/json";
     private static String TAG = "NOTIFICATION TAG";
     private  static String  jwtToken = null;

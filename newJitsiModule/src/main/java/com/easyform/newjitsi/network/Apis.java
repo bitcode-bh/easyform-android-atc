@@ -8,7 +8,7 @@ package com.easyform.newjitsi.network;
 public class Apis {
 //    public final static String FCMURL = "https://fcm.googleapis.com/fcm/send";
 public final static String FCMURL = "https://fcm.googleapis.com/v1/projects/wipro-86aed/messages:send";
-    public final static String authorization = "key=AAAAzs0z1Fo:APA91bHl4ku7oBt27uTU1MoZtYydISYKUs_vacBFjwCJB945CMqpUgmdYDif-6TwK17HMHil3P1vNl6t3BRi1nlsmYoe599mgO2esvclcb8l-MounhIa8bUJTuMQx2Yebc1XK_cUlbbr";
+    public final static String authorization = ""; // the FCM server key is no longer shipped in the app
     public static final String WCFURL = "https://development.easyform.in/coreapi/api/";
     public final static String getuserdata = "WCF_Getuserdata_using_companyid";
 

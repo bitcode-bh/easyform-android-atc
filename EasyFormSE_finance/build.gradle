@@ -101,6 +101,16 @@ android {
             storeFile (new File('E:/Android_Studio/key').exists() ? new File('E:/Android_Studio/key') : (new File(projectDir, 'keystore/easyform-debug.jks').exists() ? new File(projectDir, 'keystore/easyform-debug.jks') : new File(System.getProperty('user.home'), '.android/debug.keystore')))
 //            storeFile file('E:/Android_Studio/key1')   // for security
             storePassword 'skypatel7'
+            // A release key's details can come from local.properties, ~/.gradle/gradle.properties or the environment
+            // (MWFM_STORE_FILE, MWFM_KEY_ALIAS, MWFM_KEY_PASSWORD, MWFM_STORE_PASSWORD); they replace the values above when set.
+            def localProps = new Properties()
+            def localFile = rootProject.file('local.properties')
+            if (localFile.exists()) localFile.withInputStream { localProps.load(it) }
+            def secret = { String name -> (project.findProperty(name) ?: localProps.getProperty(name) ?: System.getenv(name)) }
+            if (secret('MWFM_STORE_FILE')) storeFile new File(secret('MWFM_STORE_FILE'))
+            if (secret('MWFM_KEY_ALIAS')) keyAlias secret('MWFM_KEY_ALIAS')
+            if (secret('MWFM_KEY_PASSWORD')) keyPassword secret('MWFM_KEY_PASSWORD')
+            if (secret('MWFM_STORE_PASSWORD')) storePassword secret('MWFM_STORE_PASSWORD')
             v1SigningEnabled false
             v2SigningEnabled true
             enableV3Signing true
