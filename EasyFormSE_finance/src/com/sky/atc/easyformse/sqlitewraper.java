@@ -199,15 +199,13 @@ public class sqlitewraper extends MultiDexApplication {
         @Override
         protected String doInBackground(String... params) {
 
-            AdvertisingIdClient.Info adInfo = null;
-            String adInfoId = "";
+            // Same id as everywhere else (see DeviceEventsUtils.getImei), not the raw advertising id.
             try {
-                adInfo = AdvertisingIdClient.getAdvertisingIdInfo(sqlitewraper.context);
-                adInfoId = adInfo.getId();
-            } catch (IOException | GooglePlayServicesNotAvailableException | GooglePlayServicesRepairableException e) {
+                return DeviceEventsUtils.getImei();
+            } catch (Exception e) {
                 e.printStackTrace();
+                return "";
             }
-            return adInfoId;
 
         }
 

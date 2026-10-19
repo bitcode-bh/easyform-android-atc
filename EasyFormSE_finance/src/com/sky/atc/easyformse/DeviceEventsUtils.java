@@ -501,7 +501,36 @@ public class DeviceEventsUtils {
      * this is null than we gating ad id and if this is null we pass
      * System.currentTimeMillis() plus random number and saving in SharedPreferences
      */
+    /** A real id: not empty, not the "0" placeholder, not the all-zero advertising id. */
+    private static boolean realDeviceId(String id) {
+        return id != null && !id.trim().isEmpty() && !id.matches("^0+([-]0+)*$");
+    }
+
+    /**
+     * The id the server knows this phone by. It used to be worked out again on every login page load
+     * (hardware IMEI, else advertising id, else ANDROID_ID), so any moment the advertising id read as
+     * zeros or failed, the phone presented a different identity. It is now fixed the first time:
+     * the id this install's database already holds, or else the first real one worked out.
+     */
     public static String getImei() {
+        B_new store = new B_new();
+        String pinned = store.getPinnedDeviceId();
+        if (realDeviceId(pinned)) return pinned;
+
+        String id = null;
+        try {
+            Cursor c = sqlitewraper.getDatabase().rawQuery("select imei from Login_Master", null);
+            if (c.moveToFirst()) id = c.getString(0);
+            c.close();
+        } catch (Exception ignored) {
+            // no database yet: work it out below
+        }
+        if (!realDeviceId(id)) id = deriveImei();
+        if (realDeviceId(id)) store.pinDeviceId(id);
+        return id;
+    }
+
+    private static String deriveImei() {
         TelephonyManager telephonyManager = (TelephonyManager) context
                 .getSystemService(Context.TELEPHONY_SERVICE);
         ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE);

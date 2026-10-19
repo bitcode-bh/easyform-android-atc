@@ -167,6 +167,18 @@ public class B_new {
         editor.commit();
     }
 
+    /** The device id this install has used since it first had one; see DeviceEventsUtils.getImei(). */
+    public String getPinnedDeviceId() {
+        editor = sqlitewraper.getSecureShared("my-preferences");
+        return editor.getString("PinnedDeviceId", "");
+    }
+
+    public void pinDeviceId(String id) {
+        editor = sqlitewraper.getSecureShared("my-preferences");
+        editor.putString("PinnedDeviceId", id);
+        editor.commit();
+    }
+
     public String getSaveImei() {
         editor = sqlitewraper.getSecureShared("my-preferences");
         return editor.getString("SaveImei", "NA");
