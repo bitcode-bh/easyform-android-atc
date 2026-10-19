@@ -79,6 +79,8 @@
             } else if (type === 30) {
                 var dynamic = node || get('dynddl_txt_' + suffix), container = get('div_dynddl_' + suffix);
                 if(dynamic) { var label = dynamic.options ? dynamic.options[dynamic.selectedIndex]?.text : dynamic.value; var dependency = container?.getAttribute('name') || ''; ans = label && label !== '--- Choose Value ---' ? [label,dependency,dynamic.value] : ['']; }
+            } else if (node && (node.readOnly || node.disabled)) {
+                // Filled in by the page, not typed by the person: keep the saved answer, never re-read it.
             } else if (node) {
                 if (type === 3) { var selected = node.options[node.selectedIndex]; var label = selected ? selected.text : ''; ans = ['Select Value','--- Select ---','--- Select Values ---'].includes(label) ? [''] : [label]; }
                 else if (type === 8) {

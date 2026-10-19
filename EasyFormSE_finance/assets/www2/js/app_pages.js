@@ -57,16 +57,16 @@
         try { return rules(source.sheet.cssRules); }
         finally { source.remove(); }
     }
-    function value(storage, key) { return JSON.parse(storage.getItem(key)); }
+    function value(storage, key) { try { return JSON.parse(storage.getItem(key)); } catch (e) { return null; } }
     function flow(storage) {
         var result = value(storage, 'list_json');
-        if (typeof result === 'string') result = JSON.parse(result);
+        if (typeof result === 'string') { try { result = JSON.parse(result); } catch (e) { return null; } }
         return Array.isArray(result) ? result[0] : null;
     }
     function read(context, query) {
         return new Promise(function (resolve, reject) {
             context.services.cordova.exec(function (raw) {
-                try { resolve({ raw: raw, rows: typeof raw === 'string' ? JSON.parse(raw) : raw }); }
+                try { resolve({ raw: raw, rows: typeof raw === 'string' ? (raw.trim() ? JSON.parse(raw) : []) : raw }); }
                 catch (error) { reject(error); }
             }, function () { reject(new Error('Unable to read checksheet mapping')); },
             'SqlitePlugin', 'showValues', [{ data: query, p: '1' }]);
@@ -97,7 +97,7 @@
                     if (module === '' || module === null || module === undefined || module === 0) return false;
                     return read(context, "select data from flow_master where moduleid = '" + String(module).replace(/'/g, "''") + "'").then(function (result) {
                         if (!Array.isArray(result.rows) || !result.rows.length) return false;
-                        var mapping = JSON.parse(result.rows[0].data);
+                        var mapping; try { mapping = JSON.parse(result.rows[0].data); } catch (e) { return false; }
                         if (!Array.isArray(mapping) || mapping.some(function (row) { return row.sub_flow_id && row.sub_flow_id != 0; })) return false;
                         instances.set(context, { settings: settings, mapping: result.raw, grouped: mapping.some(function (row) { return !!row.Group_Name; }) }); return true;
                     });
@@ -211,7 +211,7 @@
                     if (module === '' || module === null || module === undefined || module == 0) return false;
                     return read(context, "select data from flow_master where moduleid = '" + String(module).replace(/'/g, "''") + "'").then(function (result) {
                         if (!Array.isArray(result.rows) || !result.rows.length) return false;
-                        var mapping = JSON.parse(result.rows[0].data);
+                        var mapping; try { mapping = JSON.parse(result.rows[0].data); } catch (e) { return false; }
                         if (!Array.isArray(mapping) || mapping.some(function (row) { return row.sub_flow_id && row.sub_flow_id != 0; })) return false;
                         instances.set(context, { settings: settings, mapping: result.rows[0].data }); return true;
                     });

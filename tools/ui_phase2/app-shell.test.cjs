@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const path = require('node:path');
 const webRoot = path.resolve(__dirname, '../../EasyFormSE_finance/assets/www2');
 const source = fs.readFileSync(path.join(webRoot, 'js/app_shell.js'), 'utf8');
-const A = 'selection.html', B = 'selection_survey.html', C = 'viewsitelist_pm_grouplist.html';
+const A = 'feature_chart.html', LOGIN = 'Login.html', B = 'selection_survey.html', C = 'viewsitelist_pm_grouplist.html';
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
 function store(initial = {}) {
@@ -30,7 +30,7 @@ function element() {
     };
 }
 function field(key, value, type = 'search') { return { value, type, getAttribute: () => key }; }
-function setup({ shell = false, page = A, device = true } = {}) {
+function setup({ shell = false, page = 'feature_chart.html', device = true } = {}) {
     const document = element(); document.documentElement = element();
     if (shell) document.documentElement.setAttribute('data-app-shell', '');
     const values = { company_id: 1, user_id: 2, global_wcf_url: 'https://example.invalid/api/', list_json: null };
@@ -71,12 +71,12 @@ async function start(s, definitions = {}) {
 
 test('shell and page switches require typed values and are isolated by account', () => {
     const s = setup();
-    assert.equal(s.ui.settings().enabled, false);
-    s.ui.configure({ enabled: 'true', pages: { [A]: 'true' } });
-    assert.equal(s.ui.settings().enabled, false);
-    assert.equal(s.ui.settings().pages[A], undefined);
+    assert.equal(s.ui.settings().pages[LOGIN] === true, false);
+    s.ui.configure({ enabled: 'true', pages: { [LOGIN]: 'true' } });
+    assert.equal(s.ui.settings().pages[LOGIN] === true, false);
+    assert.equal(s.ui.settings().pages[LOGIN], undefined);
     enabled(s); assert.equal(s.ui.settings().pages[B], true);
-    s.values.user_id = 3; assert.equal(s.ui.settings().enabled, false);
+    s.values.user_id = 3; assert.equal(s.ui.settings().pages[LOGIN] === true, false);
     s.values.user_id = 2;
     s.values.list_json = JSON.stringify([{ ui_shell: { enabled: false } }]);
     s.ui.flowChanged(s.values.list_json);
@@ -85,23 +85,23 @@ test('shell and page switches require typed values and are isolated by account',
     assert.equal(s.ui.settings().enabled, true);
     assert.deepEqual(Object.keys(s.ui.settings().pages), [], 'preview can explicitly keep every route in fallback');
     s.ui.configure(undefined); s.values.list_json = null;
-    assert.equal(s.ui.settings().enabled, false, 'omitted login field clears configuration and preview');
+    assert.equal(s.ui.settings().pages[LOGIN] === true, false, 'omitted login field clears configuration and preview');
 });
 
 test('cached flow rollout is bound to the selecting account and must be rebound after login', () => {
     const s = setup();
-    s.values.list_json = JSON.stringify([{ ui_shell: { enabled: true, pages: { [A]: true } } }]);
-    assert.equal(s.ui.settings().enabled, false, 'an unowned cached flow cannot enable the shell');
+    s.values.list_json = JSON.stringify([{ ui_shell: { enabled: true, pages: { [LOGIN]: true } } }]);
+    assert.equal(s.ui.settings().pages[LOGIN] === true, false, 'an unowned cached flow cannot enable the shell');
     s.ui.flowChanged(s.values.list_json); assert.equal(s.ui.settings().enabled, true);
-    s.values.user_id = 3; assert.equal(s.ui.settings().enabled, false);
-    s.ui.configure(undefined); assert.equal(s.ui.settings().enabled, false);
+    s.values.user_id = 3; assert.equal(s.ui.settings().pages[LOGIN] === true, false);
+    s.ui.configure(undefined); assert.equal(s.ui.settings().pages[LOGIN] === true, false);
     s.ui.flowChanged(s.values.list_json); assert.equal(s.ui.settings().enabled, true);
-    s.ui.configure(undefined); assert.equal(s.ui.settings().enabled, false, 'same-account re-login also clears a stale flow override');
+    s.ui.configure(undefined); assert.equal(s.ui.settings().pages[LOGIN] === true, false, 'same-account re-login also clears a stale flow override');
 });
 
 test('an explicit login kill switch cannot be overridden by a cached flow', () => {
     const s = setup(); s.ui.configure({ enabled: false });
-    s.values.list_json = JSON.stringify([{ ui_shell: { enabled: true, pages: { [A]: true } } }]);
+    s.values.list_json = JSON.stringify([{ ui_shell: { enabled: true, pages: { [LOGIN]: true } } }]);
     s.ui.flowChanged(s.values.list_json);
     assert.equal(s.ui.settings().enabled, false);
     s.ui.preview({ enabled: true, pages: {} });
@@ -129,19 +129,19 @@ test('all current production pages remain fallback even if a server enables thei
 });
 
 test('a demo preview expires and is ignored for a different account', () => {
-    const s = setup(); s.ui.preview({ enabled: true, pages: { [A]: true } });
+    const s = setup(); s.ui.preview({ enabled: true, pages: { [LOGIN]: true } });
     assert.equal(s.ui.settings().enabled, true);
-    s.values.company_id = 5; assert.equal(s.ui.settings().enabled, false); s.values.company_id = 1;
+    s.values.company_id = 5; assert.equal(s.ui.settings().pages[LOGIN] === true, false); s.values.company_id = 1;
     const preview = JSON.parse(s.window.sessionStorage.getItem('mwfm_shell_preview')); preview.expires = Date.now() - 1;
     s.window.sessionStorage.setItem('mwfm_shell_preview', JSON.stringify(preview));
-    assert.equal(s.ui.settings().enabled, false);
+    assert.equal(s.ui.settings().pages[LOGIN] === true, false);
 });
 
 test('enabled login enters the shell even when all production pages remain fallback', () => {
     const s = setup({ page: 'Login.html' }); s.ui.configure({ enabled: true, pages: {} });
-    assert.equal(s.ui.navigate(A, 'forward', s.reload), true);
+    assert.equal(s.ui.navigate('selection.html', 'forward', s.reload), true);
     assert.equal(s.legacy[0].url, 'app-shell.html?route=selection.html');
-    s.ui.navigate(A, 'forward', s.reload);
+    s.ui.navigate('selection.html', 'forward', s.reload);
     assert.equal(s.legacy.length, 1, 'repeated login callbacks do not start two shell entries');
 });
 

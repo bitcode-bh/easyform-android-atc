@@ -14,9 +14,12 @@
 (function (w, d) {
     'use strict';
     if (w.AppFramePages) return;
-    // Home and the two form pages. Any page can be added here; each stays on its own page load
-    // until the server turns it on in ui_shell.pages.
-    var pages = ['selection.html', 'viewsitedata.html', 'viewsitedata_task.html'];
+    // Every page except Login (where the shell starts) and the two list pages that have their own adapter in app_pages.js.
+    var pages = ('EF_Aadhar_Verification.html EF_Account_Verification.html EF_Custom_Reports.html EF_User_List.html ' +
+        'EF_User_Update.html LMS_Dashboard.html Signup.html change_password.html download_status.html ' +
+        'f7-verify-otp.html f7_faq.html f7_flowchart.html f7_myprofile.html f7_navbar.html f7_privacy_policy.html ' +
+        'f7_safety_passport.html feature_chart.html feature_filter.html pending_status.html selection.html ' +
+        'support_page.html viewcustomerlist_on.html viewsitedata.html viewsitedata_task.html').split(' ');
     var sources = Object.create(null), instances = new WeakMap();
     var native = ['AndroidCallChecker', '_cordovaNative'];
 
@@ -55,7 +58,7 @@
                         open: function (context) {
                             var entry = instances.get(context.root), frame = entry.frame, win = frame.contentWindow, doc = win.document;
                             return new Promise(function (resolve, reject) {
-                                var finished = false, timer;
+                                var finished = false, timer, held = [];
                                 function done(error) {
                                     if (finished) return;
                                     finished = true; clearTimeout(timer);
@@ -67,10 +70,19 @@
                                     try {
                                         // Navigation inside the form is the shell's job, not the frame's.
                                         win.changeurl = function (url, direction) { return w.changeurl(url, direction); };
-                                        win.addEventListener('error', function (e) { w.console.error('MWFM form page:', e.message); });
-                                        // Cordova fired this once, in the shell, before the form existed.
-                                        doc.dispatchEvent(event(doc, 'deviceready'));
-                                        done();
+                                        win.addEventListener('error', function (e) { w.console.error('MWFM form page:', e.message, String(e.filename || '').split('/').pop() + ':' + e.lineno); });
+                                        // A page that sets up Framework7 itself (pre_init_F7) has it ready by the time its
+                                        // $(document).ready code runs on a real page load, so hold that code until it is.
+                                        var waited = 0;
+                                        (function ready() {
+                                            if (finished) return;
+                                            if (held.length && typeof win.pre_init_F7 === 'function' && !win.myApp && waited < 1500) { waited += 25; return setTimeout(ready, 25); }
+                                            try {
+                                                held.forEach(function (copy) { copy.holdReady(false); });
+                                                // Cordova fired this once, in the shell, before the form existed.
+                                                doc.dispatchEvent(event(doc, 'deviceready')); done();
+                                            } catch (error) { done(error); }
+                                        })();
                                     } catch (error) { done(error); }
                                 });
                                 try {
@@ -78,6 +90,8 @@
                                     // Java objects the app injects into its web page (see CordovaActivity). A frame made with
                                     // document.open() is not a page load, so Android does not inject them again.
                                     native.forEach(function (name) { if (w[name] !== undefined) win[name] = w[name]; });
+                                    // The page's scripts run when the document closes, so catch jQuery as the page assigns it.
+                                    var jq; try { Object.defineProperty(win, 'jQuery', { configurable: true, get: function () { return jq; }, set: function (copy) { jq = copy; if (copy && copy.holdReady && held.indexOf(copy) < 0) { copy.holdReady(true); held.push(copy); } } }); } catch (e) { }
                                     doc.open();
                                     // The page reads its own file name from the address, so the frame reports the page it is.
                                     try { win.history.replaceState(null, '', context.route); } catch (e) { }

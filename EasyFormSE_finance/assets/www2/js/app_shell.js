@@ -48,9 +48,12 @@
         if (['light', 'dark', 'system'].indexOf(value.colorScheme) >= 0) result.colorScheme = value.colorScheme;
         return result;
     }
+    function allPages() { var all = {}; pages.forEach(function (name) { if (name !== 'Login.html') all[name] = true; }); return all; }
     function settings() {
-        var scope = account(), serverDisabled = false, result = { enabled: false, pages: {}, theme: 'default', colorScheme: 'light' };
-        if (!scope) return result;
+        var scope = account(), serverDisabled = false, result = { enabled: true, pages: allPages(), theme: 'default', colorScheme: 'light' };
+        // The shell is on in the app itself; this phone-side switch (localStorage mwfm_shell_off = '1') turns it off.
+        try { if (w.localStorage.getItem('mwfm_shell_off') === '1') return { enabled: false, pages: {}, theme: 'default', colorScheme: 'light' }; } catch (e) { }
+        if (!scope) return { enabled: false, pages: {}, theme: 'default', colorScheme: 'light' };
         function apply(value) {
             value = valid(value);
             if (value) Object.keys(value).forEach(function (key) { result[key] = value[key]; });
