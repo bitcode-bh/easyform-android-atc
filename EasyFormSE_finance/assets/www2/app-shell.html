@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html data-app-shell>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="Framework7-1.4.2/dist/css/Css_f7.css" rel="stylesheet">
+    <link href="LMS/font-awesome-7.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/styles_low.css" rel="stylesheet">
+    <link href="css/app_loader.css" rel="stylesheet">
+    <script src="EFSE_Js/app_loader.js"></script>
+    <script src="EFSE_Js/common-functions.js"></script>
+    <script src="Plugin_Js/jquery-3.5.1.min.js"></script>
+    <script src="cordova.js"></script>
+    <script src="js/globlvariable.js"></script>
+    <script src="js/jstorage.min.js"></script>
+    <script src="js/Storagefile.js"></script>
+    <script src="js/webservicecall_REST.js"></script>
+    <script src="js/changeurl.js"></script>
+    <script src="Framework7-1.4.2/dist/js/framework7.min.js"></script>
+    <link href="css/empty_state.css" rel="stylesheet">
+    <link href="css/app_tokens.css" rel="stylesheet">
+    <link href="css/app_shell.css" rel="stylesheet">
+</head>
+<body>
+    <div class="panel-overlay"></div>
+    <div class="views">
+        <div class="view view-main">
+            <div class="pages" id="app-shell-pages">
+                <div class="page" data-page="shell-bootstrap" data-shell-bootstrap></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Existing shared helpers still use these aliases until page migration.
+        ['username', 'imeino', 'uniqcode', 'global_url', 'global_wcf_url', 'common_global_wcf_url'].forEach(function (key) {
+            try { window[key] = JSON.parse(storage.getItem(key)); } catch (error) { window[key] = null; }
+        });
+        try { window.F7_device = JSON.parse(storage.getItem('F7_device')); } catch (error) { }
+        if (!window.F7_device) window.F7_device = /Android/i.test(navigator.userAgent) ? 'android' : 'ios';
+        document.documentElement.setAttribute('data-app-platform', F7_device);
+    </script>
+    <script src="js/framework7_app.js"></script>
+    <script src="js/app_components.js"></script>
+    <script>
+        AppLoader.show();
+        AppShell.boot(document.getElementById('app-shell-pages'));
+    </script>
+</body>
+</html>

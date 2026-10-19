@@ -1,0 +1,60 @@
+/* Existing Home/form values. Loaded by the shell, not by fallback pages. */
+:root {
+    --app-primary: #2a3086;
+    --app-negative: #e25555;
+    --app-page: #fcfcfc;
+    --app-surface: #ecedef;
+    --app-line: #dedfe0;
+    --app-ink: #0f1729;
+    --app-muted: #6b7280;
+    --app-menu: #f4f5f7;
+    --app-card: #fff;
+    --app-menu-ink: #0d1829;
+    --app-menu-muted: #6a6c74;
+    --app-menu-line: #e3e4e8;
+    --app-menu-divider: #ecedef;
+    --app-icon-color: var(--app-ink);
+    --app-on-primary: #fff;
+    --app-font: Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --app-text-small: 13px;
+    --app-text: 14px;
+    --app-title: 20px;
+    --app-space-1: 4px;
+    --app-space-2: 8px;
+    --app-space-3: 12px;
+    --app-space-4: 16px;
+    --app-space-5: 20px;
+    --app-radius-control: 10px;
+    --app-radius-card: 16px;
+    --app-radius-overlay: 16px;
+    --app-bar-height: 56px;
+    --app-icon-size: 24px;
+    --app-motion: 180ms;
+    --app-action-blue: var(--app-primary);
+    --app-action-red: var(--app-negative);
+    --control-radius: var(--app-radius-control);
+    --card-radius: var(--app-radius-card);
+    --overlay-radius: var(--app-radius-overlay);
+    --listing-surface: var(--app-surface);
+    --listing-ink: var(--app-menu-ink);
+    --listing-line: var(--app-line);
+    --listing-page: var(--app-page);
+}
+/* Values already used by Css_theme_ATC.css and Css_theme_Vodafone.css. */
+:root[data-app-theme=atc] { --app-primary: #d21242; }
+:root[data-app-theme=vodafone] { --app-primary: #e60000; }
+:root[data-app-platform=ios] { --app-font: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+/* Explicit opt-in; the system setting alone never changes today's screens. */
+:root[data-app-color-scheme=dark] {
+    --app-page: #080b17; --app-surface: #20232b; --app-line: #444; --app-ink: #fff; --app-muted: #b8bbc3;
+    --app-menu: #20232b; --app-card: #20232b; --app-menu-ink: #fff; --app-menu-muted: #b8bbc3; --app-menu-line: #444; --app-menu-divider: #444;
+    color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+    :root[data-app-color-scheme=system] {
+        --app-page: #080b17; --app-surface: #20232b; --app-line: #444; --app-ink: #fff; --app-muted: #b8bbc3;
+        --app-menu: #20232b; --app-card: #20232b; --app-menu-ink: #fff; --app-menu-muted: #b8bbc3; --app-menu-line: #444; --app-menu-divider: #444;
+        color-scheme: dark;
+    }
+}
+@media (prefers-reduced-motion: reduce) { :root { --app-motion: 0ms; } }
