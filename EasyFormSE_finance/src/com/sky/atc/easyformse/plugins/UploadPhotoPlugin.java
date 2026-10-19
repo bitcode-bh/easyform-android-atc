@@ -269,7 +269,7 @@ public class UploadPhotoPlugin extends CordovaPlugin {
 
                         Uri uri = Uri.parse(url);
                         realpath = uri.getPath();
-                        realpath = realpath.replace("external_files", Environment.getExternalStorageDirectory().toString());
+                        realpath = realpath.replace("external_files", com.sky.atc.easyformse.utils.AppStorage.root().toString());
 
                         downloadedPaths.add(realpath);
                     }

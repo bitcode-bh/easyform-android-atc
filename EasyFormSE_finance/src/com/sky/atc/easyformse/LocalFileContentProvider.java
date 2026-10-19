@@ -21,7 +21,7 @@ public class LocalFileContentProvider extends ContentProvider {
 
    @Override
    public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
-	   String p=Environment.getExternalStorageDirectory().getAbsolutePath();
+	   String p=com.sky.atc.easyformse.utils.AppStorage.root().getAbsolutePath();
 	   String path="file://"+p+"/Pictures/EMF_survey"+uri.getPath();
 	   URI file_uri =URI.create(path);
        File file = new File(file_uri);

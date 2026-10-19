@@ -215,7 +215,7 @@ public class AppDownloadActivity extends AppCompatActivity {
                         runOnUiThread(() -> Tryagain.setVisibility(View.VISIBLE));
                     } else {
 
-                        File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                        File sdcard = com.sky.atc.easyformse.utils.AppStorage.downloads();
 
                         file = new File(sdcard, apkname);
 
@@ -339,7 +339,7 @@ public class AppDownloadActivity extends AppCompatActivity {
 
     private void installApk() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        File appFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), apkname);
+        File appFile = new File(com.sky.atc.easyformse.utils.AppStorage.downloads(), apkname);
         if (!appFile.exists() || !appFile.isFile()) {
             Toast.makeText(this, "appFile file has problem!", Toast.LENGTH_SHORT).show();
             runOnUiThread(() -> Tryagain.setVisibility(View.VISIBLE));
@@ -412,15 +412,15 @@ public class AppDownloadActivity extends AppCompatActivity {
                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                 request.setMimeType("application/vnd.android.package-archive");
                 request.setVisibleInDownloadsUi(true);
-                File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                File sdcard = com.sky.atc.easyformse.utils.AppStorage.downloads();
 
                 file = new File(sdcard, apkname);
                 if (file.exists()) {
-                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkname);
+                    com.sky.atc.easyformse.utils.AppStorage.downloadTo(request, apkname);
                 }
 
                 if (!file.exists()) {
-                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkname);
+                    com.sky.atc.easyformse.utils.AppStorage.downloadTo(request, apkname);
                 }
 
                 final long downloadId = manager.enqueue(request);

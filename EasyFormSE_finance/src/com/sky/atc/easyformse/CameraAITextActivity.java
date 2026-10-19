@@ -628,7 +628,7 @@ public class CameraAITextActivity extends AppCompatActivity {
     }
 
     private File getOutputMediaFile() {
-        String dir = Environment.getExternalStorageDirectory() + File.separator + "myDirectory";
+        String dir = com.sky.atc.easyformse.utils.AppStorage.root() + File.separator + "myDirectory";
         File folder = new File(dir);
         if (!folder.exists()) folder.mkdirs();
 
@@ -867,7 +867,7 @@ public class CameraAITextActivity extends AppCompatActivity {
 
     public String saveBitmapToFile(Bitmap bitmap, Context context) {
 
-        String dir = Environment.getExternalStorageDirectory()
+        String dir = com.sky.atc.easyformse.utils.AppStorage.root()
                 + File.separator + "myDirectory";
         File folder = new File(dir); // folder name
         folder.mkdirs();

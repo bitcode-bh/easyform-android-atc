@@ -70,7 +70,7 @@ public class RfTrackPlugin extends CordovaPlugin {
 
 
     Boolean openRfTrackApp(String mode) {
-        String folderPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+        String folderPath = com.sky.atc.easyformse.utils.AppStorage.pictures().getAbsolutePath();
 
         Log.d("folderPath", folderPath);
         Intent rfAppIntent = new Intent();

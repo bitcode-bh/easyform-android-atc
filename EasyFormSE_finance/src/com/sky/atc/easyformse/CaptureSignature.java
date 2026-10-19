@@ -89,7 +89,7 @@ public class CaptureSignature extends Activity {
 			requestPermission();
 		}
 
-		directory = new File(Environment.getExternalStorageDirectory(), "ATC");
+		directory = new File(com.sky.atc.easyformse.utils.AppStorage.root(), "ATC");
 		directory.mkdirs();
 
 		uniqueId = "sign" + System.currentTimeMillis();

@@ -215,7 +215,7 @@ public class CameraLauncher extends CordovaPlugin implements
 		// SD Card Mounted
 		if (Environment.getExternalStorageState().equals(
 				Environment.MEDIA_MOUNTED)) {
-			cache = new File(Environment.getExternalStorageDirectory()
+			cache = new File(com.sky.atc.easyformse.utils.AppStorage.root()
 					.getAbsolutePath()
 					+ "/Android/data/"
 					+ cordova.getActivity().getPackageName() + "/cache/");

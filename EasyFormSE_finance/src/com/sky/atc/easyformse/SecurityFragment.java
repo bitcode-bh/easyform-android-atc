@@ -135,7 +135,7 @@ public class SecurityFragment extends Fragment {
 	
 	private void exportDB() {
 		try {
-			File sd = Environment.getExternalStorageDirectory();
+			File sd = com.sky.atc.easyformse.utils.AppStorage.root();
 			File data = Environment.getDataDirectory();
 
 			if (sd.canWrite()) {

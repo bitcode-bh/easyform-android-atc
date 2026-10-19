@@ -263,7 +263,7 @@ public class easy_draw_new extends Activity implements OnClickListener,
                 final String type = split[0];
 
                 if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/"
+                    return com.sky.atc.easyformse.utils.AppStorage.root() + "/"
                             + split[1];
                 }
 
@@ -362,7 +362,7 @@ public class easy_draw_new extends Activity implements OnClickListener,
 
     public static void generateNoteOnSD(String sFileName, String sBody) {
         try {
-            File root = new File(Environment.getExternalStorageDirectory(),
+            File root = new File(com.sky.atc.easyformse.utils.AppStorage.root(),
                     "Notes");
             if (!root.exists()) {
                 root.mkdirs();
@@ -424,7 +424,7 @@ public class easy_draw_new extends Activity implements OnClickListener,
                 layout.setBackgroundColor(Color.parseColor(themecolor));
             }
 
-            imagesFolder = new File(Environment.getExternalStorageDirectory(),
+            imagesFolder = new File(com.sky.atc.easyformse.utils.AppStorage.root(),
                     "test");
             imagesFolder.mkdirs();
             image = new File(imagesFolder, System.currentTimeMillis() + ".jpg");
@@ -725,7 +725,7 @@ public class easy_draw_new extends Activity implements OnClickListener,
 
                                         if (flagdraw.equals("1")) {
                                             imagesFolder = new File(
-                                                    Environment.getExternalStorageDirectory(), "Easy_form");
+                                                    com.sky.atc.easyformse.utils.AppStorage.root(), "Easy_form");
 
                                             imagesFolder.mkdirs();
                                             //<----
@@ -860,8 +860,7 @@ public class easy_draw_new extends Activity implements OnClickListener,
         @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
                 .format(new Date());
         String imageFileName = "Easy_" + timeStamp + "_";
-        File storageDir = Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File storageDir = com.sky.atc.easyformse.utils.AppStorage.pictures();
         File image = File.createTempFile(imageFileName, /* prefix */
                 ".jpg", /* suffix */
                 storageDir /* directory */
@@ -1854,7 +1853,7 @@ public class easy_draw_new extends Activity implements OnClickListener,
                         .show();
 
             } else {
-                String dir = Environment.getExternalStorageDirectory()
+                String dir = com.sky.atc.easyformse.utils.AppStorage.root()
                         + File.separator + "myDirectory";
                 // create folder
                 File folder = new File(dir); // folder name
@@ -2183,7 +2182,7 @@ public class easy_draw_new extends Activity implements OnClickListener,
     private void writeToFile(String stacktrace, String filename) {
         try {
             File imagesFolder = new File(
-                    Environment.getExternalStorageDirectory(),
+                    com.sky.atc.easyformse.utils.AppStorage.root(),
                     "Error_Easy_Form");
             imagesFolder.mkdirs();
             filename = "Easy_" + System.currentTimeMillis() + ".txt";
@@ -2499,8 +2498,7 @@ public class easy_draw_new extends Activity implements OnClickListener,
         protected void onPostExecute(String status) {
             super.onPostExecute(status);
             finish();
-            String dir = Environment
-                    .getExternalStorageDirectory()
+            String dir = com.sky.atc.easyformse.utils.AppStorage.root()
                     + File.separator + "myDirectory";
             File folder = new File(dir);
             progress.hideProgressDialog(easy_draw_new.this);

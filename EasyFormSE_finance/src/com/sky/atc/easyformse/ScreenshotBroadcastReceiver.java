@@ -171,7 +171,7 @@ public class ScreenshotBroadcastReceiver extends BroadcastReceiver {
                 String utcmilliseconds = utcmi.get(0);
 //                Uri uri = Uri.parse(p_url);
 //                String  realpath = uri.getPath();
-//                realpath = realpath.replace("external_files", Environment.getExternalStorageDirectory().toString());
+//                realpath = realpath.replace("external_files", com.sky.atc.easyformse.utils.AppStorage.root().toString());
                 FileInputStream fis = new FileInputStream(imageFile);
 
                 Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fis.getFD(),

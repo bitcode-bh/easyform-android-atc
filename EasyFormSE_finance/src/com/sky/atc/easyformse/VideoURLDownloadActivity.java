@@ -179,7 +179,7 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
                     runOnUiThread(() -> Tryagain.setVisibility(View.VISIBLE));
                 } else {
 
-                    File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    File sdcard = com.sky.atc.easyformse.utils.AppStorage.downloads();
 
                     file = new File(sdcard, filename);
 
@@ -246,15 +246,15 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
                 request.setVisibleInDownloadsUi(false);
 
 
-                File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                File sdcard = com.sky.atc.easyformse.utils.AppStorage.downloads();
 
                 file = new File(sdcard, filename);
                 if (file.exists()) {
-                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
+                    com.sky.atc.easyformse.utils.AppStorage.downloadTo(request, filename);
                 }
 
                 if (!file.exists()) {
-                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
+                    com.sky.atc.easyformse.utils.AppStorage.downloadTo(request, filename);
                 }
 
                 final long downloadId = manager.enqueue(request);
@@ -582,7 +582,7 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
     }
 
     private boolean checkIfFileExistsAndReturn() {
-        File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File sdcard = com.sky.atc.easyformse.utils.AppStorage.downloads();
         file = new File(sdcard, filename);
 
         if (file.exists()) {
@@ -603,7 +603,7 @@ public class VideoURLDownloadActivity extends AppCompatActivity {
             }
 
             // Delete partial file (if it exists)
-            File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File sdcard = com.sky.atc.easyformse.utils.AppStorage.downloads();
             File partialFile = new File(sdcard, filename);
             if (partialFile.exists()) {
                 partialFile.delete();

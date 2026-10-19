@@ -149,7 +149,7 @@ public class pdf_act extends Activity {
                 urlConnection.connect();
 
 
-                File folder = new File(Environment.getExternalStorageDirectory().toString() + "/Easy_form_pdf");
+                File folder = new File(com.sky.atc.easyformse.utils.AppStorage.root().toString() + "/Easy_form_pdf");
                 folder.mkdirs();
 
 

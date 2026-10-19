@@ -1704,7 +1704,7 @@ public class MakePhotoActivity extends Activity implements SensorEventListener, 
     //to create new directory
     public String createNewDirectory(String name) {
         // create a directory before creating a new file inside it.
-        File directory = new File(Environment.getExternalStorageDirectory(), name);
+        File directory = new File(com.sky.atc.easyformse.utils.AppStorage.root(), name);
         if (!directory.exists()) {
             directory.mkdirs();
         }

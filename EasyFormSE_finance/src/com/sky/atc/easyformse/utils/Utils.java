@@ -17,11 +17,11 @@ import java.io.File;
 public class Utils {
 
     public static File getRootFolderFile(Context context) {
-        return Environment.getExternalStorageDirectory();
+        return com.sky.atc.easyformse.utils.AppStorage.root();
         /*if (context != null) {
             return context.getExternalFilesDir(null);
         } else {
-            return Environment.getExternalStorageDirectory();
+            return com.sky.atc.easyformse.utils.AppStorage.root();
         }*/
     }
 

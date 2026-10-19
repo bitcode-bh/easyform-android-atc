@@ -167,7 +167,7 @@ public class VideoDownloadPlugin extends CordovaPlugin {
         request.setTitle(filename);
         request.setMimeType("video/mp4");
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
+        com.sky.atc.easyformse.utils.AppStorage.downloadTo(request, filename);
         request.allowScanningByMediaScanner();
 
         DownloadManager dm = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);

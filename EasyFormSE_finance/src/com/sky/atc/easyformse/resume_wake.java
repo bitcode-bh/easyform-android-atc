@@ -153,7 +153,7 @@ public class resume_wake extends WakefulIntentService {
 
                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 
-                        folder = new File(Environment.getExternalStorageDirectory()
+                        folder = new File(com.sky.atc.easyformse.utils.AppStorage.root()
                                 + File.separator + "Document_Easy");
 
                         folder.mkdirs();

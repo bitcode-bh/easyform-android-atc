@@ -499,8 +499,7 @@ public class NewCameraActivity extends AppCompatActivity implements FileCallback
 
 
     private void createNewImageFile() {
-        File sdDir = Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File sdDir = com.sky.atc.easyformse.utils.AppStorage.pictures();
         File myDir = new File(sdDir, "Easy_form");
         myDir.mkdirs();
         Log.d(TAG, "=> " + myDir.getAbsolutePath());
@@ -623,7 +622,7 @@ public class NewCameraActivity extends AppCompatActivity implements FileCallback
 
     public String createNewDirectory(String name) {
         // create a directory before creating a new file inside it.
-        File directory = new File(Environment.getExternalStorageDirectory(), name);
+        File directory = new File(com.sky.atc.easyformse.utils.AppStorage.root(), name);
         if (!directory.exists()) {
             directory.mkdirs();
         }

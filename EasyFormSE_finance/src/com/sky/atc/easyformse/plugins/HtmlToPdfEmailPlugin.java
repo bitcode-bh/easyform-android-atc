@@ -116,7 +116,7 @@ public class HtmlToPdfEmailPlugin extends CordovaPlugin {
                         pdfDocument.finishPage(page);
 
                         // Save PDF to file
-                        File pdfDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Easyform_pdf");
+                        File pdfDir = new File(com.sky.atc.easyformse.utils.AppStorage.documents(), "Easyform_pdf");
                         if (!pdfDir.exists()) pdfDir.mkdirs();
                         String pdfname = "Safety_Passport_" + username + ".pdf";
                         File pdfFile = new File(pdfDir, pdfname);

@@ -119,7 +119,7 @@ public class OnlySavPhotoAcivity extends AppCompatActivity {
     public void Save_photo(Bitmap bitmap)
     {
         try{
-            String dir = Environment.getExternalStorageDirectory()
+            String dir = com.sky.atc.easyformse.utils.AppStorage.root()
                     + File.separator + "myDirectory";
             // create folder
             File folder = new File(dir); // folder name

@@ -182,7 +182,7 @@ public class sql_class implements Runnable {
 
                 try {
                     File newFolder = new File(
-                            Environment.getExternalStorageDirectory(),
+                            com.sky.atc.easyformse.utils.AppStorage.root(),
                             "TestFolder");
                     if (!newFolder.exists()) {
                         newFolder.mkdir();
@@ -446,7 +446,7 @@ public class sql_class implements Runnable {
 
             try {
                 File newFolder = new File(
-                        Environment.getExternalStorageDirectory(), "TestFolder");
+                        com.sky.atc.easyformse.utils.AppStorage.root(), "TestFolder");
                 if (!newFolder.exists()) {
                     newFolder.mkdir();
                 }

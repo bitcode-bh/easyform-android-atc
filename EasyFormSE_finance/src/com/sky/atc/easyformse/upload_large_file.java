@@ -207,7 +207,7 @@ public class upload_large_file extends Activity {
                 final String type = split[0];
 
                 if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/"
+                    return com.sky.atc.easyformse.utils.AppStorage.root() + "/"
                             + split[1];
                 } else {
 
@@ -370,7 +370,7 @@ public class upload_large_file extends Activity {
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
-                return Environment.getExternalStorageDirectory() + "/" + split[1];
+                return com.sky.atc.easyformse.utils.AppStorage.root() + "/" + split[1];
             } else if (isDownloadsDocument(uri)) {
                 final String id = DocumentsContract.getDocumentId(uri);
                 uri = ContentUris.withAppendedId(
@@ -955,7 +955,7 @@ public class upload_large_file extends Activity {
 
     public String createNewDirectory(String name) {
         // create a directory before creating a new file inside it.
-        File directory = new File(Environment.getExternalStorageDirectory(), name);
+        File directory = new File(com.sky.atc.easyformse.utils.AppStorage.root(), name);
         if (!directory.exists()) {
             directory.mkdirs();
         }

@@ -186,7 +186,7 @@ public class ExportExcelPlugin extends CordovaPlugin {
 
     private static File createDirIfNotExists() {
 
-        File file = new File(Environment.getExternalStorageDirectory(), "Easform Reports");
+        File file = new File(com.sky.atc.easyformse.utils.AppStorage.root(), "Easform Reports");
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 Log.e("TravellerLog :: ", "Problem creating Image folder");

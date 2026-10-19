@@ -136,7 +136,7 @@ public class cameraactivity extends Activity {
                 time = System.currentTimeMillis();
 
                 imagesFolder = new File(
-                        Environment.getExternalStorageDirectory(), "Easy_form");
+                        com.sky.atc.easyformse.utils.AppStorage.root(), "Easy_form");
 
                 imagesFolder.mkdirs();
 
@@ -646,8 +646,7 @@ public class cameraactivity extends Activity {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
                 .format(new Date());
         String imageFileName = "Easy_" + timeStamp + "_";
-        File storageDir = Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File storageDir = com.sky.atc.easyformse.utils.AppStorage.pictures();
         File image = File.createTempFile(imageFileName, /* prefix */
                 ".jpg", /* suffix */
                 storageDir /* directory */
@@ -693,7 +692,7 @@ public class cameraactivity extends Activity {
 
     public void generateNoteOnSD(String sFileName, String sBody) {
         try {
-            File root = new File(Environment.getExternalStorageDirectory(),
+            File root = new File(com.sky.atc.easyformse.utils.AppStorage.root(),
                     "Notes");
             if (!root.exists()) {
                 root.mkdirs();
@@ -722,7 +721,7 @@ public class cameraactivity extends Activity {
                 final String type = split[0];
 
                 if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/"
+                    return com.sky.atc.easyformse.utils.AppStorage.root() + "/"
                             + split[1];
                 }
 

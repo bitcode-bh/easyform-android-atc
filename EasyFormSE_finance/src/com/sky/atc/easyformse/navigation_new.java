@@ -83,7 +83,7 @@ public class navigation_new extends FragmentActivity {
 			finish();
 			
 		}
-		// tempDir = Environment.getExternalStorageDirectory() + "/"
+		// tempDir = com.sky.atc.easyformse.utils.AppStorage.root() + "/"
 		// + getResources().getString(R.string.external_dir) + "/";
 		// ContextWrapper cw = new ContextWrapper(getApplicationContext());
 		// File directory = cw.getDir(

@@ -41,7 +41,7 @@ public class LocationReceiver_network extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		// File log=
-		// new File(Environment.getExternalStorageDirectory(),
+		// new File(com.sky.atc.easyformse.utils.AppStorage.root(),
 		// "LocationLog.txt");
 
 		try {

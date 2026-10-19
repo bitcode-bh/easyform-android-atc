@@ -169,7 +169,7 @@ public class BackupFragment extends Fragment {
     private void exportDB(View view) {
         File backupDB = null;
         try {
-            File sd = Environment.getExternalStorageDirectory();
+            File sd = com.sky.atc.easyformse.utils.AppStorage.root();
             File data = Environment.getDataDirectory();
 
             if (sd.canWrite()) {
@@ -207,12 +207,12 @@ public class BackupFragment extends Fragment {
     {
 
         try{
-            File sd = Environment.getExternalStorageDirectory();
+            File sd = com.sky.atc.easyformse.utils.AppStorage.root();
             List<String> filePaths = new ArrayList<>();
             if(sd.canWrite())
             {
 
-                CreatzipFolder = Environment.getExternalStorageDirectory().getPath() + "/EASY_LOG" ;
+                CreatzipFolder = com.sky.atc.easyformse.utils.AppStorage.root().getPath() + "/EASY_LOG" ;
                 // get list of files
                 List<File> fileList = getFileList(new File(CreatzipFolder));
                 //go through the list of files and zip them
@@ -226,7 +226,7 @@ public class BackupFragment extends Fragment {
                 zipFiles(fileList);
 
                 String FolderZip = "EASY_LOG.zip";
-                File mFileShare = new File( Environment.getExternalStorageDirectory().getPath(), FolderZip);
+                File mFileShare = new File( com.sky.atc.easyformse.utils.AppStorage.root().getPath(), FolderZip);
                 if(!mFileShare.exists())
                 {
                     showSnackBar(view, "Backup Failed!");
@@ -234,16 +234,16 @@ public class BackupFragment extends Fragment {
                 }
                 filePaths.add(String.valueOf(mFileShare));
                 // check RfTrack log folder
-                String folderPath = Environment.getExternalStorageDirectory().getPath() + "/RFTrack";
+                String folderPath = com.sky.atc.easyformse.utils.AppStorage.root().getPath() + "/RFTrack";
                 File folder = new File(folderPath);
                 if (folder.exists() && folder.isDirectory()) {
                     // The folder is exist
-                    CreatzipFolder = Environment.getExternalStorageDirectory().getPath() + "/RFTrack" ;
+                    CreatzipFolder = com.sky.atc.easyformse.utils.AppStorage.root().getPath() + "/RFTrack" ;
                     List<File> fileListRf = getFileList(new File(CreatzipFolder));
                     zipFiles(fileListRf);
 
                     String RFTrackZip = "RFTrack.zip";
-                   File  mFileShareRFTrack = new File( Environment.getExternalStorageDirectory().getPath(), RFTrackZip);
+                   File  mFileShareRFTrack = new File( com.sky.atc.easyformse.utils.AppStorage.root().getPath(), RFTrackZip);
                     if(!mFileShareRFTrack.exists())
                     {
                         showSnackBar(view, "RFTrack Backup Failed!");

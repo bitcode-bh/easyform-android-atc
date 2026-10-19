@@ -237,7 +237,7 @@ public class UploadUtils {
     }
 
     public static String getFilename() {
-        File file = new File(Environment.getExternalStorageDirectory().getPath(), "Easy_form/Selected");
+        File file = new File(com.sky.atc.easyformse.utils.AppStorage.root().getPath(), "Easy_form/Selected");
         if (!file.exists()) {
             file.mkdirs();
         }

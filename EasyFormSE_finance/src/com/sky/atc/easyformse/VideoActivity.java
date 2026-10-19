@@ -41,7 +41,7 @@ public class VideoActivity extends AppCompatActivity {
         checkpermission();
 
 
-        File imagesFolder = new File(Environment.getExternalStorageDirectory(),
+        File imagesFolder = new File(com.sky.atc.easyformse.utils.AppStorage.root(),
                 "Error_Easy_Video");
         imagesFolder.mkdirs();
 
@@ -175,7 +175,7 @@ public class VideoActivity extends AppCompatActivity {
     private void setPath(String videopath) {
 
 
-        File sdcard = Environment.getExternalStorageDirectory();
+        File sdcard = com.sky.atc.easyformse.utils.AppStorage.root();
 //        File sdcard = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
         File f_file = new File(sdcard + "/Video_EasyForm/thumbnail");
         f_file.mkdir();

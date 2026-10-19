@@ -206,7 +206,7 @@ public class MainActivity extends Activity {
     //FOR EXPORTING DATABASE MANUALLY
     private void exportDB() {
         try {
-            File sd = Environment.getExternalStorageDirectory();
+            File sd = com.sky.atc.easyformse.utils.AppStorage.root();
             File data = Environment.getDataDirectory();
 
             if (sd.canWrite()) {
@@ -372,7 +372,7 @@ public class MainActivity extends Activity {
     //For importing DATABASE MANUALLY
     private void importDB1() {
         try {
-            File sd = Environment.getExternalStorageDirectory();
+            File sd = com.sky.atc.easyformse.utils.AppStorage.root();
             File data = Environment.getDataDirectory();
             if (sd.canWrite()) {
                 //need to change package name as per user in Database and gradle Here

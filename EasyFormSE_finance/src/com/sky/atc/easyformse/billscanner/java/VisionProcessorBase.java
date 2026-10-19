@@ -179,7 +179,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
   private File getOutputMediaFile(int angley) {
     // To be safe, you should check that the SDCard is mounted
     // using Environment.getExternalStorageState() before doing this.
-    File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+    File mediaStorageDir = new File(com.sky.atc.easyformse.utils.AppStorage.root()
             + "/Android");
 
     // This location works best if you want the created images to be shared
