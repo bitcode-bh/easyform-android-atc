@@ -1,0 +1,57 @@
+/* Reuse the existing colours, radii, type and layout. */
+.phase1-notice {
+    position: fixed;
+    z-index: 20000;
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    left: 16px;
+    right: 16px;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 10px 14px;
+    border-radius: var(--control-radius, 10px);
+    background: var(--listing-surface, #ecedef);
+    color: var(--listing-ink, #0d1829);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 140ms ease-out, transform 140ms ease-out;
+}
+.phase1-notice.is-visible { opacity: 1; transform: none; }
+html.phase1-press a, html.phase1-press button,
+html.phase1-press input[type=button], html.phase1-press input[type=submit],
+html.phase1-press [onclick], html.phase1-press .item-link,
+html.phase1-press .label-checkbox, html.phase1-press .label-radio {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(42, 48, 134, .12);
+}
+html.phase1-press a:active, html.phase1-press button:enabled:active,
+html.phase1-press input[type=button]:enabled:active,
+html.phase1-press input[type=submit]:enabled:active,
+html.phase1-press [onclick]:active, html.phase1-press .item-link:active {
+    opacity: .72;
+}
+/* Framework7 needs transitionend to finish popup cleanup. Reuse the app's
+ * 1 ms fast-panel timing: zero duration leaves closed popups attached. */
+html.phase1-motion .popup { transition-duration: 1ms !important; }
+@keyframes phase1-forward { from { opacity: .8; transform: translateX(22px); } to { opacity: 1; transform: none; } }
+@keyframes phase1-back { from { opacity: .8; transform: translateX(-22px); } to { opacity: 1; transform: none; } }
+html.phase1-motion .page-content.premium-fade-in,
+html.phase1-motion swiper-container.tabs.premium-fade-in,
+html.phase1-motion.home-in .views {
+    animation: phase1-forward 180ms ease-out both;
+}
+html.phase1-motion[data-phase1-direction=back] .page-content.premium-fade-in,
+html.phase1-motion[data-phase1-direction=back] swiper-container.tabs.premium-fade-in,
+html.phase1-motion[data-phase1-direction=back].home-in .views {
+    animation-name: phase1-back;
+}
+@media (prefers-reduced-motion: reduce) {
+    .phase1-notice { transition: none; transform: none; }
+    html .page-content.premium-fade-in, html swiper-container.tabs.premium-fade-in,
+    html.home-in .views { animation: none !important; }
+}
