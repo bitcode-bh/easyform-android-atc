@@ -207,6 +207,8 @@ dependencies {
 
     implementation project(':CordovaLib')
     implementation 'com.google.android.gms:play-services-location:18.0.0'
+    // ML Kit pulls in WorkManager 2.2.0, whose pending intents are rejected at target 31 and above.
+    implementation 'androidx.work:work-runtime:2.9.1'
     implementation 'com.google.firebase:firebase-messaging:17.3.4'
     implementation 'com.google.android.gms:play-services-maps:17.0.1'
     // Marker clustering for the trip site map (PRD FR-21 / §10). Pinned to the
