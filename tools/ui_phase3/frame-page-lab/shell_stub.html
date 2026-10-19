@@ -1,0 +1,17 @@
+<!doctype html>
+<html data-app-shell><head><meta charset="utf-8">
+<script src="../../../EasyFormSE_finance/assets/www2/Plugin_Js/jquery-3.5.1.min.js"></script></head>
+<body>
+<script>
+// Just enough of the shell for the adapter: a Cordova bridge, a registry and changeurl.
+window.cordova = { execs: [], exec: function (ok, fail, service, action) {
+    this.execs.push(service + '.' + action);
+    setTimeout(function () { ok('native:' + action); }, 5);
+} };
+window.registered = {};
+window.AppShell = { register: function (name, definition) { window.registered[name] = definition; } };
+window.navigations = [];
+window.changeurl = function (url, direction) { window.navigations.push([url, direction || null]); };
+</script>
+<script src="../../../EasyFormSE_finance/assets/www2/js/app_frame_pages.js"></script>
+</body></html>

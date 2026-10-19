@@ -38,7 +38,12 @@ document.addEventListener('click', function (event) {
     if (event.target.closest && event.target.closest('.readmore-link')) event.preventDefault();
 }, true);
 if (document.readyState === 'loading') {
-    document.write('<script src="js/phase1_ui.js"><\/script><script src="js/app_shell.js"><\/script><script src="js/app_pages.js"><\/script>');
+    // A form page running in a shell frame (see js/app_frame_pages.js) needs the notices and press
+    // feedback but not a second shell: the one in the parent window does the navigating.
+    var inShellFrame = false;
+    try { inShellFrame = !!(window.frameElement && window.frameElement.classList.contains('app-frame')); } catch (e) { }
+    document.write('<script src="js/phase1_ui.js"><\/script>' + (inShellFrame ? '' :
+        '<script src="js/app_shell.js"><\/script><script src="js/app_pages.js"><\/script><script src="js/app_frame_pages.js"><\/script>'));
 }
 function alert1(alert_msg) {
     if (window.AppPhase1 && AppPhase1.enabled('notices')) {

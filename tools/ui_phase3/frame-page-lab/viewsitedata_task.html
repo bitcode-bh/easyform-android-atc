@@ -1,0 +1,17 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<script src="cordova.js"></script>
+<script src="form_dep.js"></script>
+</head><body>
+<button id="leave" onclick="changeurl('viewsitelist_pm_grouplist.html', 'back')">leave</button>
+<script>
+// Page state the way the real form keeps it: plain globals.
+window.opened_with = (typeof formAnswer === 'undefined') ? 'fresh' : 'stale';
+var formAnswer = 'typed-in-' + location.pathname.split('/').pop();
+window.pathSeen = location.pathname.split('/').pop();
+document.addEventListener('deviceready', function () {
+    window.deviceReadySeen = true;
+    cordova.exec(function (v) { window.execResult = v; }, function () {}, 'Svc', 'hello', []);
+}, true);
+document.addEventListener('backbutton', function () { window.backSeen = (window.backSeen || 0) + 1; }, true);
+</script></body></html>
