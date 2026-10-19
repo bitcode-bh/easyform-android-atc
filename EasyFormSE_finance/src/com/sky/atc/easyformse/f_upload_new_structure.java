@@ -3169,9 +3169,14 @@ public class f_upload_new_structure extends WakefulIntentService {
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
 
+            // A foreground service needs a notification with an icon; a blank one is rejected.
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("")
-                    .setContentText("").build();
+                    .setSmallIcon(R.drawable.atc_logo)
+                    .setContentTitle("Syncing data")
+                    .setPriority(NotificationCompat.PRIORITY_MIN)
+                    .setOngoing(true)
+                    .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                    .build();
 
             startForeground(148, notification);
         }
