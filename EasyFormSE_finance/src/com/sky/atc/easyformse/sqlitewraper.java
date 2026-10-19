@@ -89,6 +89,7 @@ public class sqlitewraper extends MultiDexApplication {
         }
         isMockAvailable = false;
 
+        com.sky.atc.easyformse.utils.EdgeToEdgeOptOut.install(this);
 
         /*Log.d("fakeLocationFlag", fakeLocationFlag + " ");
         if (fakeLocationFlag.equalsIgnoreCase("true")) {
