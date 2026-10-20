@@ -131,7 +131,8 @@
     }
 
     function place(node, frame, rect) {
-        var at = frame.getBoundingClientRect();
+        // The shell slides a new page in too; the bars go where the frame will rest, not where it is mid-slide.
+        var at = settled(w, frame);
         node.style.left = Math.round(at.left + rect.left) + 'px';
         node.style.width = Math.round(rect.width) + 'px';
         node.style.top = Math.round(at.top + rect.top) + 'px';
