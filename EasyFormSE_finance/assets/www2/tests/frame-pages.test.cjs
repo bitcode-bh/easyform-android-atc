@@ -76,3 +76,41 @@ test('Home is not reported ready until its list and nearest-site card are drawn;
     assert.equal(done, true);
     await w.AppFramePages.drawn({ document: {} }, 'LMS_Dashboard.html');
 });
+
+test('a frame page drives the shell\'s one loader, and the shell waits for a page that holds it', async () => {
+    const { w } = load();
+    const calls = [];
+    w.AppLoader = { show: () => calls.push('show'), hide: (a) => calls.push('hide:' + a), busy: () => calls.push('busy'), idle: () => calls.push('idle'), pending: () => true, html: () => '<div id=host>' };
+    const win = {};
+    const state = w.AppFramePages.shareLoader(win);
+    // the page's own app_loader.js assigns its loader (var AppLoader = ...)
+    const own = []; win.AppLoader = { show: () => own.push('show'), hide: () => own.push('hide'), busy: () => own.push('busy'), idle: () => own.push('idle'), pending: () => false, html: () => '<div id=own>' };
+    assert.equal(win.AppLoader.html(), '', 'no second loader is drawn inside the frame');
+    assert.equal(state.held, true);
+    assert.equal(win.AppLoader.pending(), true, 'asks the shell\'s loader');
+    win.AppLoader.show(); win.AppLoader.busy(); win.AppLoader.idle();
+    assert.deepEqual(calls, ['show', 'busy', 'idle']);
+    assert.deepEqual(own, [], 'nothing runs on the frame\'s own loader');
+    let open = false;
+    const waiting = w.AppFramePages.released(state).then(() => { open = true; });
+    await new Promise(r => setTimeout(r, 100));
+    assert.equal(open, false, 'held until the page says it is ready');
+    win.AppLoader.hide(250);
+    await waiting;
+    assert.equal(open, true);
+    assert.deepEqual(calls.slice(-1), ['hide:250']);
+});
+
+test('a page that does not ask for the loader is not held, and without a shell loader the page keeps its own', async () => {
+    const { w } = load();
+    w.AppLoader = { show() { }, hide() { }, html: () => 'x', pending: () => false };
+    const win = {}; const state = w.AppFramePages.shareLoader(win);
+    win.AppLoader = { show() { }, hide() { }, html: () => 'own', pending: () => false };
+    await w.AppFramePages.released(state);   // returns at once: nothing was held
+    const { w: w2 } = load();
+    const own = { html: () => '<own>', pending: () => true, show: () => 'shown', hide: () => 'hid' };
+    const win2 = {}; w2.AppFramePages.shareLoader(win2); win2.AppLoader = own;
+    assert.equal(win2.AppLoader.html(), '<own>');
+    assert.equal(win2.AppLoader.pending(), true);
+    assert.equal(win2.AppLoader.show(), 'shown');
+});

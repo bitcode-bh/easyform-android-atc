@@ -33,6 +33,40 @@
     var cordovaTag = /<script\b[^>]*\bsrc\s*=\s*(["'])(?:[^"']*\/)?cordova(?:_plugins)?\.js(?:\?[^"']*)?\1[^>]*>\s*<\/script>/gi;
     function prepare(source) { return String(source).replace(cordovaTag, ''); }
 
+    // A page in a frame used to draw its own loading animation inside its own frame, so a page change swapped one
+    // loader for another and the animation restarted (a flick). The frame's AppLoader now drives the shell's one loader.
+    // A page that asks for the loader as it opens (AppLoader.html()) is holding it until it calls hide(): the shell
+    // waits for that before showing the page.
+    function shareLoader(win) {
+        var state = { held: false, released: false }, proxy = null;
+        function host() { return w.AppLoader; }
+        function call(name, args) { var h = host(); return h && typeof h[name] === 'function' ? h[name].apply(h, args) : undefined; }
+        try {
+            Object.defineProperty(win, 'AppLoader', {
+                configurable: true,
+                get: function () { return proxy; },
+                set: function (real) {
+                    proxy = {};
+                    Object.keys(real || {}).forEach(function (name) { if (typeof real[name] === 'function') proxy[name] = function () { return call(name, arguments); }; });
+                    proxy.html = function () { if (!host()) return real.html(); state.held = true; return ''; };
+                    proxy.pending = function () { return host() ? !!call('pending', []) : real.pending(); };
+                    proxy.show = function () { state.released = false; return host() ? call('show', arguments) : real.show(); };
+                    proxy.hide = function () { state.released = true; return host() ? call('hide', arguments) : real.hide.apply(real, arguments); };
+                }
+            });
+        } catch (e) { }
+        return state;
+    }
+    function released(state) {
+        return new Promise(function (resolve) {
+            var waited = 0;
+            (function look() {
+                if (!state.held || state.released || waited >= DRAWN_WAIT) return resolve();
+                waited += 40; setTimeout(look, 40);
+            })();
+        });
+    }
+
     // What a page draws last, for the pages whose content comes from the database a moment after the page loads.
     // The shell keeps its loader up until this is on screen, so the page does not open blank and fill in.
     var DRAWN = {
@@ -106,7 +140,7 @@
                                                 doc.dispatchEvent(event(doc, 'deviceready'));
                                                 // The shell's own top and bottom bars take over the page's bars.
                                                 if (w.AppChrome) entry.chrome = w.AppChrome.attach(win, frame);
-                                                drawn(win, context.route).then(function () { done(); });
+                                                Promise.all([drawn(win, context.route), released(loader)]).then(function () { done(); });
                                             } catch (error) { done(error); }
                                         })();
                                     } catch (error) { done(error); }
@@ -117,6 +151,7 @@
                                     // document.open() is not a page load, so Android does not inject them again.
                                     native.forEach(function (name) { if (w[name] !== undefined) win[name] = w[name]; });
                                     // The page's scripts run when the document closes, so catch jQuery as the page assigns it.
+                                    var loader = shareLoader(win);
                                     var jq; try { Object.defineProperty(win, 'jQuery', { configurable: true, get: function () { return jq; }, set: function (copy) { jq = copy; if (copy && copy.holdReady && held.indexOf(copy) < 0) { copy.holdReady(true); held.push(copy); } } }); } catch (e) { }
                                     doc.open();
                                     // The page reads its own file name from the address, so the frame reports the page it is.
@@ -148,6 +183,6 @@
         };
     }
 
-    w.AppFramePages = { pages: pages, prepare: prepare, native: native, drawn: drawn, adapter: function (name) { return define(name).load(); } };
+    w.AppFramePages = { pages: pages, prepare: prepare, native: native, drawn: drawn, shareLoader: shareLoader, released: released, adapter: function (name) { return define(name).load(); } };
     if (w.AppShell) pages.forEach(function (name) { w.AppShell.register(name, define(name)); });
 })(window, document);
