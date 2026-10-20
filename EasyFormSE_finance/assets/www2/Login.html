@@ -221,7 +221,9 @@
                 AppLoader.show();
                 try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'navColor', ['#ECEDEF', true]); } catch (e) { }
                 try { cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'pageColor', ['#ECEDEF']); } catch (e) { }
-                setTimeout(function () { window.location.href = url; }, 220);
+                // Through the normal route, which goes straight into the shell. Loading selection.html on its own first
+                // drew Home as a plain page, then threw it away for the shell (a second load and a white flash between).
+                setTimeout(function () { changeurl_base(url); }, 220);
             };
         })();
 

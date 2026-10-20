@@ -1,4 +1,5 @@
-html[data-app-shell], html[data-app-shell] body { background: var(--app-page); color: var(--app-ink); }
+/* The page on top always has its own background; what shows while the shell starts is the loader's grey, not a white flash before it. */
+html[data-app-shell], html[data-app-shell] body { background: #ecedef; color: var(--app-ink); }
 html[data-app-shell] body { font-family: var(--app-font); font-size: var(--app-text); }
 #app-shell-pages { overflow: hidden; }
 .app-shell-page { background: var(--app-page); }
