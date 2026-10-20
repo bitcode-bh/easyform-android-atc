@@ -179,9 +179,10 @@
             ['top', 'bottom'].forEach(function (kind) {
                 var selector = kind === 'top' ? '.navbar' : '.toolbar';
                 var previous = sources[kind];
-                if (previous) { previous.style.removeProperty('opacity'); previous.style.removeProperty('pointer-events'); }
                 var source = null;
                 try { source = bar(kind, win, frame, selector); } catch (e) { source = null; w.console.error('MWFM chrome:', e.message); }
+                // Only let go of a bar that is no longer the one on show; re-writing the same style would wake the observer below.
+                if (previous && previous !== source) { previous.style.removeProperty('opacity'); previous.style.removeProperty('pointer-events'); }
                 sources[kind] = source; current[kind] = !!source;
                 if (!source && containers[kind]) containers[kind].hidden = true;
             });
@@ -192,7 +193,10 @@
         ['top', 'bottom'].forEach(function (kind) {
             var source = sources[kind];
             if (!source) return;
-            var observer = new w.MutationObserver(later);
+            // The shell itself writes opacity/pointer-events on the page's bar; that must not count as the page changing it.
+            var observer = new w.MutationObserver(function (records) {
+                if (records.some(function (r) { return !(r.target === source && r.attributeName === 'style'); })) later();
+            });
             observer.observe(source, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['class', 'style', 'src', 'hidden', 'disabled'] });
             watchers.push(observer);
         });

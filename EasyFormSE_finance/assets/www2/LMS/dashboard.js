@@ -394,6 +394,8 @@ function render_lms_trend_chart() {
     if (lms_module_chart_metric === 'score') { seriesName = 'Score'; tooltipSuffix = '%'; yMax = 100; }
     else if (lms_module_chart_metric === 'watchtime') { seriesName = 'Watch time (min)'; tooltipSuffix = ' min'; }
     else { seriesName = 'Lessons completed'; }
+    // Nothing to plot: the chart library has no range to scale and prints "Infinity" on the axis.
+    if (!yMax && !data.some(function (v) { return v > 0; })) yMax = 1;
 
     var rangeLabelEl = document.getElementById('lms_trend_range_label');
     if (rangeLabelEl) { rangeLabelEl.textContent = lms_trend_label_fmt(range.start) + ' – ' + lms_trend_label_fmt(range.end); }
@@ -451,6 +453,7 @@ function render_lms_assessment_trend_chart() {
     if (lms_assessment_chart_metric === 'score') { seriesName = 'Score'; tooltipSuffix = '%'; yMax = 100; }
     else if (lms_assessment_chart_metric === 'timespent') { seriesName = 'Time spent (min)'; tooltipSuffix = ' min'; }
     else { seriesName = 'Completions'; }
+    if (!yMax && !data.some(function (v) { return v > 0; })) yMax = 1;
 
     var rangeLabelEl = document.getElementById('lms_trend_range_label');
     if (rangeLabelEl) { rangeLabelEl.textContent = lms_trend_label_fmt(range.start) + ' – ' + lms_trend_label_fmt(range.end); }
@@ -738,7 +741,7 @@ function render_lms_ml_watch_trend_chart() {
         chart: { type: 'area', height: 260, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'inherit', animations: { speed: 300 } },
         series: [{ name: 'Watch time (min)', data: minutes }],
         xaxis: { categories: categories, labels: { rotate: 0, style: { fontSize: '11px' } }, tooltip: { enabled: false }, axisBorder: { show: false }, axisTicks: { show: false } },
-        yaxis: { min: 0, forceNiceScale: true, labels: { style: { fontSize: '11px' } } },
+        yaxis: { min: 0, max: minutes.some(function (v) { return v > 0; }) ? undefined : 1, forceNiceScale: true, labels: { style: { fontSize: '11px' } } },
         colors: ['#2a3086'],
         stroke: { curve: 'smooth', width: 2.5 },
         fill: { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.02, shadeIntensity: 1 } },
