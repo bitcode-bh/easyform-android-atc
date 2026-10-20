@@ -17,6 +17,9 @@ buildscript {
 //        classpath 'io.michaelrocks:paranoid-gradle-plugin:0.3.5'
         classpath 'com.google.ar.sceneform:plugin:1.17.1'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.1'
+        // The new native app (:next); the old modules do not use Kotlin.
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21'
+        classpath 'org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.0.21'
 
     }
     allprojects {
@@ -35,10 +38,12 @@ buildscript {
 
         configurations.all {
             resolutionStrategy {
-                // Force Kotlin versions
-                force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.10'
-                force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
-                force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10'
+                // Force Kotlin versions (the old app's modules; :next brings its own current Kotlin)
+                if (project.path != ':next') {
+                    force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.10'
+                    force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
+                    force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10'
+                }
 
                 // Force React / Hermes versions
                 eachDependency { DependencyResolveDetails details ->
