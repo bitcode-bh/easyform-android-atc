@@ -4,7 +4,10 @@ data class NearestSite(val name: String, val distanceKm: Double, val onSite: Boo
 
 data class ModuleItem(val code: String, val name: String)
 
-data class HomeState(val userName: String, val nearest: NearestSite?, val modules: List<ModuleItem>)
+data class HomeState(
+    val userName: String, val nearest: NearestSite?, val modules: List<ModuleItem>,
+    val loading: Boolean = false, val error: String? = null,
+)
 
 data class LmsSummary(
     val lessonsDone: Int, val lessonsTotal: Int, val avgScorePercent: Int,

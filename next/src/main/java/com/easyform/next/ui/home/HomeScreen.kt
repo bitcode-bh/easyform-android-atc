@@ -2,19 +2,23 @@ package com.easyform.next.ui.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -22,12 +26,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.easyform.next.data.HomeRepository
 import com.easyform.next.data.HomeState
-import com.easyform.next.data.SampleHomeRepository
+import com.easyform.next.data.NearestSite
+import com.easyform.next.data.auth.Session
+import com.easyform.next.data.flow.FlowRepository
+import com.easyform.next.data.net.ApiException
 import com.easyform.next.ui.components.AppCard
 import com.easyform.next.ui.components.RowDivider
 import com.easyform.next.ui.components.SectionTitle
@@ -36,42 +43,82 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
-class HomeViewModel(repository: HomeRepository) : ViewModel() {
-    val state = repository.home.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+private data class Fetch(val loading: Boolean = false, val error: String? = null)
+
+/** Home: what the phone already has shows at once; the server refresh runs behind it and reports only if it fails. */
+class HomeViewModel(private val session: Session, private val flows: FlowRepository) : ViewModel() {
+    private val fetch = MutableStateFlow(Fetch())
+    val state = combine(flows.modules, fetch) { modules, f ->
+        HomeState(session.username, null, modules, f.loading, f.error)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeState(session.username, null, emptyList(), loading = true))
+
+    init {
+        flows.loadLocal(session)
+        refresh()
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            fetch.value = Fetch(loading = true)
+            fetch.value = try { flows.refresh(session); Fetch() } catch (e: ApiException) { Fetch(error = e.message) }
+        }
+    }
 }
 
 @Composable
-fun HomeScreen(userName: String, onSignOut: () -> Unit, modifier: Modifier = Modifier) {
-    val vm: HomeViewModel = viewModel(factory = viewModelFactory { initializer { HomeViewModel(SampleHomeRepository(userName)) } })
+fun HomeScreen(session: Session, flows: FlowRepository, onSignOut: () -> Unit, modifier: Modifier = Modifier) {
+    val vm: HomeViewModel = viewModel(factory = viewModelFactory { initializer { HomeViewModel(session, flows) } })
     val state by vm.state.collectAsStateWithLifecycle()
-    state?.let { HomeContent(it, onSignOut, modifier) }
+    HomeContent(state, onSignOut, vm::refresh, modifier)
 }
 
 @Composable
-fun HomeContent(state: HomeState, onSignOut: () -> Unit, modifier: Modifier = Modifier) {
+fun HomeContent(state: HomeState, onSignOut: () -> Unit, onRetry: () -> Unit, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item { Greeting(state.userName, onSignOut) }
         state.nearest?.let { site -> item { NearestSiteCard(site) } }
         item { SectionTitle("MODULES") }
-        item {
-            AppCard {
-                Column {
-                    state.modules.forEachIndexed { index, module ->
-                        TitledRow(title = module.code, subtitle = module.name, mark = module.code.take(2))
-                        if (index < state.modules.lastIndex) RowDivider()
+        when {
+            state.modules.isNotEmpty() -> item {
+                AppCard {
+                    Column {
+                        state.modules.forEachIndexed { index, module ->
+                            TitledRow(title = module.code, subtitle = module.name, mark = module.code.take(2))
+                            if (index < state.modules.lastIndex) RowDivider()
+                        }
                     }
                 }
             }
+            state.loading -> item { Notice { CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp); Text("Loading your modules…") } }
+            state.error != null -> item {
+                Notice {
+                    Column {
+                        Text(state.error, color = MaterialTheme.colorScheme.error)
+                        TextButton(onClick = onRetry) { Text("Try again") }
+                    }
+                }
+            }
+            else -> item { Notice { Text("No modules are set up for this user.") } }
+        }
+        if (state.modules.isNotEmpty() && state.error != null) item {
+            Text("Showing what is on the phone. ${state.error}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
+}
+
+@Composable
+private fun Notice(content: @Composable () -> Unit) {
+    AppCard { Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) { content() } }
 }
 
 @Composable
@@ -87,14 +134,14 @@ private fun Greeting(user: String, onSignOut: () -> Unit) {
             )
         }
         Icon(Icons.Filled.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.onSurface)
-        androidx.compose.material3.IconButton(onClick = onSignOut) {
+        IconButton(onClick = onSignOut) {
             Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Sign out", tint = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
 
 @Composable
-private fun NearestSiteCard(site: com.easyform.next.data.NearestSite) {
+private fun NearestSiteCard(site: NearestSite) {
     AppCard {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("NEAREST SITE", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -108,21 +155,6 @@ private fun NearestSiteCard(site: com.easyform.next.data.NearestSite) {
                     )
                 }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                site.others.take(3).forEach { (name, km) ->
-                    AppCardMini(name, String.format(Locale.getDefault(), "%.1f km", km), Modifier.weight(1f))
-                }
-            }
         }
-    }
-}
-
-@Composable
-private fun AppCardMini(title: String, detail: String, modifier: Modifier = Modifier) {
-    Column(
-        modifier.padding(0.dp),
-    ) {
-        Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
-        Text(detail, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

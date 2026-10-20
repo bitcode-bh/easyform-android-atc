@@ -46,13 +46,16 @@ class AuthRepository(private val context: Context, private val api: Api, val ses
                 if (com.easyform.next.BuildConfig.DEBUG) android.util.Log.d("MwfmLogin", "refused: status=" + reply.optString("status", reply.optString("Status")) + " message=" + reply.serverMessage())
                 return LoginResult.Failed(reply.serverMessage())
             }
+            val roles = reply.optString("role_id_array", "").replace(Regex("[\\[\\]\"\\s]"), "").split(",").filter { it.isNotEmpty() }
             val session = Session(
                 username = user,
                 uniqueCode = reply.optString("Uniq_Code", ""),
                 userId = reply.optString("user_id", "0"),
                 companyId = reply.optString("Company_id", "0"),
                 appId = reply.optString("appid", reply.optString("AppId", "0")),
-                roleId = reply.optString("role_id", "0"),
+                // The role the server's headers carry is the first of the user's roles (as the old app does).
+                roleId = roles.firstOrNull() ?: reply.optString("role_id", "0"),
+                roleIds = roles.joinToString(",").ifEmpty { "0" },
                 companyFeatureId = reply.optString("company_feature_id", "0"),
                 deviceId = deviceId,
                 serverMillis = reply.optString("servermilli", reply.optString("ServerMilli", "0")),

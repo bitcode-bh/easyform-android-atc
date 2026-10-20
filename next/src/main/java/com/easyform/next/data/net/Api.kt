@@ -59,6 +59,40 @@ class Api(private val http: OkHttpClient = defaultClient()) {
         first
     }
 
+    /**
+     * The download calls: GET with the request in the Data parameter, the user in headers, and a reply that is a run of
+     * {"status":..,"message":..} objects. Returns each object's status and its message text.
+     */
+    suspend fun download(url: String, auth: Auth, handle: (status: String, message: String) -> Unit) = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(url).get()
+            .header("auth1", JSONObject().put("username", auth.username).put("u_c", auth.uniqueCode).put("appid", auth.appId).put("user_id", auth.userId).toString())
+            .header("uname", auth.username).header("u_c", auth.uniqueCode)
+            .header("Role_Id", auth.roleId).header("Company_Feature_Id", auth.companyFeatureId)
+            .build()
+        try {
+            http.newCall(request).execute().use { response ->
+                if (response.code != 200) throw ApiException(ApiException.Kind.Http, "The server could not complete the request (HTTP ${response.code}). Please try again shortly.")
+                val body = response.body ?: throw ApiException(ApiException.Kind.BadResponse, "The server sent an empty reply.")
+                android.util.JsonReader(body.charStream()).use { reader ->
+                    reader.isLenient = true
+                    while (reader.peek() != android.util.JsonToken.END_DOCUMENT) {
+                        var status = ""; var message = ""
+                        reader.beginObject()
+                        while (reader.hasNext()) when (reader.nextName()) {
+                            "status", "Status" -> status = reader.nextString()
+                            "message", "Message" -> message = reader.nextString()
+                            else -> reader.skipValue()
+                        }
+                        reader.endObject()
+                        handle(status, message)
+                    }
+                }
+            }
+        } catch (e: java.io.IOException) {
+            throw ApiException(ApiException.Kind.Offline, "No connection to the server. Check the network and try again.")
+        }
+    }
+
     companion object {
         fun defaultClient(): OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS).writeTimeout(60, TimeUnit.SECONDS).build()
