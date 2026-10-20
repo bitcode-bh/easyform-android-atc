@@ -10,7 +10,7 @@ function load(shell) {
     const registered = {};
     const w = { jQuery: {}, console, AppShell: { register: (name, def) => { registered[name] = def; } } };
     if (shell === false) delete w.AppShell;
-    vm.runInContext(source, vm.createContext({ window: w, document: {}, Promise }));
+    vm.runInContext(source, vm.createContext({ window: w, document: {}, Promise, setTimeout }));
     return { w, registered };
 }
 
@@ -57,4 +57,22 @@ test('every Java object injected into the web page is shared with the frame', ()
     const { w } = load();
     for (const name of injected) assert.ok(w.AppFramePages.native.includes(name), name + ' must be shared into the frame');
     assert.ok(w.AppFramePages.native.includes('_cordovaNative'));
+});
+
+test('Home is not reported ready until its list and nearest-site card are drawn; other pages are ready at once', async () => {
+    const { w } = load();
+    const kids = (n) => ({ children: { length: n } });
+    const nodes = { module_list: kids(0), div_home_hero: kids(0) };
+    const win = { document: { getElementById: (id) => nodes[id] } };
+    let done = false;
+    const waiting = w.AppFramePages.drawn(win, 'selection.html').then(() => { done = true; });
+    await new Promise(r => setTimeout(r, 100));
+    assert.equal(done, false, 'still empty: keep waiting');
+    nodes.module_list = kids(12);
+    await new Promise(r => setTimeout(r, 100));
+    assert.equal(done, false, 'the list alone is not enough');
+    nodes.div_home_hero = kids(1);
+    await waiting;
+    assert.equal(done, true);
+    await w.AppFramePages.drawn({ document: {} }, 'LMS_Dashboard.html');
 });

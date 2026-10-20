@@ -282,7 +282,8 @@
         next.root.style.visibility = '';
         next.root.removeAttribute('aria-hidden');
         next.root.setAttribute('data-shell-direction', direction);
-        if (reducedMotion()) return Promise.resolve();
+        // The first page opens under the loader, which is already the transition; a fade-in as well left it blank for a moment.
+        if (reducedMotion() || !previous) return Promise.resolve();
         next.root.classList.add('app-shell-enter');
         if (previous) { previous.root.setAttribute('data-shell-direction', direction); previous.root.classList.add('app-shell-leave'); }
         return new Promise(function (resolve) { setTimeout(resolve, 190); });

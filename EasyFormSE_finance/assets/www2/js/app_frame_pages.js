@@ -33,6 +33,29 @@
     var cordovaTag = /<script\b[^>]*\bsrc\s*=\s*(["'])(?:[^"']*\/)?cordova(?:_plugins)?\.js(?:\?[^"']*)?\1[^>]*>\s*<\/script>/gi;
     function prepare(source) { return String(source).replace(cordovaTag, ''); }
 
+    // What a page draws last, for the pages whose content comes from the database a moment after the page loads.
+    // The shell keeps its loader up until this is on screen, so the page does not open blank and fill in.
+    var DRAWN = {
+        'selection.html': function (doc) {
+            var list = doc.getElementById('module_list'), hero = doc.getElementById('div_home_hero');
+            return !!(list && list.children.length && hero && hero.children.length);
+        }
+    };
+    var DRAWN_WAIT = 1500;
+    function drawn(win, route) {
+        var check = DRAWN[String(route).split(/[?#]/)[0]];
+        if (!check) return Promise.resolve();
+        return new Promise(function (resolve) {
+            var waited = 0;
+            (function look() {
+                var ready = false;
+                try { ready = check(win.document); } catch (e) { ready = true; }
+                if (ready || waited >= DRAWN_WAIT) return resolve();
+                waited += 40; setTimeout(look, 40);
+            })();
+        });
+    }
+
     function event(doc, name) {
         var created = doc.createEvent('Event');
         created.initEvent(name, true, true);
@@ -83,7 +106,7 @@
                                                 doc.dispatchEvent(event(doc, 'deviceready'));
                                                 // The shell's own top and bottom bars take over the page's bars.
                                                 if (w.AppChrome) entry.chrome = w.AppChrome.attach(win, frame);
-                                                done();
+                                                drawn(win, context.route).then(function () { done(); });
                                             } catch (error) { done(error); }
                                         })();
                                     } catch (error) { done(error); }
@@ -125,6 +148,6 @@
         };
     }
 
-    w.AppFramePages = { pages: pages, prepare: prepare, native: native, adapter: function (name) { return define(name).load(); } };
+    w.AppFramePages = { pages: pages, prepare: prepare, native: native, drawn: drawn, adapter: function (name) { return define(name).load(); } };
     if (w.AppShell) pages.forEach(function (name) { w.AppShell.register(name, define(name)); });
 })(window, document);

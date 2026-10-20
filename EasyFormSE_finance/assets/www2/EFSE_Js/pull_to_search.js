@@ -30,7 +30,9 @@
             clearInterval(bindInterval);
             return;
         }
-        if (typeof myApp === 'undefined' || typeof Dom7 === 'undefined') {
+        // Looked up now, not when this script loaded: the page makes myApp after its scripts have run.
+        var myApp = options.services ? options.services.app : w.myApp;
+        if (!myApp || typeof Dom7 === 'undefined') {
             return;
         }
         clearInterval(bindInterval);
@@ -38,7 +40,7 @@
         var $$ = Dom7;
 
         // Bind on the existing element right now
-        var ptrEl = $(document.querySelectorAll('.pull-to-refresh-content'));
+        var ptrEl = $$(document.querySelectorAll('.pull-to-refresh-content'));
         if (ptrEl.length > 0) {
             ptrEl.on('refresh', function (e) {
                 // Immediately finish the pull-to-refresh animation
@@ -166,8 +168,8 @@
         var listItems = document.querySelectorAll('#module_list > li');
         for (var i = 0; i < listItems.length; i++) {
             var item = listItems[i];
-            var titleEl = item.querySelector('.item-title') || item;
-            var text = (titleEl.textContent || titleEl.innerText || '').toLowerCase();
+            // The whole row, so a module is found by its name under the code as well as by the code.
+            var text = (item.textContent || item.innerText || '').toLowerCase();
             item.style.display = text.indexOf(query) > -1 || query === '' ? '' : 'none';
         }
 
