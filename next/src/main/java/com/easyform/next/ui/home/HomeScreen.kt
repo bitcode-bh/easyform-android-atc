@@ -31,14 +31,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.easyform.next.data.HomeState
+import com.easyform.next.data.ModuleItem
 import com.easyform.next.data.NearestSite
 import com.easyform.next.data.auth.Session
 import com.easyform.next.data.flow.FlowRepository
 import com.easyform.next.data.net.ApiException
 import com.easyform.next.ui.components.AppCard
-import com.easyform.next.ui.components.RowDivider
 import com.easyform.next.ui.components.SectionTitle
-import com.easyform.next.ui.components.TitledRow
+import com.easyform.next.ui.modules.ModuleCard
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -54,32 +54,31 @@ private data class Fetch(val loading: Boolean = false, val error: String? = null
 /** Home: what the phone already has shows at once; the server refresh runs behind it and reports only if it fails. */
 class HomeViewModel(private val session: Session, private val flows: FlowRepository) : ViewModel() {
     private val fetch = MutableStateFlow(Fetch())
-    val state = combine(flows.modules, fetch) { modules, f ->
-        HomeState(session.username, null, modules, f.loading, f.error)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeState(session.username, null, emptyList(), loading = true))
+    val state = combine(flows.version, fetch) { _, f ->
+        HomeState(session.username, null, flows.children(session, 0), f.loading, f.error)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeState(session.username, null, flows.children(session, 0), loading = true))
 
-    init {
-        flows.loadLocal(session)
-        refresh()
-    }
+    init { refresh() }
 
     fun refresh() {
         viewModelScope.launch {
             fetch.value = Fetch(loading = true)
             fetch.value = try { flows.refresh(session); Fetch() } catch (e: ApiException) { Fetch(error = e.message) }
+            // The checksheets are bigger; they come after the modules are on screen.
+            try { flows.refreshChecksheets(session) } catch (e: ApiException) { /* shown when a flow needs one */ }
         }
     }
 }
 
 @Composable
-fun HomeScreen(session: Session, flows: FlowRepository, onSignOut: () -> Unit, modifier: Modifier = Modifier) {
+fun HomeScreen(session: Session, flows: FlowRepository, onSignOut: () -> Unit, onOpen: (ModuleItem) -> Unit, modifier: Modifier = Modifier) {
     val vm: HomeViewModel = viewModel(factory = viewModelFactory { initializer { HomeViewModel(session, flows) } })
     val state by vm.state.collectAsStateWithLifecycle()
-    HomeContent(state, onSignOut, vm::refresh, modifier)
+    HomeContent(state, onSignOut, vm::refresh, onOpen, modifier)
 }
 
 @Composable
-fun HomeContent(state: HomeState, onSignOut: () -> Unit, onRetry: () -> Unit, modifier: Modifier = Modifier) {
+fun HomeContent(state: HomeState, onSignOut: () -> Unit, onRetry: () -> Unit, onOpen: (ModuleItem) -> Unit, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -89,16 +88,7 @@ fun HomeContent(state: HomeState, onSignOut: () -> Unit, onRetry: () -> Unit, mo
         state.nearest?.let { site -> item { NearestSiteCard(site) } }
         item { SectionTitle("MODULES") }
         when {
-            state.modules.isNotEmpty() -> item {
-                AppCard {
-                    Column {
-                        state.modules.forEachIndexed { index, module ->
-                            TitledRow(title = module.code, subtitle = module.name, mark = module.code.take(2))
-                            if (index < state.modules.lastIndex) RowDivider()
-                        }
-                    }
-                }
-            }
+            state.modules.isNotEmpty() -> item { ModuleCard(state.modules, onOpen) }
             state.loading -> item { Notice { CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp); Text("Loading your modules…") } }
             state.error != null -> item {
                 Notice {

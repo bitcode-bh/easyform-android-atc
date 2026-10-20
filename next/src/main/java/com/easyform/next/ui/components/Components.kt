@@ -47,9 +47,21 @@ fun StatTile(label: String, value: String, modifier: Modifier = Modifier, icon: 
     }
 }
 
+/** The round letters shown when a row has no icon of its own. */
+@Composable
+fun Mark(text: String) {
+    Box(
+        Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)),
+        contentAlignment = Alignment.Center,
+    ) { Text(text, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) }
+}
+
 /** A title and a quiet line under it, with an optional leading mark; module rows, lesson rows, trip rows. */
 @Composable
-fun TitledRow(title: String, subtitle: String, modifier: Modifier = Modifier, mark: String? = null, onClick: (() -> Unit)? = null) {
+fun TitledRow(
+    title: String, subtitle: String, modifier: Modifier = Modifier, mark: String? = null, onClick: (() -> Unit)? = null,
+    leading: (@Composable () -> Unit)? = null,
+) {
     Row(
         modifier = modifier.fillMaxWidth()
             .let { if (onClick != null) it.clickable(onClick = onClick) else it }
@@ -57,15 +69,10 @@ fun TitledRow(title: String, subtitle: String, modifier: Modifier = Modifier, ma
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        if (mark != null) {
-            Box(
-                Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)),
-                contentAlignment = Alignment.Center,
-            ) { Text(mark, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) }
-        }
+        if (leading != null) leading() else if (mark != null) Mark(mark)
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (subtitle.isNotBlank()) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

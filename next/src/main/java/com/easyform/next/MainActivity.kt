@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
                     val vm: LoginViewModel = viewModel(factory = viewModelFactory { initializer { LoginViewModel(container.auth) } })
                     LoginScreen(vm)
                 } else {
-                    AppNav(session = current, flows = container.flows, onSignOut = container.auth::signOut)
+                    AppNav(session = current, flows = container.flows, forms = container.forms, onSignOut = container.auth::signOut)
                 }
                 }
             }
