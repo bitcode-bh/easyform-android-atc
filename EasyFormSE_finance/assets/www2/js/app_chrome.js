@@ -138,10 +138,21 @@
         node.style.height = Math.round(rect.height) + 'px';
     }
 
+    // Where the bar will rest. A page slides its bars in when it opens; copying them mid-slide
+    // left the shell bars offset until the next look, so the slide is taken back out of the position.
+    function settled(win, source) {
+        var box = source.getBoundingClientRect(), x = 0, y = 0;
+        for (var node = source; node && node.nodeType === 1; node = node.parentNode) {
+            var transform = win.getComputedStyle(node).transform;
+            if (transform && transform !== 'none') { try { var m = new win.DOMMatrix(transform); x += m.m41; y += m.m42; } catch (e) { } }
+        }
+        return { left: box.left - x, top: box.top - y, width: box.width, height: box.height };
+    }
+
     function bar(kind, win, frame, selector) {
         var source = first(win.document, selector);
         if (!source) return null;
-        var rect = source.getBoundingClientRect();
+        var rect = settled(win, source);
         if (!rect.height || win.getComputedStyle(source).display === 'none') return null;
         if (source.querySelector(LIVE)) return null;
         var node = container(kind), clone = copy(win, source, true);
