@@ -16,10 +16,10 @@ interface LmsRepository {
 }
 
 /** Sample data in the shapes above, until the real sources are connected. Not shipped. */
-class SampleHomeRepository : HomeRepository {
+class SampleHomeRepository(userName: String = "user") : HomeRepository {
     private val state = MutableStateFlow(
         HomeState(
-            userName = "anup.vt",
+            userName = userName,
             nearest = NearestSite("Site 83750", 128.4, false, listOf("80095" to 129.2, "65811" to 131.0, "64242" to 131.3, "65743" to 131.3)),
             modules = listOf(
                 ModuleItem("RSA", "Remote Site Audit"), ModuleItem("PM", "PM"), ModuleItem("PTW", "Permit To Work"),

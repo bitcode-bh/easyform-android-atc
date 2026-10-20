@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
@@ -44,20 +45,20 @@ class HomeViewModel(repository: HomeRepository) : ViewModel() {
 }
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
-    val vm: HomeViewModel = viewModel(factory = viewModelFactory { initializer { HomeViewModel(SampleHomeRepository()) } })
+fun HomeScreen(userName: String, onSignOut: () -> Unit, modifier: Modifier = Modifier) {
+    val vm: HomeViewModel = viewModel(factory = viewModelFactory { initializer { HomeViewModel(SampleHomeRepository(userName)) } })
     val state by vm.state.collectAsStateWithLifecycle()
-    state?.let { HomeContent(it, modifier) }
+    state?.let { HomeContent(it, onSignOut, modifier) }
 }
 
 @Composable
-fun HomeContent(state: HomeState, modifier: Modifier = Modifier) {
+fun HomeContent(state: HomeState, onSignOut: () -> Unit, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier.fillMaxSize(),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        item { Greeting(state.userName) }
+        item { Greeting(state.userName, onSignOut) }
         state.nearest?.let { site -> item { NearestSiteCard(site) } }
         item { SectionTitle("MODULES") }
         item {
@@ -74,7 +75,7 @@ fun HomeContent(state: HomeState, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun Greeting(user: String) {
+private fun Greeting(user: String, onSignOut: () -> Unit) {
     val hour = LocalTime.now().hour
     val part = when { hour < 12 -> "morning"; hour < 17 -> "afternoon"; else -> "evening" }
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -86,6 +87,9 @@ private fun Greeting(user: String) {
             )
         }
         Icon(Icons.Filled.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.onSurface)
+        androidx.compose.material3.IconButton(onClick = onSignOut) {
+            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Sign out", tint = MaterialTheme.colorScheme.onSurface)
+        }
     }
 }
 

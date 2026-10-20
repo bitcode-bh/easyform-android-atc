@@ -38,7 +38,7 @@ private enum class Tab(val route: String, val label: String, val on: ImageVector
 
 /** One activity, one back stack. A tab keeps its state when you leave it and come back (no rebuild, no loader). */
 @Composable
-fun AppNav() {
+fun AppNav(userName: String, onSignOut: () -> Unit) {
     val nav = rememberNavController()
     val entry by nav.currentBackStackEntryAsState()
     Scaffold(
@@ -63,7 +63,7 @@ fun AppNav() {
         },
     ) { padding ->
         NavHost(nav, startDestination = Tab.Home.route, modifier = Modifier.padding(padding)) {
-            composable(Tab.Home.route) { HomeScreen() }
+            composable(Tab.Home.route) { HomeScreen(userName, onSignOut) }
             composable(Tab.StartTrip.route) { NotBuiltYet("Start Trip", "phase 8 (trip tracking)") }
             composable(Tab.Trips.route) { NotBuiltYet("Trips", "phase 3 (trip list)") }
             composable(Tab.Lms.route) { LmsScreen() }
