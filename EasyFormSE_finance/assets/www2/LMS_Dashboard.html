@@ -749,8 +749,28 @@
     <!-- Framework7 JS -->
     <!--<script src="https://cdn.jsdelivr.net/npm/framework7@9.0.3/framework7-bundle.min.js"></script>-->
     <script src="LMS/Framework7_9.0.3.js"></script>
+    <script src="LMS/f7_theme_css.js"></script>
 
     <script>
+        // Framework7 works out its whole Material colour theme (about a quarter of a second on the phone) each time the page
+        // opens. It only depends on the colours, so the finished CSS is used when it is already known: first the copy shipped
+        // with the app (LMS/f7_theme_css.js), then one kept from an earlier open. setColors is what builds it (the utils
+        // object is frozen, so it cannot be wrapped there).
+        (function () {
+            if (typeof Framework7 !== 'function' || typeof Framework7.prototype.setColors !== 'function') return;
+            var build = Framework7.prototype.setColors;
+            Framework7.prototype.setColors = function () {
+                var app = this, key = JSON.stringify([app.colors, app.mdColorScheme]), css = (window.F7_THEME_CSS || {})[key] || null;
+                if (!css) { try { css = localStorage.getItem('f7_theme_css:' + key); } catch (e) { } }
+                if (css) {
+                    if (!app.colorsStyleEl) { app.colorsStyleEl = document.createElement('style'); document.head.prepend(app.colorsStyleEl); }
+                    app.colorsStyleEl.textContent = css;
+                    return;
+                }
+                build.call(app);
+                try { localStorage.setItem('f7_theme_css:' + key, app.colorsStyleEl.textContent); } catch (e) { }
+            };
+        })();
         var myApp = new Framework7({
             el: '#app',
             name: 'KitchenSinkDemo',
