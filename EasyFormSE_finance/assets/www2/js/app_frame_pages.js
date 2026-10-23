@@ -38,7 +38,9 @@
     // A page that asks for the loader as it opens (AppLoader.html()) is holding it until it calls hide(): the shell
     // waits for that before showing the page.
     function shareLoader(win) {
-        var state = { held: false, released: false }, proxy = null;
+        // Pages load app_loader.js only while AppLoader is undefined. A null placeholder
+        // skips that bootstrap and makes loading()/loading_hide() throw before task requests run.
+        var state = { held: false, released: false }, proxy;
         function host() { return w.AppLoader; }
         function call(name, args) { var h = host(); return h && typeof h[name] === 'function' ? h[name].apply(h, args) : undefined; }
         try {
@@ -47,7 +49,7 @@
                 get: function () { return proxy; },
                 set: function (real) {
                     proxy = {};
-                    Object.keys(real || {}).forEach(function (name) { if (typeof real[name] === 'function') proxy[name] = function () { return call(name, arguments); }; });
+                    Object.keys(real || {}).forEach(function (name) { if (typeof real[name] === 'function') proxy[name] = function () { return host() ? call(name, arguments) : real[name].apply(real, arguments); }; });
                     proxy.html = function () { if (!host()) return real.html(); state.held = true; return ''; };
                     proxy.pending = function () { return host() ? !!call('pending', []) : real.pending(); };
                     proxy.show = function () { state.released = false; return host() ? call('show', arguments) : real.show(); };

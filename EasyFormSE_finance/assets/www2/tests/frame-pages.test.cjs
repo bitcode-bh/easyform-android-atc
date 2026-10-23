@@ -114,3 +114,35 @@ test('a page that does not ask for the loader is not held, and without a shell l
     assert.equal(win2.AppLoader.pending(), true);
     assert.equal(win2.AppLoader.show(), 'shown');
 });
+
+
+test('loader bootstrap remains undefined until common-functions loads the frame loader', () => {
+    const { w } = load();
+    const calls = [];
+    w.AppLoader = { busy: () => calls.push('busy'), idle: () => calls.push('idle') };
+    const win = {}; w.AppFramePages.shareLoader(win);
+    const context = vm.createContext(win);
+    const common = fs.readFileSync(path.join(__dirname, '../EFSE_Js/common-functions.js'), 'utf8');
+    const start = common.indexOf("if (typeof AppLoader === 'undefined' && document.readyState === 'loading')");
+    const end = common.indexOf('// Likewise', start);
+    const writes = [];
+    win.document = { readyState: 'loading', write: value => writes.push(value) };
+    vm.runInContext(common.slice(start, end), context);
+    assert.equal(writes.length, 1);
+    assert.match(writes[0], /app_loader.js/);
+    // app_loader.js's assignment installs the proxy; the real shared loading functions must then be safe.
+    win.AppLoader = { busy() {}, idle() {} };
+    const functions = common.slice(common.indexOf('var loading_timer;'), common.indexOf('function loading1()'));
+    win.myApp = { hideIndicator() {}, hideProgressbar() {} };
+    vm.runInContext(functions, context);
+    vm.runInContext('loading(); loading_hide();', context);
+    assert.deepEqual(calls, ['busy', 'idle']);
+});
+
+test('without a host loader the frame can use busy and idle locally', () => {
+    const { w } = load(false); const win = {}; const calls = [];
+    w.AppFramePages.shareLoader(win);
+    win.AppLoader = { busy: () => calls.push('busy'), idle: () => calls.push('idle'), html: () => '', pending: () => false, show() {}, hide() {} };
+    win.AppLoader.busy(); win.AppLoader.idle();
+    assert.deepEqual(calls, ['busy', 'idle']);
+});
