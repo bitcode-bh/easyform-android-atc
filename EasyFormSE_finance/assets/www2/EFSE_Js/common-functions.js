@@ -5188,3 +5188,14 @@ function getFormattedDate(date) {
     day = day.length > 1 ? day : '0' + day;
     return year + '/' + month + '/' + day;
 }
+
+// Form accents (--app-action-blue, which form_style.css and task_list_theme.css paint with) follow the site colour
+// from the server (viewsite_btn_color), whatever it is, instead of staying the fixed default blue. Inline on <html>,
+// so it wins over the :root defaults in styles_low.css / app_tokens.css.
+(function () {
+    try {
+        var store = window.storage || window.localStorage, color = JSON.parse(store.getItem('viewsite_btn_color'));
+        if (typeof color !== 'string' || !(window.CSS && CSS.supports('color', color))) return;
+        document.documentElement.style.setProperty('--app-action-blue', color);
+    } catch (e) { }
+})();

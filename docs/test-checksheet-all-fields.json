@@ -1,0 +1,2351 @@
+[
+  {
+    "item_id": 1,
+    "que_id": 1001,
+    "type": 0,
+    "Excel_Header": "",
+    "value": [
+      "All Fields"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 0,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "name": "All Fields",
+        "class1": [
+          ""
+        ],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": [
+              {
+                "display_horizontal_line": "true"
+              }
+            ]
+          }
+        ],
+        "reference_from_id": 0,
+        "reference_class": []
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ]
+  },
+  {
+    "item_id": 2,
+    "que_id": 1002,
+    "type": 5,
+    "Excel_Header": "Label (type 5): static text with <b>bold</b>",
+    "value": [
+      "Label (type 5): static text with <b>bold</b>"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Label (type 5): static text with <b>bold</b>",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 3,
+    "que_id": 1003,
+    "type": 31,
+    "Excel_Header": "Label 2 (type 31): <i>auto-calculated note</i>",
+    "value": [
+      "Label 2 (type 31): <i>auto-calculated note</i>"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Label 2 (type 31): <i>auto-calculated note</i>",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 4,
+    "que_id": 1004,
+    "type": 1,
+    "Excel_Header": "Text - required",
+    "value": [
+      "Text - required"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "true",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Text - required",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 5,
+    "que_id": 1005,
+    "type": 1,
+    "Excel_Header": "Text - optional, default value",
+    "value": [
+      "Text - optional, default value"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Text - optional, default value",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]",
+            "default_value": [
+              "Default text"
+            ]
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 6,
+    "que_id": 1006,
+    "type": 1,
+    "Excel_Header": "Text - multiline, limit 50",
+    "value": [
+      "Text - multiline, limit 50"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Text - multiline, limit 50",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"box_view\": \"textarea\"}]",
+            "limit": "50"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 7,
+    "que_id": 1007,
+    "type": 1,
+    "Excel_Header": "Text - email keyboard",
+    "value": [
+      "Text - email keyboard"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Text - email keyboard",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"box_type\": \"email\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 8,
+    "que_id": 1008,
+    "type": 1,
+    "Excel_Header": "Text - phone keyboard",
+    "value": [
+      "Text - phone keyboard"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Text - phone keyboard",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"box_type\": \"phone\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 9,
+    "que_id": 1009,
+    "type": 1,
+    "Excel_Header": "Text - disabled",
+    "value": [
+      "Text - disabled"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "true",
+        "trigger_class": "",
+        "name": "Text - disabled",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]",
+            "default_value": [
+              "Cannot edit"
+            ]
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 10,
+    "que_id": 1010,
+    "type": 4,
+    "Excel_Header": "Number - required, 2 decimals",
+    "value": [
+      "Number - required, 2 decimals"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "true",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Number - required, 2 decimals",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"decimal_point\": \"2\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 11,
+    "que_id": 1011,
+    "type": 1,
+    "Excel_Header": "Text - number keyboard (box_type)",
+    "value": [
+      "Text - number keyboard (box_type)"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Text - number keyboard (box_type)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"box_type\": \"number\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 12,
+    "que_id": 1012,
+    "type": 12,
+    "Excel_Header": "Range (type 12)",
+    "value": [
+      "Range (type 12)"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Range (type 12)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"min\": \"0\", \"max\": \"100\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 13,
+    "que_id": 1013,
+    "type": 2,
+    "Excel_Header": "Radio vertical - Show details?",
+    "value": [
+      "Yes",
+      "No"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "true",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Radio vertical - Show details?",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "1",
+        "dep_ans": "Yes",
+        "dep_item_id": 0,
+        "dep_class": "f1000_yes",
+        "dep_action": "show",
+        "dep_range": ""
+      },
+      {
+        "dep_type": "1",
+        "dep_ans": "No",
+        "dep_item_id": 0,
+        "dep_class": "f1000_no",
+        "dep_action": "show",
+        "dep_range": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 14,
+    "que_id": 1014,
+    "type": 1,
+    "Excel_Header": "Shown only when 'Yes'",
+    "value": [
+      "Shown only when 'Yes'"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Shown only when 'Yes'",
+        "class1": [
+          "f1000_yes"
+        ],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 15,
+    "que_id": 1015,
+    "type": 1,
+    "Excel_Header": "Shown only when 'No'",
+    "value": [
+      "Shown only when 'No'"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Shown only when 'No'",
+        "class1": [
+          "f1000_no"
+        ],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 16,
+    "que_id": 1016,
+    "type": 2,
+    "Excel_Header": "Radio horizontal (view_type)",
+    "value": [
+      "Low",
+      "Medium",
+      "High"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Radio horizontal (view_type)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]",
+            "view_type": "horizontal"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 17,
+    "que_id": 1017,
+    "type": 2,
+    "Excel_Header": "Radio toggle pill",
+    "value": [
+      "Pass",
+      "Fail"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Radio toggle pill",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]",
+            "view_type": "toggle"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 18,
+    "que_id": 1018,
+    "type": 2,
+    "Excel_Header": "Radio toggle_hidden pill",
+    "value": [
+      "On",
+      "Off"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Radio toggle_hidden pill",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]",
+            "view_type": "toggle_hidden"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 19,
+    "que_id": 1019,
+    "type": 2,
+    "Excel_Header": "Radio label hidden",
+    "value": [
+      "A",
+      "B"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Radio label hidden",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"false\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 20,
+    "que_id": 1020,
+    "type": 3,
+    "Excel_Header": "Dropdown - required",
+    "value": [
+      "Option 1",
+      "Option 2",
+      "Option 3",
+      "Option 4"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "true",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Dropdown - required",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "1",
+        "dep_ans": "Option 1",
+        "dep_item_id": 0,
+        "dep_class": "f1000_opt1",
+        "dep_action": "show",
+        "dep_range": ""
+      },
+      {
+        "dep_type": "1",
+        "dep_ans": "Option 2",
+        "dep_item_id": 0,
+        "dep_class": "f1000_opt2",
+        "dep_action": "hide",
+        "dep_range": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 21,
+    "que_id": 1021,
+    "type": 1,
+    "Excel_Header": "Shown when Dropdown = Option 1",
+    "value": [
+      "Shown when Dropdown = Option 1"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Shown when Dropdown = Option 1",
+        "class1": [
+          "f1000_opt1"
+        ],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 22,
+    "que_id": 1022,
+    "type": 1,
+    "Excel_Header": "Hidden when Dropdown = Option 2",
+    "value": [
+      "Hidden when Dropdown = Option 2"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Hidden when Dropdown = Option 2",
+        "class1": [
+          "f1000_opt2"
+        ],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 23,
+    "que_id": 1023,
+    "type": 6,
+    "Excel_Header": "Checkbox - multi select",
+    "value": [
+      "Red",
+      "Green",
+      "Blue",
+      "Yellow"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Checkbox - multi select",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 24,
+    "que_id": 1024,
+    "type": 6,
+    "Excel_Header": "Checkbox - required, horizontal",
+    "value": [
+      "One",
+      "Two"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "true",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Checkbox - required, horizontal",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]",
+            "view_type": "horizontal"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 25,
+    "que_id": 1025,
+    "type": 4,
+    "Excel_Header": "Number for range rule (enter above 10)",
+    "value": [
+      "Number for range rule (enter above 10)"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Number for range rule (enter above 10)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "1",
+        "dep_ans": "10",
+        "dep_item_id": 0,
+        "dep_class": "f1000_big",
+        "dep_action": "show",
+        "dep_range": "greater than"
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 26,
+    "que_id": 1026,
+    "type": 1,
+    "Excel_Header": "Shown when number >= 10",
+    "value": [
+      "Shown when number >= 10"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Shown when number >= 10",
+        "class1": [
+          "f1000_big"
+        ],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 27,
+    "que_id": 1027,
+    "type": 1,
+    "Excel_Header": "Always-hidden question (is_hide)",
+    "value": [
+      "Always-hidden question (is_hide)"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "true",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Always-hidden question (is_hide)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 28,
+    "que_id": 1028,
+    "type": 8,
+    "Excel_Header": "Date",
+    "value": [
+      "Date"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "true",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Date",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"mode\": \"date\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 29,
+    "que_id": 1029,
+    "type": 8,
+    "Excel_Header": "Date and time",
+    "value": [
+      "Date and time"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Date and time",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"mode\": \"datetime\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 30,
+    "que_id": 1030,
+    "type": 8,
+    "Excel_Header": "Time",
+    "value": [
+      "Time"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Time",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"mode\": \"time\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 31,
+    "que_id": 1031,
+    "type": 7,
+    "Excel_Header": "Photo - camera, required",
+    "value": [
+      "Photo - camera, required"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "true",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Photo - camera, required",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 6,
+            "value": "[{\"view_label\": \"true\", \"photo_type\": \"camera\", \"latlong\": \"false\", \"quality\": \"90\", \"width\": \"480\", \"height\": \"640\", \"max_file_size\": \"5\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 32,
+    "que_id": 1032,
+    "type": 7,
+    "Excel_Header": "Photo - gallery only (browse)",
+    "value": [
+      "Photo - gallery only (browse)"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Photo - gallery only (browse)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 6,
+            "value": "[{\"view_label\": \"true\", \"photo_type\": \"browse\", \"latlong\": \"false\", \"quality\": \"90\", \"width\": \"480\", \"height\": \"640\", \"max_file_size\": \"5\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 33,
+    "que_id": 1033,
+    "type": 7,
+    "Excel_Header": "Photo - camera or gallery (both)",
+    "value": [
+      "Photo - camera or gallery (both)"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Photo - camera or gallery (both)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 6,
+            "value": "[{\"view_label\": \"true\", \"photo_type\": \"both\", \"latlong\": \"false\", \"quality\": \"90\", \"width\": \"480\", \"height\": \"640\", \"max_file_size\": \"5\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 34,
+    "que_id": 1034,
+    "type": 7,
+    "Excel_Header": "Photo - geo/time stamp",
+    "value": [
+      "Photo - geo/time stamp"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Photo - geo/time stamp",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 6,
+            "value": "[{\"view_label\": \"true\", \"photo_type\": \"camera\", \"latlong\": \"true\", \"quality\": \"90\", \"width\": \"480\", \"height\": \"640\", \"max_file_size\": \"5\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 35,
+    "que_id": 1035,
+    "type": 9,
+    "Excel_Header": "Signature",
+    "value": [
+      "Signature"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Signature",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 36,
+    "que_id": 1036,
+    "type": 13,
+    "Excel_Header": "Location (GPS)",
+    "value": [
+      "Location (GPS)"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Location (GPS)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 37,
+    "que_id": 1037,
+    "type": 25,
+    "Excel_Header": "Barcode / QR scanner",
+    "value": [
+      "Barcode / QR scanner"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Barcode / QR scanner",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"barcode\": \"true\", \"qr\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 38,
+    "que_id": 1038,
+    "type": 26,
+    "Excel_Header": "File upload",
+    "value": [
+      "File upload"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "File upload",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 39,
+    "que_id": 1039,
+    "type": 28,
+    "Excel_Header": "Video capture",
+    "value": [
+      "Video capture"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Video capture",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 40,
+    "que_id": 1040,
+    "type": 27,
+    "Excel_Header": "PDF report",
+    "value": [
+      "PDF report"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "PDF report",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\", \"report_type\": \"1\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 41,
+    "que_id": 1041,
+    "type": 40,
+    "Excel_Header": "Live link (reference image)",
+    "value": [],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Live link (reference image)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": [
+              {
+                "doc_type": "image",
+                "doc_url": "https://picsum.photos/600/300"
+              }
+            ]
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 42,
+    "que_id": 1042,
+    "type": 4,
+    "Excel_Header": "Calc input A",
+    "value": [
+      "Calc input A"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Calc input A",
+        "class1": [
+          "f1000_a"
+        ],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 43,
+    "que_id": 1043,
+    "type": 4,
+    "Excel_Header": "Calc input B",
+    "value": [
+      "Calc input B"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Calc input B",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": "[{\"view_label\": \"true\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 44,
+    "que_id": 1044,
+    "type": 17,
+    "Excel_Header": "Calculator A + B",
+    "value": [
+      "Calculator A + B"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "true",
+        "trigger_class": "",
+        "name": "Calculator A + B",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 0,
+            "value": [
+              {
+                "myrow_for_misc": "fix<{@1042@}+{@1043@}>",
+                "view_label": "true",
+                "target_checksheet_id": "",
+                "target_que_id": "",
+                "que_id_for_target_task_id": ""
+              }
+            ]
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 45,
+    "que_id": 1045,
+    "type": 22,
+    "Excel_Header": "Invoice (add rows)",
+    "value": [],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 1,
+        "valid": "false",
+        "is_deleted": 0,
+        "is_hide": "false",
+        "is_disabled": "false",
+        "trigger_class": "",
+        "name": "Invoice (add rows)",
+        "class1": [],
+        "reference_class": [],
+        "misc_data": [
+          {
+            "type": 8,
+            "value": "[{\"view_type\": \"1\", \"btn_str\": \"Add item\", \"Fill_Data\": [{\"id\": \"1\", \"name\": \"Column - Item name\", \"type\": [{\"item_id\": 100, \"que_id\": 1100, \"type\": 1, \"Excel_Header\": \"Item name\", \"value\": [\"Item name\"], \"ans\": [\"\"], \"prop\": [{\"searchkey\": 1, \"valid\": \"false\", \"is_deleted\": 0, \"is_hide\": \"false\", \"is_disabled\": \"false\", \"trigger_class\": \"\", \"name\": \"Item name\", \"class1\": [], \"reference_class\": [], \"misc_data\": [{\"type\": 50, \"value\": \"[{\\\"view_label\\\": \\\"true\\\"}]\"}], \"is_reset\": \"false\", \"reference_from_id\": 0}], \"dependency\": [{\"dep_type\": \"\", \"dep_ans\": \"\", \"dep_item_id\": \"\", \"dep_class\": \"\"}], \"old_log\": \"false\", \"check_duplicate\": \"false\", \"width_layout\": \"\", \"comment_statement\": \"\", \"language\": [{}], \"language_value\": [{}]}], \"auto\": 0, \"display\": 1, \"auto_value\": [], \"mandatory\": 0, \"res_dup\": \"0\", \"sum\": \"0\"}, {\"id\": \"2\", \"name\": \"Column - Qty\", \"type\": [{\"item_id\": 101, \"que_id\": 1101, \"type\": 4, \"Excel_Header\": \"Qty\", \"value\": [\"Qty\"], \"ans\": [\"\"], \"prop\": [{\"searchkey\": 1, \"valid\": \"false\", \"is_deleted\": 0, \"is_hide\": \"false\", \"is_disabled\": \"false\", \"trigger_class\": \"\", \"name\": \"Qty\", \"class1\": [], \"reference_class\": [], \"misc_data\": [{\"type\": 50, \"value\": \"[{\\\"view_label\\\": \\\"true\\\"}]\"}], \"is_reset\": \"false\", \"reference_from_id\": 0}], \"dependency\": [{\"dep_type\": \"\", \"dep_ans\": \"\", \"dep_item_id\": \"\", \"dep_class\": \"\"}], \"old_log\": \"false\", \"check_duplicate\": \"false\", \"width_layout\": \"\", \"comment_statement\": \"\", \"language\": [{}], \"language_value\": [{}]}], \"auto\": 0, \"display\": 1, \"auto_value\": [], \"mandatory\": 0, \"res_dup\": \"0\", \"sum\": \"1\"}], \"add_button\": \"true\", \"edit_button\": \"true\", \"delete_button\": \"true\", \"max_record\": \"5\"}]"
+          }
+        ],
+        "is_reset": "false",
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ],
+    "old_log": "false",
+    "check_duplicate": "false",
+    "comment_statement": "",
+    "language": [
+      {}
+    ],
+    "language_value": [
+      {}
+    ]
+  },
+  {
+    "item_id": 46,
+    "que_id": 2,
+    "type": 10,
+    "Excel_Header": "Form End",
+    "value": [
+      "Form End"
+    ],
+    "ans": [
+      ""
+    ],
+    "prop": [
+      {
+        "searchkey": 0,
+        "valid": "false",
+        "is_deleted": 0,
+        "name": "",
+        "class1": [
+          ""
+        ],
+        "misc_data": [
+          {
+            "type": 50,
+            "value": ""
+          }
+        ],
+        "reference_from_id": 0
+      }
+    ],
+    "dependency": [
+      {
+        "dep_type": "",
+        "dep_ans": "",
+        "dep_item_id": "",
+        "dep_class": ""
+      }
+    ]
+  }
+]
