@@ -156,6 +156,23 @@
     z-index: 9999;
 }
 
+#pinch_edit {
+    position: absolute;
+    top: 8px;
+    right: 6px;
+    width: 52px;
+    height: 52px;
+    padding: 14px;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+
 .popover {
     width: auto;
 }
