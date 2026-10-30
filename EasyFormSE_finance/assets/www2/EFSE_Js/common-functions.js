@@ -4849,26 +4849,12 @@ function open_pinch_zoom_div_safety_passport() {
 }
 
 var imageViewerZoom = null;
-
-// Image editing (and retaking) follows the Camera_Edit login configuration.
-// Same rule as the native camera plugins: anything but "False" means enabled.
-function image_edit_enabled() {
-    var v = String(localStorage.getItem('Camera_Edit')).trim().toLowerCase();
-    return v !== 'false' && v !== '0';
-}
-
-function open_pinch_zoom_div(t_src, on_edit) {
+function open_pinch_zoom_div(t_src) {
     if (imageViewerZoom) imageViewerZoom.destroy();
     $(".pinch-zoom-container").remove();
     $(".pinch_close").remove();
     let zoom_str = '<div class="pinch-zoom"><button id="pinch_close" type="button" aria-label="Back" onclick="close_zoom()"><span class="app-back-icon" aria-hidden="true"></span></button><img src = "' + t_src + '" /></div>';
     $("body").prepend(zoom_str);
-    // Edit icon: only when this viewer was given an edit action and editing is enabled
-    if (typeof on_edit === 'function' && image_edit_enabled()) {
-        var edit_btn = $('<button id="pinch_edit" type="button" aria-label="Edit"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>');
-        edit_btn.on('click', function () { close_zoom(); on_edit(); });
-        $(".pinch-zoom").append(edit_btn);
-    }
     try {
         cordova.exec(function () { }, function () { }, 'SystemBarPlugin', 'imageViewer',
             [true, '#080C18']);
@@ -5202,14 +5188,3 @@ function getFormattedDate(date) {
     day = day.length > 1 ? day : '0' + day;
     return year + '/' + month + '/' + day;
 }
-
-// Form accents (--app-action-blue, which form_style.css and task_list_theme.css paint with) follow the site colour
-// from the server (viewsite_btn_color), whatever it is, instead of staying the fixed default blue. Inline on <html>,
-// so it wins over the :root defaults in styles_low.css / app_tokens.css.
-(function () {
-    try {
-        var store = window.storage || window.localStorage, color = JSON.parse(store.getItem('viewsite_btn_color'));
-        if (typeof color !== 'string' || !(window.CSS && CSS.supports('color', color))) return;
-        document.documentElement.style.setProperty('--app-action-blue', color);
-    } catch (e) { }
-})();

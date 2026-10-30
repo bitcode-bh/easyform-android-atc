@@ -76,25 +76,19 @@ function CaptureClick(item_id, que_id, img_div, form_flag_temp, photo_type, img_
 
             var clickedLink = $("#" + img_div + "");
             myApp.popover('.popover-type7', clickedLink);
-            $("#popover_viewphoto").attr("onclick", "get_full_view_image_type7_F7('" + src + "', true)");
+            $("#popover_viewphoto").attr("onclick", "get_full_view_image_type7_F7('" + src + "')");
+            $("#popover_editphoto").attr("onclick", param_edit);
             $("#popover_re_capture").attr("onclick", param);
-            // Edit lives inside the viewer; the viewer runs this when its Edit icon is tapped
-            image_viewer_edit_action = function () { new Function(param_edit)(); };
 
             var old_photo_type = $("#" + img_div + "").attr('old_photo_type');
             if (null_img == 2 || old_photo_type == "original_photo") {
                 // readonly image (in collapsible step)
                 $("#popover_re_capture").parent().hide();
-                image_viewer_edit_action = null;
+                $("#popover_editphoto").parent().hide();
             }
             else {
-                if (image_edit_enabled()) {
-                    $("#popover_re_capture").parent().show();
-                } else {
-                    // retake follows the same configuration as edit
-                    $("#popover_re_capture").parent().hide();
-                    image_viewer_edit_action = null;
-                }
+                $("#popover_re_capture").parent().show();
+                $("#popover_editphoto").parent().show();
 
                 let is_autofilled = $("#" + img_div + "").attr("autofill");
                 if (is_autofilled == "true") {
@@ -1076,10 +1070,7 @@ function get_full_view_image_type7(img_div) {
 
 var myPhotoBrowser;
 // Framework 7
-var image_viewer_edit_action = null;   // set by the photo popover; consumed by the viewer
-function get_full_view_image_type7_F7(src, allow_edit) {
-    var on_edit = allow_edit ? image_viewer_edit_action : null;
-    image_viewer_edit_action = null;
+function get_full_view_image_type7_F7(src) {
     try {
         myApp.closeModal('.popover-type7');
 
@@ -1120,7 +1111,7 @@ function get_full_view_image_type7_F7(src, allow_edit) {
         //});
 
         //myPhotoBrowser.open();
-        open_pinch_zoom_div(src, on_edit);
+        open_pinch_zoom_div(src);
 
         var type22_popup = $('.popup-type22:visible');
         if (type22_popup.length > 0) {
@@ -1341,24 +1332,18 @@ function CaptureClick_Customer(item_id, que_id, img_div, form_flag_temp, photo_t
 
             var clickedLink = $("#" + img_div + "");
             myApp.popover('.popover-type7', clickedLink);
-            $("#popover_viewphoto").attr("onclick", "get_full_view_image_type7_F7('" + src + "', true)");
+            $("#popover_viewphoto").attr("onclick", "get_full_view_image_type7_F7('" + src + "')");
+            $("#popover_editphoto").attr("onclick", param_edit);
             $("#popover_re_capture").attr("onclick", param);
-            // Edit lives inside the viewer; the viewer runs this when its Edit icon is tapped
-            image_viewer_edit_action = function () { new Function(param_edit)(); };
 
             if (null_img == 2) {
                 // readonly image (in collapsible step)
                 $("#popover_re_capture").parent().hide();
-                image_viewer_edit_action = null;
+                $("#popover_editphoto").parent().hide();
             }
             else {
-                if (image_edit_enabled()) {
-                    $("#popover_re_capture").parent().show();
-                } else {
-                    // retake follows the same configuration as edit
-                    $("#popover_re_capture").parent().hide();
-                    image_viewer_edit_action = null;
-                }
+                $("#popover_re_capture").parent().show();
+                $("#popover_editphoto").parent().show();
 
                 let is_autofilled = $("#" + img_div + "").attr("autofill");
                 if (is_autofilled == "true") {
@@ -1786,6 +1771,7 @@ function onPhotoDataSuccess_old_photo() {
 
         // readonly image (in collapsible step)
         $("#popover_re_capture").parent().hide();
+        $("#popover_editphoto").parent().hide();
 
         var click_action = $("#" + old_photo_id + "").attr('click_action');
         $("#" + old_photo_id + "").attr('onclick', click_action);
@@ -1975,6 +1961,7 @@ function verify_user_profile_photo(item_id, que_id, img_div, form_flag_temp, pho
         myApp.popover('.popover-type7', clickedLink);
         $("#popover_viewphoto").attr("onclick", "get_full_view_image_type7_F7('" + src + "')");
         $("#popover_re_capture").parent().hide();
+        $("#popover_editphoto").parent().hide();
         return false;
     }
 

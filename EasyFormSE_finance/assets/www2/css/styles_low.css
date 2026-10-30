@@ -3039,23 +3039,6 @@ li.w-75-25 {
     z-index: 9999;
 }
 
-#pinch_edit {
-    position: absolute;
-    top: 8px;
-    right: 6px;
-    width: 52px;
-    height: 52px;
-    padding: 14px;
-    border: 0;
-    background: transparent;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
-
 .navbar-fixed .page-content {
     box-shadow: none !important;
     text-shadow: none !important;
